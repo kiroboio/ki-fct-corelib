@@ -1,24 +1,42 @@
+import { Contract, ethers } from "ethers";
+import { TypedDataUtils } from "ethers-eip712";
+import { toUtf8Bytes } from "ethers/lib/utils";
+
 // Most likely the data structure is going to be different
 interface TransferCall {
-  token: String;
-  tokenEnsHash: String | null;
-  to: String;
-  toEnsHash: String | null;
-  value: String;
-  signer: String;
+  token: string;
+  tokenEnsHash: string | null;
+  to: string;
+  toEnsHash: string | null;
+  value: string;
+  signer: string;
   cancelable: Boolean;
   payable: Boolean;
 }
 
+interface Transfer {
+  token: string;
+  tokenEnsHash: string;
+  to: string;
+  toEnsHash: string;
+  value: string;
+  signer: string;
+  r: string;
+  s: string;
+  sessionId: string;
+}
+
 // Move to seperate folder/file where all the helper functions will be located
-const getTypedDataDomain = () => {
+const getTypedDataDomain = async (factoryProxy: Contract) => {
+  const chainId = await factoryProxy.CHAIN_ID();
+  console.log(chainId.toHexString());
   return {
     domain: {
-      name: "FACTORY_PROXY_NAME", // await factoryProxy.NAME(),
-      version: "FACTORY_PROXY_VERSION", // await factoryProxy.VERSION(),
-      chainId: "FACTORY_PROXY_CHAIN_ID", // "0x" + web3.utils.toBN(await factoryProxy.CHAIN_ID()).toString("hex"),
-      verifyingContract: "FACTORY_PROXY_ADDReSS", // factoryProxy.address,
-      salt: "FACTORY_PROXY_UID", // await factoryProxy.uid(),
+      name: await factoryProxy.NAME(), // await factoryProxy.NAME(),
+      version: await factoryProxy.VERSION(), // await factoryProxy.VERSION(),
+      chainId: chainId.toHexString(),
+      verifyingContract: factoryProxy.address,
+      salt: await factoryProxy.uid(),
     },
   };
 };
@@ -49,7 +67,7 @@ const batchTransferTypedData = {
   primaryType: "BatchTransfer_",
 };
 
-const getBatchTransferData = async (call: TransferCall, i: number) => {
+const getBatchTransferData = async (call: TransferCall, i: number, signer, factoryProxy: Contract) => {
   const group = "000000"; // Has to be a way to determine group dynamically
   const tnonce = "00000001" + i.toString(16).padStart(2, "0");
   const after = "0000000000";
@@ -66,7 +84,7 @@ const getBatchTransferData = async (call: TransferCall, i: number) => {
 
   const typedData = {
     ...batchTransferTypedData,
-    ...getTypedDataDomain(),
+    ...(await getTypedDataDomain(factoryProxy)),
     message: {
       nonce: "0x" + group + tnonce,
       token_address: call.token,
@@ -82,43 +100,62 @@ const getBatchTransferData = async (call: TransferCall, i: number) => {
     },
   };
 
-  const eipSign = { r: "", s: "", v: "" }; // await getEIP712Sign(typedData, call.signer), signature (TO DO)
+  const messageDigest = TypedDataUtils.encodeDigest(typedData);
+  const signature = await signer.signMessage(messageDigest);
+  const rlp = ethers.utils.splitSignature(signature);
+  console.log("0x" + rlp.v.toString(16), Number("0x" + rlp.v.toString(16)));
+  const v = "0x" + rlp.v.toString(16);
 
   return {
-    ...eipSign,
+    r: rlp.r,
+    s: rlp.s,
     signer: call.signer,
     token: call.token,
-    tokenEnsHash: call.tokenEnsHash,
-    // tokenEnsHash: call.tokenEnsHash
-    //   ? web3.utils.sha3(call.tokenEnsHash)
-    //   : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+    tokenEnsHash: call.tokenEnsHash
+      ? ethers.utils.keccak256(toUtf8Bytes(call.tokenEnsHash))
+      : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     to: call.to,
-    toEnsHash: call.toEnsHash,
-    // toEnsHash: call.toEnsHash
-    //   ? web3.utils.sha3(call.toEnsHash)
-    //   : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+    toEnsHash: call.toEnsHash
+      ? ethers.utils.keccak256(toUtf8Bytes(call.toEnsHash))
+      : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    sessionId: sessionId + eipSign.v.slice(2).padStart(2, "0"),
+    sessionId: sessionId + v.slice(2).padStart(2, "0"),
   };
 };
 
 export class BatchTransfer {
-  calls: Array<TransferCall>;
+  calls: Array<Transfer>;
   constructor() {
     this.calls = [];
   }
 
-  addTx(txCall: TransferCall) {
-    this.calls = [...this.calls, txCall];
+  async addTx(txCall: TransferCall, signer, factoryProxy: Contract) {
+    const data = await getBatchTransferData(txCall, this.calls.length, signer, factoryProxy);
+    this.calls = [...this.calls, data];
   }
 
-  removeTx(txCall: TransferCall) {
-    // Will the tx call have a seperate id?
-    // this.calls = this.calls.filter(...)
+  // removeTx(txCall: TransferCall) {
+  //   // Will the tx call have a seperate id?
+  //   // this.calls = this.calls.filter(...)
+  // }
+
+  async executeWithEthers(factoryProxy: Contract, activator, silentRevert: Boolean) {
+    const calls = this.calls;
+
+    if (calls.length === 0) {
+      throw new Error("there are no added calls");
+    }
+
+    try {
+      const data = await factoryProxy.connect(activator).batchTransfer_(calls, 0, silentRevert);
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   // Should pass web3 from frontend
-  async execute(web3, silentRevert) {
+  async execute(web3, silentRevert: Boolean) {
     const calls = this.calls;
 
     const group = "000000";
@@ -127,7 +164,7 @@ export class BatchTransfer {
       throw new Error("There are no added calls");
     }
 
-    const batchTransferCalls = await Promise.all(calls.map(getBatchTransferData));
+    // const batchTransferCalls = await Promise.all(calls.map(getBatchTransferData));
 
     // BEFORE TX - estimate gas function
 
