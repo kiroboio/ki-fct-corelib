@@ -8,10 +8,8 @@ interface TransferCall {
   tokenEnsHash: string | null;
   to: string;
   toEnsHash: string | null;
-  value: string;
+  value: number;
   signer: string;
-  cancelable: Boolean;
-  payable: Boolean;
 }
 
 interface Transfer {
@@ -19,7 +17,7 @@ interface Transfer {
   tokenEnsHash: string;
   to: string;
   toEnsHash: string;
-  value: string;
+  value: number;
   signer: string;
   r: string;
   s: string;
@@ -29,7 +27,6 @@ interface Transfer {
 // Move to seperate folder/file where all the helper functions will be located
 const getTypedDataDomain = async (factoryProxy: Contract) => {
   const chainId = await factoryProxy.CHAIN_ID();
-  console.log(chainId.toHexString());
   return {
     domain: {
       name: await factoryProxy.NAME(), // await factoryProxy.NAME(),
@@ -68,17 +65,15 @@ const batchTransferTypedData = {
 };
 
 const getBatchTransferData = async (call: TransferCall, i: number, signer, factoryProxy: Contract) => {
-  const group = "000000"; // Has to be a way to determine group dynamically
+  const group = "000001"; // Has to be a way to determine group dynamically
   const tnonce = "00000001" + i.toString(16).padStart(2, "0");
   const after = "0000000000";
   const before = "ffffffffff";
   const maxGas = "00000000";
   const maxGasPrice = "0000000ba43b7400";
 
-  const cancelable = call.cancelable ? "8" : "1";
-  const payable = call.payable ? "f" : "0";
-
-  const eip712 = `${payable}${cancelable}`; // payment + eip712, need to make it editable from user side
+  const eip712 = `f1`; // payment + eip712, need to make it editable from user side
+  // const eip712 = `${payable}${cancelable}`; // payment + eip712, need to make it editable from user side
 
   const sessionId = `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
@@ -100,15 +95,15 @@ const getBatchTransferData = async (call: TransferCall, i: number, signer, facto
     },
   };
 
+  console.log(JSON.stringify(typedData, null, 2));
+
   const messageDigest = TypedDataUtils.encodeDigest(typedData);
   const signature = await signer.signMessage(messageDigest);
   const rlp = ethers.utils.splitSignature(signature);
-  console.log("0x" + rlp.v.toString(16), Number("0x" + rlp.v.toString(16)));
   const v = "0x" + rlp.v.toString(16);
 
   return {
-    r: rlp.r,
-    s: rlp.s,
+    ...rlp,
     signer: call.signer,
     token: call.token,
     tokenEnsHash: call.tokenEnsHash
@@ -146,12 +141,8 @@ export class BatchTransfer {
       throw new Error("there are no added calls");
     }
 
-    try {
-      const data = await factoryProxy.connect(activator).batchTransfer_(calls, 0, silentRevert);
-      console.log(data);
-    } catch (err) {
-      console.log(err);
-    }
+    const data = await factoryProxy.connect(activator).batchTransfer_(calls, 1, silentRevert);
+    console.log(data);
   }
 
   // Should pass web3 from frontend

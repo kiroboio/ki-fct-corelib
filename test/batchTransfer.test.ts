@@ -67,11 +67,12 @@ describe("BatchTransfer", () => {
     await factoryProxy.deployed();
 
     await factoryProxyMain.setTarget(factoryProxy.address);
-    const factory_proxy_ = factoryProxy.attach(factoryProxyMain.address);
-    await factory_proxy_.setTarget_(factory.address);
+    factoryProxy = factoryProxy.attach(factoryProxyMain.address);
+    await factoryProxy.setTarget_(factory.address);
 
     await factoryProxy.setActivator_(await activator.getAddress());
   });
+
   it("Add tx to batchTransfer calls array", async () => {
     const batchTransfer = new BatchTransfer();
     const wallet = new Wallet(Pkeys[10]);
@@ -90,10 +91,6 @@ describe("BatchTransfer", () => {
       wallet,
       factoryProxy
     );
-
-    console.log(batchTransfer.calls);
-
-    await batchTransfer.executeWithEthers(factoryProxy, activator, false);
 
     expect(batchTransfer.calls.length).to.eq(1);
   });
