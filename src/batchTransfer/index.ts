@@ -153,6 +153,8 @@ export class BatchTransfer {
 
     const FactoryContract = getContract(web3, factoryProxyAddress);
 
+    console.log(calls);
+
     await FactoryContract.methods.batchTransfer_(calls, 11, true).send({ from: activator });
   }
 }

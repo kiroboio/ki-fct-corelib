@@ -1,7 +1,6 @@
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchTransfer } = require("../dist/index.js");
+const { BatchTransfer, BatchTransferPacked } = require("../dist/index.js");
 const assert = require("assert");
-const { TypedDataUtils } = require("ethers-eip712");
 const { expect } = require("chai");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("RecoveryWalletCore");
@@ -270,6 +269,26 @@ describe("Greeter contract", function () {
     });
     it("Execute batchTransfer", async () => {
       await batchTransfer.execute(web3, factoryProxy.address, activator);
+    });
+  });
+
+  describe("BatchTransferPacked function", function () {
+    const batchTransferPacked = new BatchTransferPacked();
+    it("Add tx for batchTransfer", async () => {
+      const tx = {
+        token: ZERO_ADDRESS,
+        tokenEnsHash: "",
+        to: accounts[12],
+        toEnsHash: "",
+        value: 10,
+        signer: getSigner(10),
+      };
+      await batchTransferPacked.addTx(web3, factoryProxy.address, tx);
+
+      expect(batchTransferPacked.calls.length).to.eq(1);
+    });
+    it("Execute batchTransfer", async () => {
+      await batchTransferPacked.execute(web3, factoryProxy.address, activator);
     });
   });
 });

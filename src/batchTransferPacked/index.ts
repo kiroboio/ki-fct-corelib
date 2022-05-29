@@ -1,6 +1,15 @@
-import { Contract, ethers } from "ethers";
+import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
+import Web3 from "web3";
+import Contract from "web3/eth/contract";
+import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+
+const web3 = new Web3();
+const getContract = (web3, addr) => {
+  // @ts-ignore
+  return new web3.eth.Contract(FactoryProxyABI, addr);
+};
 
 // Most likely the data structure is going to be different
 interface TransferCall {
@@ -20,11 +29,12 @@ interface Transfer {
   sessionId: string;
 }
 
-const getBatchTransferPackedData = async (call: TransferCall, i: number, signer, factoryProxy: Contract) => {
-  const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
-  const BATCH_TRANSFER_PACKED_TYPEHASH = await factoryProxy.BATCH_TRANSFER_PACKED_TYPEHASH_();
+const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: number, factoryProxyAddress) => {
+  const FactoryProxy = getContract(web3, factoryProxyAddress);
+  const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
+  const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
-  const group = "000002"; // Has to be a way to determine group dynamically
+  const group = "00000C"; // Has to be a way to determine group dynamically
   const tnonce = "00000000";
   const after = "0000000000";
   const before = "ffffffffff";
@@ -45,16 +55,19 @@ const getBatchTransferPackedData = async (call: TransferCall, i: number, signer,
     ),
   };
 
-  const signature = await signer.signMessage(
-    FACTORY_DOMAIN_SEPARATOR + ethers.utils.keccak256(hashedData._hash).slice(2)
+  const signature = await web3.eth.sign(
+    FACTORY_DOMAIN_SEPARATOR + ethers.utils.keccak256(hashedData._hash).slice(2),
+    call.signer
   );
-  const rlp = ethers.utils.splitSignature(signature);
-  const v = "0x" + rlp.v.toString(16);
+
+  const r = signature.slice(0, 66);
+  const s = "0x" + signature.slice(66, 130);
+  const v = "0x" + signature.slice(130);
 
   return {
     signer: call.signer,
-    r: rlp.r,
-    s: rlp.s,
+    r,
+    s,
     token: call.token,
     to: call.to,
     value: call.value,
@@ -68,49 +81,21 @@ export class BatchTransferPacked {
     this.calls = [];
   }
 
-  async addTx(txCall: TransferCall, signer, factoryProxy: Contract) {
-    const data = await getBatchTransferPackedData(txCall, this.calls.length, signer, factoryProxy);
+  async addTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall) {
+    const data = await getBatchTransferPackedData(web3, tx, this.calls.length, factoryProxyAddress);
     this.calls = [...this.calls, data];
   }
 
-  async addMultipleTx(txCalls: Array<TransferCall>, signer, factoryProxy: Contract) {
-    const data = await Promise.all(
-      txCalls.map((item, i) => getBatchTransferPackedData(item, this.calls.length + (i + 1), signer, factoryProxy))
-    );
-    this.calls = [...this.calls, ...data];
-  }
-
-  // removeTx(txCall: TransferCall) {
-  //   // Will the tx call have a seperate id?
-  //   // this.calls = this.calls.filter(...)
-  // }
-
-  async executeWithEthers(factoryProxy: Contract, activator, silentRevert: Boolean) {
+  async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
     const calls = this.calls;
 
     if (calls.length === 0) {
-      throw new Error("there are no added calls");
+      throw new Error("No calls haven't been added");
     }
 
-    const data = await factoryProxy.connect(activator).batchTransferPacked_(calls, 2, silentRevert);
-  }
+    const FactoryContract = getContract(web3, factoryProxyAddress);
 
-  // Should pass web3 from frontend
-  async execute(web3, silentRevert: Boolean) {
-    const calls = this.calls;
-
-    const group = "000000";
-
-    if (calls.length === 0) {
-      throw new Error("There are no added calls");
-    }
-
-    // const batchTransferCalls = await Promise.all(calls.map(getBatchTransferData));
-
-    // BEFORE TX - estimate gas function
-
-    // await factoryProxy.batchTransfer_(batchTransferCalls, parseInt(group, 16), silentRevert);
-
-    return;
+    const data = await FactoryContract.methods.batchTransferPacked_(calls, 12, true).send({ from: activator });
+    console.log(data);
   }
 }
