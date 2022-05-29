@@ -305,7 +305,16 @@ describe("Greeter contract", function () {
       expect(batchTransferPacked.calls.length).to.eq(3);
     });
     it("Execute batchTransfer", async () => {
+      const user12Balance = await token20.balanceOf(accounts[12]);
+      const user12BalanceEth = await web3.eth.getBalance(accounts[12]);
+
       await batchTransferPacked.execute(web3, factoryProxy.address, activator);
+
+      const user12BalanceEthAfter = await web3.eth.getBalance(accounts[12]);
+      const user12BalanceAfter = await token20.balanceOf(accounts[12]);
+
+      expect(user12Balance.toNumber() + 10).to.eq(user12BalanceAfter.toNumber()) &&
+        expect(Number(user12BalanceEthAfter)).to.eq(Number(user12BalanceEth) + 20);
     });
   });
 });
