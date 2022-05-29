@@ -1,6 +1,11 @@
-import { Contract, ethers } from "ethers";
+import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
-import { toUtf8Bytes } from "ethers/lib/utils";
+import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
+import Web3 from "web3";
+import Contract from "web3/eth/contract";
+import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+
+const web3 = new Web3();
 
 // Most likely the data structure is going to be different
 interface TransferCall {
@@ -24,17 +29,20 @@ interface Transfer {
   sessionId: string;
 }
 
+const getContract = (web3, addr) => {
+  // @ts-ignore
+  return new web3.eth.Contract(FactoryProxyABI, addr);
+};
+
 // Move to seperate folder/file where all the helper functions will be located
-const getTypedDataDomain = async (factoryProxy: Contract) => {
-  const chainId = await factoryProxy.CHAIN_ID();
+const getTypedDataDomain = async (factoryProxy, factoryProxyAddress) => {
+  const chainId = await factoryProxy.methods.CHAIN_ID().call();
   return {
-    domain: {
-      name: await factoryProxy.NAME(), // await factoryProxy.NAME(),
-      version: await factoryProxy.VERSION(), // await factoryProxy.VERSION(),
-      chainId: chainId.toHexString(),
-      verifyingContract: factoryProxy.address,
-      salt: await factoryProxy.uid(),
-    },
+    name: await factoryProxy.methods.NAME().call(), // await factoryProxy.NAME(),
+    version: await factoryProxy.methods.VERSION().call(), // await factoryProxy.VERSION(),
+    chainId: "0x" + web3.utils.toBN(chainId).toString("hex"), // await web3.eth.getChainId(),
+    verifyingContract: factoryProxyAddress,
+    salt: await factoryProxy.methods.uid().call(),
   };
 };
 
@@ -64,46 +72,53 @@ const batchTransferTypedData = {
   primaryType: "BatchTransfer_",
 };
 
-const getBatchTransferData = async (call: TransferCall, i: number, signer, factoryProxy: Contract) => {
-  const group = "000001"; // Has to be a way to determine group dynamically
-  const tnonce = "00000001" + i.toString(16).padStart(2, "0");
-  const after = "0000000000";
-  const before = "ffffffffff";
-  const maxGas = "00000000";
-  const maxGasPrice = "0000000ba43b7400";
+const getBatchTransferData = async (web3: Web3, call: TransferCall, i: number, factoryProxyAddress: string) => {
+  // @ts-ignore
+  const FactoryProxy = new web3.eth.Contract(FactoryProxyABI, factoryProxyAddress);
 
-  const eip712 = `f1`; // payment + eip712, need to make it editable from user side
+  const groupERC20 = "00000B";
+  const tnonceERC20 = "00000001" + i.toString(16).padStart(2, "0");
+  const afterERC20 = "0000000000";
+  const beforeERC20 = "ffffffffff";
+  const maxGasERC20 = "00000000";
+  const maxGasPriceERC20 = "0000000ba43b7400";
+  const eip712ERC20 = "f1"; // payment + eip712
+
+  // const eip712 = `f1`; // payment + eip712, need to make it editable from user side
   // const eip712 = `${payable}${cancelable}`; // payment + eip712, need to make it editable from user side
 
-  const sessionId = `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+  const getSessionIdERC20 = () =>
+    `0x${groupERC20}${tnonceERC20}${afterERC20}${beforeERC20}${maxGasERC20}${maxGasPriceERC20}${eip712ERC20}`;
 
   const typedData = {
     ...batchTransferTypedData,
-    ...(await getTypedDataDomain(factoryProxy)),
+    domain: await getTypedDataDomain(FactoryProxy, factoryProxyAddress),
     message: {
-      nonce: "0x" + group + tnonce,
+      nonce: "0x" + groupERC20 + tnonceERC20,
       token_address: call.token,
       token_ens: call.tokenEnsHash,
       to: call.to,
       to_ens: call.toEnsHash,
       value: call.value,
-      valid_from: "0x" + after,
-      expires_at: "0x" + before,
-      gas_limit: "0x" + maxGas,
-      gas_price_limit: "0x" + maxGasPrice,
+      valid_from: "0x" + afterERC20,
+      expires_at: "0x" + beforeERC20,
+      gas_limit: "0x" + maxGasERC20,
+      gas_price_limit: "0x" + maxGasPriceERC20,
       refund: true,
     },
   };
 
-  console.log(JSON.stringify(typedData, null, 2));
+  // @ts-ignore
+  const digest = TypedDataUtils.encodeDigest(typedData);
+  let signature = await web3.eth.sign(ethers.utils.hexlify(digest), call.signer);
 
-  const messageDigest = TypedDataUtils.encodeDigest(typedData);
-  const signature = await signer.signMessage(messageDigest);
-  const rlp = ethers.utils.splitSignature(signature);
-  const v = "0x" + rlp.v.toString(16);
+  const r = signature.slice(0, 66);
+  const s = "0x" + signature.slice(66, 130);
+  const v = "0x" + signature.slice(130);
 
   return {
-    ...rlp,
+    r,
+    s,
     signer: call.signer,
     token: call.token,
     tokenEnsHash: call.tokenEnsHash
@@ -114,7 +129,7 @@ const getBatchTransferData = async (call: TransferCall, i: number, signer, facto
       ? ethers.utils.keccak256(toUtf8Bytes(call.toEnsHash))
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    sessionId: sessionId + v.slice(2).padStart(2, "0"),
+    sessionId: getSessionIdERC20() + v.slice(2).padStart(2, "0"),
   };
 };
 
@@ -124,43 +139,20 @@ export class BatchTransfer {
     this.calls = [];
   }
 
-  async addTx(txCall: TransferCall, signer, factoryProxy: Contract) {
-    const data = await getBatchTransferData(txCall, this.calls.length, signer, factoryProxy);
+  async addTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall) {
+    const data = await getBatchTransferData(web3, tx, this.calls.length, factoryProxyAddress);
     this.calls = [...this.calls, data];
   }
 
-  // removeTx(txCall: TransferCall) {
-  //   // Will the tx call have a seperate id?
-  //   // this.calls = this.calls.filter(...)
-  // }
-
-  async executeWithEthers(factoryProxy: Contract, activator, silentRevert: Boolean) {
+  async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
     const calls = this.calls;
 
     if (calls.length === 0) {
-      throw new Error("there are no added calls");
+      throw new Error("No calls haven't been added");
     }
 
-    const data = await factoryProxy.connect(activator).batchTransfer_(calls, 1, silentRevert);
-    console.log(data);
-  }
+    const FactoryContract = getContract(web3, factoryProxyAddress);
 
-  // Should pass web3 from frontend
-  async execute(web3, silentRevert: Boolean) {
-    const calls = this.calls;
-
-    const group = "000000";
-
-    if (calls.length === 0) {
-      throw new Error("There are no added calls");
-    }
-
-    // const batchTransferCalls = await Promise.all(calls.map(getBatchTransferData));
-
-    // BEFORE TX - estimate gas function
-
-    // await factoryProxy.batchTransfer_(batchTransferCalls, parseInt(group, 16), silentRevert);
-
-    return;
+    await FactoryContract.methods.batchTransfer_(calls, 11, true).send({ from: activator });
   }
 }

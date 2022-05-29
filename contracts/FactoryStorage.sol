@@ -135,7 +135,6 @@ abstract contract FactoryStorage is Ownable {
         bytes32 r,
         bytes32 s
     ) internal view returns (Wallet storage) {
-        console.logBytes32(messageHash);
         if (signer == address(0)) {
             return s_accounts_wallet[messageHash.recover(v, r, s)];
         } else if (

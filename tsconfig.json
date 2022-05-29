@@ -4,10 +4,10 @@
     "target": "es2015",
     "declaration": true,
     "outDir": "./dist",
+    "allowJs": true,
     "lib": ["es2017"],
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "test/*.ts"],
-  "files": ["hardhat.config.ts"]
+  "include": ["src/**/*"]
 }
