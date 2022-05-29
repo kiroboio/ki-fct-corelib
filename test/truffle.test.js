@@ -1,5 +1,5 @@
 const { artifacts, web3 } = require("hardhat");
-const { BatchTransfer, BatchTransferPacked } = require("../dist/index.js");
+const { BatchTransfer, BatchTransferPacked, BatchMultiCallPacked } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
@@ -305,6 +305,29 @@ describe("Greeter contract", function () {
 
       expect(user12Balance.toNumber() + 10).to.eq(user12BalanceAfter.toNumber()) &&
         expect(Number(user12BalanceEthAfter)).to.eq(Number(user12BalanceEth) + 20);
+    });
+  });
+
+  describe("BatchMultiCallPacked function", function () {
+    it("should add call with multicalls", async () => {
+      const batchMultiCallPacked = new BatchMultiCallPacked(web3, factoryProxy.address);
+      const tx = {
+        groupId: 3,
+        signer: getSigner(10),
+        mcall: [
+          {
+            value: 10,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
+            gasLimit: 0,
+            onFailStop: false,
+            onFailContinue: false,
+            onSuccessStop: false,
+            onSuccessRevert: false,
+          },
+        ],
+      };
+      await batchMultiCallPacked.addBatchMultiCall(tx);
     });
   });
 });
