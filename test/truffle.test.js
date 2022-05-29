@@ -274,18 +274,35 @@ describe("Greeter contract", function () {
 
   describe("BatchTransferPacked function", function () {
     const batchTransferPacked = new BatchTransferPacked();
-    it("Add tx for batchTransfer", async () => {
+    it("Add tx for batchTransferPacked", async () => {
       const tx = {
         token: ZERO_ADDRESS,
-        tokenEnsHash: "",
         to: accounts[12],
-        toEnsHash: "",
         value: 10,
         signer: getSigner(10),
       };
       await batchTransferPacked.addTx(web3, factoryProxy.address, tx);
 
       expect(batchTransferPacked.calls.length).to.eq(1);
+    });
+    it("Add tx for batchTransferPacked", async () => {
+      const tx = [
+        {
+          token: ZERO_ADDRESS,
+          to: accounts[12],
+          value: 10,
+          signer: getSigner(10),
+        },
+        {
+          token: token20.address,
+          to: accounts[12],
+          value: 10,
+          signer: getSigner(10),
+        },
+      ];
+      await batchTransferPacked.addMultipleTx(web3, factoryProxy.address, tx);
+
+      expect(batchTransferPacked.calls.length).to.eq(3);
     });
     it("Execute batchTransfer", async () => {
       await batchTransferPacked.execute(web3, factoryProxy.address, activator);

@@ -86,6 +86,13 @@ export class BatchTransferPacked {
     this.calls = [...this.calls, data];
   }
 
+  async addMultipleTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall[]) {
+    const data = await Promise.all(
+      tx.map((item, i) => getBatchTransferPackedData(web3, item, this.calls.length + (i + 1), factoryProxyAddress))
+    );
+    this.calls = [...this.calls, ...data];
+  }
+
   async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
     const calls = this.calls;
 
@@ -95,7 +102,6 @@ export class BatchTransferPacked {
 
     const FactoryContract = getContract(web3, factoryProxyAddress);
 
-    const data = await FactoryContract.methods.batchTransferPacked_(calls, 12, true).send({ from: activator });
-    console.log(data);
+    return await FactoryContract.methods.batchTransferPacked_(calls, 12, true).send({ from: activator });
   }
 }
