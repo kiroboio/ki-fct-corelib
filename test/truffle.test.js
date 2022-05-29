@@ -1,4 +1,4 @@
-const { artifacts, web3, ethers } = require("hardhat");
+const { artifacts, web3 } = require("hardhat");
 const { BatchTransfer, BatchTransferPacked } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
@@ -11,7 +11,6 @@ const Factory = artifacts.require("Factory");
 const FactoryProxy = artifacts.require("FactoryProxy");
 const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
-const ERC721Token = artifacts.require("ERC721Token");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -21,11 +20,8 @@ describe("Greeter contract", function () {
   let factory;
   let factoryProxy;
   let token20;
-  let token20notSafe;
-  let token721;
   let oracle;
   let activatorContract;
-  let DOMAIN_SEPARATOR;
   let accounts = [];
   let factoryOwner1;
   let factoryOwner2;
@@ -34,7 +30,6 @@ describe("Greeter contract", function () {
   let user1;
   let user2;
   let user3;
-  let operator;
   let user4;
   let activator;
   let instances = [];
@@ -60,7 +55,6 @@ describe("Greeter contract", function () {
     user1 = accounts[4];
     user2 = accounts[5];
     user3 = accounts[6];
-    operator = accounts[7];
     user4 = accounts[8];
     activator = accounts[7];
 
@@ -142,10 +136,6 @@ describe("Greeter contract", function () {
     await oracle.update721(token20.address, true, { from: owner });
     //await oracle.cancel({from: factoryOwner2});
     await oracle.update20(token20.address, true, { from: owner });
-    token20notSafe = await ERC20Token.new("Kirobo ERC20 Not Safe Token", "KDB20NS", { from: owner });
-    token721 = await ERC721Token.new("Kirobo ERC721 Token", "KBF", {
-      from: owner,
-    });
 
     await multiSig.setOwnTarget_(sw_factory_proxy.address, {
       from: factoryOwner1,
@@ -163,8 +153,6 @@ describe("Greeter contract", function () {
     await sw_factory_proxy_ms.setLocalEns("token.kiro.eth", token20.address, {
       from: factoryOwner3,
     });
-
-    DOMAIN_SEPARATOR = await instance.DOMAIN_SEPARATOR();
   });
 
   describe("Inital for factoryProxy", function () {
@@ -223,7 +211,7 @@ describe("Greeter contract", function () {
         });
       }
       for (let i = 10; i < 20; /*10+userCount/2;*/ ++i) {
-        const { receipt } = await factory.createWallet(false, {
+        await factory.createWallet(false, {
           from: accounts[i],
         });
         instances.push(await factory.getWallet(accounts[i]));
@@ -257,6 +245,7 @@ describe("Greeter contract", function () {
     it("Add tx for batchTransfer", async () => {
       const tx = {
         token: ZERO_ADDRESS,
+        groupId: 1,
         tokenEnsHash: "",
         to: accounts[12],
         toEnsHash: "",
@@ -268,7 +257,7 @@ describe("Greeter contract", function () {
       expect(batchTransfer.calls.length).to.eq(1);
     });
     it("Execute batchTransfer", async () => {
-      await batchTransfer.execute(web3, factoryProxy.address, activator);
+      await batchTransfer.execute(web3, factoryProxy.address, 1, activator);
     });
   });
 
@@ -277,6 +266,7 @@ describe("Greeter contract", function () {
     it("Add tx for batchTransferPacked", async () => {
       const tx = {
         token: ZERO_ADDRESS,
+        groupId: 2,
         to: accounts[12],
         value: 10,
         signer: getSigner(10),

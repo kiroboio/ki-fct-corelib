@@ -4,6 +4,7 @@ import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import { getGroupId, getMaxGasPrice, getNonce } from "../helpers";
 
 const web3 = new Web3();
 
@@ -13,6 +14,7 @@ interface TransferCall {
   tokenEnsHash: string | null;
   to: string;
   toEnsHash: string | null;
+  groupId: number;
   value: number;
   signer: string;
 }
@@ -76,12 +78,12 @@ const getBatchTransferData = async (web3: Web3, call: TransferCall, i: number, f
   // @ts-ignore
   const FactoryProxy = new web3.eth.Contract(FactoryProxyABI, factoryProxyAddress);
 
-  const groupERC20 = "00000B";
-  const tnonceERC20 = "00000001" + i.toString(16).padStart(2, "0");
+  const groupERC20 = getGroupId(call.groupId);
+  const tnonceERC20 = getNonce(i);
   const afterERC20 = "0000000000";
   const beforeERC20 = "ffffffffff";
   const maxGasERC20 = "00000000";
-  const maxGasPriceERC20 = "0000000ba43b7400";
+  const maxGasPriceERC20 = getMaxGasPrice(50000000000);
   const eip712ERC20 = "f1"; // payment + eip712
 
   // const eip712 = `f1`; // payment + eip712, need to make it editable from user side
@@ -144,7 +146,7 @@ export class BatchTransfer {
     this.calls = [...this.calls, data];
   }
 
-  async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
+  async execute(web3: Web3, factoryProxyAddress: string, groupId: number, activator: string) {
     const calls = this.calls;
 
     if (calls.length === 0) {
@@ -153,8 +155,6 @@ export class BatchTransfer {
 
     const FactoryContract = getContract(web3, factoryProxyAddress);
 
-    console.log(calls);
-
-    await FactoryContract.methods.batchTransfer_(calls, 11, true).send({ from: activator });
+    return await FactoryContract.methods.batchTransfer_(calls, groupId, true).send({ from: activator });
   }
 }
