@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
+import { Sign } from "web3-eth-accounts";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { getGroupId, getMaxGasPrice, getNonce } from "../helpers";
@@ -11,12 +12,14 @@ const web3 = new Web3();
 // Most likely the data structure is going to be different
 interface TransferCall {
   token: string;
-  tokenEnsHash: string | null;
   to: string;
-  toEnsHash: string | null;
   groupId: number;
   value: number;
   signer: string;
+  signerPrivateKey?: string;
+  tokenEnsHash?: string;
+  toEnsHash?: string;
+  maxGasPrice?: number;
 }
 
 interface Transfer {
@@ -31,18 +34,13 @@ interface Transfer {
   sessionId: string;
 }
 
-const getContract = (web3, addr) => {
-  // @ts-ignore
-  return new web3.eth.Contract(FactoryProxyABI, addr);
-};
-
 // Move to seperate folder/file where all the helper functions will be located
-const getTypedDataDomain = async (factoryProxy, factoryProxyAddress) => {
+const getTypedDataDomain = async (factoryProxy: Contract, factoryProxyAddress: string) => {
   const chainId = await factoryProxy.methods.CHAIN_ID().call();
   return {
     name: await factoryProxy.methods.NAME().call(), // await factoryProxy.NAME(),
     version: await factoryProxy.methods.VERSION().call(), // await factoryProxy.VERSION(),
-    chainId: "0x" + web3.utils.toBN(chainId).toString("hex"), // await web3.eth.getChainId(),
+    chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")), // await web3.eth.getChainId(),
     verifyingContract: factoryProxyAddress,
     salt: await factoryProxy.methods.uid().call(),
   };
@@ -74,87 +72,107 @@ const batchTransferTypedData = {
   primaryType: "BatchTransfer_",
 };
 
-const getBatchTransferData = async (web3: Web3, call: TransferCall, i: number, factoryProxyAddress: string) => {
-  // @ts-ignore
-  const FactoryProxy = new web3.eth.Contract(FactoryProxyABI, factoryProxyAddress);
-
-  const groupERC20 = getGroupId(call.groupId);
-  const tnonceERC20 = getNonce(i);
-  const afterERC20 = "0000000000";
-  const beforeERC20 = "ffffffffff";
-  const maxGasERC20 = "00000000";
-  const maxGasPriceERC20 = getMaxGasPrice(50000000000);
-  const eip712ERC20 = "f1"; // payment + eip712
+const getBatchTransferData = async (
+  web3: Web3,
+  FactoryProxy: Contract,
+  factoryProxyAddress: string,
+  call: TransferCall,
+  i: number
+) => {
+  const group = getGroupId(call.groupId);
+  const tnonce = getNonce(i);
+  const after = "0000000000";
+  const before = "ffffffffff";
+  const maxGas = "00000000";
+  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+  const eip712 = "f1"; // payment + eip712
 
   // const eip712 = `f1`; // payment + eip712, need to make it editable from user side
   // const eip712 = `${payable}${cancelable}`; // payment + eip712, need to make it editable from user side
 
-  const getSessionIdERC20 = () =>
-    `0x${groupERC20}${tnonceERC20}${afterERC20}${beforeERC20}${maxGasERC20}${maxGasPriceERC20}${eip712ERC20}`;
+  const getSessionIdERC20 = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
   const typedData = {
     ...batchTransferTypedData,
     domain: await getTypedDataDomain(FactoryProxy, factoryProxyAddress),
     message: {
-      nonce: "0x" + groupERC20 + tnonceERC20,
       token_address: call.token,
-      token_ens: call.tokenEnsHash,
+      token_ens: call.tokenEnsHash || "",
       to: call.to,
-      to_ens: call.toEnsHash,
+      to_ens: call.toEnsHash || "",
       value: call.value,
-      valid_from: "0x" + afterERC20,
-      expires_at: "0x" + beforeERC20,
-      gas_limit: "0x" + maxGasERC20,
-      gas_price_limit: "0x" + maxGasPriceERC20,
+      nonce: "0x" + group + tnonce,
+      valid_from: "0x" + after,
+      expires_at: "0x" + before,
+      gas_limit: "0x" + maxGas,
+      gas_price_limit: "0x" + maxGasPrice,
       refund: true,
     },
   };
 
-  // @ts-ignore
-  const digest = TypedDataUtils.encodeDigest(typedData);
-  let signature = await web3.eth.sign(ethers.utils.hexlify(digest), call.signer);
+  const messageDigest = TypedDataUtils.encodeDigest(typedData);
+  const messageDigestHex = ethers.utils.hexlify(messageDigest);
 
-  const r = signature.slice(0, 66);
-  const s = "0x" + signature.slice(66, 130);
-  const v = "0x" + signature.slice(130);
+  let signature;
+
+  if (call.signerPrivateKey) {
+    const signingKey = new ethers.utils.SigningKey(call.signerPrivateKey);
+    signature = signingKey.signDigest(messageDigest);
+    signature.v = "0x" + signature.v.toString(16);
+  } else if (window && "ethereum" in window) {
+    // Do a request for MetaMask to sign EIP712
+  } else {
+    throw new Error("Browser doesn't have a Metamask and signerPrivateKey hasn't been provided");
+  }
 
   return {
-    r,
-    s,
+    r: signature.r,
+    s: signature.s,
     signer: call.signer,
     token: call.token,
     tokenEnsHash: call.tokenEnsHash
-      ? ethers.utils.keccak256(toUtf8Bytes(call.tokenEnsHash))
+      ? web3.utils.sha3(call.tokenEnsHash)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     to: call.to,
     toEnsHash: call.toEnsHash
-      ? ethers.utils.keccak256(toUtf8Bytes(call.toEnsHash))
+      ? web3.utils.sha3(call.toEnsHash)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    sessionId: getSessionIdERC20() + v.slice(2).padStart(2, "0"),
+    sessionId: getSessionIdERC20() + signature.v.slice(2).padStart(2, "0"),
   };
 };
 
 export class BatchTransfer {
   calls: Array<Transfer>;
-  constructor() {
+  web3: Web3;
+  FactoryProxy: Contract;
+  factoryProxyAddress: string;
+  constructor(web3: Web3, contractAddress: string) {
     this.calls = [];
+    this.web3 = web3;
+    // @ts-ignore
+    this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
+    this.factoryProxyAddress = contractAddress;
   }
 
-  async addTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall) {
-    const data = await getBatchTransferData(web3, tx, this.calls.length, factoryProxyAddress);
+  async addTx(tx: TransferCall) {
+    const data = await getBatchTransferData(
+      this.web3,
+      this.FactoryProxy,
+      this.factoryProxyAddress,
+      tx,
+      this.calls.length
+    );
     this.calls = [...this.calls, data];
   }
 
-  async execute(web3: Web3, factoryProxyAddress: string, groupId: number, activator: string) {
+  async execute(activator: string, groupId: number, silentRevert: boolean) {
     const calls = this.calls;
 
     if (calls.length === 0) {
       throw new Error("No calls haven't been added");
     }
 
-    const FactoryContract = getContract(web3, factoryProxyAddress);
-
-    return await FactoryContract.methods.batchTransfer_(calls, groupId, true).send({ from: activator });
+    return await this.FactoryProxy.methods.batchTransfer_(calls, groupId, silentRevert).send({ from: activator });
   }
 }

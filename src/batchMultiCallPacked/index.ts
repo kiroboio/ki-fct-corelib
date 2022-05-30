@@ -129,7 +129,7 @@ export class BatchMultiCallPacked {
     return this.calls;
   }
 
-  async execute(groupId: number, activator: string) {
+  async execute(activator: string, groupId: number) {
     const calls = this.calls;
 
     if (calls.length === 0) {

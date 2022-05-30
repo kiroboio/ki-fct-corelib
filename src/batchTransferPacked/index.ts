@@ -4,12 +4,7 @@ import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-
-const web3 = new Web3();
-const getContract = (web3, addr) => {
-  // @ts-ignore
-  return new web3.eth.Contract(FactoryProxyABI, addr);
-};
+import { getAfterTimestamp, getBeforeTimestamp, getGroupId, getMaxGas, getMaxGasPrice } from "../helpers";
 
 // Most likely the data structure is going to be different
 interface TransferCall {
@@ -17,6 +12,11 @@ interface TransferCall {
   to: string;
   value: number;
   signer: string;
+  groupId: number;
+  afterTimestamp?: number;
+  beforeTimestamp?: number;
+  maxGas?: number;
+  maxGasPrice?: number;
 }
 
 interface Transfer {
@@ -33,12 +33,12 @@ const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: num
   const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
-  const group = "00000C"; // Has to be a way to determine group dynamically
+  const group = getGroupId(call.groupId); // Has to be a way to determine group dynamically
   const tnonce = "00000000";
-  const after = "0000000000";
-  const before = "ffffffffff";
-  const maxGas = "00000000";
-  const maxGasPrice = "0000000ba43b7400";
+  const after = getAfterTimestamp(call.afterTimestamp || 0);
+  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
+  const maxGas = getMaxGas(call.maxGas || 0);
+  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
   const eip712ERC20 = "f0"; // payment + eip712
 
   const getSessionId = (index: number) => {
@@ -87,26 +87,34 @@ export class BatchTransferPacked {
   }
 
   async addTx(tx: TransferCall) {
-    const data = await getBatchTransferPackedData(web3, tx, this.calls.length, this.FactoryProxy);
+    const data = await getBatchTransferPackedData(this.web3, tx, this.calls.length, this.FactoryProxy);
     this.calls = [...this.calls, data];
+    return this.calls;
   }
 
   async addMultipleTx(tx: TransferCall[]) {
     const data = await Promise.all(
-      tx.map((item, i) => getBatchTransferPackedData(web3, item, this.calls.length + (i + 1), this.FactoryProxy))
+      tx.map((item, i) => getBatchTransferPackedData(this.web3, item, this.calls.length + (i + 1), this.FactoryProxy))
     );
     this.calls = [...this.calls, ...data];
+    return this.calls;
   }
 
-  async execute(activator: string, groupId: number) {
+  removeTx(txIndex: number) {
+    if (this.calls.length === 0) {
+      throw new Error("No calls have been added");
+    }
+    this.calls.splice(txIndex, 1);
+    return this.calls;
+  }
+
+  async execute(activator: string, groupId: number, silentRevert: boolean) {
     const calls = this.calls;
 
     if (calls.length === 0) {
       throw new Error("No calls haven't been added");
     }
 
-    const FactoryContract = this.FactoryProxy;
-
-    return await FactoryContract.methods.batchTransferPacked_(calls, groupId, true).send({ from: activator });
+    return await this.FactoryProxy.methods.batchTransferPacked_(calls, groupId, silentRevert).send({ from: activator });
   }
 }
