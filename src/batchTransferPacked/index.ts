@@ -29,8 +29,7 @@ interface Transfer {
   sessionId: string;
 }
 
-const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: number, factoryProxyAddress) => {
-  const FactoryProxy = getContract(web3, factoryProxyAddress);
+const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: number, FactoryProxy: Contract) => {
   const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
@@ -77,31 +76,37 @@ const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: num
 
 export class BatchTransferPacked {
   calls: Array<Transfer>;
-  constructor() {
+  web3: Web3;
+  FactoryProxy: Contract;
+
+  constructor(web3: Web3, contractAddress: string) {
     this.calls = [];
+    this.web3 = web3;
+    // @ts-ignore
+    this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
-  async addTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall) {
-    const data = await getBatchTransferPackedData(web3, tx, this.calls.length, factoryProxyAddress);
+  async addTx(tx: TransferCall) {
+    const data = await getBatchTransferPackedData(web3, tx, this.calls.length, this.FactoryProxy);
     this.calls = [...this.calls, data];
   }
 
-  async addMultipleTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall[]) {
+  async addMultipleTx(tx: TransferCall[]) {
     const data = await Promise.all(
-      tx.map((item, i) => getBatchTransferPackedData(web3, item, this.calls.length + (i + 1), factoryProxyAddress))
+      tx.map((item, i) => getBatchTransferPackedData(web3, item, this.calls.length + (i + 1), this.FactoryProxy))
     );
     this.calls = [...this.calls, ...data];
   }
 
-  async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
+  async execute(activator: string, groupId: number) {
     const calls = this.calls;
 
     if (calls.length === 0) {
       throw new Error("No calls haven't been added");
     }
 
-    const FactoryContract = getContract(web3, factoryProxyAddress);
+    const FactoryContract = this.FactoryProxy;
 
-    return await FactoryContract.methods.batchTransferPacked_(calls, 12, true).send({ from: activator });
+    return await FactoryContract.methods.batchTransferPacked_(calls, groupId, true).send({ from: activator });
   }
 }

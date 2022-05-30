@@ -262,8 +262,9 @@ describe("FactoryProxy contract library", function () {
   });
 
   describe("BatchTransferPacked function", function () {
-    const batchTransferPacked = new BatchTransferPacked();
+    let batchTransferPacked;
     it("Add tx for batchTransferPacked", async () => {
+      batchTransferPacked = new BatchTransferPacked(web3, factoryProxy.address);
       const tx = {
         token: ZERO_ADDRESS,
         groupId: 2,
@@ -271,7 +272,7 @@ describe("FactoryProxy contract library", function () {
         value: 10,
         signer: getSigner(10),
       };
-      await batchTransferPacked.addTx(web3, factoryProxy.address, tx);
+      await batchTransferPacked.addTx(tx);
 
       expect(batchTransferPacked.calls.length).to.eq(1);
     });
@@ -290,7 +291,7 @@ describe("FactoryProxy contract library", function () {
           signer: getSigner(10),
         },
       ];
-      await batchTransferPacked.addMultipleTx(web3, factoryProxy.address, tx);
+      await batchTransferPacked.addMultipleTx(tx);
 
       expect(batchTransferPacked.calls.length).to.eq(3);
     });
