@@ -5,6 +5,7 @@ import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import MinERC20ABI from "../abi/minERC20.abi.json";
+import { getGroupId } from "../helpers";
 
 const getContract = (web3, addr) => {
   // @ts-ignore
@@ -33,7 +34,7 @@ interface MultiCall {
   value: string;
   to: string;
   gasLimit: number;
-  flags: string;
+  flags: number;
   data: string;
 }
 
@@ -46,16 +47,16 @@ interface MultiCallPacked {
   mcall: MultiCall[];
 }
 
-const getMultiCallPackedData = async (web3: Web3, factoryProxy, call, i: number) => {
+const getMultiCallPackedData = async (web3: Web3, factoryProxy, call: MultiCallPackedInterface, i: number) => {
   const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
   const typeHash = await factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
 
-  const group = "00000F";
+  const group = getGroupId(call.groupId);
   const tnonce = "00000000";
   const after = "0000000000";
   const before = "ffffffffff";
   const maxGas = "00000000";
-  const maxGasPrice = "0000000ba43b7400"; // 64 bit
+  const maxGasPrice = "0000000ba43b7400";
   const eip712 = "f000"; // not-ordered, payment
 
   const getSessionIdERC20 = (index) =>
@@ -73,8 +74,11 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy, call, i: number)
 
   return {
     mcall: call.mcall.map((item) => ({
-      ...item,
-      flags: (item.flags || 0) + (item.stataiccall ? 4 * 256 : 0),
+      value: item.value,
+      to: item.to,
+      gasLimit: item.gasLimit || 0,
+      flags: 0x0,
+      data: item.data,
     })),
     r,
     s,
@@ -95,27 +99,35 @@ export class BatchMultiCallPacked {
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
-  async addBatchMultiCall(tx: MultiCallPackedInterface) {
+  async addPackedMulticall(tx: MultiCallPackedInterface) {
     const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, tx, this.calls.length);
     this.calls = [...this.calls, data];
+    return this.calls;
   }
 
-  //   async addMultipleTx(web3: Web3, factoryProxyAddress: string, tx: TransferCall[]) {
-  //     const data = await Promise.all(
-  //       tx.map((item, i) => getBatchTransferPackedData(web3, item, this.calls.length + (i + 1), factoryProxyAddress))
-  //     );
-  //     this.calls = [...this.calls, ...data];
-  //   }
+  removePackedMulticall(index: number) {
+    if (this.calls.length === 0) {
+      throw new Error("No calls have been added");
+    }
+    this.calls.splice(index, 1);
+    return this.calls;
+  }
 
-  //   async execute(web3: Web3, factoryProxyAddress: string, activator: string) {
-  //     const calls = this.calls;
+  async addMultiplePackedMulticalls(txs: MultiCallPackedInterface[]) {
+    const data = await Promise.all(
+      txs.map((tx, i) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx, this.calls.length + (i + 1)))
+    );
+    this.calls = [...this.calls, ...data];
+    return this.calls;
+  }
 
-  //     if (calls.length === 0) {
-  //       throw new Error("No calls haven't been added");
-  //     }
+  async execute(groupId: number, activator: string) {
+    const calls = this.calls;
 
-  //     const FactoryContract = getContract(web3, factoryProxyAddress);
+    if (calls.length === 0) {
+      throw new Error("No calls have been added");
+    }
 
-  //     return await FactoryContract.methods.batchTransferPacked_(calls, 12, true).send({ from: activator });
-  //   }
+    return await this.FactoryProxy.methods.batchMultiCallPacked_(calls, groupId).send({ from: activator });
+  }
 }

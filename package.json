@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pretest": "pkill -xf 'node test/ganache.ts'; ts-node test/ganache.ts &",
-    "test": "mocha -r ts-node/register test/*.test.ts",
-    "posttest": "pkill -xf 'node test/ganache.ts'"
+    "pretest": "tsc",
+    "test": "hardhat test test/truffle.test.js",
+    "ts": "tsc"
   },
   "repository": {
     "type": "git",

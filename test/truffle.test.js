@@ -14,7 +14,7 @@ const ERC20Token = artifacts.require("ERC20Token");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-describe("Greeter contract", function () {
+describe("FactoryProxy contract library", function () {
   let instance;
   let multiSig;
   let factory;
@@ -309,14 +309,16 @@ describe("Greeter contract", function () {
   });
 
   describe("BatchMultiCallPacked function", function () {
-    it("should add call with multicalls", async () => {
-      const batchMultiCallPacked = new BatchMultiCallPacked(web3, factoryProxy.address);
+    let batchMultiCallPacked;
+    it("should add packed multi call", async () => {
+      batchMultiCallPacked = new BatchMultiCallPacked(web3, factoryProxy.address);
+      const beforeCalls = Number(batchMultiCallPacked.calls.length);
       const tx = {
         groupId: 3,
         signer: getSigner(10),
         mcall: [
           {
-            value: 10,
+            value: 0,
             to: token20.address,
             data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
             gasLimit: 0,
@@ -327,7 +329,58 @@ describe("Greeter contract", function () {
           },
         ],
       };
-      await batchMultiCallPacked.addBatchMultiCall(tx);
+      await batchMultiCallPacked.addPackedMulticall(tx);
+      const afterCalls = Number(batchMultiCallPacked.calls.length);
+      expect(afterCalls).to.eq(beforeCalls + 1);
+    });
+    it("should add multiple packed multi calls", async () => {
+      const beforeCalls = Number(batchMultiCallPacked.calls.length);
+      const txs = [
+        {
+          groupId: 3,
+          signer: getSigner(10),
+          mcall: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[13], 15).encodeABI(),
+              gasLimit: 0,
+              onFailStop: false,
+              onFailContinue: false,
+              onSuccessStop: false,
+              onSuccessRevert: false,
+            },
+          ],
+        },
+        {
+          groupId: 3,
+          signer: getSigner(10),
+          mcall: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              gasLimit: 0,
+              onFailStop: false,
+              onFailContinue: false,
+              onSuccessStop: false,
+              onSuccessRevert: false,
+            },
+          ],
+        },
+      ];
+      await batchMultiCallPacked.addMultiplePackedMulticalls(txs);
+      const afterCalls = Number(batchMultiCallPacked.calls.length);
+      expect(afterCalls).to.eq(beforeCalls + 2);
+    });
+    it("should remove packed multi call", async () => {
+      const beforeCalls = Number(batchMultiCallPacked.calls.length);
+      batchMultiCallPacked.removePackedMulticall(0);
+      const afterCalls = Number(batchMultiCallPacked.calls.length);
+      expect(afterCalls).to.eq(beforeCalls - 1);
+    });
+    it("should execute batchMultiCallPacked", async () => {
+      await batchMultiCallPacked.execute(3, activator);
     });
   });
 });
