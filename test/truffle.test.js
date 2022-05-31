@@ -1,5 +1,11 @@
 const { artifacts, web3 } = require("hardhat");
-const { BatchTransfer, BatchTransferPacked, BatchMultiCallPacked, BatchCallPacked } = require("../dist/index.js");
+const {
+  BatchTransfer,
+  BatchTransferPacked,
+  BatchMultiCallPacked,
+  BatchCallPacked,
+  BatchCall,
+} = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
@@ -415,6 +421,61 @@ describe("FactoryProxy contract library", function () {
     });
   });
 
+  describe("BatchCall function", function () {
+    let batchCall;
+    it("Should add tx", async () => {
+      batchCall = new BatchCall(web3, factoryProxy.address);
+      const signer = getSigner(10);
+      const tx = {
+        value: 0,
+        to: token20.address,
+        data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+        methodInterface: "transfer(address,uint256)",
+        groupId: 4,
+        methodData: {
+          to: accounts[11],
+          token_amount: "5",
+        },
+        signerPrivateKey: getPrivateKey(signer),
+        signer,
+      };
+      await batchCall.addTx(tx);
+
+      expect(batchCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          value: 0,
+          to: token20.address,
+          data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+          methodInterface: "transfer(address,uint256)",
+          groupId: 4,
+          methodData: {
+            to: accounts[11],
+            token_amount: "5",
+          },
+          signerPrivateKey: getPrivateKey(signer),
+          signer,
+        },
+        {
+          value: 5,
+          to: accounts[11],
+          groupId: 4,
+          signerPrivateKey: getPrivateKey(signer),
+          signer,
+        },
+      ];
+      await batchCall.addMultipleTx(txs);
+
+      expect(batchCall.calls.length).to.eq(3);
+    });
+    it("Should execute batchCall", async () => {
+      await batchCall.execute(activator, 4, true);
+    });
+  });
+
   describe("BatchCallPacked function", function () {
     let batchCallPacked;
     it("Should add tx to batchCallPacked", async () => {
@@ -422,7 +483,7 @@ describe("FactoryProxy contract library", function () {
 
       const tx = {
         data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
-        groupId: 4,
+        groupId: 5,
         value: 0,
         to: token20.address,
         signer: getSigner(10),
@@ -436,7 +497,7 @@ describe("FactoryProxy contract library", function () {
       const txs = [
         {
           data: token20.contract.methods.transfer(accounts[13], 15).encodeABI(),
-          groupId: 4,
+          groupId: 5,
           value: 0,
           to: token20.address,
           signer: getSigner(10),
@@ -444,7 +505,7 @@ describe("FactoryProxy contract library", function () {
         {
           data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
           value: 0,
-          groupId: 4,
+          groupId: 5,
           to: token20.address,
           signer: getSigner(10),
           viewOnly: true,
@@ -455,7 +516,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchCallPacked.calls.length).to.eq(3);
     });
     it("Should execute batchCallPacked", async () => {
-      await batchCallPacked.execute(activator, 4, true);
+      await batchCallPacked.execute(activator, 5, true);
     });
   });
 });
