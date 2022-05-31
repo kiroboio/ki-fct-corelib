@@ -5,6 +5,7 @@ const {
   BatchMultiCallPacked,
   BatchCallPacked,
   BatchCall,
+  BatchMultiCall,
 } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
@@ -558,6 +559,45 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should execute batchCallPacked", async () => {
       await batchCallPacked.execute(activator, 1, true);
+    });
+  });
+
+  describe("BatchMultiCall function", async () => {
+    let batchMultiCall;
+    it("Should add tx to batchCallPacked", async () => {
+      batchMultiCall = new BatchMultiCall(web3, factoryProxy.address);
+
+      const signer = getSigner(10);
+
+      const tx = {
+        groupId: 1,
+        nonce: 17,
+        signer,
+        signerPrivateKey: getPrivateKey(signer),
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            methodInterface: "transfer(address,uint256)",
+            methodData: {
+              to: accounts[11],
+              token_amount: "5",
+            },
+          },
+          // {
+          //   value: 10,
+          //   to: accounts[10],
+          // },
+        ],
+      };
+
+      await batchMultiCall.addTx(tx);
+
+      expect(batchMultiCall.calls.length).to.eq(1);
+    });
+    it("Should execute batchMultiCall", async () => {
+      await batchMultiCall.execute(activator, 1);
     });
   });
 });
