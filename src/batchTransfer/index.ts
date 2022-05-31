@@ -5,7 +5,7 @@ import Web3 from "web3";
 import { Sign } from "web3-eth-accounts";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { getGroupId, getMaxGasPrice, getNonce } from "../helpers";
+import { getGroupId, getMaxGasPrice, getNonce, getAfterTimestamp, getBeforeTimestamp, getMaxGas } from "../helpers";
 
 const web3 = new Web3();
 
@@ -14,11 +14,15 @@ interface TransferCall {
   token: string;
   to: string;
   groupId: number;
+  nonce: number;
   value: number;
   signer: string;
-  signerPrivateKey?: string;
   tokenEnsHash?: string;
   toEnsHash?: string;
+  signerPrivateKey?: string;
+  afterTimestamp?: number;
+  beforeTimestamp?: number;
+  maxGas?: number;
   maxGasPrice?: number;
 }
 
@@ -76,14 +80,13 @@ const getBatchTransferData = async (
   web3: Web3,
   FactoryProxy: Contract,
   factoryProxyAddress: string,
-  call: TransferCall,
-  i: number
+  call: TransferCall
 ) => {
   const group = getGroupId(call.groupId);
-  const tnonce = getNonce(i);
-  const after = "0000000000";
-  const before = "ffffffffff";
-  const maxGas = "00000000";
+  const tnonce = getNonce(call.nonce);
+  const after = getAfterTimestamp(call.afterTimestamp || 0);
+  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
+  const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
   const eip712 = "f1"; // payment + eip712
 
@@ -111,7 +114,6 @@ const getBatchTransferData = async (
   };
 
   const messageDigest = TypedDataUtils.encodeDigest(typedData);
-  const messageDigestHex = ethers.utils.hexlify(messageDigest);
 
   let signature;
 
@@ -156,14 +158,17 @@ export class BatchTransfer {
   }
 
   async addTx(tx: TransferCall) {
-    const data = await getBatchTransferData(
-      this.web3,
-      this.FactoryProxy,
-      this.factoryProxyAddress,
-      tx,
-      this.calls.length
-    );
+    const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
+    return this.calls;
+  }
+
+  async addMultipleTx(txs: TransferCall[]) {
+    const data = await Promise.all(
+      txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+    );
+    this.calls = [...this.calls, ...data];
+    return this.calls;
   }
 
   async execute(activator: string, groupId: number, silentRevert: boolean) {

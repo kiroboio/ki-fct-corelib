@@ -4,7 +4,7 @@ import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { getAfterTimestamp, getBeforeTimestamp, getGroupId, getMaxGas, getMaxGasPrice } from "../helpers";
+import { getAfterTimestamp, getBeforeTimestamp, getGroupId, getMaxGas, getMaxGasPrice, getNonce } from "../helpers";
 
 // Most likely the data structure is going to be different
 interface TransferCall {
@@ -13,6 +13,7 @@ interface TransferCall {
   value: number;
   signer: string;
   groupId: number;
+  nonce: number;
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
@@ -29,28 +30,26 @@ interface Transfer {
   sessionId: string;
 }
 
-const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: number, FactoryProxy: Contract) => {
+const getBatchTransferPackedData = async (web3: Web3, FactoryProxy: Contract, call: TransferCall) => {
   const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId); // Has to be a way to determine group dynamically
-  const tnonce = "00000000";
+  const tnonce = getNonce(call.nonce);
   const after = getAfterTimestamp(call.afterTimestamp || 0);
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
   const eip712ERC20 = "f0"; // payment + eip712
 
-  const getSessionId = (index: number) => {
-    return `0x${group}${tnonce}${index
-      .toString(16)
-      .padStart(2, "0")}${after}${before}${maxGas}${maxGasPrice}${eip712ERC20}`;
+  const getSessionId = () => {
+    return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712ERC20}`;
   };
   const hashedData = {
     ...call,
     _hash: defaultAbiCoder.encode(
       ["bytes32", "address", "address", "uint256", "uint256"],
-      [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId(i)]
+      [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]
     ),
   };
 
@@ -70,7 +69,7 @@ const getBatchTransferPackedData = async (web3: Web3, call: TransferCall, i: num
     token: call.token,
     to: call.to,
     value: call.value,
-    sessionId: getSessionId(i) + v.slice(2).padStart(2, "0"),
+    sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
   };
 };
 
@@ -87,15 +86,13 @@ export class BatchTransferPacked {
   }
 
   async addTx(tx: TransferCall) {
-    const data = await getBatchTransferPackedData(this.web3, tx, this.calls.length, this.FactoryProxy);
+    const data = await getBatchTransferPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleTx(tx: TransferCall[]) {
-    const data = await Promise.all(
-      tx.map((item, i) => getBatchTransferPackedData(this.web3, item, this.calls.length + (i + 1), this.FactoryProxy))
-    );
+    const data = await Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.web3, this.FactoryProxy, item)));
     this.calls = [...this.calls, ...data];
     return this.calls;
   }

@@ -10,6 +10,7 @@ import {
   getGroupId,
   getMaxGas,
   getMaxGasPrice,
+  getNonce,
   manageCallFlags,
 } from "../helpers";
 
@@ -20,6 +21,7 @@ interface BatchCallInputData {
   to: string;
   signer: string;
   groupId: number;
+  nonce: number;
   data?: string;
   methodInterface?: string;
   methodData?: Object;
@@ -65,11 +67,22 @@ const getBatchCallData = async (
   web3: Web3,
   factoryProxy: Contract,
   factoryProxyAddress: string,
-  call: BatchCallInputData,
-  i: number
+  call: BatchCallInputData
 ) => {
+  if (
+    (call.data && (!call.methodInterface || !call.methodData)) ||
+    (call.methodData && (!call.data || !call.methodInterface)) ||
+    (call.methodInterface && (!call.data || !call.methodData))
+  ) {
+    throw new Error(
+      `Insufficient data - ${!call.data ? "data " : ""}${!call.methodData ? "methodData " : ""}${
+        !call.methodInterface ? "methodInterface" : ""
+      }. Make sure you provide data, methodData and methodInterface`
+    );
+  }
+
   const group = getGroupId(call.groupId);
-  const tnonce = "00000001" + i.toString(16).padStart(2, "0");
+  const tnonce = getNonce(call.nonce);
   const after = getAfterTimestamp(call.afterTimestamp || 0);
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
@@ -184,16 +197,14 @@ export class BatchCall {
   }
 
   async addTx(tx: BatchCallInputData) {
-    const data = await getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx, this.calls.length);
+    const data = await getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleTx(txs: BatchCallInputData[]) {
     const data = await Promise.all(
-      txs.map((tx, i) =>
-        getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx, this.calls.length + (i + 1))
-      )
+      txs.map((tx, i) => getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
     this.calls = [...this.calls, ...data];
     return data;

@@ -267,6 +267,7 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         token: ZERO_ADDRESS,
         groupId: 1,
+        nonce: 1,
         to: accounts[12],
         value: 10,
         signer,
@@ -275,6 +276,33 @@ describe("FactoryProxy contract library", function () {
       await batchTransfer.addTx(tx);
 
       expect(batchTransfer.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          token: ZERO_ADDRESS,
+          groupId: 1,
+          nonce: 2,
+          to: accounts[12],
+          value: 10,
+          signer,
+          signerPrivateKey: getPrivateKey(signer),
+        },
+        {
+          token: token20.address,
+          groupId: 1,
+          nonce: 3,
+          to: accounts[11],
+          value: 5,
+          signer,
+          signerPrivateKey: getPrivateKey(signer),
+        },
+      ];
+
+      await batchTransfer.addMultipleTx(txs);
+
+      expect(batchTransfer.calls.length).to.eq(3);
     });
     it("Execute batchTransfer", async () => {
       await batchTransfer.execute(activator, 1, true);
@@ -287,7 +315,8 @@ describe("FactoryProxy contract library", function () {
       batchTransferPacked = new BatchTransferPacked(web3, factoryProxy.address);
       const tx = {
         token: ZERO_ADDRESS,
-        groupId: 2,
+        groupId: 1,
+        nonce: 4,
         to: accounts[12],
         value: 10,
         signer: getSigner(10),
@@ -296,25 +325,28 @@ describe("FactoryProxy contract library", function () {
 
       expect(batchTransferPacked.calls.length).to.eq(1);
     });
-    it("Should add tx for batchTransferPacked", async () => {
+    it("Should add multiple txs for batchTransferPacked", async () => {
       const tx = [
         {
           token: ZERO_ADDRESS,
-          groupId: 2,
+          groupId: 1,
+          nonce: 5,
           to: accounts[12],
           value: 10,
           signer: getSigner(10),
         },
         {
           token: token20.address,
-          groupId: 2,
+          groupId: 1,
+          nonce: 6,
           to: accounts[12],
           value: 10,
           signer: getSigner(10),
         },
         {
           token: token20.address,
-          groupId: 2,
+          groupId: 1,
+          nonce: 7,
           to: accounts[12],
           value: 10,
           signer: getSigner(10),
@@ -331,11 +363,11 @@ describe("FactoryProxy contract library", function () {
 
       expect(callsAfter).to.eq(callsBefore - 1);
     });
-    it("Execute batchTransfer", async () => {
+    it("Execute BatchTransferPacked", async () => {
       const user12Balance = await token20.balanceOf(accounts[12]);
       const user12BalanceEth = await web3.eth.getBalance(accounts[12]);
 
-      await batchTransferPacked.execute(activator, 2);
+      await batchTransferPacked.execute(activator, 1, true);
 
       const user12BalanceEthAfter = await web3.eth.getBalance(accounts[12]);
       const user12BalanceAfter = await token20.balanceOf(accounts[12]);
@@ -351,7 +383,8 @@ describe("FactoryProxy contract library", function () {
       batchMultiCallPacked = new BatchMultiCallPacked(web3, factoryProxy.address);
       const beforeCalls = Number(batchMultiCallPacked.calls.length);
       const tx = {
-        groupId: 3,
+        groupId: 1,
+        nonce: 8,
         signer: getSigner(10),
         mcall: [
           {
@@ -374,7 +407,8 @@ describe("FactoryProxy contract library", function () {
       const beforeCalls = Number(batchMultiCallPacked.calls.length);
       const txs = [
         {
-          groupId: 3,
+          groupId: 1,
+          nonce: 9,
           signer: getSigner(10),
           mcall: [
             {
@@ -390,7 +424,8 @@ describe("FactoryProxy contract library", function () {
           ],
         },
         {
-          groupId: 3,
+          groupId: 1,
+          nonce: 10,
           signer: getSigner(10),
           mcall: [
             {
@@ -417,7 +452,7 @@ describe("FactoryProxy contract library", function () {
       expect(afterCalls).to.eq(beforeCalls - 1);
     });
     it("should execute batchMultiCallPacked", async () => {
-      await batchMultiCallPacked.execute(activator, 3);
+      await batchMultiCallPacked.execute(activator, 1);
     });
   });
 
@@ -431,7 +466,8 @@ describe("FactoryProxy contract library", function () {
         to: token20.address,
         data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
         methodInterface: "transfer(address,uint256)",
-        groupId: 4,
+        groupId: 1,
+        nonce: 11,
         methodData: {
           to: accounts[11],
           token_amount: "5",
@@ -451,7 +487,8 @@ describe("FactoryProxy contract library", function () {
           to: token20.address,
           data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
           methodInterface: "transfer(address,uint256)",
-          groupId: 4,
+          groupId: 1,
+          nonce: 12,
           methodData: {
             to: accounts[11],
             token_amount: "5",
@@ -462,7 +499,8 @@ describe("FactoryProxy contract library", function () {
         {
           value: 5,
           to: accounts[11],
-          groupId: 4,
+          groupId: 1,
+          nonce: 13,
           signerPrivateKey: getPrivateKey(signer),
           signer,
         },
@@ -472,7 +510,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchCall.calls.length).to.eq(3);
     });
     it("Should execute batchCall", async () => {
-      await batchCall.execute(activator, 4, true);
+      await batchCall.execute(activator, 1, true);
     });
   });
 
@@ -483,7 +521,8 @@ describe("FactoryProxy contract library", function () {
 
       const tx = {
         data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
-        groupId: 5,
+        groupId: 1,
+        nonce: 14,
         value: 0,
         to: token20.address,
         signer: getSigner(10),
@@ -497,7 +536,8 @@ describe("FactoryProxy contract library", function () {
       const txs = [
         {
           data: token20.contract.methods.transfer(accounts[13], 15).encodeABI(),
-          groupId: 5,
+          groupId: 1,
+          nonce: 15,
           value: 0,
           to: token20.address,
           signer: getSigner(10),
@@ -505,7 +545,8 @@ describe("FactoryProxy contract library", function () {
         {
           data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
           value: 0,
-          groupId: 5,
+          groupId: 1,
+          nonce: 16,
           to: token20.address,
           signer: getSigner(10),
           viewOnly: true,
@@ -516,7 +557,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchCallPacked.calls.length).to.eq(3);
     });
     it("Should execute batchCallPacked", async () => {
-      await batchCallPacked.execute(activator, 5, true);
+      await batchCallPacked.execute(activator, 1, true);
     });
   });
 });
