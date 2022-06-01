@@ -603,7 +603,7 @@ describe("FactoryProxy contract library", function () {
         ],
       };
 
-      await batchMultiCall.addTx(tx);
+      await batchMultiCall.addBatchCall(tx);
 
       expect(batchMultiCall.calls.length).to.eq(1);
     });
@@ -648,7 +648,7 @@ describe("FactoryProxy contract library", function () {
         },
       ];
 
-      await batchMultiCall.addMultipleTx(txs);
+      await batchMultiCall.addMultipleBatchCalls(txs);
 
       expect(batchMultiCall.calls.length).to.eq(3);
     });
