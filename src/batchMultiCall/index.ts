@@ -73,6 +73,32 @@ interface BatchMultiCallData {
   mcall: MultiCall[];
 }
 
+const contractInteractionDefaults = [
+  { name: "details", type: "Transaction_" },
+  { name: "method_params_offset", type: "uint256" },
+  { name: "method_params_length", type: "uint256" },
+];
+
+const generateTxType = (item: MultiCallInputData) => {
+  return item.methodData
+    ? [
+        ...contractInteractionDefaults,
+        ...Object.entries(item.methodData).map(([key, value]) => ({ name: key, type: value[0] })),
+      ]
+    : [{ name: "details", type: "Transaction_" }];
+};
+
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length !== b.length) return false;
+
+  for (var i = 0; i < a.length; ++i) {
+    if (JSON.stringify(a[1]) !== JSON.stringify(b[1])) return false;
+  }
+  return true;
+}
+
 const getBatchTransferData = async (
   web3: Web3,
   FactoryProxy: Contract,
@@ -88,6 +114,45 @@ const getBatchTransferData = async (
   const eip712 = "f100"; // not-ordered, payment, eip712
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+
+  const txTypes = call.multiCalls.reduce(
+    (acc, item, index) => {
+      const txTypeExists = Object.entries(acc.txTypes).some((txType) => arraysEqual(txType[1], generateTxType(item)));
+
+      if (item.data) {
+        if (txTypeExists) {
+          const typeName = Object.keys(acc.txTypes).find((key) => arraysEqual(acc.txTypes[key], generateTxType(item)));
+          return {
+            batchMulticallTypes: [...acc.batchMulticallTypes, { name: `transaction_${index + 1}`, type: typeName }],
+            txTypes: acc.txTypes,
+          };
+        }
+        return {
+          batchMulticallTypes: [
+            ...acc.batchMulticallTypes,
+            { name: `transaction_${index + 1}`, type: `ContractInteraction_${index + 1}` },
+          ],
+          txTypes: {
+            ...acc.txTypes,
+            [`ContractInteraction_${index + 1}`]: [
+              ...contractInteractionDefaults,
+              ...Object.entries(item.methodData).map(([key, value]) => ({ name: key, type: value[0] })),
+            ],
+          },
+        };
+      }
+      return {
+        batchMulticallTypes: [...acc.batchMulticallTypes, { name: `transaction_${index + 1}`, type: "EthTransfer" }],
+        txTypes: txTypeExists
+          ? acc.txTypes
+          : { ...acc.txTypes, EthTransfer: [{ name: "details", type: "Transaction_" }] },
+      };
+    },
+    {
+      batchMulticallTypes: [],
+      txTypes: {},
+    }
+  );
 
   const typedDataMessage = call.multiCalls.reduce(
     (acc, item, index) => ({
@@ -108,7 +173,12 @@ const getBatchTransferData = async (
             },
             method_params_offset: "0x60", //'0x180', // '480', // 13*32
             method_params_length: "0x40",
-            ...item.methodData,
+            ...Object.entries(item.methodData).reduce((acc, [key, value]) => {
+              return {
+                ...acc,
+                [key]: value[1],
+              };
+            }, {}),
           }
         : {
             details: {
@@ -121,7 +191,7 @@ const getBatchTransferData = async (
               stop_on_fail: item.flags?.stopOnFail || false,
               stop_on_success: item.flags?.stopOnSuccess || false,
               revert_on_success: item.flags?.revertOnSuccess || false,
-              method_interface: item.methodInterface || "",
+              method_interface: "",
             },
           },
     }),
@@ -137,10 +207,7 @@ const getBatchTransferData = async (
         { name: "verifyingContract", type: "address" },
         { name: "salt", type: "bytes32" },
       ],
-      BatchMultiCall_: [
-        { name: "limits", type: "Limits_" },
-        ...call.multiCalls.map((item, i) => ({ name: `transaction_${i + 1}`, type: "TokenTransfer" })),
-      ],
+      BatchMultiCall_: [{ name: "limits", type: "Limits_" }, ...txTypes.batchMulticallTypes],
       Limits_: [
         { name: "nonce", type: "uint64" },
         { name: "refund", type: "bool" },
@@ -160,14 +227,7 @@ const getBatchTransferData = async (
         { name: "revert_on_success", type: "bool" },
         { name: "method_interface", type: "string" },
       ],
-      TokenTransfer: [
-        { name: "details", type: "Transaction_" },
-        { name: "method_params_offset", type: "uint256" },
-        { name: "method_params_length", type: "uint256" },
-        { name: "to", type: "address" },
-        { name: "token_amount", type: "uint256" },
-      ],
-      //   EthTransfer: [{ name: "details", type: "Transaction_" }],
+      ...txTypes.txTypes,
     },
     primaryType: "BatchMultiCall_",
     domain: {
@@ -213,7 +273,7 @@ const getBatchTransferData = async (
     mcall: call.multiCalls.map((item, index) => ({
       value: item.value,
       to: item.to,
-      data: item.data.length > 0 ? "0x" + item.data.slice(10) : "0x",
+      data: item.data && item.data.length > 0 ? "0x" + item.data.slice(10) : "0x",
       ensHash: item.toEnsHash
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",

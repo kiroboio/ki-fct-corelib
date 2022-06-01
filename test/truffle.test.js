@@ -581,20 +581,75 @@ describe("FactoryProxy contract library", function () {
             data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
             methodInterface: "transfer(address,uint256)",
             methodData: {
-              to: accounts[11],
-              token_amount: "5",
+              to: ["address", accounts[11]],
+              token_amount: ["uint256", "5"],
             },
           },
-          // {
-          //   value: 10,
-          //   to: accounts[10],
-          // },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[15], 5).encodeABI(),
+            methodInterface: "transfer(address,uint256)",
+            methodData: {
+              to: ["address", accounts[15]],
+              token_amount: ["uint256", "5"],
+            },
+          },
+          {
+            value: 10,
+            to: accounts[10],
+          },
         ],
       };
 
       await batchMultiCall.addTx(tx);
 
       expect(batchMultiCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple txs", async () => {
+      const signer = getSigner(10);
+
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 18,
+          signer,
+          signerPrivateKey: getPrivateKey(signer),
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+              methodInterface: "transfer(address,uint256)",
+              methodData: {
+                to: ["address", accounts[11]],
+                token_amount: ["uint256", "5"],
+              },
+            },
+
+            {
+              value: 10,
+              to: accounts[10],
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 19,
+          signer,
+          signerPrivateKey: getPrivateKey(signer),
+          multiCalls: [
+            {
+              value: 10,
+              to: accounts[10],
+            },
+          ],
+        },
+      ];
+
+      await batchMultiCall.addMultipleTx(txs);
+
+      expect(batchMultiCall.calls.length).to.eq(3);
     });
     it("Should execute batchMultiCall", async () => {
       await batchMultiCall.execute(activator, 1);
