@@ -12,16 +12,16 @@ export const getFlags = () => {
   return;
 };
 
-export const manageCallFlags = (call) => {
+export const manageCallFlags = (flags) => {
   const array = ["0", "x", "0", "0"];
-  if (call.onFailContinue && call.onFailStop) {
+  if (flags.onFailContinue && flags.onFailStop) {
     throw new Error("Both flags onFailContinue and onFailStop can't be enabled at once");
   }
-  if (call.onSuccessRevert && call.onSuccessStop) {
+  if (flags.onSuccessRevert && flags.onSuccessStop) {
     throw new Error("Both flags onSuccessRevert and onSuccessStop can't be enabled at once");
   }
-  array[2] = call.onSuccessRevert ? "2" : call.onSuccessRevert ? "1" : "0";
-  array[3] = call.onFailContinue ? "2" : call.onFailStop ? "1" : "0";
+  array[2] = flags.onSuccessRevert ? "2" : flags.onSuccessRevert ? "1" : "0";
+  array[3] = flags.onFailContinue ? "2" : flags.onFailStop ? "1" : "0";
 
   return array.join("");
 };

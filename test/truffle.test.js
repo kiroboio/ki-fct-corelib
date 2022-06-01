@@ -6,6 +6,7 @@ const {
   BatchCallPacked,
   BatchCall,
   BatchMultiCall,
+  BatchMultiSigCallPacked,
 } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
@@ -653,6 +654,44 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should execute batchMultiCall", async () => {
       await batchMultiCall.execute(activator, 1);
+    });
+  });
+
+  describe("BatchMultiSigCallPacked function", async () => {
+    let batchMultiSigCallPacked;
+
+    it("Should add batchMulticall", async () => {
+      batchMultiSigCallPacked = new BatchMultiSigCallPacked(web3, factoryProxy.address);
+
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+      const tx = {
+        groupId: 1,
+        nonce: 20,
+        signers: [signer1, signer2],
+        mcall: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            signer: signer1,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            signer: signer2,
+          },
+        ],
+      };
+
+      await batchMultiSigCallPacked.addPackedMulticall(tx);
+
+      expect(batchMultiSigCallPacked.calls.length).to.eq(1);
+    });
+
+    it("Should execute", async () => {
+      await batchMultiSigCallPacked.execute(activator, 1);
     });
   });
 });
