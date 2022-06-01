@@ -37,7 +37,7 @@ interface BatchMultiSigCallPackedInput {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  mcall: CallInput[];
+  multiCalls: CallInput[];
 }
 
 interface Signature {
@@ -78,7 +78,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
   const encodeLimit = keccak256(defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]));
-  const encodedTxs = call.mcall.map((item) =>
+  const encodedTxs = call.multiCalls.map((item) =>
     keccak256(
       defaultAbiCoder.encode(
         ["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"],
@@ -110,7 +110,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
       v: "0x" + signature.slice(130),
     })),
     sessionId: getSessionId(),
-    mcall: call.mcall.map((item) => ({
+    mcall: call.multiCalls.map((item) => ({
       value: item.value,
       signer: item.signer,
       gasLimit: item.gasLimit || 0,
@@ -135,6 +135,12 @@ export class BatchMultiSigCallPacked {
   async addPackedMulticall(tx: BatchMultiSigCallPackedInput) {
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
+    return this.calls;
+  }
+
+  async addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInput[]) {
+    const data = await Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
+    this.calls = [...this.calls, ...data];
     return this.calls;
   }
 

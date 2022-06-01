@@ -7,6 +7,7 @@ const {
   BatchCall,
   BatchMultiCall,
   BatchMultiSigCallPacked,
+  BatchMultiSigCall,
 } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
@@ -669,7 +670,7 @@ describe("FactoryProxy contract library", function () {
         groupId: 1,
         nonce: 20,
         signers: [signer1, signer2],
-        mcall: [
+        multiCalls: [
           {
             value: 0,
             to: token20.address,
@@ -690,8 +691,173 @@ describe("FactoryProxy contract library", function () {
       expect(batchMultiSigCallPacked.calls.length).to.eq(1);
     });
 
+    it("Should add multiple batchMulticalls", async () => {
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 21,
+          signers: [signer1, signer2],
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              signer: signer2,
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 22,
+          signers: [signer1, signer2],
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              signer: signer2,
+            },
+          ],
+        },
+      ];
+      await batchMultiSigCallPacked.addMultiplePackedMulticall(txs);
+      expect(batchMultiSigCallPacked.calls.length).to.eq(3);
+    });
+
     it("Should execute", async () => {
       await batchMultiSigCallPacked.execute(activator, 1);
+    });
+  });
+  describe("BatchMultiSigCall function", function () {
+    let batchMultiSigCall;
+    it("Should add batchMulticall", async () => {
+      batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
+
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const tx = {
+        groupId: 1,
+        nonce: 23,
+        signers: [signer1, signer2],
+        signerPrivateKeys: [getPrivateKey(signer1), getPrivateKey(signer2)],
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+            methodInterface: "transfer(address,uint256)",
+            methodData: {
+              to: ["address", accounts[11]],
+              token_amount: ["uint256", "25"],
+            },
+            signer: signer1,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+            methodInterface: "transfer(address,uint256)",
+            methodData: {
+              to: ["address", accounts[11]],
+              token_amount: ["uint256", "25"],
+            },
+            signer: signer2,
+          },
+        ],
+      };
+
+      await batchMultiSigCall.addBatchCall(tx);
+
+      expect(batchMultiSigCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple batchMulticalls", async () => {
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 24,
+          signers: [signer1, signer2],
+          signerPrivateKeys: [getPrivateKey(signer1), getPrivateKey(signer2)],
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              methodInterface: "transfer(address,uint256)",
+              methodData: {
+                to: ["address", accounts[11]],
+                token_amount: ["uint256", "15"],
+              },
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              methodInterface: "transfer(address,uint256)",
+              methodData: {
+                to: ["address", accounts[11]],
+                token_amount: ["uint256", "15"],
+              },
+              signer: signer2,
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 25,
+          signers: [signer1, signer2],
+          signerPrivateKeys: [getPrivateKey(signer1), getPrivateKey(signer2)],
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+              methodInterface: "transfer(address,uint256)",
+              methodData: {
+                to: ["address", accounts[11]],
+                token_amount: ["uint256", "5"],
+              },
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+              methodInterface: "transfer(address,uint256)",
+              methodData: {
+                to: ["address", accounts[11]],
+                token_amount: ["uint256", "5"],
+              },
+              signer: signer2,
+            },
+          ],
+        },
+      ];
+
+      await batchMultiSigCall.addMultipleBatchCalls(txs);
+
+      expect(batchMultiSigCall.calls.length).to.eq(3);
+    });
+    it("Should execute batchMultiSigCall", async () => {
+      await batchMultiSigCall.execute(activator, 1);
     });
   });
 });
