@@ -300,13 +300,13 @@ export class BatchMultiCall {
     this.factoryProxyAddress = contractAddress;
   }
 
-  async addTx(tx: BatchMultiCallInputData) {
+  async addBatchCall(tx: BatchMultiCallInputData) {
     const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultipleTx(txs: BatchMultiCallInputData[]) {
+  async addMultipleBatchCalls(txs: BatchMultiCallInputData[]) {
     const data = await Promise.all(
       txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
