@@ -782,7 +782,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchMultiSigCallPacked.calls.length).to.eq(3);
     });
 
-    it("Should execute", async () => {
+    it("Should execute batchMultiSigCallPacked", async () => {
       await batchMultiSigCallPacked.execute(activator, 1);
     });
   });
