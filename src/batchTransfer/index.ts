@@ -5,25 +5,41 @@ import Web3 from "web3";
 import { Sign } from "web3-eth-accounts";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { getGroupId, getMaxGasPrice, getNonce, getAfterTimestamp, getBeforeTimestamp, getMaxGas } from "../helpers";
+import {
+  getGroupId,
+  getMaxGasPrice,
+  getNonce,
+  getAfterTimestamp,
+  getBeforeTimestamp,
+  getMaxGas,
+  getFlags,
+} from "../helpers";
 
 const web3 = new Web3();
 
 // Most likely the data structure is going to be different
+
+interface TransferFlags {
+  eip712?: boolean;
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+}
 interface TransferCall {
   token: string;
+  tokenEnsHash?: string;
   to: string;
+  toEnsHash?: string;
   groupId: number;
   nonce: number;
   value: number;
   signer: string;
-  tokenEnsHash?: string;
-  toEnsHash?: string;
   signerPrivateKey?: string;
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: TransferFlags;
 }
 
 interface Transfer {
@@ -76,6 +92,12 @@ const batchTransferTypedData = {
   primaryType: "BatchTransfer_",
 };
 
+// DefaultFlag - "f1" // payment + eip712
+const defaultFlags = {
+  eip712: true,
+  payment: true,
+};
+
 const getBatchTransferData = async (
   web3: Web3,
   FactoryProxy: Contract,
@@ -88,10 +110,8 @@ const getBatchTransferData = async (
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = "f1"; // payment + eip712
-
-  // const eip712 = `f1`; // payment + eip712, need to make it editable from user side
-  // const eip712 = `${payable}${cancelable}`; // payment + eip712, need to make it editable from user side
+  const flags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(flags, true);
 
   const getSessionIdERC20 = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
@@ -109,7 +129,7 @@ const getBatchTransferData = async (
       expires_at: "0x" + before,
       gas_limit: "0x" + maxGas,
       gas_price_limit: "0x" + maxGasPrice,
-      refund: true,
+      refund: flags.payment,
     },
   };
 

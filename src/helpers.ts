@@ -6,10 +6,17 @@ export const getBeforeTimestamp = (infinity: boolean, epochDate?: number): strin
 export const getMaxGas = (maxGas: number): string => maxGas.toString(16).padStart(8, "0");
 export const getMaxGasPrice = (gasPrice: number): string => gasPrice.toString(16).padStart(16, "0");
 
-export const getFlags = () => {
-  // Function that helps to replace letter at X position
-  // dasd.substring(0, 3) + "k" + dasd.substring(3 + 1)
-  return;
+export const getFlags = (flags, small: boolean) => {
+  const array = ["0", "0", "0", "0"];
+  if (flags.eip712 || flags.staticCall || flags.cancelable) {
+    array[1] = flags.cancelable ? "8" : flags.staticCall ? "4" : "1";
+  }
+  array[0] = flags.payment ? "f" : "0";
+  if (flags.flow) {
+    array[2] = "f";
+    array[3] = "f";
+  }
+  return small ? array.slice(0, 2).join("") : array.join("");
 };
 
 export const manageCallFlags = (flags) => {

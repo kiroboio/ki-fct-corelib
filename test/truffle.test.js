@@ -275,6 +275,9 @@ describe("FactoryProxy contract library", function () {
         value: 10,
         signer,
         signerPrivateKey: getPrivateKey(signer),
+        flags: {
+          payment: false,
+        },
       };
       await batchTransfer.addTx(tx);
 
@@ -291,6 +294,9 @@ describe("FactoryProxy contract library", function () {
           value: 10,
           signer,
           signerPrivateKey: getPrivateKey(signer),
+          flags: {
+            payment: true,
+          },
         },
         {
           token: token20.address,
@@ -300,6 +306,9 @@ describe("FactoryProxy contract library", function () {
           value: 5,
           signer,
           signerPrivateKey: getPrivateKey(signer),
+          flags: {
+            payment: false,
+          },
         },
       ];
 
