@@ -1,11 +1,23 @@
 import { ethers } from "ethers";
-import { TypedDataUtils } from "ethers-eip712";
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { getAfterTimestamp, getBeforeTimestamp, getGroupId, getMaxGas, getMaxGasPrice, getNonce } from "../helpers";
+import {
+  getAfterTimestamp,
+  getBeforeTimestamp,
+  getFlags,
+  getGroupId,
+  getMaxGas,
+  getMaxGasPrice,
+  getNonce,
+} from "../helpers";
 
+interface TransferFlags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+}
 // Most likely the data structure is going to be different
 interface TransferCall {
   token: string;
@@ -18,6 +30,7 @@ interface TransferCall {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: TransferFlags;
 }
 
 interface Transfer {
@@ -30,6 +43,12 @@ interface Transfer {
   sessionId: string;
 }
 
+// DefaultFlag - "f0" // payment + eip712
+const defaultFlags = {
+  eip712: false,
+  payment: true,
+};
+
 const getBatchTransferPackedData = async (web3: Web3, FactoryProxy: Contract, call: TransferCall) => {
   const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
@@ -40,10 +59,11 @@ const getBatchTransferPackedData = async (web3: Web3, FactoryProxy: Contract, ca
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712ERC20 = "f0"; // payment + eip712
+  const flags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(flags, true); // payment + eip712
 
   const getSessionId = () => {
-    return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712ERC20}`;
+    return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
   };
   const hashedData = {
     ...call,

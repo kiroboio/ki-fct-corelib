@@ -332,6 +332,9 @@ describe("FactoryProxy contract library", function () {
         to: accounts[12],
         value: 10,
         signer: getSigner(10),
+        flags: {
+          payment: false,
+        },
       };
       await batchTransferPacked.addTx(tx);
 
@@ -346,6 +349,9 @@ describe("FactoryProxy contract library", function () {
           to: accounts[12],
           value: 10,
           signer: getSigner(10),
+          flags: {
+            payment: true,
+          },
         },
         {
           token: token20.address,
