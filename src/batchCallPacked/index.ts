@@ -2,9 +2,23 @@ import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { getAfterTimestamp, getBeforeTimestamp, getGroupId, getMaxGas, getMaxGasPrice, getNonce } from "../helpers";
+import {
+  getAfterTimestamp,
+  getBeforeTimestamp,
+  getFlags,
+  getGroupId,
+  getMaxGas,
+  getMaxGasPrice,
+  getNonce,
+} from "../helpers";
 
 // Most likely the data structure is going to be different
+
+interface Flags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+}
 
 interface BatchCallInputData {
   value: string;
@@ -13,11 +27,12 @@ interface BatchCallInputData {
   signer: string;
   groupId: number;
   nonce: number;
-  viewOnly?: boolean;
+
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: Flags;
 }
 
 interface BatchCallPackedData {
@@ -30,6 +45,12 @@ interface BatchCallPackedData {
   data: string;
 }
 
+const defaultFlags = {
+  eip712: false,
+  payment: true,
+  staticCall: false,
+};
+
 const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputData) => {
   const typeHash = await factoryProxy.methods.BATCH_CALL_PACKED_TYPEHASH_().call();
   const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
@@ -40,7 +61,8 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = call.viewOnly ? "f4" : "f2"; // ordered, payment
+  const flags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(flags, true); // ordered, payment
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 

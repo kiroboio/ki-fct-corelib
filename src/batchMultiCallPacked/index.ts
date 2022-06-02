@@ -5,6 +5,7 @@ import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import {
   getAfterTimestamp,
   getBeforeTimestamp,
+  getFlags,
   getGroupId,
   getMaxGas,
   getMaxGasPrice,
@@ -13,7 +14,14 @@ import {
 } from "../helpers";
 
 // Most likely the data structure is going to be different
-interface MultiCallInterface {
+
+interface TransferFlags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+  flow?: boolean;
+}
+interface MultiCallInput {
   value: string;
   to: string;
   data: string;
@@ -24,7 +32,7 @@ interface MultiCallInterface {
   onSuccessRevert?: boolean;
 }
 
-interface MultiCallPackedInterface {
+interface MultiCallPackedInput {
   groupId: number;
   nonce: number;
   signer: string;
@@ -32,7 +40,8 @@ interface MultiCallPackedInterface {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  mcall: MultiCallInterface[];
+  flags?: TransferFlags;
+  mcall: MultiCallInput[];
 }
 
 interface MultiCall {
@@ -52,7 +61,14 @@ interface MultiCallPacked {
   mcall: MultiCall[];
 }
 
-const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: MultiCallPackedInterface) => {
+// "f000" - not-ordered, payment
+const defaultFlags = {
+  payment: true,
+  flow: false,
+  eip712: false,
+};
+
+const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: MultiCallPackedInput) => {
   const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
   const typeHash = await factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
 
@@ -62,7 +78,7 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = "f000"; // not-ordered, payment
+  const eip712 = getFlags({ ...defaultFlags, ...call.flags }, false);
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
@@ -103,7 +119,7 @@ export class BatchMultiCallPacked {
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
-  async addPackedMulticall(tx: MultiCallPackedInterface) {
+  async addPackedMulticall(tx: MultiCallPackedInput) {
     const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
@@ -117,7 +133,7 @@ export class BatchMultiCallPacked {
     return this.calls;
   }
 
-  async addMultiplePackedMulticalls(txs: MultiCallPackedInterface[]) {
+  async addMultiplePackedMulticalls(txs: MultiCallPackedInput[]) {
     const data = await Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return this.calls;

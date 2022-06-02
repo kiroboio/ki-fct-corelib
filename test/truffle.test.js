@@ -404,6 +404,9 @@ describe("FactoryProxy contract library", function () {
         groupId: 1,
         nonce: 8,
         signer: getSigner(10),
+        flags: {
+          payment: true,
+        },
         mcall: [
           {
             value: 0,
@@ -428,6 +431,9 @@ describe("FactoryProxy contract library", function () {
           groupId: 1,
           nonce: 9,
           signer: getSigner(10),
+          flags: {
+            payment: false,
+          },
           mcall: [
             {
               value: 0,
@@ -492,6 +498,9 @@ describe("FactoryProxy contract library", function () {
         },
         signerPrivateKey: getPrivateKey(signer),
         signer,
+        flags: {
+          payment: false,
+        },
       };
       await batchCall.addTx(tx);
 
@@ -511,8 +520,12 @@ describe("FactoryProxy contract library", function () {
             to: accounts[11],
             token_amount: "5",
           },
+
           signerPrivateKey: getPrivateKey(signer),
           signer,
+          flags: {
+            payment: true,
+          },
         },
         {
           value: 5,
@@ -559,6 +572,9 @@ describe("FactoryProxy contract library", function () {
           value: 0,
           to: token20.address,
           signer: getSigner(10),
+          flags: {
+            payment: true,
+          },
         },
         {
           data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
@@ -567,7 +583,10 @@ describe("FactoryProxy contract library", function () {
           nonce: 16,
           to: token20.address,
           signer: getSigner(10),
-          viewOnly: true,
+          flags: {
+            payment: false,
+            staticCall: true,
+          },
         },
       ];
       await batchCallPacked.addMultipleTx(txs);
@@ -591,6 +610,9 @@ describe("FactoryProxy contract library", function () {
         nonce: 17,
         signer,
         signerPrivateKey: getPrivateKey(signer),
+        flags: {
+          payment: false,
+        },
         multiCalls: [
           {
             value: 0,
@@ -632,6 +654,9 @@ describe("FactoryProxy contract library", function () {
           nonce: 18,
           signer,
           signerPrivateKey: getPrivateKey(signer),
+          flags: {
+            payment: false,
+          },
           multiCalls: [
             {
               value: 0,
@@ -685,6 +710,10 @@ describe("FactoryProxy contract library", function () {
         groupId: 1,
         nonce: 20,
         signers: [signer1, signer2],
+        flags: {
+          payment: false,
+          flow: true,
+        },
         multiCalls: [
           {
             value: 0,
@@ -770,6 +799,10 @@ describe("FactoryProxy contract library", function () {
         nonce: 23,
         signers: [signer1, signer2],
         signerPrivateKeys: [getPrivateKey(signer1), getPrivateKey(signer2)],
+        flags: {
+          payment: false,
+          flow: true,
+        },
         multiCalls: [
           {
             value: 0,

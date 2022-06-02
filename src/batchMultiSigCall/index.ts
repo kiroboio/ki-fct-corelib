@@ -1,8 +1,6 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
-import { Sign } from "web3-eth-accounts";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import {
@@ -13,8 +11,14 @@ import {
   getBeforeTimestamp,
   getMaxGas,
   manageCallFlags,
+  getFlags,
 } from "../helpers";
 
+interface BatchFlags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+}
 interface MultiCallFlags {
   viewOnly: boolean;
   continueOnFail: boolean;
@@ -50,6 +54,7 @@ interface BatchMultiSigCallInputData {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: BatchFlags;
   multiCalls: MultiSigCallInputData[];
 }
 
@@ -104,6 +109,13 @@ function arraysEqual(a, b) {
   return true;
 }
 
+// DefaultFlag - "f100" // payment + eip712
+const defaultFlags = {
+  eip712: true,
+  payment: true,
+  flow: false,
+};
+
 const getBatchTransferData = async (
   web3: Web3,
   FactoryProxy: Contract,
@@ -116,7 +128,8 @@ const getBatchTransferData = async (
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = "f1ff"; // not-ordered, payment, eip712
+  const batchFlags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(batchFlags, false); // not-ordered, payment, eip712
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
@@ -248,7 +261,7 @@ const getBatchTransferData = async (
     message: {
       limits: {
         nonce: "0x" + group + tnonce,
-        refund: true,
+        refund: batchFlags.payment,
         valid_from: Number.parseInt("0x" + after),
         expires_at: Number.parseInt("0x" + before),
         gas_price_limit: Number.parseInt("0x" + maxGasPrice),

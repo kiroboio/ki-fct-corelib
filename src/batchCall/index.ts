@@ -1,37 +1,45 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import {
   getAfterTimestamp,
   getBeforeTimestamp,
+  getFlags,
   getGroupId,
   getMaxGas,
   getMaxGasPrice,
   getNonce,
-  manageCallFlags,
 } from "../helpers";
 
 // Most likely the data structure is going to be different
 
+interface Flags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+}
+
 interface BatchCallInputData {
   value: string;
   to: string;
+  toEnsHash?: string;
   signer: string;
+  signerPrivateKey?: string;
+
   groupId: number;
   nonce: number;
+
   data?: string;
   methodInterface?: string;
   methodData?: Object;
-  signerPrivateKey?: string;
-  toEnsHash?: string;
-  viewOnly?: boolean;
+
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: Flags;
 }
 
 interface BatchCallData {
@@ -63,6 +71,13 @@ const getTypedDataDomain = async (web3: Web3, factoryProxy: Contract, factoryPro
   };
 };
 
+// DefaultFlag - "f1" // payment + eip712
+const defaultFlags = {
+  eip712: true,
+  payment: true,
+  staticCall: false,
+};
+
 const getBatchCallData = async (
   web3: Web3,
   factoryProxy: Contract,
@@ -87,7 +102,8 @@ const getBatchCallData = async (
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = "f3"; // ordered, payment, eip712
+  const flags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(flags, true);
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
@@ -144,8 +160,8 @@ const getBatchCallData = async (
         expires_at: Number.parseInt("0x" + before),
         gas_limit: Number.parseInt("0x" + maxGas),
         gas_price_limit: Number.parseInt("0x" + maxGasPrice),
-        view_only: false,
-        refund: true,
+        view_only: flags.staticCall,
+        refund: flags.payment,
         method_interface: call.methodInterface || "",
       },
       ...methodParams,

@@ -5,12 +5,20 @@ import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import {
   getAfterTimestamp,
   getBeforeTimestamp,
+  getFlags,
   getGroupId,
   getMaxGas,
   getMaxGasPrice,
   getNonce,
   manageCallFlags,
 } from "../helpers";
+
+interface BatchFlags {
+  staticCall?: boolean;
+  cancelable?: boolean;
+  payment?: boolean;
+  flow?: boolean;
+}
 
 interface MultiCallFlags {
   viewOnly: boolean;
@@ -37,6 +45,7 @@ interface BatchMultiSigCallPackedInput {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
+  flags?: BatchFlags;
   multiCalls: CallInput[];
 }
 
@@ -61,6 +70,13 @@ interface BatchMultiSigCallPackedData {
   mcall: PackedMSCall[];
 }
 
+// "f000" - not-ordered, payment
+const defaultFlags = {
+  payment: true,
+  flow: false,
+  eip712: false,
+};
+
 const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchMultiSigCallPackedInput) => {
   const batchMultiSigTypeHash = await factoryProxy.methods.BATCH_MULTI_SIG_CALL_TYPEHASH_().call();
   const txTypeHash = await factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_().call();
@@ -73,7 +89,8 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
   const maxGas = getMaxGas(call.maxGas || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = "f000"; // not-ordered, payment
+  const batchFlags = { ...defaultFlags, ...call.flags };
+  const eip712 = getFlags(batchFlags, false); // not-ordered, payment
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 

@@ -16,6 +16,7 @@ export const getFlags = (flags, small: boolean) => {
     array[2] = "f";
     array[3] = "f";
   }
+
   return small ? array.slice(0, 2).join("") : array.join("");
 };
 
