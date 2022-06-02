@@ -133,6 +133,7 @@ const getBatchTransferData = async (
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  // Creates types and batchMultiCallTypes for EIP712 sign
   const txTypes = call.multiCalls.reduce(
     (acc, item, index) => {
       const txTypeExists = Object.entries(acc.txTypes).some((txType) => arraysEqual(txType[1], generateTxType(item)));
@@ -172,6 +173,7 @@ const getBatchTransferData = async (
     }
   );
 
+  // Creates messages from multiCalls array for EIP712 sign
   const typedDataMessage = call.multiCalls.reduce(
     (acc, item, index) => ({
       ...acc,
