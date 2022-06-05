@@ -94,7 +94,9 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  // Encode Limits as bytes32
   const encodeLimit = keccak256(defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]));
+  // Encode multi calls as bytes32
   const encodedTxs = call.multiCalls.map((item) =>
     keccak256(
       defaultAbiCoder.encode(
@@ -111,6 +113,8 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
       )
     )
   );
+
+  // Combine batchMultiSigTypeHas + both encoded limits and encoded multi calls in one encoded value
   const fullEncode = defaultAbiCoder.encode(
     ["bytes32", "bytes32", ...encodedTxs.map(() => "bytes32")],
     [batchMultiSigTypeHash, encodeLimit, ...encodedTxs.map((item) => item)]

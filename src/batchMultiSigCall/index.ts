@@ -138,6 +138,7 @@ const getBatchTransferData = async (
     (acc, item, index) => {
       const txTypeExists = Object.entries(acc.txTypes).some((txType) => arraysEqual(txType[1], generateTxType(item)));
 
+      // If multicall has encoded contract data
       if (item.data) {
         if (txTypeExists) {
           const typeName = Object.keys(acc.txTypes).find((key) => arraysEqual(acc.txTypes[key], generateTxType(item)));
@@ -160,6 +161,7 @@ const getBatchTransferData = async (
           },
         };
       }
+      // Else multicall is ETH transfer
       return {
         batchMulticallTypes: [...acc.batchMulticallTypes, { name: `transaction_${index + 1}`, type: "EthTransfer" }],
         txTypes: txTypeExists
@@ -174,6 +176,8 @@ const getBatchTransferData = async (
   );
 
   // Creates messages from multiCalls array for EIP712 sign
+  // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
+  // Else multicall is ETH Transfer - add only details
   const typedDataMessage = call.multiCalls.reduce(
     (acc, item, index) => ({
       ...acc,
