@@ -1,4 +1,4 @@
-const { artifacts, web3 } = require("hardhat");
+const { artifacts, web3, ethers } = require("hardhat");
 const {
   BatchTransfer,
   BatchTransferPacked,
@@ -11,6 +11,7 @@ const {
 } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
+const { TypedDataUtils } = require("ethers-eip712");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("RecoveryWalletCore");
 const Wallet = artifacts.require("RecoveryWallet");
@@ -266,13 +267,6 @@ describe("FactoryProxy contract library", function () {
       batchCall = new BatchCall(web3, factoryProxy.address);
       const signer = getSigner(10);
 
-      //   const tx = {
-      //     value: 5,
-      //     to: accounts[11],
-      //     groupId: 1,
-      //     nonce: 13,
-      //     signer,
-      //   };
       const tx = {
         value: 0,
         to: token20.address,
@@ -291,14 +285,64 @@ describe("FactoryProxy contract library", function () {
       };
       await batchCall.addTx(tx);
 
-      const decodedData = batchCall.decodeData(batchCall.calls[0].hashedMessage, batchCall.calls[0].hashedTxMessage, [
-        { type: "address", name: "to" },
-        { type: "uint256", name: "token_amount" },
-      ]);
+      //   const decodedData = batchCall.decodeData(batchCall.calls[0].hashedMessage, batchCall.calls[0].hashedTxMessage, [
+      //     { type: "address", name: "to" },
+      //     { type: "uint256", name: "token_amount" },
+      //   ]);
 
-      console.log(decodedData);
+      //   console.log(decodedData);
 
       expect(batchCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          value: 0,
+          to: token20.address,
+          data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+          methodInterface: "transfer(address,uint256)",
+          groupId: 1,
+          nonce: 12,
+          method: "transfer",
+          params: [
+            { name: "to", type: "address", value: accounts[11] },
+            { name: "token_amount", type: "uint256", value: "5" },
+          ],
+          signer,
+          flags: {
+            payment: true,
+          },
+        },
+        {
+          value: 5,
+          to: accounts[11],
+          groupId: 1,
+          nonce: 13,
+          signerPrivateKey: getPrivateKey(signer),
+          signer,
+        },
+      ];
+      await batchCall.addMultipleTx(txs);
+
+      expect(batchCall.calls.length).to.eq(3);
+    });
+    it("Should execute", async () => {
+      const calls = batchCall.calls;
+      const signer = getSigner(10);
+
+      const signedCalls = calls.map((item) => {
+        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+
+        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+        let signature = signingKey.signDigest(messageDigest);
+        signature.v = "0x" + signature.v.toString(16);
+
+        return { ...item, ...signature, sessionId: item.sessionId + signature.v.slice(2).padStart(2, "0") };
+      });
+
+      const data = await factoryProxy.batchCall_(signedCalls, 1, true, { from: activator });
+      console.log(data);
     });
   });
 });
