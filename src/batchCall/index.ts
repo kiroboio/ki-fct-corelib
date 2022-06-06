@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
@@ -57,6 +58,8 @@ interface BatchCallData {
   functionSignature: string;
   data: string;
   typedData: Object;
+  hashedMessage: string;
+  hashedTxMessage: string;
 }
 
 const getMethodInterface = (call: BatchCallInputData) => {
@@ -163,7 +166,13 @@ const getBatchCallData = async (
     },
   };
 
-  // const messageDigest = TypedDataUtils.encodeDigest(typedData);
+  const hashedMessage = ethers.utils.hexlify(
+    TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
+  );
+
+  const hashedTxMessage = ethers.utils.hexlify(
+    TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction)
+  );
 
   return {
     typeHash: getTypeHash(typedData),
@@ -180,6 +189,8 @@ const getBatchCallData = async (
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     data: call.data ? "0x" + call.data.slice(10) : "0x",
     typedData,
+    hashedMessage,
+    hashedTxMessage,
   };
 };
 
@@ -195,6 +206,73 @@ export class BatchCall {
     // @ts-ignore
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
     this.factoryProxyAddress = contractAddress;
+  }
+
+  verifyMessage(message: string, signature: string, address: string) {
+    const messageAddress = this.web3.eth.accounts.recover(message, signature);
+    return messageAddress.toLowerCase() === address.toLowerCase();
+  }
+
+  decodeData(data: string, txData: string, params?) {
+    const decodedData = params
+      ? defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...params.map((item) => item.type)], data)
+      : defaultAbiCoder.decode(["bytes32", "bytes32"], data);
+
+    const decodedTxData = defaultAbiCoder.decode(
+      [
+        "bytes32",
+        "address",
+        "bytes32",
+        "uint256",
+        "uint64",
+        "uint40",
+        "uint40",
+        "uint32",
+        "uint64",
+        "bool",
+        "bool",
+        "bytes32",
+      ],
+      txData
+    );
+
+    const defaultReturn = {
+      typeHash: decodedData[0],
+      txHash: decodedData[1],
+      transaction: {
+        to: decodedTxData[1],
+        toEnsHash:
+          decodedTxData[2] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+            ? decodedTxData[2]
+            : undefined,
+        value: decodedTxData[3].toString(),
+        nonce: decodedTxData[4].toHexString(),
+        afterTimestamp: decodedTxData[5],
+        beforeTimestamp: decodedTxData[6],
+        maxGas: decodedTxData[7],
+        maxGasPrice: decodedTxData[8].toString(),
+        staticCall: decodedTxData[9],
+        payment: decodedTxData[10],
+        methodHash:
+          decodedTxData[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+            ? decodedTxData[11]
+            : undefined,
+      },
+    };
+
+    const extraData = params
+      ? params.reduce(
+          (acc, item, i) => ({
+            ...acc,
+            [item.name]: ethers.BigNumber.isBigNumber(decodedData[4 + i])
+              ? decodedData[4 + i].toString()
+              : decodedData[4 + i],
+          }),
+          {}
+        )
+      : {};
+
+    return { ...defaultReturn, ...extraData };
   }
 
   async addTx(tx: BatchCallInputData) {
