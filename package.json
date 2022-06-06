@@ -2,8 +2,8 @@
   "name": "ki-future-transactions",
   "version": "1.0.0",
   "description": "Kirobo.io Future Transactions",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
     "test": "hardhat test test/truffle.test.js",
