@@ -21,19 +21,24 @@ interface Flags {
   payment?: boolean;
 }
 
+interface Params {
+  name: string;
+  type: string;
+  value: string;
+}
+
 interface BatchCallInputData {
   value: string;
   to: string;
   toEnsHash?: string;
   signer: string;
-  signerPrivateKey?: string;
 
   groupId: number;
   nonce: number;
 
   data?: string;
-  methodInterface?: string;
-  methodData?: Object;
+  method?: string;
+  params?: Params[];
 
   afterTimestamp?: number;
   beforeTimestamp?: number;
@@ -43,8 +48,6 @@ interface BatchCallInputData {
 }
 
 interface BatchCallData {
-  r: string;
-  s: string;
   typeHash: string;
   to: string;
   ensHash: string;
@@ -53,7 +56,12 @@ interface BatchCallData {
   signer: string;
   functionSignature: string;
   data: string;
+  typedData: Object;
 }
+
+const getMethodInterface = (call: BatchCallInputData) => {
+  return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
+};
 
 const getTypeHash = (typedData) => {
   const m2 = TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
@@ -84,18 +92,6 @@ const getBatchCallData = async (
   factoryProxyAddress: string,
   call: BatchCallInputData
 ) => {
-  if (
-    (call.data && (!call.methodInterface || !call.methodData)) ||
-    (call.methodData && (!call.data || !call.methodInterface)) ||
-    (call.methodInterface && (!call.data || !call.methodData))
-  ) {
-    throw new Error(
-      `Insufficient data - ${!call.data ? "data " : ""}${!call.methodData ? "methodData " : ""}${
-        !call.methodInterface ? "methodInterface" : ""
-      }. Make sure you provide data, methodData and methodInterface`
-    );
-  }
-
   const group = getGroupId(call.groupId);
   const tnonce = getNonce(call.nonce);
   const after = getAfterTimestamp(call.afterTimestamp || 0);
@@ -107,20 +103,19 @@ const getBatchCallData = async (
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
-  const methodParams = call.methodData
+  const methodParams = call.params
     ? {
         method_params_offset: "0x60", // '0x1c0', // '480', // 13*32
         method_params_length: "0x40",
-        ...call.methodData,
+        ...call.params.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}),
       }
     : {};
 
-  const contractType = call.methodData
+  const contractType = call.params
     ? [
         { name: "method_params_offset", type: "uint256" },
         { name: "method_params_length", type: "uint256" },
-        { name: "to", type: "address" },
-        { name: "token_amount", type: "uint256" },
+        ...call.params.reduce((acc, item) => [...acc, { name: item.name, type: item.type }], []),
       ]
     : [];
 
@@ -162,40 +157,29 @@ const getBatchCallData = async (
         gas_price_limit: Number.parseInt("0x" + maxGasPrice),
         view_only: flags.staticCall,
         refund: flags.payment,
-        method_interface: call.methodInterface || "",
+        method_interface: call.method ? getMethodInterface(call) : "",
       },
       ...methodParams,
     },
   };
 
-  const messageDigest = TypedDataUtils.encodeDigest(typedData);
-
-  let signature;
-
-  if (call.signerPrivateKey) {
-    const signingKey = new ethers.utils.SigningKey(call.signerPrivateKey);
-    signature = signingKey.signDigest(messageDigest);
-    signature.v = "0x" + signature.v.toString(16);
-  } else if (window && "ethereum" in window) {
-    // Do a request for MetaMask to sign EIP712
-  } else {
-    throw new Error("Browser doesn't have a Metamask and signerPrivateKey hasn't been provided");
-  }
+  // const messageDigest = TypedDataUtils.encodeDigest(typedData);
 
   return {
-    ...signature,
     typeHash: getTypeHash(typedData),
     to: call.to,
     ensHash: call.toEnsHash
       ? web3.utils.sha3(call.toEnsHash)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    sessionId: getSessionId() + signature.v.slice(2).padStart(2, "0"),
+    // sessionId: getSessionId() + signature.v.slice(2).padStart(2, "0"),
+    sessionId: getSessionId(),
     signer: call.signer,
-    functionSignature: call.methodInterface
-      ? web3.utils.sha3(call.methodInterface)
+    functionSignature: call.method
+      ? web3.utils.sha3(getMethodInterface(call))
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     data: call.data ? "0x" + call.data.slice(10) : "0x",
+    typedData,
   };
 };
 
@@ -204,6 +188,7 @@ export class BatchCall {
   web3: Web3;
   FactoryProxy: Contract;
   factoryProxyAddress: string;
+
   constructor(web3: Web3, contractAddress: string) {
     this.calls = [];
     this.web3 = web3;
@@ -224,15 +209,5 @@ export class BatchCall {
     );
     this.calls = [...this.calls, ...data];
     return data;
-  }
-
-  async execute(activator: string, groupId: number, silentRevert: boolean) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No call have been added.");
-    }
-
-    return await this.FactoryProxy.methods.batchCall_(calls, groupId, silentRevert).send({ from: activator });
   }
 }

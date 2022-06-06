@@ -98,6 +98,21 @@ export class BatchCallPacked {
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
+  verifyMessage(message: string, signature: string, address: string) {
+    const messageAddress = this.web3.eth.accounts.recover(message, signature);
+    return messageAddress.toLowerCase() === address.toLowerCase();
+  }
+
+  decodeData(data: string) {
+    const decodedData = defaultAbiCoder.decode(["bytes32", "address", "uint256", "uint256", "bytes"], data);
+    return {
+      to: decodedData[1],
+      value: decodedData[2],
+      sessionId: decodedData[3],
+      data: decodedData[4],
+    };
+  }
+
   async addTx(tx: BatchCallInputData) {
     const data = await getBatchCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
