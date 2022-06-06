@@ -15,7 +15,6 @@ interface TransferCall {
     nonce: number;
     value: number;
     signer: string;
-    signerPrivateKey?: string;
     afterTimestamp?: number;
     beforeTimestamp?: number;
     maxGas?: number;
@@ -29,9 +28,9 @@ interface Transfer {
     toEnsHash: string;
     value: number;
     signer: string;
-    r: string;
-    s: string;
     sessionId: string;
+    typedData: object;
+    hashedData: string;
 }
 export declare class BatchTransfer {
     calls: Array<Transfer>;
@@ -39,8 +38,20 @@ export declare class BatchTransfer {
     FactoryProxy: Contract;
     factoryProxyAddress: string;
     constructor(web3: Web3, contractAddress: string);
+    decodeData(data: string): {
+        token: any;
+        tokenEnsHash: any;
+        to: any;
+        toEnsHash: any;
+        value: any;
+        nonce: any;
+        afterTimestamp: any;
+        beforeTimestamp: any;
+        maxGas: any;
+        maxGasPrice: any;
+        payable: any;
+    };
     addTx(tx: TransferCall): Promise<Transfer[]>;
     addMultipleTx(txs: TransferCall[]): Promise<Transfer[]>;
-    execute(activator: string, groupId: number, silentRevert: boolean): Promise<any>;
 }
 export {};

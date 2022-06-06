@@ -8,6 +8,7 @@ const {
   BatchMultiCall,
   BatchMultiSigCallPacked,
   BatchMultiSigCall,
+  utils,
 } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
@@ -272,7 +273,7 @@ describe("FactoryProxy contract library", function () {
         to: token20.address,
         data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
         groupId: 1,
-        nonce: 11,
+        nonce: 1,
         method: "transfer",
         params: [
           { name: "to", type: "address", value: accounts[11] },
@@ -296,7 +297,7 @@ describe("FactoryProxy contract library", function () {
           data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
           methodInterface: "transfer(address,uint256)",
           groupId: 1,
-          nonce: 12,
+          nonce: 2,
           method: "transfer",
           params: [
             { name: "to", type: "address", value: accounts[11] },
@@ -311,7 +312,7 @@ describe("FactoryProxy contract library", function () {
           value: 5,
           to: accounts[11],
           groupId: 1,
-          nonce: 13,
+          nonce: 3,
           signerPrivateKey: getPrivateKey(signer),
           signer,
         },
@@ -348,7 +349,7 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
         groupId: 1,
-        nonce: 14,
+        nonce: 4,
         value: 0,
         to: token20.address,
         signer: getSigner(10),
@@ -363,7 +364,7 @@ describe("FactoryProxy contract library", function () {
         {
           data: "",
           groupId: 1,
-          nonce: 15,
+          nonce: 5,
           value: 5,
           to: accounts[11],
           signer: getSigner(10),
@@ -375,7 +376,7 @@ describe("FactoryProxy contract library", function () {
           data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
           value: 0,
           groupId: 1,
-          nonce: 16,
+          nonce: 6,
           to: token20.address,
           signer: getSigner(10),
           flags: {
@@ -393,15 +394,26 @@ describe("FactoryProxy contract library", function () {
 
       expect(decodedData.value).to.eq("5");
     });
+    it("Should verify message", async () => {
+      const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
+
+      const calls = batchCallPacked.calls;
+      const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(calls[0].hashedData).slice(2);
+
+      const sgn = web3.eth.accounts.sign(msg, getPrivateKey(calls[0].signer));
+
+      const isVerified = utils.verifyMessage(msg, sgn.signature, calls[0].signer);
+
+      expect(isVerified).to.eq(true);
+    });
     it("Should execute", async () => {
       const calls = batchCallPacked.calls;
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
 
       const signedCalls = calls.map((item) => {
-        const signature = web3.eth.accounts.sign(
-          FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.hashedData).slice(2),
-          getPrivateKey(item.signer)
-        );
+        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.hashedData).slice(2);
+
+        const signature = web3.eth.accounts.sign(msg, getPrivateKey(item.signer));
 
         return {
           ...item,
@@ -412,6 +424,80 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchCallPacked_(signedCalls, 1, true, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
+  describe("BatchTransfer function", function () {
+    let batchTransfer;
+    it("Add tx for batchTransfer", async () => {
+      batchTransfer = new BatchTransfer(web3, factoryProxy.address);
+      const signer = getSigner(10);
+      const tx = {
+        token: ZERO_ADDRESS,
+        groupId: 1,
+        nonce: 7,
+        to: accounts[12],
+        value: 10,
+        signer,
+        flags: {
+          payment: false,
+        },
+      };
+      await batchTransfer.addTx(tx);
+
+      expect(batchTransfer.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          token: ZERO_ADDRESS,
+          groupId: 1,
+          nonce: 8,
+          to: accounts[12],
+          value: 10,
+          signer,
+          flags: {
+            payment: true,
+          },
+        },
+        {
+          token: token20.address,
+          groupId: 1,
+          nonce: 9,
+          to: accounts[11],
+          value: 5,
+          signer,
+          flags: {
+            payment: false,
+          },
+        },
+      ];
+
+      await batchTransfer.addMultipleTx(txs);
+
+      expect(batchTransfer.calls.length).to.eq(3);
+    });
+    it("Should decode", async () => {
+      const decodedData = batchTransfer.decodeData(batchTransfer.calls[0].hashedData);
+      expect(decodedData.value).to.eq("10");
+    });
+    it("Should execute", async () => {
+      const calls = batchTransfer.calls;
+      const signer = getSigner(10);
+
+      const signedCalls = calls.map((item) => {
+        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+
+        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+        let signature = signingKey.signDigest(messageDigest);
+        signature.v = "0x" + signature.v.toString(16);
+
+        return { ...item, ...signature, sessionId: item.sessionId + signature.v.slice(2).padStart(2, "0") };
+      });
+
+      const data = await factoryProxy.batchTransfer_(signedCalls, 1, true, { from: activator });
 
       expect(data).to.have.property("receipt");
     });

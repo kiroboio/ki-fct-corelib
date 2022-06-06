@@ -34,7 +34,7 @@ interface TransferCall {
   nonce: number;
   value: number;
   signer: string;
-  signerPrivateKey?: string;
+
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
@@ -49,9 +49,9 @@ interface Transfer {
   toEnsHash: string;
   value: number;
   signer: string;
-  r: string;
-  s: string;
   sessionId: string;
+  typedData: object;
+  hashedData: string;
 }
 
 // Move to seperate folder/file where all the helper functions will be located
@@ -132,24 +132,11 @@ const getBatchTransferData = async (
       refund: flags.payment,
     },
   };
-
-  const messageDigest = TypedDataUtils.encodeDigest(typedData);
-
-  let signature;
-
-  if (call.signerPrivateKey) {
-    const signingKey = new ethers.utils.SigningKey(call.signerPrivateKey);
-    signature = signingKey.signDigest(messageDigest);
-    signature.v = "0x" + signature.v.toString(16);
-  } else if (window && "ethereum" in window) {
-    // Do a request for MetaMask to sign EIP712
-  } else {
-    throw new Error("Browser doesn't have a Metamask and signerPrivateKey hasn't been provided");
-  }
+  const hashedData = ethers.utils.hexlify(
+    TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
+  );
 
   return {
-    r: signature.r,
-    s: signature.s,
     signer: call.signer,
     token: call.token,
     tokenEnsHash: call.tokenEnsHash
@@ -160,7 +147,10 @@ const getBatchTransferData = async (
       ? web3.utils.sha3(call.toEnsHash)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    sessionId: getSessionIdERC20() + signature.v.slice(2).padStart(2, "0"),
+    sessionId: getSessionIdERC20(),
+    hashedData,
+    typedData,
+    // sessionId: getSessionIdERC20() + signature.v.slice(2).padStart(2, "0"),
   };
 };
 
@@ -177,6 +167,46 @@ export class BatchTransfer {
     this.factoryProxyAddress = contractAddress;
   }
 
+  decodeData(data: string) {
+    const decodedData = defaultAbiCoder.decode(
+      [
+        "bytes32",
+        "address",
+        "bytes32",
+        "address",
+        "bytes32",
+        "uint256",
+        "uint64",
+        "uint40",
+        "uint40",
+        "uint32",
+        "uint64",
+        "bool",
+      ],
+      data
+    );
+
+    return {
+      token: decodedData[1],
+      tokenEnsHash:
+        decodedData[2] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+          ? decodedData[2]
+          : undefined,
+      to: decodedData[3],
+      toEnsHash:
+        decodedData[4] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+          ? decodedData[4]
+          : undefined,
+      value: decodedData[5].toString(),
+      nonce: decodedData[6].toHexString(),
+      afterTimestamp: decodedData[7],
+      beforeTimestamp: decodedData[8],
+      maxGas: decodedData[9],
+      maxGasPrice: decodedData[10].toString(),
+      payable: decodedData[11],
+    };
+  }
+
   async addTx(tx: TransferCall) {
     const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
@@ -189,15 +219,5 @@ export class BatchTransfer {
     );
     this.calls = [...this.calls, ...data];
     return this.calls;
-  }
-
-  async execute(activator: string, groupId: number, silentRevert: boolean) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No calls haven't been added");
-    }
-
-    return await this.FactoryProxy.methods.batchTransfer_(calls, groupId, silentRevert).send({ from: activator });
   }
 }
