@@ -285,13 +285,6 @@ describe("FactoryProxy contract library", function () {
       };
       await batchCall.addTx(tx);
 
-      //   const decodedData = batchCall.decodeData(batchCall.calls[0].hashedMessage, batchCall.calls[0].hashedTxMessage, [
-      //     { type: "address", name: "to" },
-      //     { type: "uint256", name: "token_amount" },
-      //   ]);
-
-      //   console.log(decodedData);
-
       expect(batchCall.calls.length).to.eq(1);
     });
     it("Should add multiple tx", async () => {
@@ -342,7 +335,85 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchCall_(signedCalls, 1, true, { from: activator });
-      console.log(data);
+
+      expect(data).to.have.property("receipt");
+    });
+  });
+
+  describe("BatchCallPacked function", function () {
+    let batchCallPacked;
+    it("Should add tx to batchCallPacked", async () => {
+      batchCallPacked = new BatchCallPacked(web3, factoryProxy.address);
+
+      const tx = {
+        data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
+        groupId: 1,
+        nonce: 14,
+        value: 0,
+        to: token20.address,
+        signer: getSigner(10),
+      };
+
+      await batchCallPacked.addTx(tx);
+
+      expect(batchCallPacked.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx to batchCallPacked", async () => {
+      const txs = [
+        {
+          data: "",
+          groupId: 1,
+          nonce: 15,
+          value: 5,
+          to: accounts[11],
+          signer: getSigner(10),
+          flags: {
+            payment: true,
+          },
+        },
+        {
+          data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
+          value: 0,
+          groupId: 1,
+          nonce: 16,
+          to: token20.address,
+          signer: getSigner(10),
+          flags: {
+            payment: false,
+            staticCall: true,
+          },
+        },
+      ];
+      await batchCallPacked.addMultipleTx(txs);
+
+      expect(batchCallPacked.calls.length).to.eq(3);
+    });
+    it("Should decode data", async () => {
+      const decodedData = batchCallPacked.decodeData(batchCallPacked.calls[1].hashedData);
+
+      expect(decodedData.value).to.eq("5");
+    });
+    it("Should execute", async () => {
+      const calls = batchCallPacked.calls;
+      const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
+
+      const signedCalls = calls.map((item) => {
+        const signature = web3.eth.accounts.sign(
+          FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.hashedData).slice(2),
+          getPrivateKey(item.signer)
+        );
+
+        return {
+          ...item,
+          r: signature.r,
+          s: signature.s,
+          sessionId: item.sessionId + signature.v.slice(2).padStart(2, "0"),
+        };
+      });
+
+      const data = await factoryProxy.batchCallPacked_(signedCalls, 1, true, { from: activator });
+
+      expect(data).to.have.property("receipt");
     });
   });
 });

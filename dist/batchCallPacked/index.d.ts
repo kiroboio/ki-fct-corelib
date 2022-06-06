@@ -19,13 +19,12 @@ interface BatchCallInputData {
     flags?: Flags;
 }
 interface BatchCallPackedData {
-    r: string;
-    s: string;
     to: string;
     value: string;
     sessionId: string;
     signer: string;
     data: string;
+    hashedData: string;
 }
 export declare class BatchCallPacked {
     calls: Array<BatchCallPackedData>;
@@ -41,14 +40,12 @@ export declare class BatchCallPacked {
     };
     addTx(tx: BatchCallInputData): Promise<BatchCallPackedData[]>;
     addMultipleTx(txs: BatchCallInputData[]): Promise<{
-        r: string;
-        s: string;
         to: string;
         value: string;
         signer: string;
         sessionId: string;
         data: string;
+        hashedData: string;
     }[]>;
-    execute(activator: string, groupId: number, silentRevert: boolean): Promise<any>;
 }
 export {};

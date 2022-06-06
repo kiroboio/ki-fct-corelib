@@ -36,13 +36,12 @@ interface BatchCallInputData {
 }
 
 interface BatchCallPackedData {
-  r: string;
-  s: string;
   to: string;
   value: string;
   sessionId: string;
   signer: string;
   data: string;
+  hashedData: string;
 }
 
 const defaultFlags = {
@@ -53,7 +52,6 @@ const defaultFlags = {
 
 const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputData) => {
   const typeHash = await factoryProxy.methods.BATCH_CALL_PACKED_TYPEHASH_().call();
-  const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
 
   const group = getGroupId(call.groupId);
   const tnonce = getNonce(call.nonce);
@@ -68,22 +66,16 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
 
   const hashedData = defaultAbiCoder.encode(
     ["bytes32", "address", "uint256", "uint256", "bytes"],
-    [typeHash, call.to, call.value, getSessionId(), call.data]
+    [typeHash, call.to, call.value, getSessionId(), call.data || "0x"]
   );
 
-  const signature = await web3.eth.sign(FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(hashedData).slice(2), call.signer);
-  const r = signature.slice(0, 66);
-  const s = "0x" + signature.slice(66, 130);
-  const v = "0x" + signature.slice(130);
-
   return {
-    r,
-    s,
     to: call.to,
     value: call.value,
     signer: call.signer,
-    sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
-    data: call.data,
+    sessionId: getSessionId(),
+    data: call.data || "0x",
+    hashedData,
   };
 };
 
@@ -107,8 +99,8 @@ export class BatchCallPacked {
     const decodedData = defaultAbiCoder.decode(["bytes32", "address", "uint256", "uint256", "bytes"], data);
     return {
       to: decodedData[1],
-      value: decodedData[2],
-      sessionId: decodedData[3],
+      value: decodedData[2].toString(),
+      sessionId: decodedData[3].toHexString(),
       data: decodedData[4],
     };
   }
@@ -123,15 +115,5 @@ export class BatchCallPacked {
     const data = await Promise.all(txs.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return data;
-  }
-
-  async execute(activator: string, groupId: number, silentRevert: boolean) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No call have been added.");
-    }
-
-    return await this.FactoryProxy.methods.batchCallPacked_(calls, groupId, silentRevert).send({ from: activator });
   }
 }
