@@ -35,12 +35,11 @@ interface TransferCall {
 
 interface Transfer {
   signer: string;
-  r: string;
-  s: string;
   token: string;
   to: string;
   value: number;
   sessionId: string;
+  hashedData: string;
 }
 
 // DefaultFlag - "f0" // payment + eip712
@@ -49,8 +48,7 @@ const defaultFlags = {
   payment: true,
 };
 
-const getBatchTransferPackedData = async (web3: Web3, FactoryProxy: Contract, call: TransferCall) => {
-  const FACTORY_DOMAIN_SEPARATOR = await FactoryProxy.methods.DOMAIN_SEPARATOR().call();
+const getBatchTransferPackedData = async (FactoryProxy: Contract, call: TransferCall) => {
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId); // Has to be a way to determine group dynamically
@@ -65,31 +63,19 @@ const getBatchTransferPackedData = async (web3: Web3, FactoryProxy: Contract, ca
   const getSessionId = () => {
     return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
   };
-  const hashedData = {
-    ...call,
-    _hash: defaultAbiCoder.encode(
-      ["bytes32", "address", "address", "uint256", "uint256"],
-      [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]
-    ),
-  };
-
-  const signature = await web3.eth.sign(
-    FACTORY_DOMAIN_SEPARATOR + ethers.utils.keccak256(hashedData._hash).slice(2),
-    call.signer
+  const hashedData = defaultAbiCoder.encode(
+    ["bytes32", "address", "address", "uint256", "uint256"],
+    [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]
   );
-
-  const r = signature.slice(0, 66);
-  const s = "0x" + signature.slice(66, 130);
-  const v = "0x" + signature.slice(130);
 
   return {
     signer: call.signer,
-    r,
-    s,
     token: call.token,
     to: call.to,
     value: call.value,
-    sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
+    // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
+    sessionId: getSessionId(),
+    hashedData: hashedData,
   };
 };
 
@@ -105,33 +91,26 @@ export class BatchTransferPacked {
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
+  decodeData(data: string) {
+    const decodedData = defaultAbiCoder.decode(["bytes32", "address", "address", "uint256", "uint256"], data);
+
+    return {
+      token: decodedData[1],
+      to: decodedData[2],
+      value: decodedData[3],
+      sessionId: decodedData[4],
+    };
+  }
+
   async addTx(tx: TransferCall) {
-    const data = await getBatchTransferPackedData(this.web3, this.FactoryProxy, tx);
+    const data = await getBatchTransferPackedData(this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleTx(tx: TransferCall[]) {
-    const data = await Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.web3, this.FactoryProxy, item)));
+    const data = await Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.FactoryProxy, item)));
     this.calls = [...this.calls, ...data];
     return this.calls;
-  }
-
-  removeTx(txIndex: number) {
-    if (this.calls.length === 0) {
-      throw new Error("No calls have been added");
-    }
-    this.calls.splice(txIndex, 1);
-    return this.calls;
-  }
-
-  async execute(activator: string, groupId: number, silentRevert: boolean) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No calls haven't been added");
-    }
-
-    return await this.FactoryProxy.methods.batchTransferPacked_(calls, groupId, silentRevert).send({ from: activator });
   }
 }

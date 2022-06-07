@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchTransferPacked = void 0;
-const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
@@ -36,19 +35,22 @@ const getBatchTransferPackedData = (web3, FactoryProxy, call) => __awaiter(void 
     const getSessionId = () => {
         return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     };
-    const hashedData = Object.assign(Object.assign({}, call), { _hash: utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]) });
-    const signature = yield web3.eth.sign(FACTORY_DOMAIN_SEPARATOR + ethers_1.ethers.utils.keccak256(hashedData._hash).slice(2), call.signer);
-    const r = signature.slice(0, 66);
-    const s = "0x" + signature.slice(66, 130);
-    const v = "0x" + signature.slice(130);
+    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]);
+    // const signature = await web3.eth.sign(
+    //   FACTORY_DOMAIN_SEPARATOR + ethers.utils.keccak256(hashedData._hash).slice(2),
+    //   call.signer
+    // );
+    // const r = signature.slice(0, 66);
+    // const s = "0x" + signature.slice(66, 130);
+    // const v = "0x" + signature.slice(130);
     return {
         signer: call.signer,
-        r,
-        s,
         token: call.token,
         to: call.to,
         value: call.value,
-        sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
+        // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
+        sessionId: getSessionId(),
+        hashedData: hashedData,
     };
 });
 class BatchTransferPacked {
@@ -57,6 +59,15 @@ class BatchTransferPacked {
         this.web3 = web3;
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
+    }
+    decodeData(data) {
+        const decodedData = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "uint256", "uint256"], data);
+        return {
+            token: decodedData[1],
+            to: decodedData[2],
+            value: decodedData[3],
+            sessionId: decodedData[4],
+        };
     }
     addTx(tx) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -70,22 +81,6 @@ class BatchTransferPacked {
             const data = yield Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.web3, this.FactoryProxy, item)));
             this.calls = [...this.calls, ...data];
             return this.calls;
-        });
-    }
-    removeTx(txIndex) {
-        if (this.calls.length === 0) {
-            throw new Error("No calls have been added");
-        }
-        this.calls.splice(txIndex, 1);
-        return this.calls;
-    }
-    execute(activator, groupId, silentRevert) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const calls = this.calls;
-            if (calls.length === 0) {
-                throw new Error("No calls haven't been added");
-            }
-            return yield this.FactoryProxy.methods.batchTransferPacked_(calls, groupId, silentRevert).send({ from: activator });
         });
     }
 }

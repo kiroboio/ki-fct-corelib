@@ -20,21 +20,24 @@ interface TransferCall {
 }
 interface Transfer {
     signer: string;
-    r: string;
-    s: string;
     token: string;
     to: string;
     value: number;
     sessionId: string;
+    hashedData: string;
 }
 export declare class BatchTransferPacked {
     calls: Array<Transfer>;
     web3: Web3;
     FactoryProxy: Contract;
     constructor(web3: Web3, contractAddress: string);
+    decodeData(data: string): {
+        token: any;
+        to: any;
+        value: any;
+        sessionId: any;
+    };
     addTx(tx: TransferCall): Promise<Transfer[]>;
     addMultipleTx(tx: TransferCall[]): Promise<Transfer[]>;
-    removeTx(txIndex: number): Transfer[];
-    execute(activator: string, groupId: number, silentRevert: boolean): Promise<any>;
 }
 export {};

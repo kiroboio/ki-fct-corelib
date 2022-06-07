@@ -502,4 +502,81 @@ describe("FactoryProxy contract library", function () {
       expect(data).to.have.property("receipt");
     });
   });
+  describe("BatchTransferPacked function", function () {
+    let batchTransferPacked;
+    it("Add tx for batchTransfer", async () => {
+      batchTransferPacked = new BatchTransferPacked(web3, factoryProxy.address);
+      const signer = getSigner(10);
+      const tx = {
+        token: ZERO_ADDRESS,
+        groupId: 1,
+        nonce: 10,
+        to: accounts[12],
+        value: 10,
+        signer,
+        flags: {
+          payment: false,
+        },
+      };
+      await batchTransferPacked.addTx(tx);
+
+      expect(batchTransferPacked.calls.length).to.eq(1);
+    });
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          token: ZERO_ADDRESS,
+          groupId: 1,
+          nonce: 11,
+          to: accounts[12],
+          value: 10,
+          signer,
+          flags: {
+            payment: true,
+          },
+        },
+        {
+          token: token20.address,
+          groupId: 1,
+          nonce: 12,
+          to: accounts[11],
+          value: 5,
+          signer,
+          flags: {
+            payment: false,
+          },
+        },
+      ];
+
+      await batchTransferPacked.addMultipleTx(txs);
+
+      expect(batchTransferPacked.calls.length).to.eq(3);
+    });
+    it("Should decode", async () => {
+      const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[0].hashedData);
+      expect(decodedData.value).to.eq("10");
+    });
+    it("Should execute", async () => {
+      const calls = batchTransferPacked.calls;
+      const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
+
+      const signedCalls = calls.map((item) => {
+        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.hashedData).slice(2);
+
+        const signature = web3.eth.accounts.sign(msg, getPrivateKey(item.signer));
+
+        return {
+          ...item,
+          r: signature.r,
+          s: signature.s,
+          sessionId: item.sessionId + signature.v.slice(2).padStart(2, "0"),
+        };
+      });
+
+      const data = await factoryProxy.batchTransferPacked_(signedCalls, 1, true, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
 });
