@@ -768,8 +768,7 @@ describe("FactoryProxy contract library", function () {
 
     it("Should decode", async () => {
       const decodedData = batchMultiCallPacked.decodeBatch(batchMultiCallPacked.calls[0].encodedData);
-      // expect(decodedData.value).to.eq("10");
-      console.log(decodedData);
+      expect(decodedData[0].value).to.eq("0");
     });
     it("Should execute", async () => {
       const calls = batchMultiCallPacked.calls;
@@ -789,6 +788,166 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchMultiCallPacked_(signedCalls, 1, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
+  describe("BatchMultiSigCall function", function () {
+    let batchMultiSigCall;
+    it("Should add batchMulticall", async () => {
+      batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
+
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const tx = {
+        groupId: 1,
+        nonce: 17,
+        flags: {
+          payment: false,
+          flow: true,
+        },
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[11] },
+              { name: "token_amount", type: "uint256", value: "15" },
+            ],
+            signer: signer1,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "20" },
+            ],
+            signer: signer2,
+          },
+        ],
+      };
+
+      await batchMultiSigCall.addBatchCall(tx);
+
+      expect(batchMultiSigCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple batchMulticalls", async () => {
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 18,
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "15" },
+              ],
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[12] },
+                { name: "token_amount", type: "uint256", value: "20" },
+              ],
+              signer: signer2,
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 19,
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "15" },
+              ],
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[12] },
+                { name: "token_amount", type: "uint256", value: "20" },
+              ],
+              signer: signer2,
+            },
+          ],
+        },
+      ];
+
+      await batchMultiSigCall.addMultipleBatchCalls(txs);
+
+      expect(batchMultiSigCall.calls.length).to.eq(3);
+    });
+    it("Should decode limits", async () => {
+      const encodedLimits = batchMultiSigCall.calls[0].encodedLimits;
+      const decodedLimits = batchMultiSigCall.decodeLimits(encodedLimits);
+
+      expect(decodedLimits.maxGasPrice).to.eq("25000000000");
+    });
+    it("Should decode transactions", async () => {
+      const txs = batchMultiSigCall.calls[0].mcall.map((item) => ({
+        encodedData: item.encodedData,
+        encodedDetails: item.encodedDetails,
+        params:
+          item.functionSignature !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+            ? [
+                { type: "address", name: "to" },
+                { type: "uint256", name: "token_amount" },
+              ]
+            : [],
+      }));
+      const decodedTxs = batchMultiSigCall.decodeTransactions(txs);
+
+      expect(decodedTxs[0].token_amount).to.eq("15");
+    });
+    it("Should execute", async () => {
+      const calls = batchMultiSigCall.calls;
+      const signer = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const getSignature = (messageDigest, signer) => {
+        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+        let signature = signingKey.signDigest(messageDigest);
+        signature.v = "0x" + signature.v.toString(16);
+
+        return signature;
+      };
+
+      const signedCalls = calls.map((item) => {
+        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+
+        const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
+
+        return { ...item, signatures };
+      });
+
+      const data = await factoryProxy.batchMultiSigCall_(signedCalls, 1, { from: activator });
 
       expect(data).to.have.property("receipt");
     });

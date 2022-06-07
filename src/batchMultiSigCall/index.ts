@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
@@ -14,6 +15,17 @@ import {
   getFlags,
 } from "../helpers";
 
+interface Params {
+  name: string;
+  type: string;
+  value: string;
+}
+
+interface DecodeTx {
+  encodedData: string;
+  encodedDetails: string;
+  params?: Params[];
+}
 interface BatchFlags {
   staticCall?: boolean;
   cancelable?: boolean;
@@ -32,9 +44,9 @@ interface MultiSigCallInputData {
   to: string;
   signer: string;
 
+  method?: string;
   data?: string;
-  methodInterface?: string;
-  methodData?: Object;
+  params?: Params[];
 
   toEnsHash?: string;
   afterTimestamp?: number;
@@ -48,8 +60,6 @@ interface MultiSigCallInputData {
 interface BatchMultiSigCallInputData {
   groupId: number;
   nonce: number;
-  signers: string[];
-  signerPrivateKeys?: string[];
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
@@ -68,18 +78,16 @@ interface MultiSigCall {
   to: string;
   ensHash?: string;
   data: string;
-}
-
-interface Signature {
-  r: string;
-  s: string;
-  v: string;
+  encodedData: string;
+  encodedDetails: string;
 }
 
 interface BatchMultiSigCallData {
   typeHash: Uint8Array;
   sessionId: string;
-  signatures: Signature[];
+  typedData: object;
+  encodedMessage: string;
+  encodedLimits: string;
   mcall: MultiSigCall[];
 }
 
@@ -89,25 +97,15 @@ const contractInteractionDefaults = [
   { name: "method_params_length", type: "uint256" },
 ];
 
-const generateTxType = (item: MultiSigCallInputData) => {
-  return item.methodData
-    ? [
-        ...contractInteractionDefaults,
-        ...Object.entries(item.methodData).map(([key, value]) => ({ name: key, type: value[0] })),
-      ]
-    : [{ name: "details", type: "Transaction_" }];
+const getMethodInterface = (call: MultiSigCallInputData) => {
+  return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
 };
 
-function arraysEqual(a, b) {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length !== b.length) return false;
-
-  for (var i = 0; i < a.length; ++i) {
-    if (JSON.stringify(a[1]) !== JSON.stringify(b[1])) return false;
-  }
-  return true;
-}
+const generateTxType = (item: MultiSigCallInputData) => {
+  return item.params
+    ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
+    : [{ name: "details", type: "Transaction_" }];
+};
 
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
@@ -133,96 +131,44 @@ const getBatchTransferData = async (
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
-  // Creates types and batchMultiCallTypes for EIP712 sign
-  const txTypes = call.multiCalls.reduce(
-    (acc, item, index) => {
-      const txTypeExists = Object.entries(acc.txTypes).some((txType) => arraysEqual(txType[1], generateTxType(item)));
-
-      // If multicall has encoded contract data
-      if (item.data) {
-        if (txTypeExists) {
-          const typeName = Object.keys(acc.txTypes).find((key) => arraysEqual(acc.txTypes[key], generateTxType(item)));
-          return {
-            batchMulticallTypes: [...acc.batchMulticallTypes, { name: `transaction_${index + 1}`, type: typeName }],
-            txTypes: acc.txTypes,
-          };
-        }
-        return {
-          batchMulticallTypes: [
-            ...acc.batchMulticallTypes,
-            { name: `transaction_${index + 1}`, type: `ContractInteraction_${index + 1}` },
-          ],
-          txTypes: {
-            ...acc.txTypes,
-            [`ContractInteraction_${index + 1}`]: [
-              ...contractInteractionDefaults,
-              ...Object.entries(item.methodData).map(([key, value]) => ({ name: key, type: value[0] })),
-            ],
-          },
-        };
-      }
-      // Else multicall is ETH transfer
-      return {
-        batchMulticallTypes: [...acc.batchMulticallTypes, { name: `transaction_${index + 1}`, type: "EthTransfer" }],
-        txTypes: txTypeExists
-          ? acc.txTypes
-          : { ...acc.txTypes, EthTransfer: [{ name: "details", type: "Transaction_" }] },
-      };
-    },
-    {
-      batchMulticallTypes: [],
-      txTypes: {},
-    }
-  );
-
   // Creates messages from multiCalls array for EIP712 sign
   // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
   // Else multicall is ETH Transfer - add only details
-  const typedDataMessage = call.multiCalls.reduce(
-    (acc, item, index) => ({
+  const typedDataMessage = call.multiCalls.reduce((acc, item, index) => {
+    const additionalTxData = item.params
+      ? {
+          method_params_offset: "0x60", //'0x180', // '480', // 13*32
+          method_params_length: "0x40",
+          ...item.params.reduce(
+            (acc, param) => ({
+              ...acc,
+              [param.name]: param.value,
+            }),
+            {}
+          ),
+        }
+      : {};
+
+    return {
       ...acc,
-      [`transaction_${index + 1}`]: item.data
-        ? {
-            details: {
-              signer: item.signer,
-              call_address: item.to,
-              call_ens: item.toEnsHash || "",
-              eth_value: item.value,
-              gas_limit: Number.parseInt("0x" + maxGas),
-              view_only: item.flags?.viewOnly || false,
-              continue_on_fail: item.flags?.continueOnFail || false,
-              stop_on_fail: item.flags?.stopOnFail || false,
-              stop_on_success: item.flags?.stopOnSuccess || false,
-              revert_on_success: item.flags?.revertOnSuccess || false,
-              method_interface: item.methodInterface || "",
-            },
-            method_params_offset: "0x60", //'0x180', // '480', // 13*32
-            method_params_length: "0x40",
-            ...Object.entries(item.methodData).reduce((acc, [key, value]) => {
-              return {
-                ...acc,
-                [key]: value[1],
-              };
-            }, {}),
-          }
-        : {
-            details: {
-              signer: item.signer,
-              call_address: item.to,
-              call_ens: item.toEnsHash || "",
-              eth_value: item.value,
-              gas_limit: Number.parseInt("0x" + maxGas),
-              view_only: item.flags?.viewOnly || false,
-              continue_on_fail: item.flags?.continueOnFail || false,
-              stop_on_fail: item.flags?.stopOnFail || false,
-              stop_on_success: item.flags?.stopOnSuccess || false,
-              revert_on_success: item.flags?.revertOnSuccess || false,
-              method_interface: "",
-            },
-          },
-    }),
-    {}
-  );
+      [`transaction_${index + 1}`]: {
+        details: {
+          signer: item.signer,
+          call_address: item.to,
+          call_ens: item.toEnsHash || "",
+          eth_value: item.value,
+          gas_limit: Number.parseInt("0x" + maxGas),
+          view_only: item.flags?.viewOnly || false,
+          continue_on_fail: item.flags?.continueOnFail || false,
+          stop_on_fail: item.flags?.stopOnFail || false,
+          stop_on_success: item.flags?.stopOnSuccess || false,
+          revert_on_success: item.flags?.revertOnSuccess || false,
+          method_interface: item.method ? getMethodInterface(item) : "",
+        },
+        ...additionalTxData,
+      },
+    };
+  }, {});
 
   const typedData = {
     types: {
@@ -233,7 +179,10 @@ const getBatchTransferData = async (
         { name: "verifyingContract", type: "address" },
         { name: "salt", type: "bytes32" },
       ],
-      BatchMultiSigCall_: [{ name: "limits", type: "Limits_" }, ...txTypes.batchMulticallTypes],
+      BatchMultiSigCall_: [
+        { name: "limits", type: "Limits_" },
+        ...call.multiCalls.map((_, index) => ({ name: `transaction_${index + 1}`, type: `Transaction_${index + 1}` })),
+      ],
       Limits_: [
         { name: "nonce", type: "uint64" },
         { name: "refund", type: "bool" },
@@ -254,7 +203,13 @@ const getBatchTransferData = async (
         { name: "revert_on_success", type: "bool" },
         { name: "method_interface", type: "string" },
       ],
-      ...txTypes.txTypes,
+      ...call.multiCalls.reduce(
+        (acc, item, index) => ({
+          ...acc,
+          [`Transaction_${index + 1}`]: generateTxType(item),
+        }),
+        {}
+      ),
     },
     primaryType: "BatchMultiSigCall_",
     domain: {
@@ -276,31 +231,37 @@ const getBatchTransferData = async (
     },
   };
 
-  const messageDigest = TypedDataUtils.encodeDigest(typedData);
+  const encodedMessage = ethers.utils.hexlify(
+    TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
+  );
 
-  const getSignature = async (signer: string, i: number): Promise<Signature> => {
-    if (call.signerPrivateKeys) {
-      let signature;
-      const signingKey = new ethers.utils.SigningKey(call.signerPrivateKeys[i]);
-      signature = signingKey.signDigest(messageDigest);
-      signature.v = "0x" + signature.v.toString(16);
-      return signature;
-    } else if (window && "ethereum" in window) {
-      // Do a request for MetaMask to sign EIP712
-      return;
-    } else {
-      throw new Error("Browser doesn't have a Metamask and signerPrivateKey hasn't been provided");
-    }
+  const encodedLimits = ethers.utils.hexlify(TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
+
+  const getEncodedMulticallData = (index: number) => {
+    const encodedData = ethers.utils.hexlify(
+      TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`])
+    );
+
+    const encodedDetails = ethers.utils.hexlify(
+      TypedDataUtils.encodeData(typedData, `Transaction_`, typedData.message[`transaction_${index + 1}`].details)
+    );
+
+    return {
+      encodedData,
+      encodedDetails,
+    };
   };
 
   return {
-    signatures: await Promise.all(call.signers.map(getSignature)),
+    typedData,
     typeHash: TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
     sessionId: getSessionId(),
+    encodedMessage,
+    encodedLimits,
     mcall: call.multiCalls.map((item, index) => ({
       typeHash: TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type),
-      functionSignature: item.methodInterface
-        ? web3.utils.sha3(item.methodInterface)
+      functionSignature: item.method
+        ? web3.utils.sha3(getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       value: item.value,
       signer: item.signer,
@@ -311,6 +272,7 @@ const getBatchTransferData = async (
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       data: item.data && item.data.length > 0 ? "0x" + item.data.slice(10) : "0x",
+      ...getEncodedMulticallData(index),
     })),
   };
 };
@@ -326,6 +288,88 @@ export class BatchMultiSigCall {
     // @ts-ignore
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
     this.factoryProxyAddress = contractAddress;
+  }
+
+  decodeLimits(encodedLimits: string) {
+    const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+
+    return {
+      nonce: lim[1].toHexString(),
+      payment: lim[2],
+      afterTimestamp: lim[3],
+      beforeTimestamp: lim[4],
+      maxGasPrice: lim[5].toString(),
+    };
+  }
+
+  decodeTransactions(txs: DecodeTx[]) {
+    return txs.map((tx) => {
+      const data =
+        tx.params && tx.params.length !== 0
+          ? defaultAbiCoder.decode(
+              ["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)],
+              tx.encodedData
+            )
+          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedData);
+
+      const details = defaultAbiCoder.decode(
+        [
+          "bytes32",
+          "address",
+          "address",
+          "bytes32",
+          "uint256",
+          "uint32",
+          "bool",
+          "bool",
+          "bool",
+          "bool",
+          "bool",
+          "bytes32",
+        ],
+        tx.encodedDetails
+      );
+
+      const defaultReturn = {
+        typeHash: data[0],
+        txHash: data[1],
+        transaction: {
+          signer: details[1],
+          to: details[2],
+          toEnsHash:
+            details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              ? details[3]
+              : undefined,
+          value: details[4].toString(),
+          gasLimit: details[5],
+          staticCall: details[6],
+          continueOnFail: details[7],
+          stopOnFail: details[8],
+          stopOnSuccess: details[9],
+          revertOnSuccess: details[10],
+          methodHash:
+            details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              ? details[11]
+              : undefined,
+        },
+      };
+
+      const extraData =
+        tx.params && tx.params.length !== 0
+          ? tx.params.reduce(
+              (acc, item, i) => ({
+                ...acc,
+                [item.name]: ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i],
+              }),
+              {}
+            )
+          : {};
+
+      return {
+        ...defaultReturn,
+        ...extraData,
+      };
+    });
   }
 
   async addBatchCall(tx: BatchMultiSigCallInputData) {
