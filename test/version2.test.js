@@ -294,10 +294,9 @@ describe("FactoryProxy contract library", function () {
         {
           value: 0,
           to: token20.address,
-          data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
-          methodInterface: "transfer(address,uint256)",
           groupId: 1,
           nonce: 2,
+          data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
           method: "transfer",
           params: [
             { name: "to", type: "address", value: accounts[11] },
@@ -555,7 +554,6 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should decode", async () => {
       const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[0].hashedData);
-      console.log(decodedData);
       expect(decodedData.value).to.eq("10");
     });
     it("Should execute", async () => {
@@ -576,6 +574,153 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchTransferPacked_(signedCalls, 1, true, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
+
+  describe("BatchMultiCall function", async () => {
+    let batchMultiCall;
+    it("Should add tx", async () => {
+      batchMultiCall = new BatchMultiCall(web3, factoryProxy.address);
+      const signer = getSigner(10);
+
+      const tx = {
+        groupId: 1,
+        nonce: 13,
+        signer,
+        flags: {
+          payment: false,
+        },
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[11] },
+              { name: "token_amount", type: "uint256", value: "5" },
+            ],
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[15], 5).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[15] },
+              { name: "token_amount", type: "uint256", value: "5" },
+            ],
+          },
+          {
+            value: 10,
+            to: accounts[10],
+          },
+        ],
+      };
+
+      await batchMultiCall.addBatchCall(tx);
+
+      expect(batchMultiCall.calls.length).to.eq(1);
+    });
+    it("Should add multiple txs", async () => {
+      const signer = getSigner(10);
+
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 14,
+          signer,
+          flags: {
+            payment: false,
+          },
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[12], 51).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[12] },
+                { name: "token_amount", type: "uint256", value: "51" },
+              ],
+            },
+            {
+              value: 10,
+              to: accounts[10],
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 15,
+          signer,
+          flags: {
+            payment: false,
+          },
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[13], 22).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[13] },
+                { name: "token_amount", type: "uint256", value: "22" },
+              ],
+            },
+            {
+              value: 103,
+              to: accounts[11],
+            },
+          ],
+        },
+      ];
+
+      await batchMultiCall.addMultipleBatchCalls(txs);
+
+      expect(batchMultiCall.calls.length).to.eq(3);
+    });
+    it("Should decode limits", async () => {
+      const batch = batchMultiCall.calls[0];
+      const limits = batchMultiCall.decodeLimits(batch.encodedLimits);
+
+      expect(limits.maxGasPrice).to.eq("25000000000");
+    });
+    it("Should decode batch txs", async () => {
+      const txs = batchMultiCall.calls[0].mcall.map((item) => ({
+        encodedData: item.encodedData,
+        encodedDetails: item.encodedDetails,
+        params:
+          item.functionSignature !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+            ? [
+                { type: "address", name: "to" },
+                { type: "uint256", name: "token_amount" },
+              ]
+            : [],
+      }));
+
+      const decodedTxs = batchMultiCall.decodeTransactions(txs);
+
+      expect(decodedTxs[0].token_amount).to.eq("5");
+    });
+
+    it("Should execute", async () => {
+      const calls = batchMultiCall.calls;
+      const signer = getSigner(10);
+
+      const signedCalls = calls.map((item) => {
+        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+
+        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+        let signature = signingKey.signDigest(messageDigest);
+        signature.v = "0x" + signature.v.toString(16);
+
+        return { ...item, ...signature };
+      });
+
+      const data = await factoryProxy.batchMultiCall_(signedCalls, 1, { from: activator });
 
       expect(data).to.have.property("receipt");
     });
