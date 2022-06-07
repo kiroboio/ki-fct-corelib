@@ -53,11 +53,9 @@ interface MultiCall {
 }
 
 interface MultiCallPacked {
-  r: string;
-  s: string;
+  encodedData: string;
   sessionId: string;
   signer: string;
-  v: string;
   mcall: MultiCall[];
 }
 
@@ -69,7 +67,7 @@ const defaultFlags = {
 };
 
 const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: MultiCallPackedInput) => {
-  const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
+  // const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
   const typeHash = await factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId);
@@ -87,11 +85,6 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), item.data])]
   );
 
-  const signature = await web3.eth.sign(FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(mcallHash).slice(2), call.signer);
-  const r = signature.slice(0, 66);
-  const s = "0x" + signature.slice(66, 130);
-  const v = "0x" + signature.slice(130);
-
   return {
     mcall: call.mcall.map((item) => ({
       value: item.value,
@@ -100,9 +93,7 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
       flags: manageCallFlags(item),
       data: item.data,
     })),
-    r,
-    s,
-    v,
+    encodedData: mcallHash,
     sessionId: getSessionId(),
     signer: call.signer,
   };
@@ -119,17 +110,20 @@ export class BatchMultiCallPacked {
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
   }
 
+  decodeBatch(encodedData: string) {
+    const data = defaultAbiCoder.decode(["(bytes32,address,uint256,uint256,bytes)[]"], encodedData);
+
+    return data[0].map((item) => ({
+      to: item[1],
+      value: item[2].toString(),
+      sessionId: item[3].toHexString(),
+      data: item[4],
+    }));
+  }
+
   async addPackedMulticall(tx: MultiCallPackedInput) {
     const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
-    return this.calls;
-  }
-
-  removePackedMulticall(index: number) {
-    if (this.calls.length === 0) {
-      throw new Error("No calls have been added");
-    }
-    this.calls.splice(index, 1);
     return this.calls;
   }
 
@@ -137,15 +131,5 @@ export class BatchMultiCallPacked {
     const data = await Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return this.calls;
-  }
-
-  async execute(activator: string, groupId: number) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No calls have been added");
-    }
-
-    return await this.FactoryProxy.methods.batchMultiCallPacked_(calls, groupId).send({ from: activator });
   }
 }

@@ -725,4 +725,72 @@ describe("FactoryProxy contract library", function () {
       expect(data).to.have.property("receipt");
     });
   });
+
+  describe("BatchMultiCallPacked function", async () => {
+    let batchMultiCallPacked;
+    it("Add tx for batchTransfer", async () => {
+      batchMultiCallPacked = new BatchMultiCallPacked(web3, factoryProxy.address);
+      const signer = getSigner(10);
+      const tx = {
+        groupId: 1,
+        nonce: 16,
+        signer,
+        flags: {
+          payment: true,
+        },
+        mcall: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
+            gasLimit: 0,
+            onFailStop: true,
+            onFailContinue: false,
+            onSuccessStop: false,
+            onSuccessRevert: false,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[12], 12).encodeABI(),
+            gasLimit: 0,
+            onFailStop: true,
+            onFailContinue: false,
+            onSuccessStop: false,
+            onSuccessRevert: false,
+          },
+        ],
+      };
+      await batchMultiCallPacked.addPackedMulticall(tx);
+
+      expect(batchMultiCallPacked.calls.length).to.eq(1);
+    });
+
+    it("Should decode", async () => {
+      const decodedData = batchMultiCallPacked.decodeBatch(batchMultiCallPacked.calls[0].encodedData);
+      // expect(decodedData.value).to.eq("10");
+      console.log(decodedData);
+    });
+    it("Should execute", async () => {
+      const calls = batchMultiCallPacked.calls;
+      const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
+
+      const signedCalls = calls.map((item) => {
+        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.encodedData).slice(2);
+
+        const signature = web3.eth.accounts.sign(msg, getPrivateKey(item.signer));
+
+        return {
+          ...item,
+          r: signature.r,
+          s: signature.s,
+          v: signature.v,
+        };
+      });
+
+      const data = await factoryProxy.batchMultiCallPacked_(signedCalls, 1, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
 });

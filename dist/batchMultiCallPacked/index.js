@@ -23,7 +23,7 @@ const defaultFlags = {
     eip712: false,
 };
 const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
-    const FACTORY_DOMAIN_SEPARATOR = yield factoryProxy.methods.DOMAIN_SEPARATOR().call();
+    // const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
     const typeHash = yield factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
     const group = (0, helpers_1.getGroupId)(call.groupId);
     const tnonce = (0, helpers_1.getNonce)(call.nonce);
@@ -34,10 +34,6 @@ const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
     const eip712 = (0, helpers_1.getFlags)(Object.assign(Object.assign({}, defaultFlags), call.flags), false);
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     const mcallHash = utils_1.defaultAbiCoder.encode(["(bytes32,address,uint256,uint256,bytes)[]"], [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), item.data])]);
-    const signature = yield web3.eth.sign(FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(mcallHash).slice(2), call.signer);
-    const r = signature.slice(0, 66);
-    const s = "0x" + signature.slice(66, 130);
-    const v = "0x" + signature.slice(130);
     return {
         mcall: call.mcall.map((item) => ({
             value: item.value,
@@ -46,9 +42,7 @@ const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
             flags: (0, helpers_1.manageCallFlags)(item),
             data: item.data,
         })),
-        r,
-        s,
-        v,
+        encodedData: mcallHash,
         sessionId: getSessionId(),
         signer: call.signer,
     };
@@ -60,6 +54,15 @@ class BatchMultiCallPacked {
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
     }
+    decodeBatch(encodedData) {
+        const data = utils_1.defaultAbiCoder.decode(["(bytes32,address,uint256,uint256,bytes)[]"], encodedData);
+        return data[0].map((item) => ({
+            to: item[1],
+            value: item[2].toString(),
+            sessionId: item[3].toHexString(),
+            data: item[4],
+        }));
+    }
     addPackedMulticall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
@@ -67,27 +70,11 @@ class BatchMultiCallPacked {
             return this.calls;
         });
     }
-    removePackedMulticall(index) {
-        if (this.calls.length === 0) {
-            throw new Error("No calls have been added");
-        }
-        this.calls.splice(index, 1);
-        return this.calls;
-    }
     addMultiplePackedMulticalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
             return this.calls;
-        });
-    }
-    execute(activator, groupId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const calls = this.calls;
-            if (calls.length === 0) {
-                throw new Error("No calls have been added");
-            }
-            return yield this.FactoryProxy.methods.batchMultiCallPacked_(calls, groupId).send({ from: activator });
         });
     }
 }

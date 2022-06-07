@@ -35,11 +35,9 @@ interface MultiCall {
     data: string;
 }
 interface MultiCallPacked {
-    r: string;
-    s: string;
+    encodedData: string;
     sessionId: string;
     signer: string;
-    v: string;
     mcall: MultiCall[];
 }
 export declare class BatchMultiCallPacked {
@@ -47,9 +45,8 @@ export declare class BatchMultiCallPacked {
     web3: Web3;
     FactoryProxy: Contract;
     constructor(web3: Web3, contractAddress: string);
+    decodeBatch(encodedData: string): any;
     addPackedMulticall(tx: MultiCallPackedInput): Promise<MultiCallPacked[]>;
-    removePackedMulticall(index: number): MultiCallPacked[];
     addMultiplePackedMulticalls(txs: MultiCallPackedInput[]): Promise<MultiCallPacked[]>;
-    execute(activator: string, groupId: number): Promise<any>;
 }
 export {};
