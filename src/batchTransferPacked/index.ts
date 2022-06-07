@@ -63,6 +63,7 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
   const getSessionId = () => {
     return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
   };
+
   const hashedData = defaultAbiCoder.encode(
     ["bytes32", "address", "address", "uint256", "uint256"],
     [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]
@@ -97,8 +98,8 @@ export class BatchTransferPacked {
     return {
       token: decodedData[1],
       to: decodedData[2],
-      value: decodedData[3],
-      sessionId: decodedData[4],
+      value: decodedData[3].toString(),
+      sessionId: decodedData[4].toHexString(),
     };
   }
 

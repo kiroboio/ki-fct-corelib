@@ -21,8 +21,7 @@ const defaultFlags = {
     eip712: false,
     payment: true,
 };
-const getBatchTransferPackedData = (web3, FactoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
-    const FACTORY_DOMAIN_SEPARATOR = yield FactoryProxy.methods.DOMAIN_SEPARATOR().call();
+const getBatchTransferPackedData = (FactoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
     const BATCH_TRANSFER_PACKED_TYPEHASH = yield FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
     const group = (0, helpers_1.getGroupId)(call.groupId); // Has to be a way to determine group dynamically
     const tnonce = (0, helpers_1.getNonce)(call.nonce);
@@ -36,13 +35,6 @@ const getBatchTransferPackedData = (web3, FactoryProxy, call) => __awaiter(void 
         return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     };
     const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]);
-    // const signature = await web3.eth.sign(
-    //   FACTORY_DOMAIN_SEPARATOR + ethers.utils.keccak256(hashedData._hash).slice(2),
-    //   call.signer
-    // );
-    // const r = signature.slice(0, 66);
-    // const s = "0x" + signature.slice(66, 130);
-    // const v = "0x" + signature.slice(130);
     return {
         signer: call.signer,
         token: call.token,
@@ -65,20 +57,20 @@ class BatchTransferPacked {
         return {
             token: decodedData[1],
             to: decodedData[2],
-            value: decodedData[3],
-            sessionId: decodedData[4],
+            value: decodedData[3].toString(),
+            sessionId: decodedData[4].toHexString(),
         };
     }
     addTx(tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield getBatchTransferPackedData(this.web3, this.FactoryProxy, tx);
+            const data = yield getBatchTransferPackedData(this.FactoryProxy, tx);
             this.calls = [...this.calls, data];
             return this.calls;
         });
     }
     addMultipleTx(tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.web3, this.FactoryProxy, item)));
+            const data = yield Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.FactoryProxy, item)));
             this.calls = [...this.calls, ...data];
             return this.calls;
         });

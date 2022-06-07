@@ -555,6 +555,7 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should decode", async () => {
       const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[0].hashedData);
+      console.log(decodedData);
       expect(decodedData.value).to.eq("10");
     });
     it("Should execute", async () => {
