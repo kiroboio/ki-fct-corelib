@@ -49,15 +49,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
     ]));
     // Combine batchMultiSigTypeHas + both encoded limits and encoded multi calls in one encoded value
     const fullEncode = utils_1.defaultAbiCoder.encode(["bytes32", "bytes32", ...encodedTxs.map(() => "bytes32")], [batchMultiSigTypeHash, (0, utils_1.keccak256)(encodeLimit), ...encodedTxs.map((item) => (0, utils_1.keccak256)(item))]);
-    // const signatures = await Promise.all(
-    //   call.signers.map((signer) => web3.eth.sign(domainSeparator + web3.utils.sha3(fullEncode).slice(2), signer))
-    // );
     return {
-        // signatures: signatures.map((signature) => ({
-        //   r: signature.slice(0, 66),
-        //   s: "0x" + signature.slice(66, 130),
-        //   v: "0x" + signature.slice(130),
-        // })),
         sessionId: getSessionId(),
         encodedLimits: encodeLimit,
         encodedData: fullEncode,
