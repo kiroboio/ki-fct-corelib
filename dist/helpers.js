@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.manageCallFlags = exports.getFlags = exports.getMaxGasPrice = exports.getMaxGas = exports.getBeforeTimestamp = exports.getAfterTimestamp = exports.getNonce = exports.getGroupId = void 0;
+exports.getParamsOffset = exports.getParamsLength = exports.manageCallFlags = exports.getFlags = exports.getMaxGasPrice = exports.getMaxGas = exports.getBeforeTimestamp = exports.getAfterTimestamp = exports.getNonce = exports.getGroupId = void 0;
 const getGroupId = (group) => group.toString(16).padStart(6, "0");
 exports.getGroupId = getGroupId;
 const getNonce = (nonce) => nonce.toString(16).padStart(10, "0");
@@ -39,3 +39,13 @@ const manageCallFlags = (flags) => {
     return array.join("");
 };
 exports.manageCallFlags = manageCallFlags;
+const getParamsLength = (params, encodedData) => {
+    return `0x${((encodedData.length - 2) / params.length).toString(16)}`;
+};
+exports.getParamsLength = getParamsLength;
+const getParamsOffset = (params, encodedData) => {
+    const length = (encodedData.length - 2) / params.length;
+    const constantValue = 32;
+    return `0x${(length + constantValue).toString(16)}`;
+};
+exports.getParamsOffset = getParamsOffset;

@@ -33,3 +33,14 @@ export const manageCallFlags = (flags) => {
 
   return array.join("");
 };
+
+export const getParamsLength = (params, encodedData) => {
+  return `0x${((encodedData.length - 2) / params.length).toString(16)}`;
+};
+
+export const getParamsOffset = (params, encodedData) => {
+  const length = (encodedData.length - 2) / params.length;
+  const constantValue = 32;
+
+  return `0x${(length + constantValue).toString(16)}`;
+};

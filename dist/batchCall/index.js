@@ -51,8 +51,11 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
     const flags = Object.assign(Object.assign({}, defaultFlags), call.flags);
     const eip712 = (0, helpers_1.getFlags)(flags, true);
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+    const encodedMethodParamsData = `0x${call.method
+        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+        : ""}`;
     const methodParams = call.params
-        ? Object.assign({ method_params_offset: "0x60", method_params_length: "0x40" }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
+        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params, encodedMethodParamsData), method_params_length: (0, helpers_1.getParamsLength)(call.params, encodedMethodParamsData) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
     const contractType = call.params
         ? [
             { name: "method_params_offset", type: "uint256" },
@@ -102,9 +105,6 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
     };
     const hashedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     const hashedTxMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction));
-    const encodedMethodParamsData = `0x${call.method
-        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-        : ""}`;
     return {
         typeHash: getTypeHash(typedData),
         to: call.to,

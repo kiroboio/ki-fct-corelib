@@ -12,6 +12,8 @@ import {
   getMaxGas,
   getMaxGasPrice,
   getNonce,
+  getParamsLength,
+  getParamsOffset,
 } from "../helpers";
 
 // Most likely the data structure is going to be different
@@ -106,10 +108,16 @@ const getBatchCallData = async (
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  const encodedMethodParamsData = `0x${
+    call.method
+      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+      : ""
+  }`;
+
   const methodParams = call.params
     ? {
-        method_params_offset: "0x60", // '0x1c0', // '480', // 13*32
-        method_params_length: "0x40",
+        method_params_offset: getParamsOffset(call.params, encodedMethodParamsData), // '0x1c0', // '480', // 13*32
+        method_params_length: getParamsLength(call.params, encodedMethodParamsData),
         ...call.params.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}),
       }
     : {};
@@ -173,12 +181,6 @@ const getBatchCallData = async (
   const hashedTxMessage = ethers.utils.hexlify(
     TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction)
   );
-
-  const encodedMethodParamsData = `0x${
-    call.method
-      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-      : ""
-  }`;
 
   return {
     typeHash: getTypeHash(typedData),
