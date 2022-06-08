@@ -20,10 +20,18 @@ interface Flags {
   payment?: boolean;
 }
 
+interface Params {
+  name: string;
+  type: string;
+  value: string;
+}
+
 interface BatchCallInputData {
   value: string;
   to: string;
   data: string;
+  method: string;
+  params: Params[];
   signer: string;
   groupId: number;
   nonce: number;
@@ -64,9 +72,23 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  const encodedMethodParamsData = call.method
+    ? web3.eth.abi.encodeFunctionCall(
+        {
+          name: call.method,
+          type: "function",
+          inputs: call.params.map((param) => ({
+            type: param.type,
+            name: param.name,
+          })),
+        },
+        call.params.map((param) => param.value)
+      )
+    : "0x";
+
   const hashedData = defaultAbiCoder.encode(
     ["bytes32", "address", "uint256", "uint256", "bytes"],
-    [typeHash, call.to, call.value, getSessionId(), call.data || "0x"]
+    [typeHash, call.to, call.value, getSessionId(), encodedMethodParamsData]
   );
 
   return {
@@ -74,7 +96,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     value: call.value,
     signer: call.signer,
     sessionId: getSessionId(),
-    data: call.data || "0x",
+    data: encodedMethodParamsData,
     hashedData,
   };
 };

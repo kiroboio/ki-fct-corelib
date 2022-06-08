@@ -102,6 +102,9 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
     };
     const hashedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     const hashedTxMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction));
+    const encodedMethodParamsData = `0x${call.method
+        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+        : ""}`;
     return {
         typeHash: getTypeHash(typedData),
         to: call.to,
@@ -115,7 +118,7 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
         functionSignature: call.method
             ? web3.utils.sha3(getMethodInterface(call))
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-        data: call.data ? "0x" + call.data.slice(10) : "0x",
+        data: encodedMethodParamsData,
         typedData,
         hashedMessage,
         hashedTxMessage,

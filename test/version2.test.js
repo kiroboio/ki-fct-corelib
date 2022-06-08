@@ -272,7 +272,6 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         value: 0,
         to: token20.address,
-        data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
         groupId: 1,
         nonce: 1,
         method: "transfer",
@@ -297,7 +296,6 @@ describe("FactoryProxy contract library", function () {
           to: token20.address,
           groupId: 1,
           nonce: 2,
-          data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
           method: "transfer",
           params: [
             { name: "to", type: "address", value: accounts[11] },
@@ -313,7 +311,6 @@ describe("FactoryProxy contract library", function () {
           to: accounts[11],
           groupId: 1,
           nonce: 3,
-          signerPrivateKey: getPrivateKey(signer),
           signer,
         },
       ];
@@ -347,7 +344,11 @@ describe("FactoryProxy contract library", function () {
       batchCallPacked = new BatchCallPacked(web3, factoryProxy.address);
 
       const tx = {
-        data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: accounts[12] },
+          { name: "token_amount", type: "uint256", value: "5" },
+        ],
         groupId: 1,
         nonce: 4,
         value: 0,
@@ -362,7 +363,6 @@ describe("FactoryProxy contract library", function () {
     it("Should add multiple tx to batchCallPacked", async () => {
       const txs = [
         {
-          data: "",
           groupId: 1,
           nonce: 5,
           value: 5,
@@ -373,7 +373,8 @@ describe("FactoryProxy contract library", function () {
           },
         },
         {
-          data: token20.contract.methods.balanceOf(accounts[13]).encodeABI(),
+          method: "balanceOf",
+          params: [{ name: "account", type: "address", value: accounts[13] }],
           value: 0,
           groupId: 1,
           nonce: 6,

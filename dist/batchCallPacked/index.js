@@ -32,13 +32,23 @@ const getBatchCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
     const flags = Object.assign(Object.assign({}, defaultFlags), call.flags);
     const eip712 = (0, helpers_1.getFlags)(flags, true); // ordered, payment
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes"], [typeHash, call.to, call.value, getSessionId(), call.data || "0x"]);
+    const encodedMethodParamsData = call.method
+        ? web3.eth.abi.encodeFunctionCall({
+            name: call.method,
+            type: "function",
+            inputs: call.params.map((param) => ({
+                type: param.type,
+                name: param.name,
+            })),
+        }, call.params.map((param) => param.value))
+        : "0x";
+    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes"], [typeHash, call.to, call.value, getSessionId(), encodedMethodParamsData]);
     return {
         to: call.to,
         value: call.value,
         signer: call.signer,
         sessionId: getSessionId(),
-        data: call.data || "0x",
+        data: encodedMethodParamsData,
         hashedData,
     };
 });

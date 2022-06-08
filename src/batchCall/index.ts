@@ -174,6 +174,12 @@ const getBatchCallData = async (
     TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction)
   );
 
+  const encodedMethodParamsData = `0x${
+    call.method
+      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+      : ""
+  }`;
+
   return {
     typeHash: getTypeHash(typedData),
     to: call.to,
@@ -187,7 +193,7 @@ const getBatchCallData = async (
     functionSignature: call.method
       ? web3.utils.sha3(getMethodInterface(call))
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-    data: call.data ? "0x" + call.data.slice(10) : "0x",
+    data: encodedMethodParamsData,
     typedData,
     hashedMessage,
     hashedTxMessage,

@@ -5,10 +5,17 @@ interface Flags {
     cancelable?: boolean;
     payment?: boolean;
 }
+interface Params {
+    name: string;
+    type: string;
+    value: string;
+}
 interface BatchCallInputData {
     value: string;
     to: string;
     data: string;
+    method: string;
+    params: Params[];
     signer: string;
     groupId: number;
     nonce: number;
