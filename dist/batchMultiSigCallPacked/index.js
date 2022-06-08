@@ -26,7 +26,6 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
     const batchMultiSigTypeHash = yield factoryProxy.methods.BATCH_MULTI_SIG_CALL_TYPEHASH_().call();
     const txTypeHash = yield factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_().call();
     const limitsTypeHash = yield factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_().call();
-    const domainSeparator = yield factoryProxy.methods.DOMAIN_SEPARATOR().call();
     const group = (0, helpers_1.getGroupId)(call.groupId);
     const tnonce = (0, helpers_1.getNonce)(call.nonce);
     const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
@@ -37,9 +36,9 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
     const eip712 = (0, helpers_1.getFlags)(batchFlags, false); // not-ordered, payment
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     // Encode Limits as bytes32
-    const encodeLimit = (0, utils_1.keccak256)(utils_1.defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]));
+    const encodeLimit = utils_1.defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
     // Encode multi calls as bytes32
-    const encodedTxs = call.multiCalls.map((item) => (0, utils_1.keccak256)(utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], [
+    const encodedTxs = call.multiCalls.map((item) => utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], [
         txTypeHash,
         item.signer,
         item.to,
@@ -47,24 +46,29 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
         item.gasLimit || 0,
         item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0x0",
         item.data,
-    ])));
+    ]));
     // Combine batchMultiSigTypeHas + both encoded limits and encoded multi calls in one encoded value
-    const fullEncode = utils_1.defaultAbiCoder.encode(["bytes32", "bytes32", ...encodedTxs.map(() => "bytes32")], [batchMultiSigTypeHash, encodeLimit, ...encodedTxs.map((item) => item)]);
-    const signatures = yield Promise.all(call.signers.map((signer) => web3.eth.sign(domainSeparator + web3.utils.sha3(fullEncode).slice(2), signer)));
+    const fullEncode = utils_1.defaultAbiCoder.encode(["bytes32", "bytes32", ...encodedTxs.map(() => "bytes32")], [batchMultiSigTypeHash, (0, utils_1.keccak256)(encodeLimit), ...encodedTxs.map((item) => (0, utils_1.keccak256)(item))]);
+    // const signatures = await Promise.all(
+    //   call.signers.map((signer) => web3.eth.sign(domainSeparator + web3.utils.sha3(fullEncode).slice(2), signer))
+    // );
     return {
-        signatures: signatures.map((signature) => ({
-            r: signature.slice(0, 66),
-            s: "0x" + signature.slice(66, 130),
-            v: "0x" + signature.slice(130),
-        })),
+        // signatures: signatures.map((signature) => ({
+        //   r: signature.slice(0, 66),
+        //   s: "0x" + signature.slice(66, 130),
+        //   v: "0x" + signature.slice(130),
+        // })),
         sessionId: getSessionId(),
-        mcall: call.multiCalls.map((item) => ({
+        encodedLimits: encodeLimit,
+        encodedData: fullEncode,
+        mcall: call.multiCalls.map((item, i) => ({
             value: item.value,
             signer: item.signer,
             gasLimit: item.gasLimit || 0,
             flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0x0",
             to: item.to,
             data: item.data,
+            encodedTx: encodedTxs[i],
         })),
     };
 });
@@ -74,6 +78,25 @@ class BatchMultiSigCallPacked {
         this.web3 = web3;
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
+    }
+    decodeLimits(encodedLimits) {
+        const lim = utils_1.defaultAbiCoder.decode(["bytes32", "uint256"], encodedLimits);
+        return {
+            sessionId: lim[1].toHexString(),
+        };
+    }
+    decodeTxs(encodedTxs) {
+        return encodedTxs.map((tx) => {
+            const decTx = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], tx);
+            return {
+                signer: decTx[1],
+                to: decTx[2],
+                value: decTx[3].toString(),
+                gasLimit: decTx[4],
+                flags: decTx[5],
+                data: decTx[6],
+            };
+        });
     }
     addPackedMulticall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -87,15 +110,6 @@ class BatchMultiSigCallPacked {
             const data = yield Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
             return this.calls;
-        });
-    }
-    execute(activator, groupId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const calls = this.calls;
-            if (calls.length === 0) {
-                throw new Error("No calls have been added");
-            }
-            return yield this.FactoryProxy.methods.batchMultiSigCallPacked_(calls, groupId).send({ from: activator });
         });
     }
 }

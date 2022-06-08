@@ -24,18 +24,12 @@ interface CallInput {
 interface BatchMultiSigCallPackedInput {
     groupId: number;
     nonce: number;
-    signers: string[];
     afterTimestamp?: number;
     beforeTimestamp?: number;
     maxGas?: number;
     maxGasPrice?: number;
     flags?: BatchFlags;
     multiCalls: CallInput[];
-}
-interface Signature {
-    r: string;
-    s: string;
-    v: string;
 }
 interface PackedMSCall {
     value: string;
@@ -44,10 +38,12 @@ interface PackedMSCall {
     flags: string;
     to: string;
     data: string;
+    encodedTx: string;
 }
 interface BatchMultiSigCallPackedData {
     sessionId: string;
-    signatures: Signature[];
+    encodedLimits: string;
+    encodedData: string;
     mcall: PackedMSCall[];
 }
 export declare class BatchMultiSigCallPacked {
@@ -55,8 +51,18 @@ export declare class BatchMultiSigCallPacked {
     web3: Web3;
     FactoryProxy: Contract;
     constructor(web3: Web3, contractAddress: string);
+    decodeLimits(encodedLimits: string): {
+        sessionId: any;
+    };
+    decodeTxs(encodedTxs: string[]): {
+        signer: any;
+        to: any;
+        value: any;
+        gasLimit: any;
+        flags: any;
+        data: any;
+    }[];
     addPackedMulticall(tx: BatchMultiSigCallPackedInput): Promise<BatchMultiSigCallPackedData[]>;
     addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInput[]): Promise<BatchMultiSigCallPackedData[]>;
-    execute(activator: string, groupId: number): Promise<any>;
 }
 export {};

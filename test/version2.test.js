@@ -13,6 +13,7 @@ const {
 const assert = require("assert");
 const { expect } = require("chai");
 const { TypedDataUtils } = require("ethers-eip712");
+const { decode } = require("punycode");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("RecoveryWalletCore");
 const Wallet = artifacts.require("RecoveryWallet");
@@ -948,6 +949,132 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchMultiSigCall_(signedCalls, 1, { from: activator });
+
+      expect(data).to.have.property("receipt");
+    });
+  });
+  describe("BatchMultiSigCallPacked function", async () => {
+    let batchMultiSigCallPacked;
+
+    it("Should add batchMulticall", async () => {
+      batchMultiSigCallPacked = new BatchMultiSigCallPacked(web3, factoryProxy.address);
+
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+      const tx = {
+        groupId: 1,
+        nonce: 20,
+        flags: {
+          payment: false,
+          flow: true,
+        },
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            signer: signer1,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            signer: signer2,
+          },
+        ],
+      };
+
+      await batchMultiSigCallPacked.addPackedMulticall(tx);
+
+      expect(batchMultiSigCallPacked.calls.length).to.eq(1);
+    });
+
+    it("Should add multiple batchMulticalls", async () => {
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 21,
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              signer: signer2,
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 22,
+          multiCalls: [
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              signer: signer1,
+            },
+            {
+              value: 0,
+              to: token20.address,
+              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              signer: signer2,
+            },
+          ],
+        },
+      ];
+      await batchMultiSigCallPacked.addMultiplePackedMulticall(txs);
+      expect(batchMultiSigCallPacked.calls.length).to.eq(3);
+    });
+    it("Should decode limits", async () => {
+      const encodedLimits = batchMultiSigCallPacked.calls[0].encodedLimits;
+      const decodedLimits = batchMultiSigCallPacked.decodeLimits(encodedLimits);
+
+      expect(decodedLimits).to.have.property("sessionId");
+    });
+
+    it("Should decode txs", async () => {
+      const encodedTxs = batchMultiSigCallPacked.calls[0].mcall.map((item) => item.encodedTx);
+      const decodedTxs = batchMultiSigCallPacked.decodeTxs(encodedTxs);
+
+      expect(decodedTxs[0].signer).to.eq("0x08B7d04533DfAe2d72e693771b339FA6DF08635d");
+    });
+    it("Should execute", async () => {
+      const calls = batchMultiSigCallPacked.calls;
+      const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
+
+      const signer = getSigner(10);
+      const signer1 = getSigner(11);
+
+      const signedCalls = await Promise.all(
+        calls.map(async (call) => {
+          const signatures = await Promise.all(
+            [signer, signer1].map(async (item) => {
+              const sign = await web3.eth.sign(
+                FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(call.encodedData).slice(2),
+                item
+              );
+              const signature = {
+                r: sign.slice(0, 66),
+                s: "0x" + sign.slice(66, 130),
+                v: "0x" + sign.slice(130),
+              };
+              return signature;
+            })
+          );
+
+          return { ...call, signatures };
+        })
+      );
+
+      const data = await factoryProxy.batchMultiSigCallPacked_(signedCalls, 1, { from: activator });
 
       expect(data).to.have.property("receipt");
     });
