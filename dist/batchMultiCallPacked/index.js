@@ -33,14 +33,26 @@ const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
     const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
     const eip712 = (0, helpers_1.getFlags)(Object.assign(Object.assign({}, defaultFlags), call.flags), false);
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-    const mcallHash = utils_1.defaultAbiCoder.encode(["(bytes32,address,uint256,uint256,bytes)[]"], [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), item.data])]);
+    const getEncodedMethodParamsData = (item) => {
+        return item.method
+            ? web3.eth.abi.encodeFunctionCall({
+                name: item.method,
+                type: "function",
+                inputs: item.params.map((param) => ({
+                    type: param.type,
+                    name: param.name,
+                })),
+            }, item.params.map((param) => param.value))
+            : "0x";
+    };
+    const mcallHash = utils_1.defaultAbiCoder.encode(["(bytes32,address,uint256,uint256,bytes)[]"], [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), getEncodedMethodParamsData(item)])]);
     return {
         mcall: call.mcall.map((item) => ({
             value: item.value,
             to: item.to,
             gasLimit: item.gasLimit || 0,
             flags: (0, helpers_1.manageCallFlags)(item),
-            data: item.data,
+            data: getEncodedMethodParamsData(item),
         })),
         encodedData: mcallHash,
         sessionId: getSessionId(),

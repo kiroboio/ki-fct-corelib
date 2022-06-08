@@ -80,9 +80,25 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  const getEncodedMethodParamsData = (item) => {
+    return item.method
+      ? web3.eth.abi.encodeFunctionCall(
+          {
+            name: item.method,
+            type: "function",
+            inputs: item.params.map((param) => ({
+              type: param.type,
+              name: param.name,
+            })),
+          },
+          item.params.map((param) => param.value)
+        )
+      : "0x";
+  };
+
   const mcallHash = defaultAbiCoder.encode(
     ["(bytes32,address,uint256,uint256,bytes)[]"],
-    [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), item.data])]
+    [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), getEncodedMethodParamsData(item)])]
   );
 
   return {
@@ -91,7 +107,7 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
       to: item.to,
       gasLimit: item.gasLimit || 0,
       flags: manageCallFlags(item),
-      data: item.data,
+      data: getEncodedMethodParamsData(item),
     })),
     encodedData: mcallHash,
     sessionId: getSessionId(),

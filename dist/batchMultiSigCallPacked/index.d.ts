@@ -37,7 +37,8 @@ interface PackedMSCall {
     gasLimit: number;
     flags: string;
     to: string;
-    data: string;
+    method?: string;
+    params?: string;
     encodedTx: string;
 }
 interface BatchMultiSigCallPackedData {

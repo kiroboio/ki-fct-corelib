@@ -31,19 +31,6 @@ const generateTxType = (item) => {
         ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
         : [{ name: "details", type: "Transaction_" }];
 };
-function arraysEqual(a, b) {
-    if (a === b)
-        return true;
-    if (a == null || b == null)
-        return false;
-    if (a.length !== b.length)
-        return false;
-    for (var i = 0; i < a.length; ++i) {
-        if (JSON.stringify(a[1]) !== JSON.stringify(b[1]))
-            return false;
-    }
-    return true;
-}
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -134,6 +121,11 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
             encodedDetails,
         };
     };
+    const getEncodedMethodParamsData = (call) => {
+        return `0x${call.method
+            ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+            : ""}`;
+    };
     return {
         typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
         sessionId: getSessionId(),
@@ -141,7 +133,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
         typedData,
         encodedMessage,
         encodedLimits,
-        mcall: call.multiCalls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: item.data && item.data.length > 0 ? "0x" + item.data.slice(10) : "0x", ensHash: item.toEnsHash
+        mcall: call.multiCalls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: getEncodedMethodParamsData(item), ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
                 ? web3.utils.sha3(getMethodInterface(item))

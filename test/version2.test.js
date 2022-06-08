@@ -429,6 +429,7 @@ describe("FactoryProxy contract library", function () {
       expect(data).to.have.property("receipt");
     });
   });
+
   describe("BatchTransfer function", function () {
     let batchTransfer;
     it("Add tx for batchTransfer", async () => {
@@ -503,6 +504,7 @@ describe("FactoryProxy contract library", function () {
       expect(data).to.have.property("receipt");
     });
   });
+
   describe("BatchTransferPacked function", function () {
     let batchTransferPacked;
     it("Add tx for batchTransfer", async () => {
@@ -598,7 +600,6 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[11] },
@@ -608,7 +609,6 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[15], 5).encodeABI(),
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[15] },
@@ -641,7 +641,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[12], 51).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[12] },
@@ -665,7 +664,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[13], 22).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[13] },
@@ -744,7 +742,11 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[12], 5).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "5" },
+            ],
             gasLimit: 0,
             onFailStop: true,
             onFailContinue: false,
@@ -754,7 +756,11 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[12], 12).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "12" },
+            ],
             gasLimit: 0,
             onFailStop: true,
             onFailContinue: false,
@@ -813,7 +819,6 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[11] },
@@ -824,7 +829,6 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[12] },
@@ -851,7 +855,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[11] },
@@ -862,7 +865,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[12] },
@@ -879,7 +881,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[11] },
@@ -890,7 +891,6 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[12], 20).encodeABI(),
               method: "transfer",
               params: [
                 { name: "to", type: "address", value: accounts[12] },
@@ -973,13 +973,21 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[11] },
+              { name: "token_amount", type: "uint256", value: "5" },
+            ],
             signer: signer1,
           },
           {
             value: 0,
             to: token20.address,
-            data: token20.contract.methods.transfer(accounts[11], 5).encodeABI(),
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[11] },
+              { name: "token_amount", type: "uint256", value: "5" },
+            ],
             signer: signer2,
           },
         ],
@@ -1001,13 +1009,23 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "15" },
+              ],
+
               signer: signer1,
             },
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 15).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "15" },
+              ],
+
               signer: signer2,
             },
           ],
@@ -1019,13 +1037,23 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "25" },
+              ],
+
               signer: signer1,
             },
             {
               value: 0,
               to: token20.address,
-              data: token20.contract.methods.transfer(accounts[11], 25).encodeABI(),
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[11] },
+                { name: "token_amount", type: "uint256", value: "25" },
+              ],
+
               signer: signer2,
             },
           ],

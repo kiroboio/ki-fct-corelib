@@ -35,6 +35,18 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
     const batchFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
     const eip712 = (0, helpers_1.getFlags)(batchFlags, false); // not-ordered, payment
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+    const getEncodedMethodParamsData = (item) => {
+        return item.method
+            ? web3.eth.abi.encodeFunctionCall({
+                name: item.method,
+                type: "function",
+                inputs: item.params.map((param) => ({
+                    type: param.type,
+                    name: param.name,
+                })),
+            }, item.params.map((param) => param.value))
+            : "0x";
+    };
     // Encode Limits as bytes32
     const encodeLimit = utils_1.defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
     // Encode multi calls as bytes32
@@ -45,7 +57,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
         item.value,
         item.gasLimit || 0,
         item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0x0",
-        item.data,
+        getEncodedMethodParamsData(item),
     ]));
     // Combine batchMultiSigTypeHas + both encoded limits and encoded multi calls in one encoded value
     const fullEncode = utils_1.defaultAbiCoder.encode(["bytes32", "bytes32", ...encodedTxs.map(() => "bytes32")], [batchMultiSigTypeHash, (0, utils_1.keccak256)(encodeLimit), ...encodedTxs.map((item) => (0, utils_1.keccak256)(item))]);
@@ -59,7 +71,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
             gasLimit: item.gasLimit || 0,
             flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0x0",
             to: item.to,
-            data: item.data,
+            data: getEncodedMethodParamsData(item),
             encodedTx: encodedTxs[i],
         })),
     };

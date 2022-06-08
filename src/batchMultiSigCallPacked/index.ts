@@ -60,7 +60,8 @@ interface PackedMSCall {
   gasLimit: number;
   flags: string;
   to: string;
-  data: string;
+  method?: string;
+  params?: string;
   encodedTx: string;
 }
 
@@ -94,6 +95,22 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
 
+  const getEncodedMethodParamsData = (item) => {
+    return item.method
+      ? web3.eth.abi.encodeFunctionCall(
+          {
+            name: item.method,
+            type: "function",
+            inputs: item.params.map((param) => ({
+              type: param.type,
+              name: param.name,
+            })),
+          },
+          item.params.map((param) => param.value)
+        )
+      : "0x";
+  };
+
   // Encode Limits as bytes32
   const encodeLimit = defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
   // Encode multi calls as bytes32
@@ -107,7 +124,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
         item.value,
         item.gasLimit || 0,
         item.flags ? manageCallFlags(item.flags) : "0x0",
-        item.data,
+        getEncodedMethodParamsData(item),
       ]
     )
   );
@@ -128,7 +145,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
       gasLimit: item.gasLimit || 0,
       flags: item.flags ? manageCallFlags(item.flags) : "0x0",
       to: item.to,
-      data: item.data,
+      data: getEncodedMethodParamsData(item),
       encodedTx: encodedTxs[i],
     })),
   };

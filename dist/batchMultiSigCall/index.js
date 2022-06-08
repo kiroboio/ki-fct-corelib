@@ -123,6 +123,11 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
             encodedDetails,
         };
     };
+    const getEncodedMethodParamsData = (call) => {
+        return `0x${call.method
+            ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+            : ""}`;
+    };
     return {
         typedData,
         typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
@@ -133,7 +138,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
                 ? web3.utils.sha3(getMethodInterface(item))
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: Number.parseInt("0x" + maxGas), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.data && item.data.length > 0 ? "0x" + item.data.slice(10) : "0x" }, getEncodedMulticallData(index)))),
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: getEncodedMethodParamsData(item) }, getEncodedMulticallData(index)))),
     };
 });
 class BatchMultiSigCall {

@@ -252,6 +252,14 @@ const getBatchTransferData = async (
     };
   };
 
+  const getEncodedMethodParamsData = (call: MultiSigCallInputData) => {
+    return `0x${
+      call.method
+        ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+        : ""
+    }`;
+  };
+
   return {
     typedData,
     typeHash: TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
@@ -271,7 +279,7 @@ const getBatchTransferData = async (
       ensHash: item.toEnsHash
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      data: item.data && item.data.length > 0 ? "0x" + item.data.slice(10) : "0x",
+      data: getEncodedMethodParamsData(item),
       ...getEncodedMulticallData(index),
     })),
   };
