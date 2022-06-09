@@ -309,4 +309,8 @@ export class BatchCall {
     this.calls = [...this.calls, ...data];
     return data;
   }
+
+  editTx(index: number, tx: BatchCallInputData) {
+    // Edit tx
+  }
 }

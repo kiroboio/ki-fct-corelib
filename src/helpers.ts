@@ -34,6 +34,14 @@ export const manageCallFlags = (flags) => {
   return array.join("");
 };
 
+/*
+Couldn't find a way to calculate params length and params offset.
+
+I think I found a way to calculate paramsLength (params * 32),
+but I am not sure about params offset. As soon as I try to test a call
+with 3 or 1 parameters, I get error for Factory signer
+*/
+
 export const getParamsLength = (params) => {
   // return `0x${(params.length * 32).toString(16)}`;
 
