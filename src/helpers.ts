@@ -34,13 +34,16 @@ export const manageCallFlags = (flags) => {
   return array.join("");
 };
 
-export const getParamsLength = (params, encodedData) => {
-  return `0x${((encodedData.length - 2) / params.length).toString(16)}`;
+export const getParamsLength = (params) => {
+  // return `0x${(params.length * 32).toString(16)}`;
+
+  return `0x40`;
+  // return `0x${((encodedData.length - 2) / 2).toString(16)}`;
 };
 
-export const getParamsOffset = (params, encodedData) => {
-  const length = (encodedData.length - 2) / params.length;
+export const getParamsOffset = (params) => {
   const constantValue = 32;
-
-  return `0x${(length + constantValue).toString(16)}`;
+  return `0x60`;
+  // return `0x${(params.length * 32 + constantValue).toString(16)}`;
+  // return `0x${(length + constantValue).toString(16)}`;
 };

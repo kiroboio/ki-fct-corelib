@@ -9,11 +9,11 @@ export interface DecodeTx {
     params?: Params[];
 }
 export interface MultiCallFlags {
-    viewOnly: boolean;
-    continueOnFail: boolean;
-    stopOnFail: boolean;
-    stopOnSuccess: boolean;
-    revertOnSuccess: boolean;
+    viewOnly?: boolean;
+    continueOnFail?: boolean;
+    stopOnFail?: boolean;
+    stopOnSuccess?: boolean;
+    revertOnSuccess?: boolean;
 }
 export interface BatchFlags {
     staticCall?: boolean;

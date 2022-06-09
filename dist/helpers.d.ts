@@ -6,5 +6,5 @@ export declare const getMaxGas: (maxGas: number) => string;
 export declare const getMaxGasPrice: (gasPrice: number) => string;
 export declare const getFlags: (flags: any, small: boolean) => string;
 export declare const manageCallFlags: (flags: any) => string;
-export declare const getParamsLength: (params: any, encodedData: any) => string;
-export declare const getParamsOffset: (params: any, encodedData: any) => string;
+export declare const getParamsLength: (params: any) => string;
+export declare const getParamsOffset: (params: any) => string;

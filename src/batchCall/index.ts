@@ -113,11 +113,24 @@ const getBatchCallData = async (
       ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
       : ""
   }`;
+  const fullEncodedMethod = call.method
+    ? web3.eth.abi.encodeFunctionCall(
+        {
+          name: call.method,
+          type: "function",
+          inputs: call.params.map((param) => ({
+            type: param.type,
+            name: param.name,
+          })),
+        },
+        call.params.map((param) => param.value)
+      )
+    : "0x";
 
   const methodParams = call.params
     ? {
-        method_params_offset: getParamsOffset(call.params, encodedMethodParamsData), // '0x1c0', // '480', // 13*32
-        method_params_length: getParamsLength(call.params, encodedMethodParamsData),
+        method_params_offset: getParamsOffset(call.params), // '0x1c0', // '480', // 13*32
+        method_params_length: getParamsLength(call.params),
         ...call.params.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}),
       }
     : {};

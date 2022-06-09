@@ -671,6 +671,15 @@ describe("FactoryProxy contract library", function () {
               ],
             },
             {
+              value: 0,
+              to: token20.address,
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[13] },
+                { name: "token_amount", type: "uint256", value: "22" },
+              ],
+            },
+            {
               value: 103,
               to: accounts[11],
             },
