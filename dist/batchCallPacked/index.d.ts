@@ -1,38 +1,6 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-interface Flags {
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-}
-interface Params {
-    name: string;
-    type: string;
-    value: string;
-}
-interface BatchCallInputData {
-    value: string;
-    to: string;
-    data: string;
-    method: string;
-    params: Params[];
-    signer: string;
-    groupId: number;
-    nonce: number;
-    afterTimestamp?: number;
-    beforeTimestamp?: number;
-    maxGas?: number;
-    maxGasPrice?: number;
-    flags?: Flags;
-}
-interface BatchCallPackedData {
-    to: string;
-    value: string;
-    sessionId: string;
-    signer: string;
-    data: string;
-    hashedData: string;
-}
+import { BatchCallInputData, BatchCallPackedData } from "./interfaces";
 export declare class BatchCallPacked {
     calls: Array<BatchCallPackedData>;
     web3: Web3;
@@ -53,6 +21,8 @@ export declare class BatchCallPacked {
         sessionId: string;
         data: string;
         hashedData: string;
+        unhashedCall: BatchCallInputData;
     }[]>;
+    editTx(index: number, tx: BatchCallInputData): Promise<BatchCallPackedData[]>;
+    removeTx(index: number): Promise<BatchCallPackedData[]>;
 }
-export {};

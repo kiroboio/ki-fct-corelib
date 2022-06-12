@@ -99,7 +99,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
         sessionId: getSessionIdERC20(),
         hashedData,
         typedData,
-        // sessionId: getSessionIdERC20() + signature.v.slice(2).padStart(2, "0"),
+        unhashedCall: call,
     };
 });
 class BatchTransfer {
@@ -154,6 +154,26 @@ class BatchTransfer {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
             this.calls = [...this.calls, ...data];
+            return this.calls;
+        });
+    }
+    editTx(index, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+            this.calls[index] = data;
+            return this.calls;
+        });
+    }
+    removeTx(index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const restOfCalls = this.calls
+                .slice(index + 1)
+                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+            // Remove from calls
+            this.calls.splice(index, 1);
+            // Adjust nonce number for the rest of the calls
+            const data = yield Promise.all(restOfCalls.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
+            this.calls.splice(-Math.abs(data.length), data.length, ...data);
             return this.calls;
         });
     }

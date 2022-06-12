@@ -52,6 +52,7 @@ interface Transfer {
   sessionId: string;
   typedData: object;
   hashedData: string;
+  unhashedCall: TransferCall;
 }
 
 // Move to seperate folder/file where all the helper functions will be located
@@ -150,7 +151,7 @@ const getBatchTransferData = async (
     sessionId: getSessionIdERC20(),
     hashedData,
     typedData,
-    // sessionId: getSessionIdERC20() + signature.v.slice(2).padStart(2, "0"),
+    unhashedCall: call,
   };
 };
 
@@ -218,6 +219,32 @@ export class BatchTransfer {
       txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
     this.calls = [...this.calls, ...data];
+    return this.calls;
+  }
+
+  async editTx(index: number, tx: TransferCall) {
+    const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeTx(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(
+      restOfCalls.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+    );
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
     return this.calls;
   }
 }

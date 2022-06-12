@@ -318,6 +318,19 @@ describe("FactoryProxy contract library", function () {
 
       expect(batchCall.calls.length).to.eq(3);
     });
+    it("Should edit tx", async () => {
+      const tx = {
+        value: 15,
+        to: accounts[11],
+        groupId: 1,
+        nonce: 3,
+        signer: getSigner(10),
+      };
+
+      const calls = await batchCall.editTx(2, tx);
+
+      expect(calls[2].value).to.eq(15);
+    });
     it("Should remove call", async () => {
       const calls = await batchCall.removeTx(1);
 
@@ -400,6 +413,7 @@ describe("FactoryProxy contract library", function () {
 
       expect(decodedData.value).to.eq("5");
     });
+
     it("Should verify message", async () => {
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
 
@@ -412,7 +426,27 @@ describe("FactoryProxy contract library", function () {
 
       expect(isVerified).to.eq(true);
     });
+    it("Should edit tx", async () => {
+      const tx = {
+        groupId: 1,
+        nonce: 5,
+        value: 15,
+        to: accounts[11],
+        signer: getSigner(10),
+        flags: {
+          payment: true,
+        },
+      };
 
+      const calls = await batchCallPacked.editTx(1, tx);
+
+      expect(calls[1].value).to.eq(15);
+    });
+    it("Should remove tx", async () => {
+      const calls = await batchCallPacked.removeTx(1);
+
+      expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(5);
+    });
     it("Should execute", async () => {
       const calls = batchCallPacked.calls;
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
@@ -490,6 +524,27 @@ describe("FactoryProxy contract library", function () {
     it("Should decode", async () => {
       const decodedData = batchTransfer.decodeData(batchTransfer.calls[0].hashedData);
       expect(decodedData.value).to.eq("10");
+    });
+    it("Should edit tx", async () => {
+      const signer = getSigner(10);
+
+      const tx = {
+        token: token20.address,
+        groupId: 1,
+        nonce: 9,
+        to: accounts[11],
+        value: 15,
+        signer,
+      };
+
+      const calls = await batchTransfer.editTx(2, tx);
+
+      expect(calls[2].value).to.eq(15);
+    });
+    it("Should remove tx", async () => {
+      const calls = await batchTransfer.removeTx(1);
+
+      expect(calls.length).to.eq(2);
     });
     it("Should execute", async () => {
       const calls = batchTransfer.calls;

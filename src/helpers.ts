@@ -47,16 +47,22 @@ with 3 or 1 parameters, I get error for Factory signer
 // Every value's decoded length is 32.
 // Except array values - arrays are (2 * array length) * 32.
 // For example decoded array's length with 3 values would be 192.
-export const getParamsLength = (params: Array<Params>) => {
-  const paramsLengthNumber = params.reduce((acc, param) => {
-    if (Array.isArray(param.value)) {
-      const arrayParametersLength = 2;
-      return acc + (arrayParametersLength + param.value.length) * 32;
-    }
-    return acc + 32;
-  }, 0);
 
-  return `0x${paramsLengthNumber.toString(16)}`;
+// export const getParamsLength = (params: Array<Params>) => {
+//   const paramsLengthNumber = params.reduce((acc, param) => {
+//     if (Array.isArray(param.value)) {
+//       const arrayParametersLength = 2;
+//       return acc + (arrayParametersLength + param.value.length) * 32;
+//     }
+//     return acc + 32;
+//   }, 0);
+
+//   return `0x${paramsLengthNumber.toString(16)}`;
+// };
+
+// Takes encodedParams string and calculates the length of bytes in hexadecimal
+export const getParamsLength = (encodedParams: string) => {
+  return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
 };
 
 export const getParamsOffset = (params) => {

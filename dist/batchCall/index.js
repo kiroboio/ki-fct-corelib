@@ -55,7 +55,7 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
         ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
         : ""}`;
     const methodParams = call.params
-        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params), method_params_length: (0, helpers_1.getParamsLength)(call.params) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
+        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params), method_params_length: (0, helpers_1.getParamsLength)(encodedMethodParamsData) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
     const contractType = call.params
         ? [
             { name: "method_params_offset", type: "uint256" },

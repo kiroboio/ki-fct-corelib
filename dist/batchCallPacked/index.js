@@ -50,6 +50,7 @@ const getBatchCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
         sessionId: getSessionId(),
         data: encodedMethodParamsData,
         hashedData,
+        unhashedCall: call,
     };
 });
 class BatchCallPacked {
@@ -84,6 +85,26 @@ class BatchCallPacked {
             const data = yield Promise.all(txs.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
             return data;
+        });
+    }
+    editTx(index, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield getBatchCallPackedData(this.web3, this.FactoryProxy, tx);
+            this.calls[index] = data;
+            return this.calls;
+        });
+    }
+    removeTx(index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const restOfCalls = this.calls
+                .slice(index + 1)
+                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+            // Remove from calls
+            this.calls.splice(index, 1);
+            // Adjust nonce number for the rest of the calls
+            const data = yield Promise.all(restOfCalls.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
+            this.calls.splice(-Math.abs(data.length), data.length, ...data);
+            return this.calls;
         });
     }
 }

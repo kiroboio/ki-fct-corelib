@@ -11,46 +11,7 @@ import {
   getMaxGasPrice,
   getNonce,
 } from "../helpers";
-
-// Most likely the data structure is going to be different
-
-interface Flags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
-
-interface Params {
-  name: string;
-  type: string;
-  value: string;
-}
-
-interface BatchCallInputData {
-  value: string;
-  to: string;
-  data: string;
-  method: string;
-  params: Params[];
-  signer: string;
-  groupId: number;
-  nonce: number;
-
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: Flags;
-}
-
-interface BatchCallPackedData {
-  to: string;
-  value: string;
-  sessionId: string;
-  signer: string;
-  data: string;
-  hashedData: string;
-}
+import { BatchCallInputData, BatchCallPackedData } from "./interfaces";
 
 const defaultFlags = {
   eip712: false,
@@ -98,6 +59,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     sessionId: getSessionId(),
     data: encodedMethodParamsData,
     hashedData,
+    unhashedCall: call,
   };
 };
 
@@ -137,5 +99,29 @@ export class BatchCallPacked {
     const data = await Promise.all(txs.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return data;
+  }
+
+  async editTx(index: number, tx: BatchCallInputData) {
+    const data = await getBatchCallPackedData(this.web3, this.FactoryProxy, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeTx(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(restOfCalls.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
   }
 }
