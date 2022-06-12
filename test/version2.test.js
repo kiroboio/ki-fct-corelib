@@ -318,6 +318,11 @@ describe("FactoryProxy contract library", function () {
 
       expect(batchCall.calls.length).to.eq(3);
     });
+    it("Should remove call", async () => {
+      const calls = await batchCall.removeTx(1);
+
+      expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(2);
+    });
     it("Should execute", async () => {
       const calls = batchCall.calls;
       const signer = getSigner(10);
@@ -407,6 +412,7 @@ describe("FactoryProxy contract library", function () {
 
       expect(isVerified).to.eq(true);
     });
+
     it("Should execute", async () => {
       const calls = batchCallPacked.calls;
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();

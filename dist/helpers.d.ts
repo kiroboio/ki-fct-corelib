@@ -1,3 +1,4 @@
+import { Params } from "./interfaces";
 export declare const getGroupId: (group: number) => string;
 export declare const getNonce: (nonce: number) => string;
 export declare const getAfterTimestamp: (epochDate: number) => string;
@@ -6,5 +7,5 @@ export declare const getMaxGas: (maxGas: number) => string;
 export declare const getMaxGasPrice: (gasPrice: number) => string;
 export declare const getFlags: (flags: any, small: boolean) => string;
 export declare const manageCallFlags: (flags: any) => string;
-export declare const getParamsLength: (params: any) => string;
+export declare const getParamsLength: (params: Array<Params>) => string;
 export declare const getParamsOffset: (params: any) => string;

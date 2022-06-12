@@ -1,3 +1,5 @@
+import { Params } from "./interfaces";
+
 export const getGroupId = (group: number): string => group.toString(16).padStart(6, "0");
 export const getNonce = (nonce: number): string => nonce.toString(16).padStart(10, "0");
 export const getAfterTimestamp = (epochDate: number): string => epochDate.toString(16).padStart(10, "0");
@@ -42,11 +44,19 @@ but I am not sure about params offset. As soon as I try to test a call
 with 3 or 1 parameters, I get error for Factory signer
 */
 
-export const getParamsLength = (params) => {
-  // return `0x${(params.length * 32).toString(16)}`;
+// Every value's decoded length is 32.
+// Except array values - arrays are (2 * array length) * 32.
+// For example decoded array's length with 3 values would be 192.
+export const getParamsLength = (params: Array<Params>) => {
+  const paramsLengthNumber = params.reduce((acc, param) => {
+    if (Array.isArray(param.value)) {
+      const arrayParametersLength = 2;
+      return acc + (arrayParametersLength + param.value.length) * 32;
+    }
+    return acc + 32;
+  }, 0);
 
-  return `0x40`;
-  // return `0x${((encodedData.length - 2) / 2).toString(16)}`;
+  return `0x${paramsLengthNumber.toString(16)}`;
 };
 
 export const getParamsOffset = (params) => {

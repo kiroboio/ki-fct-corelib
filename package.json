@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "hardhat test test/truffle.test.js",
+    "test": "hardhat test test/version2.test.js",
     "build": "tsc"
   },
   "repository": {

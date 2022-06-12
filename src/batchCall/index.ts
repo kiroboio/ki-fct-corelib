@@ -15,54 +15,8 @@ import {
   getParamsLength,
   getParamsOffset,
 } from "../helpers";
-
-// Most likely the data structure is going to be different
-
-interface Flags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
-
-interface Params {
-  name: string;
-  type: string;
-  value: string;
-}
-
-interface BatchCallInputData {
-  value: string;
-  to: string;
-  toEnsHash?: string;
-  signer: string;
-
-  groupId: number;
-  nonce: number;
-
-  data?: string;
-  method?: string;
-  params?: Params[];
-
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: Flags;
-}
-
-interface BatchCallData {
-  typeHash: string;
-  to: string;
-  ensHash: string;
-  value: string;
-  sessionId: string;
-  signer: string;
-  functionSignature: string;
-  data: string;
-  typedData: Object;
-  hashedMessage: string;
-  hashedTxMessage: string;
-}
+import { Params } from "../interfaces";
+import { BatchCallData, BatchCallInputData } from "./interfaces";
 
 const getMethodInterface = (call: BatchCallInputData) => {
   return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
@@ -113,19 +67,6 @@ const getBatchCallData = async (
       ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
       : ""
   }`;
-  const fullEncodedMethod = call.method
-    ? web3.eth.abi.encodeFunctionCall(
-        {
-          name: call.method,
-          type: "function",
-          inputs: call.params.map((param) => ({
-            type: param.type,
-            name: param.name,
-          })),
-        },
-        call.params.map((param) => param.value)
-      )
-    : "0x";
 
   const methodParams = call.params
     ? {
@@ -212,10 +153,12 @@ const getBatchCallData = async (
     typedData,
     hashedMessage,
     hashedTxMessage,
+    unhashedCall: call,
   };
 };
 
 export class BatchCall {
+  unhashedCalls: Array<BatchCallInputData>;
   calls: Array<BatchCallData>;
   web3: Web3;
   FactoryProxy: Contract;
@@ -223,18 +166,14 @@ export class BatchCall {
 
   constructor(web3: Web3, contractAddress: string) {
     this.calls = [];
+    this.unhashedCalls = [];
     this.web3 = web3;
     // @ts-ignore
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
     this.factoryProxyAddress = contractAddress;
   }
 
-  verifyMessage(message: string, signature: string, address: string) {
-    const messageAddress = this.web3.eth.accounts.recover(message, signature);
-    return messageAddress.toLowerCase() === address.toLowerCase();
-  }
-
-  decodeData(data: string, txData: string, params?) {
+  decodeData(data: string, txData: string, params?: Params[]) {
     const decodedData = params
       ? defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...params.map((item) => item.type)], data)
       : defaultAbiCoder.decode(["bytes32", "bytes32"], data);
@@ -297,20 +236,50 @@ export class BatchCall {
   }
 
   async addTx(tx: BatchCallInputData) {
+    const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].unhashedCall.nonce : 0;
+
+    if (tx.nonce <= lastNonce) {
+      tx.nonce = lastNonce + 1;
+    }
+
     const data = await getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleTx(txs: BatchCallInputData[]) {
     const data = await Promise.all(
-      txs.map((tx, i) => getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+      txs.map((tx) => getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
     this.calls = [...this.calls, ...data];
-    return data;
+
+    return this.calls;
   }
 
-  editTx(index: number, tx: BatchCallInputData) {
-    // Edit tx
+  async editTx(index: number, tx: BatchCallInputData) {
+    const data = await getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeTx(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(
+      restOfCalls.map((tx) => getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+    );
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
   }
 }
