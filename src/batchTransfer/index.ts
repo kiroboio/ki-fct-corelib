@@ -14,48 +14,10 @@ import {
   getMaxGas,
   getFlags,
 } from "../helpers";
+import { Transfer, TransferCall } from "./interfaces";
 
 const web3 = new Web3();
 
-// Most likely the data structure is going to be different
-
-interface TransferFlags {
-  eip712?: boolean;
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
-interface TransferCall {
-  token: string;
-  tokenEnsHash?: string;
-  to: string;
-  toEnsHash?: string;
-  groupId: number;
-  nonce: number;
-  value: number;
-  signer: string;
-
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: TransferFlags;
-}
-
-interface Transfer {
-  token: string;
-  tokenEnsHash: string;
-  to: string;
-  toEnsHash: string;
-  value: number;
-  signer: string;
-  sessionId: string;
-  typedData: object;
-  hashedData: string;
-  unhashedCall: TransferCall;
-}
-
-// Move to seperate folder/file where all the helper functions will be located
 const getTypedDataDomain = async (factoryProxy: Contract, factoryProxyAddress: string) => {
   const chainId = await factoryProxy.methods.CHAIN_ID().call();
   return {

@@ -12,36 +12,7 @@ import {
   getMaxGasPrice,
   getNonce,
 } from "../helpers";
-
-interface TransferFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
-// Most likely the data structure is going to be different
-interface TransferCall {
-  token: string;
-  to: string;
-  value: number;
-  signer: string;
-  groupId: number;
-  nonce: number;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: TransferFlags;
-}
-
-interface Transfer {
-  signer: string;
-  token: string;
-  to: string;
-  value: number;
-  sessionId: string;
-  hashedData: string;
-  unhashedCall: TransferCall;
-}
+import { Transfer, TransferCall } from "./interfaces";
 
 // DefaultFlag - "f0" // payment + eip712
 const defaultFlags = {

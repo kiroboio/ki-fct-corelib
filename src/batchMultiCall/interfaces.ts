@@ -72,5 +72,6 @@ export interface BatchMultiCallData {
   encodedMessage: string;
   encodedLimits: string;
   typedData: object;
+  unhashedCall: BatchMultiCallInputData;
   mcall: MultiCall[];
 }
