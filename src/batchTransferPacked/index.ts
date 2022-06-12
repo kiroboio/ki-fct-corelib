@@ -40,6 +40,7 @@ interface Transfer {
   value: number;
   sessionId: string;
   hashedData: string;
+  unhashedCall: TransferCall;
 }
 
 // DefaultFlag - "f0" // payment + eip712
@@ -76,7 +77,8 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
     value: call.value,
     // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
     sessionId: getSessionId(),
-    hashedData: hashedData,
+    hashedData,
+    unhashedCall: call,
   };
 };
 
@@ -112,6 +114,30 @@ export class BatchTransferPacked {
   async addMultipleTx(tx: TransferCall[]) {
     const data = await Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.FactoryProxy, item)));
     this.calls = [...this.calls, ...data];
+    return this.calls;
+  }
+
+  async editTx(index: number, tx: TransferCall) {
+    const data = await getBatchTransferPackedData(this.FactoryProxy, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeTx(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(restOfCalls.map((tx) => getBatchTransferPackedData(this.FactoryProxy, tx)));
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
     return this.calls;
   }
 }

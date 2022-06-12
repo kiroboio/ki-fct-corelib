@@ -25,6 +25,7 @@ interface Transfer {
     value: number;
     sessionId: string;
     hashedData: string;
+    unhashedCall: TransferCall;
 }
 export declare class BatchTransferPacked {
     calls: Array<Transfer>;
@@ -39,5 +40,7 @@ export declare class BatchTransferPacked {
     };
     addTx(tx: TransferCall): Promise<Transfer[]>;
     addMultipleTx(tx: TransferCall[]): Promise<Transfer[]>;
+    editTx(index: number, tx: TransferCall): Promise<Transfer[]>;
+    removeTx(index: number): Promise<Transfer[]>;
 }
 export {};

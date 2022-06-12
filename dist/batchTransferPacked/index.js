@@ -42,7 +42,8 @@ const getBatchTransferPackedData = (FactoryProxy, call) => __awaiter(void 0, voi
         value: call.value,
         // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
         sessionId: getSessionId(),
-        hashedData: hashedData,
+        hashedData,
+        unhashedCall: call,
     };
 });
 class BatchTransferPacked {
@@ -72,6 +73,26 @@ class BatchTransferPacked {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.FactoryProxy, item)));
             this.calls = [...this.calls, ...data];
+            return this.calls;
+        });
+    }
+    editTx(index, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield getBatchTransferPackedData(this.FactoryProxy, tx);
+            this.calls[index] = data;
+            return this.calls;
+        });
+    }
+    removeTx(index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const restOfCalls = this.calls
+                .slice(index + 1)
+                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+            // Remove from calls
+            this.calls.splice(index, 1);
+            // Adjust nonce number for the rest of the calls
+            const data = yield Promise.all(restOfCalls.map((tx) => getBatchTransferPackedData(this.FactoryProxy, tx)));
+            this.calls.splice(-Math.abs(data.length), data.length, ...data);
             return this.calls;
         });
     }

@@ -621,6 +621,31 @@ describe("FactoryProxy contract library", function () {
       const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[0].hashedData);
       expect(decodedData.value).to.eq("10");
     });
+
+    it("Should edit tx", async () => {
+      const signer = getSigner(10);
+
+      const tx = {
+        token: token20.address,
+        groupId: 1,
+        nonce: 12,
+        to: accounts[11],
+        value: 15,
+        signer,
+        flags: {
+          payment: false,
+        },
+      };
+
+      const calls = await batchTransferPacked.editTx(2, tx);
+
+      expect(calls[2].value).to.eq(15);
+    });
+    it("Should remove tx", async () => {
+      const calls = await batchTransferPacked.removeTx(1);
+
+      expect(calls.length).to.eq(2);
+    });
     it("Should execute", async () => {
       const calls = batchTransferPacked.calls;
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
