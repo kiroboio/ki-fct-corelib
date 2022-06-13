@@ -31,6 +31,11 @@ const generateTxType = (item) => {
         ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
         : [{ name: "details", type: "Transaction_" }];
 };
+const getEncodedMethodParamsData = (call) => {
+    return `0x${call.method
+        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+        : ""}`;
+};
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -53,7 +58,7 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, call) => _
     const typedDataMessage = call.multiCalls.reduce((acc, item, index) => {
         var _a, _b, _c, _d, _e;
         const additionalTxData = item.params
-            ? Object.assign({ method_params_offset: "0x60", method_params_length: "0x40" }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
+            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(item.params), method_params_length: (0, helpers_1.getParamsLength)(getEncodedMethodParamsData(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
         return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
                     signer: item.signer,
                     call_address: item.to,
@@ -122,11 +127,6 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, call) => _
             encodedData,
             encodedDetails,
         };
-    };
-    const getEncodedMethodParamsData = (call) => {
-        return `0x${call.method
-            ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-            : ""}`;
     };
     return {
         typedData,

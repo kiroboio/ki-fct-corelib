@@ -13,6 +13,8 @@ import {
   getMaxGas,
   manageCallFlags,
   getFlags,
+  getParamsLength,
+  getParamsOffset,
 } from "../helpers";
 import { BatchMultiCallData, BatchMultiCallInputData, DecodeTx, MultiCallInputData } from "./interfaces";
 
@@ -30,6 +32,14 @@ const generateTxType = (item: MultiCallInputData) => {
   return item.params
     ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
     : [{ name: "details", type: "Transaction_" }];
+};
+
+const getEncodedMethodParamsData = (call: MultiCallInputData) => {
+  return `0x${
+    call.method
+      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
+      : ""
+  }`;
 };
 
 // DefaultFlag - "f100" // payment + eip712
@@ -62,8 +72,8 @@ const getBatchMultiCallData = async (
   const typedDataMessage = call.multiCalls.reduce((acc, item, index) => {
     const additionalTxData = item.params
       ? {
-          method_params_offset: "0x60", //'0x180', // '480', // 13*32
-          method_params_length: "0x40",
+          method_params_offset: getParamsOffset(item.params), //'0x180', // '480', // 13*32
+          method_params_length: getParamsLength(getEncodedMethodParamsData(item)),
           ...item.params.reduce(
             (acc, param) => ({
               ...acc,
@@ -172,14 +182,6 @@ const getBatchMultiCallData = async (
       encodedData,
       encodedDetails,
     };
-  };
-
-  const getEncodedMethodParamsData = (call: MultiCallInputData) => {
-    return `0x${
-      call.method
-        ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-        : ""
-    }`;
   };
 
   return {
