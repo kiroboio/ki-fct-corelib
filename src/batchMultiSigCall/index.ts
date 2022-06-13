@@ -14,82 +14,7 @@ import {
   manageCallFlags,
   getFlags,
 } from "../helpers";
-
-interface Params {
-  name: string;
-  type: string;
-  value: string;
-}
-
-interface DecodeTx {
-  encodedData: string;
-  encodedDetails: string;
-  params?: Params[];
-}
-interface BatchFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
-interface MultiCallFlags {
-  viewOnly: boolean;
-  continueOnFail: boolean;
-  stopOnFail: boolean;
-  stopOnSuccess: boolean;
-  revertOnSuccess: boolean;
-}
-
-interface MultiSigCallInputData {
-  value: string;
-  to: string;
-  signer: string;
-
-  method?: string;
-  data?: string;
-  params?: Params[];
-
-  toEnsHash?: string;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-
-  flags?: MultiCallFlags;
-}
-
-interface BatchMultiSigCallInputData {
-  groupId: number;
-  nonce: number;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: BatchFlags;
-  multiCalls: MultiSigCallInputData[];
-}
-
-interface MultiSigCall {
-  typeHash: Uint8Array;
-  functionSignature: string;
-  value: string;
-  signer: string;
-  gasLimit: number;
-  flags: string;
-  to: string;
-  ensHash?: string;
-  data: string;
-  encodedData: string;
-  encodedDetails: string;
-}
-
-interface BatchMultiSigCallData {
-  typeHash: Uint8Array;
-  sessionId: string;
-  typedData: object;
-  encodedMessage: string;
-  encodedLimits: string;
-  mcall: MultiSigCall[];
-}
+import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
 
 const contractInteractionDefaults = [
   { name: "details", type: "Transaction_" },
@@ -114,7 +39,7 @@ const defaultFlags = {
   flow: false,
 };
 
-const getBatchTransferData = async (
+const getMultiSigCallData = async (
   web3: Web3,
   FactoryProxy: Contract,
   factoryProxyAddress: string,
@@ -266,6 +191,7 @@ const getBatchTransferData = async (
     sessionId: getSessionId(),
     encodedMessage,
     encodedLimits,
+    unhashedCall: call,
     mcall: call.multiCalls.map((item, index) => ({
       typeHash: TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type),
       functionSignature: item.method
@@ -381,14 +307,14 @@ export class BatchMultiSigCall {
   }
 
   async addBatchCall(tx: BatchMultiSigCallInputData) {
-    const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+    const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleBatchCalls(txs: BatchMultiSigCallInputData[]) {
     const data = await Promise.all(
-      txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+      txs.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
     this.calls = [...this.calls, ...data];
     return this.calls;
@@ -402,5 +328,61 @@ export class BatchMultiSigCall {
     }
 
     return await this.FactoryProxy.methods.batchMultiSigCall_(calls, groupId).send({ from: activator });
+  }
+
+  async editBatchCall(index: number, tx: BatchMultiSigCallInputData) {
+    const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeBatchCall(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(
+      restOfCalls.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+    );
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
+  }
+
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputData) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+    batch.multiCalls[indexOfMulticall] = tx;
+
+    const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+
+    this.calls[indexOfBatch] = data;
+
+    return this.calls;
+  }
+
+  async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+
+    batch.multiCalls.splice(indexOfMulticall, 1);
+
+    const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+
+    this.calls[indexOfBatch] = data;
+
+    return this.calls;
   }
 }

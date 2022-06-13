@@ -37,7 +37,7 @@ const defaultFlags = {
     payment: true,
     flow: false,
 };
-const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
+const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
     const group = (0, helpers_1.getGroupId)(call.groupId);
     const tnonce = (0, helpers_1.getNonce)(call.nonce);
     const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
@@ -134,6 +134,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
         sessionId: getSessionId(),
         encodedMessage,
         encodedLimits,
+        unhashedCall: call,
         mcall: call.multiCalls.map((item, index) => (Object.assign({ typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type), functionSignature: item.method
                 ? web3.utils.sha3(getMethodInterface(item))
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: Number.parseInt("0x" + maxGas), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
@@ -207,14 +208,14 @@ class BatchMultiSigCall {
     }
     addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
             this.calls = [...this.calls, data];
             return this.calls;
         });
     }
     addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield Promise.all(txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
+            const data = yield Promise.all(txs.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
             this.calls = [...this.calls, ...data];
             return this.calls;
         });
@@ -226,6 +227,50 @@ class BatchMultiSigCall {
                 throw new Error("No calls haven't been added");
             }
             return yield this.FactoryProxy.methods.batchMultiSigCall_(calls, groupId).send({ from: activator });
+        });
+    }
+    editBatchCall(index, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+            this.calls[index] = data;
+            return this.calls;
+        });
+    }
+    removeBatchCall(index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const restOfCalls = this.calls
+                .slice(index + 1)
+                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+            // Remove from calls
+            this.calls.splice(index, 1);
+            // Adjust nonce number for the rest of the calls
+            const data = yield Promise.all(restOfCalls.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
+            this.calls.splice(-Math.abs(data.length), data.length, ...data);
+            return this.calls;
+        });
+    }
+    editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batch = this.calls[indexOfBatch].unhashedCall;
+            if (!batch) {
+                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+            }
+            batch.multiCalls[indexOfMulticall] = tx;
+            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+            this.calls[indexOfBatch] = data;
+            return this.calls;
+        });
+    }
+    removeMultiCallTx(indexOfBatch, indexOfMulticall) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batch = this.calls[indexOfBatch].unhashedCall;
+            if (!batch) {
+                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+            }
+            batch.multiCalls.splice(indexOfMulticall, 1);
+            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+            this.calls[indexOfBatch] = data;
+            return this.calls;
         });
     }
 }
