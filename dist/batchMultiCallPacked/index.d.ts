@@ -1,45 +1,6 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-interface TransferFlags {
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-    flow?: boolean;
-}
-interface MultiCallInput {
-    value: string;
-    to: string;
-    data: string;
-    gasLimit?: number;
-    onFailStop?: boolean;
-    onFailContinue?: boolean;
-    onSuccessStop?: boolean;
-    onSuccessRevert?: boolean;
-}
-interface MultiCallPackedInput {
-    groupId: number;
-    nonce: number;
-    signer: string;
-    afterTimestamp?: number;
-    beforeTimestamp?: number;
-    maxGas?: number;
-    maxGasPrice?: number;
-    flags?: TransferFlags;
-    mcall: MultiCallInput[];
-}
-interface MultiCall {
-    value: string;
-    to: string;
-    gasLimit: number;
-    flags: string;
-    data: string;
-}
-interface MultiCallPacked {
-    encodedData: string;
-    sessionId: string;
-    signer: string;
-    mcall: MultiCall[];
-}
+import { MultiCallInput, MultiCallPacked, MultiCallPackedInput } from "./interfaces";
 export declare class BatchMultiCallPacked {
     calls: Array<MultiCallPacked>;
     web3: Web3;
@@ -48,5 +9,8 @@ export declare class BatchMultiCallPacked {
     decodeBatch(encodedData: string): any;
     addPackedMulticall(tx: MultiCallPackedInput): Promise<MultiCallPacked[]>;
     addMultiplePackedMulticalls(txs: MultiCallPackedInput[]): Promise<MultiCallPacked[]>;
+    editBatchCall(index: number, tx: MultiCallPackedInput): Promise<MultiCallPacked[]>;
+    removeBatchCall(index: number): Promise<MultiCallPacked[]>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiCallInput): Promise<MultiCallPacked[]>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<MultiCallPacked[]>;
 }
-export {};

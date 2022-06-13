@@ -12,52 +12,7 @@ import {
   getNonce,
   manageCallFlags,
 } from "../helpers";
-
-// Most likely the data structure is going to be different
-
-interface TransferFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-  flow?: boolean;
-}
-interface MultiCallInput {
-  value: string;
-  to: string;
-  data: string;
-  gasLimit?: number;
-  onFailStop?: boolean;
-  onFailContinue?: boolean;
-  onSuccessStop?: boolean;
-  onSuccessRevert?: boolean;
-}
-
-interface MultiCallPackedInput {
-  groupId: number;
-  nonce: number;
-  signer: string;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: TransferFlags;
-  mcall: MultiCallInput[];
-}
-
-interface MultiCall {
-  value: string;
-  to: string;
-  gasLimit: number;
-  flags: string;
-  data: string;
-}
-
-interface MultiCallPacked {
-  encodedData: string;
-  sessionId: string;
-  signer: string;
-  mcall: MultiCall[];
-}
+import { MultiCallInput, MultiCallPacked, MultiCallPackedInput } from "./interfaces";
 
 // "f000" - not-ordered, payment
 const defaultFlags = {
@@ -67,7 +22,6 @@ const defaultFlags = {
 };
 
 const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: MultiCallPackedInput) => {
-  // const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.methods.DOMAIN_SEPARATOR().call();
   const typeHash = await factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId);
@@ -112,6 +66,7 @@ const getMultiCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     encodedData: mcallHash,
     sessionId: getSessionId(),
     signer: call.signer,
+    unhashedCall: call,
   };
 };
 
@@ -146,6 +101,60 @@ export class BatchMultiCallPacked {
   async addMultiplePackedMulticalls(txs: MultiCallPackedInput[]) {
     const data = await Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
+    return this.calls;
+  }
+
+  async editBatchCall(index: number, tx: MultiCallPackedInput) {
+    const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeBatchCall(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(restOfCalls.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
+  }
+
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiCallInput) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+    batch.mcall[indexOfMulticall] = tx;
+
+    const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, batch);
+
+    this.calls[indexOfBatch] = data;
+
+    return this.calls;
+  }
+
+  async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+
+    batch.mcall.splice(indexOfMulticall, 1);
+
+    const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, batch);
+
+    this.calls[indexOfBatch] = data;
+
     return this.calls;
   }
 }

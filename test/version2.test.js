@@ -928,10 +928,108 @@ describe("FactoryProxy contract library", function () {
       expect(batchMultiCallPacked.calls.length).to.eq(1);
     });
 
+    it("Should add multiple tx", async () => {
+      const signer = getSigner(10);
+      const txs = [
+        {
+          groupId: 1,
+          nonce: 17,
+          signer,
+          flags: {
+            payment: true,
+          },
+          mcall: [
+            {
+              value: 15,
+              to: getSigner(11),
+            },
+            {
+              value: 12,
+              to: getSigner(12),
+            },
+          ],
+        },
+        {
+          groupId: 1,
+          nonce: 18,
+          signer,
+          flags: {
+            payment: true,
+          },
+          mcall: [
+            {
+              value: 0,
+              to: token20.address,
+              method: "transfer",
+              params: [
+                { name: "to", type: "address", value: accounts[12] },
+                { name: "token_amount", type: "uint256", value: "30" },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const calls = await batchMultiCallPacked.addMultiplePackedMulticalls(txs);
+
+      expect(calls.length).to.eq(3);
+    });
+
     it("Should decode", async () => {
       const decodedData = batchMultiCallPacked.decodeBatch(batchMultiCallPacked.calls[0].encodedData);
       expect(decodedData[0].value).to.eq("0");
     });
+    it("Should edit batchTx", async () => {
+      const signer = getSigner(10);
+
+      const tx = {
+        groupId: 1,
+        nonce: 18,
+        signer,
+        flags: {
+          payment: false,
+        },
+        mcall: [
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "50" },
+            ],
+          },
+          {
+            value: 15,
+            to: getSigner(12),
+          },
+        ],
+      };
+      const calls = await batchMultiCallPacked.editBatchCall(2, tx);
+
+      expect(calls[2].mcall[1].value).to.eq(15) && expect(calls[2].mcall[1].to).to.eq(getSigner(12));
+    });
+
+    it("Should edit multiCallTx in batchTx", async () => {
+      const tx = {
+        value: 25,
+        to: accounts[11],
+      };
+      const calls = await batchMultiCallPacked.editMultiCallTx(2, 2, tx);
+
+      expect(calls[2].mcall[2].value).to.eq(25) && expect(calls[2].mcall[2].to).to.eq(accounts[11]);
+    });
+    it("Should remove a multiCallTx in batchTx", async () => {
+      const calls = await batchMultiCallPacked.removeMultiCallTx(2, 1);
+
+      expect(calls[2].mcall.length).to.eq(2);
+    });
+
+    it("Should remove batchTx", async () => {
+      const calls = await batchMultiCallPacked.removeBatchCall(1);
+      expect(calls.length).to.eq(2);
+    });
+
     it("Should execute", async () => {
       const calls = batchMultiCallPacked.calls;
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
@@ -964,7 +1062,7 @@ describe("FactoryProxy contract library", function () {
 
       const tx = {
         groupId: 1,
-        nonce: 17,
+        nonce: 19,
         flags: {
           payment: false,
           flow: true,
@@ -1004,7 +1102,7 @@ describe("FactoryProxy contract library", function () {
       const txs = [
         {
           groupId: 1,
-          nonce: 18,
+          nonce: 20,
           multiCalls: [
             {
               value: 0,
@@ -1030,7 +1128,7 @@ describe("FactoryProxy contract library", function () {
         },
         {
           groupId: 1,
-          nonce: 19,
+          nonce: 21,
           multiCalls: [
             {
               value: 0,
@@ -1118,7 +1216,7 @@ describe("FactoryProxy contract library", function () {
       const signer2 = getSigner(11);
       const tx = {
         groupId: 1,
-        nonce: 20,
+        nonce: 22,
         flags: {
           payment: false,
           flow: true,
@@ -1158,7 +1256,7 @@ describe("FactoryProxy contract library", function () {
       const txs = [
         {
           groupId: 1,
-          nonce: 21,
+          nonce: 23,
           multiCalls: [
             {
               value: 0,
@@ -1186,7 +1284,7 @@ describe("FactoryProxy contract library", function () {
         },
         {
           groupId: 1,
-          nonce: 22,
+          nonce: 24,
           multiCalls: [
             {
               value: 0,
