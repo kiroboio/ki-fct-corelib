@@ -1,8 +1,4 @@
-export interface Params {
-  name: string;
-  type: string;
-  value: string;
-}
+import { Params } from "../interfaces";
 
 export interface DecodeTx {
   encodedData: string;

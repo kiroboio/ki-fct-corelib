@@ -1,4 +1,4 @@
-import { Params } from "../batchMultiCall/interfaces";
+import { Params } from "../interfaces";
 
 export interface DecodeTx {
   encodedData: string;

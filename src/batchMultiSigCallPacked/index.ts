@@ -12,65 +12,7 @@ import {
   getNonce,
   manageCallFlags,
 } from "../helpers";
-
-interface BatchFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-  flow?: boolean;
-}
-
-interface MultiCallFlags {
-  viewOnly: boolean;
-  continueOnFail: boolean;
-  stopOnFail: boolean;
-  stopOnSuccess: boolean;
-  revertOnSuccess: boolean;
-}
-
-interface CallInput {
-  value: string;
-  to: string;
-  data: string;
-  signer: string;
-  gasLimit?: number;
-  flags?: MultiCallFlags;
-}
-
-interface BatchMultiSigCallPackedInput {
-  groupId: number;
-  nonce: number;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: BatchFlags;
-  multiCalls: CallInput[];
-}
-
-interface Signature {
-  r: string;
-  s: string;
-  v: string;
-}
-
-interface PackedMSCall {
-  value: string;
-  signer: string;
-  gasLimit: number;
-  flags: string;
-  to: string;
-  method?: string;
-  params?: string;
-  encodedTx: string;
-}
-
-interface BatchMultiSigCallPackedData {
-  sessionId: string;
-  encodedLimits: string;
-  encodedData: string;
-  mcall: PackedMSCall[];
-}
+import { BatchMultiSigCallPackedData, BatchMultiSigCallPackedInput, CallInput } from "./interfaces";
 
 // "f000" - not-ordered, payment
 const defaultFlags = {
@@ -139,6 +81,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
     sessionId: getSessionId(),
     encodedLimits: encodeLimit,
     encodedData: fullEncode,
+    unhashedCall: call,
     mcall: call.multiCalls.map((item, i) => ({
       value: item.value,
       signer: item.signer,
@@ -197,6 +140,62 @@ export class BatchMultiSigCallPacked {
   async addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInput[]) {
     const data = await Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
+    return this.calls;
+  }
+
+  async editBatchCall(index: number, tx: BatchMultiSigCallPackedInput) {
+    const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
+
+    this.calls[index] = data;
+
+    return this.calls;
+  }
+
+  async removeBatchCall(index: number) {
+    const restOfCalls = this.calls
+      .slice(index + 1)
+      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+
+    // Remove from calls
+    this.calls.splice(index, 1);
+
+    // Adjust nonce number for the rest of the calls
+    const data = await Promise.all(
+      restOfCalls.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx))
+    );
+
+    this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
+  }
+
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: CallInput) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+    batch.multiCalls[indexOfMulticall] = tx;
+
+    const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
+
+    this.calls[indexOfBatch] = data;
+
+    return this.calls;
+  }
+
+  async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+
+    batch.multiCalls.splice(indexOfMulticall, 1);
+
+    const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
+
+    this.calls[indexOfBatch] = data;
+
     return this.calls;
   }
 }

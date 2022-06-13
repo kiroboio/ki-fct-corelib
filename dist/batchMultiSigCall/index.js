@@ -220,15 +220,6 @@ class BatchMultiSigCall {
             return this.calls;
         });
     }
-    execute(activator, groupId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const calls = this.calls;
-            if (calls.length === 0) {
-                throw new Error("No calls haven't been added");
-            }
-            return yield this.FactoryProxy.methods.batchMultiSigCall_(calls, groupId).send({ from: activator });
-        });
-    }
     editBatchCall(index, tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);

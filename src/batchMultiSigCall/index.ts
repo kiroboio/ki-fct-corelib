@@ -320,16 +320,6 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  async execute(activator: string, groupId: number) {
-    const calls = this.calls;
-
-    if (calls.length === 0) {
-      throw new Error("No calls haven't been added");
-    }
-
-    return await this.FactoryProxy.methods.batchMultiSigCall_(calls, groupId).send({ from: activator });
-  }
-
   async editBatchCall(index: number, tx: BatchMultiSigCallInputData) {
     const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
 

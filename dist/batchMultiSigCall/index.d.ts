@@ -33,7 +33,6 @@ export declare class BatchMultiSigCall {
     }[];
     addBatchCall(tx: BatchMultiSigCallInputData): Promise<BatchMultiSigCallData[]>;
     addMultipleBatchCalls(txs: BatchMultiSigCallInputData[]): Promise<BatchMultiSigCallData[]>;
-    execute(activator: string, groupId: number): Promise<any>;
     editBatchCall(index: number, tx: BatchMultiSigCallInputData): Promise<BatchMultiSigCallData[]>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallData[]>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputData): Promise<BatchMultiSigCallData[]>;

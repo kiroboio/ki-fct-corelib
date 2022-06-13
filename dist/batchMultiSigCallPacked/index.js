@@ -65,6 +65,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
         sessionId: getSessionId(),
         encodedLimits: encodeLimit,
         encodedData: fullEncode,
+        unhashedCall: call,
         mcall: call.multiCalls.map((item, i) => ({
             value: item.value,
             signer: item.signer,
@@ -113,6 +114,50 @@ class BatchMultiSigCallPacked {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
+            return this.calls;
+        });
+    }
+    editBatchCall(index, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
+            this.calls[index] = data;
+            return this.calls;
+        });
+    }
+    removeBatchCall(index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const restOfCalls = this.calls
+                .slice(index + 1)
+                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+            // Remove from calls
+            this.calls.splice(index, 1);
+            // Adjust nonce number for the rest of the calls
+            const data = yield Promise.all(restOfCalls.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
+            this.calls.splice(-Math.abs(data.length), data.length, ...data);
+            return this.calls;
+        });
+    }
+    editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batch = this.calls[indexOfBatch].unhashedCall;
+            if (!batch) {
+                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+            }
+            batch.multiCalls[indexOfMulticall] = tx;
+            const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
+            this.calls[indexOfBatch] = data;
+            return this.calls;
+        });
+    }
+    removeMultiCallTx(indexOfBatch, indexOfMulticall) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batch = this.calls[indexOfBatch].unhashedCall;
+            if (!batch) {
+                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+            }
+            batch.multiCalls.splice(indexOfMulticall, 1);
+            const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
+            this.calls[indexOfBatch] = data;
             return this.calls;
         });
     }
