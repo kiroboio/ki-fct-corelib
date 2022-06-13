@@ -39,7 +39,7 @@ const defaultFlags = {
   flow: false,
 };
 
-const getBatchTransferData = async (
+const getBatchMultiCallData = async (
   web3: Web3,
   FactoryProxy: Contract,
   factoryProxyAddress: string,
@@ -290,28 +290,28 @@ export class BatchMultiCall {
   }
 
   async addBatchCall(tx: BatchMultiCallInputData) {
-    const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+    const data = await getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
   async addMultipleBatchCalls(txs: BatchMultiCallInputData[]) {
     const data = await Promise.all(
-      txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+      txs.map((tx) => getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
     this.calls = [...this.calls, ...data];
     return this.calls;
   }
 
-  async editTx(index: number, tx: BatchMultiCallInputData) {
-    const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+  async editBatchCall(index: number, tx: BatchMultiCallInputData) {
+    const data = await getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
 
     this.calls[index] = data;
 
     return this.calls;
   }
 
-  async removeTx(index: number) {
+  async removeBatchCall(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
       .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
@@ -321,10 +321,40 @@ export class BatchMultiCall {
 
     // Adjust nonce number for the rest of the calls
     const data = await Promise.all(
-      restOfCalls.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
+      restOfCalls.map((tx) => getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
 
     this.calls.splice(-Math.abs(data.length), data.length, ...data);
+
+    return this.calls;
+  }
+
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiCallInputData) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+    batch.multiCalls[indexOfMulticall] = tx;
+
+    const data = await getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+
+    this.calls[indexOfBatch] = data;
+
+    return this.calls;
+  }
+
+  async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
+    const batch = this.calls[indexOfBatch].unhashedCall;
+
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+
+    batch.multiCalls.splice(indexOfMulticall, 1);
+
+    const data = await getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+
+    this.calls[indexOfBatch] = data;
 
     return this.calls;
   }

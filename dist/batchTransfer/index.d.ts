@@ -1,38 +1,6 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-interface TransferFlags {
-    eip712?: boolean;
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-}
-interface TransferCall {
-    token: string;
-    tokenEnsHash?: string;
-    to: string;
-    toEnsHash?: string;
-    groupId: number;
-    nonce: number;
-    value: number;
-    signer: string;
-    afterTimestamp?: number;
-    beforeTimestamp?: number;
-    maxGas?: number;
-    maxGasPrice?: number;
-    flags?: TransferFlags;
-}
-interface Transfer {
-    token: string;
-    tokenEnsHash: string;
-    to: string;
-    toEnsHash: string;
-    value: number;
-    signer: string;
-    sessionId: string;
-    typedData: object;
-    hashedData: string;
-    unhashedCall: TransferCall;
-}
+import { Transfer, TransferCall } from "./interfaces";
 export declare class BatchTransfer {
     calls: Array<Transfer>;
     web3: Web3;
@@ -57,4 +25,3 @@ export declare class BatchTransfer {
     editTx(index: number, tx: TransferCall): Promise<Transfer[]>;
     removeTx(index: number): Promise<Transfer[]>;
 }
-export {};

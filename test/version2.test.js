@@ -800,6 +800,65 @@ describe("FactoryProxy contract library", function () {
 
       expect(decodedTxs[0].token_amount).to.eq("5");
     });
+    it("Should edit batchTx", async () => {
+      const signer = getSigner(10);
+
+      const tx = {
+        groupId: 1,
+        nonce: 15,
+        signer,
+        flags: {
+          payment: true,
+        },
+        multiCalls: [
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[13] },
+              { name: "token_amount", type: "uint256", value: "22" },
+            ],
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[13] },
+              { name: "token_amount", type: "uint256", value: "22" },
+            ],
+          },
+          {
+            value: 15,
+            to: accounts[11],
+          },
+        ],
+      };
+      const calls = await batchMultiCall.editBatchCall(2, tx);
+
+      expect(calls[2].mcall[2].value).to.eq(15);
+    });
+
+    it("Should edit multiCallTx in batchTx", async () => {
+      const tx = {
+        value: 25,
+        to: accounts[11],
+      };
+      const calls = await batchMultiCall.editMultiCallTx(2, 2, tx);
+
+      expect(calls[2].mcall[2].value).to.eq(25);
+    });
+    it("Should remove a multiCallTx in batchTx", async () => {
+      const calls = await batchMultiCall.removeMultiCallTx(2, 2);
+
+      expect(calls[2].mcall.length).to.eq(2);
+    });
+
+    it("Should remove batchTx", async () => {
+      const calls = await batchMultiCall.removeBatchCall(1);
+      expect(calls.length).to.eq(2);
+    });
 
     it("Should execute", async () => {
       const calls = batchMultiCall.calls;
