@@ -1,10 +1,4 @@
-import { Params } from "../interfaces";
-
-export interface Flags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
+import { BatchFlags, Params } from "../interfaces";
 
 export interface BatchCallInputInterface {
   value: string;
@@ -20,7 +14,7 @@ export interface BatchCallInputInterface {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  flags?: Flags;
+  flags?: Partial<BatchFlags>;
 }
 
 export interface BatchCallInterface {

@@ -1,9 +1,5 @@
-export interface TransferFlags {
-  eip712?: boolean;
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-}
+import { MultiCallFlags } from "../interfaces";
+
 export interface TransferInputInterface {
   token: string;
   tokenEnsHash?: string;
@@ -18,7 +14,7 @@ export interface TransferInputInterface {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  flags?: TransferFlags;
+  flags?: Partial<MultiCallFlags>;
 }
 
 export interface TransferInterface {

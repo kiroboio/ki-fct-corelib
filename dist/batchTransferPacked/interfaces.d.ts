@@ -1,8 +1,4 @@
-export interface TransferFlags {
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-}
+import { BatchFlags } from "../interfaces";
 export interface TransferPackedInputInterface {
     token: string;
     to: string;
@@ -14,7 +10,7 @@ export interface TransferPackedInputInterface {
     beforeTimestamp?: number;
     maxGas?: number;
     maxGasPrice?: number;
-    flags?: TransferFlags;
+    flags?: Partial<BatchFlags>;
 }
 export interface TransferPackedInterface {
     signer: string;

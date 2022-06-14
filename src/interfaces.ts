@@ -4,6 +4,12 @@ export interface Params {
   value: string;
 }
 
+export interface DecodeTx {
+  encodedData: string;
+  encodedDetails: string;
+  params?: Params[];
+}
+
 // For multiBatchCalls
 export interface BatchFlags {
   staticCall: boolean;

@@ -1,9 +1,4 @@
 import { BatchFlags, MultiCallFlags, Params } from "../interfaces";
-export interface DecodeTx {
-    encodedData: string;
-    encodedDetails: string;
-    params?: Params[];
-}
 export interface MultiSigCallInputInterface {
     value: string;
     to: string;

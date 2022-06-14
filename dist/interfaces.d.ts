@@ -3,6 +3,11 @@ export interface Params {
     type: string;
     value: string;
 }
+export interface DecodeTx {
+    encodedData: string;
+    encodedDetails: string;
+    params?: Params[];
+}
 export interface BatchFlags {
     staticCall: boolean;
     cancelable: boolean;

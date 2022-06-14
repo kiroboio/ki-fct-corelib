@@ -1,15 +1,4 @@
-export interface BatchFlags {
-    staticCall: boolean;
-    cancelable: boolean;
-    payment: boolean;
-    flow: boolean;
-}
-export interface MultiCallFlags {
-    onFailStop: boolean;
-    onFailContinue: boolean;
-    onSuccessStop: boolean;
-    onSuccessRevert: boolean;
-}
+import { BatchFlags, MultiCallFlags } from "../interfaces";
 export interface MultiCallInputInterface {
     value: string;
     to: string;

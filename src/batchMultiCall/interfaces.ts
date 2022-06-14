@@ -1,17 +1,4 @@
-import { MultiCallFlags, Params } from "../interfaces";
-
-export interface DecodeTx {
-  encodedData: string;
-  encodedDetails: string;
-  params?: Params[];
-}
-
-export interface BatchFlags {
-  staticCall: boolean;
-  cancelable: boolean;
-  payment: boolean;
-  flow: boolean;
-}
+import { BatchFlags, MultiCallFlags, Params } from "../interfaces";
 
 export interface MultiCallInputInterface {
   value: string;

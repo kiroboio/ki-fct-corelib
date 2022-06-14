@@ -16,7 +16,8 @@ import {
   getParamsLength,
   getParamsOffset,
 } from "../helpers";
-import { BatchMultiCallInputInterface, BatchMultiCallInterface, DecodeTx, MultiCallInputInterface } from "./interfaces";
+import { DecodeTx } from "../interfaces";
+import { BatchMultiCallInputInterface, BatchMultiCallInterface, MultiCallInputInterface } from "./interfaces";
 
 const contractInteractionDefaults = [
   { name: "details", type: "Transaction_" },

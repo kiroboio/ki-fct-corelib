@@ -16,12 +16,8 @@ import {
   getParamsOffset,
   getParamsLength,
 } from "../helpers";
-import {
-  BatchMultiSigCallInputInterface,
-  BatchMultiSigCallInterface,
-  DecodeTx,
-  MultiSigCallInputInterface,
-} from "./interfaces";
+import { DecodeTx } from "../interfaces";
+import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 // import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
 
 const contractInteractionDefaults = [

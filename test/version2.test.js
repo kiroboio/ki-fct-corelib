@@ -13,7 +13,6 @@ const {
 const assert = require("assert");
 const { expect } = require("chai");
 const { TypedDataUtils } = require("ethers-eip712");
-const { decode } = require("punycode");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("RecoveryWalletCore");
 const Wallet = artifacts.require("RecoveryWallet");

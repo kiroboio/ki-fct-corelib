@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, DecodeTx, MultiSigCallInputInterface } from "./interfaces";
+import { DecodeTx } from "../interfaces";
+import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 export declare class BatchMultiSigCall {
     calls: Array<BatchMultiSigCallInterface>;
     web3: Web3;
