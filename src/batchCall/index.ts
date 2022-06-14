@@ -20,7 +20,6 @@ import {
 const defaultFlags = {
   eip712: true,
   payment: true,
-  staticCall: false,
 };
 
 const getBatchCallData = async (
@@ -76,12 +75,12 @@ const getBatchCallData = async (
     message: {
       transaction: {
         call_address: call.to,
-        call_ens: call.toEnsHash || "",
+        call_ens: call.toEns || "",
         eth_value: call.value,
         nonce: "0x" + callDetails.group + callDetails.nonce,
         valid_from: Number.parseInt("0x" + callDetails.after),
         expires_at: Number.parseInt("0x" + callDetails.before),
-        gas_limit: Number.parseInt("0x" + callDetails.maxGas),
+        gas_limit: Number.parseInt("0x" + callDetails.gasLimit),
         gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
         view_only: callDetails.pureFlags.staticCall,
         refund: callDetails.pureFlags.payment,
@@ -91,19 +90,19 @@ const getBatchCallData = async (
     },
   };
 
-  const hashedMessage = ethers.utils.hexlify(
+  const encodedMessage = ethers.utils.hexlify(
     TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
   );
 
-  const hashedTxMessage = ethers.utils.hexlify(
+  const encodedTxMessage = ethers.utils.hexlify(
     TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction)
   );
 
   return {
     typeHash: getTypeHash(typedData),
     to: call.to,
-    ensHash: call.toEnsHash
-      ? web3.utils.sha3(call.toEnsHash)
+    ensHash: call.toEns
+      ? web3.utils.sha3(call.toEns)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
     sessionId: callDetails.sessionId,
@@ -113,8 +112,8 @@ const getBatchCallData = async (
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     data: getEncodedMethodParams(call),
     typedData,
-    hashedMessage,
-    hashedTxMessage,
+    encodedMessage,
+    encodedTxMessage,
     unhashedCall: call,
   };
 };
@@ -169,7 +168,7 @@ export class BatchCall {
         nonce: decodedTxData[4].toHexString(),
         afterTimestamp: decodedTxData[5],
         beforeTimestamp: decodedTxData[6],
-        maxGas: decodedTxData[7],
+        gasLimit: decodedTxData[7],
         maxGasPrice: decodedTxData[8].toString(),
         staticCall: decodedTxData[9],
         payment: decodedTxData[10],

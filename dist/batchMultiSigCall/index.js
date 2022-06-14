@@ -38,7 +38,7 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
                     call_address: item.to,
                     call_ens: item.toEnsHash || "",
                     eth_value: item.value,
-                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
+                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
                     view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
                     continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
                     stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
@@ -108,7 +108,7 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
         unhashedCall: batchCall,
         mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type), functionSignature: item.method
                 ? web3.utils.sha3((0, helpers_1.getMethodInterface)(item))
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
     };

@@ -18,7 +18,7 @@ export declare class BatchCall {
             nonce: any;
             afterTimestamp: any;
             beforeTimestamp: any;
-            maxGas: any;
+            gasLimit: any;
             maxGasPrice: any;
             staticCall: any;
             payment: any;

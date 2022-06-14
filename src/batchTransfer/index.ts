@@ -58,7 +58,7 @@ const getBatchTransferData = async (
       nonce: "0x" + callDetails.group + callDetails.nonce,
       valid_from: "0x" + callDetails.after,
       expires_at: "0x" + callDetails.before,
-      gas_limit: "0x" + callDetails.maxGas,
+      gas_limit: "0x" + callDetails.gasLimit,
       gas_price_limit: "0x" + callDetails.maxGasPrice,
       refund: callDetails.pureFlags.payment,
     },

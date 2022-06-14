@@ -273,19 +273,19 @@ describe("FactoryProxy contract library", function () {
         to: token20.address,
         groupId: 1,
         nonce: 1,
+        signer,
         method: "transfer",
         params: [
           { name: "to", type: "address", value: accounts[11] },
           { name: "token_amount", type: "uint256", value: "5" },
         ],
-        signer,
         flags: {
           payment: false,
         },
       };
-      await batchCall.addTx(tx);
+      const calls = await batchCall.addTx(tx);
 
-      expect(batchCall.calls.length).to.eq(1);
+      expect(calls.length).to.eq(1);
     });
     it("Should add multiple tx", async () => {
       const signer = getSigner(10);
@@ -329,6 +329,23 @@ describe("FactoryProxy contract library", function () {
       const calls = await batchCall.editTx(2, tx);
 
       expect(calls[2].value).to.eq(15);
+    });
+    it("Should decodeData", async () => {
+      const call = batchCall.calls[2];
+
+      const params = [
+        { name: "to", type: "address", value: accounts[11] },
+        { name: "token_amount", type: "uint256", value: "5" },
+      ];
+
+      console.log(call.encodedMessage);
+      console.log(call.encodedTxMessage);
+      // const data = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage, params);
+      const data = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage);
+
+      console.log(data);
+
+      expect(data.transaction.value).to.eq("15");
     });
     it("Should remove call", async () => {
       const calls = await batchCall.removeTx(1);

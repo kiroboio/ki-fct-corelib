@@ -7,7 +7,7 @@ export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Pa
     nonce: string;
     after: string;
     before: string;
-    maxGas: string;
+    gasLimit: string;
     maxGasPrice: string;
     flags: string;
     pureFlags: {

@@ -58,7 +58,7 @@ const getMultiSigCallData = async (
           call_address: item.to,
           call_ens: item.toEnsHash || "",
           eth_value: item.value,
-          gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
+          gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
           view_only: item.flags?.viewOnly || false,
           continue_on_fail: item.flags?.onFailContinue || false,
           stop_on_fail: item.flags?.onFailStop || false,
@@ -164,7 +164,7 @@ const getMultiSigCallData = async (
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       value: item.value,
       signer: item.signer,
-      gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
+      gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
       flags: item.flags ? manageCallFlags(item.flags) : "0",
       to: item.to,
       ensHash: item.toEnsHash

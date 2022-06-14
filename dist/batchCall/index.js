@@ -22,7 +22,6 @@ const helpers_1 = require("../helpers");
 const defaultFlags = {
     eip712: true,
     payment: true,
-    staticCall: false,
 };
 const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
     const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
@@ -63,25 +62,25 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
         domain: yield (0, helpers_1.getTypedDataDomain)(web3, factoryProxy, factoryProxyAddress),
         message: Object.assign({ transaction: {
                 call_address: call.to,
-                call_ens: call.toEnsHash || "",
+                call_ens: call.toEns || "",
                 eth_value: call.value,
                 nonce: "0x" + callDetails.group + callDetails.nonce,
                 valid_from: Number.parseInt("0x" + callDetails.after),
                 expires_at: Number.parseInt("0x" + callDetails.before),
-                gas_limit: Number.parseInt("0x" + callDetails.maxGas),
+                gas_limit: Number.parseInt("0x" + callDetails.gasLimit),
                 gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
                 view_only: callDetails.pureFlags.staticCall,
                 refund: callDetails.pureFlags.payment,
                 method_interface: call.method ? (0, helpers_1.getMethodInterface)(call) : "",
             } }, methodParams),
     };
-    const hashedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
-    const hashedTxMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction));
+    const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
+    const encodedTxMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction));
     return {
         typeHash: (0, helpers_1.getTypeHash)(typedData),
         to: call.to,
-        ensHash: call.toEnsHash
-            ? web3.utils.sha3(call.toEnsHash)
+        ensHash: call.toEns
+            ? web3.utils.sha3(call.toEns)
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: call.value,
         sessionId: callDetails.sessionId,
@@ -91,8 +90,8 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         data: (0, helpers_1.getEncodedMethodParams)(call),
         typedData,
-        hashedMessage,
-        hashedTxMessage,
+        encodedMessage,
+        encodedTxMessage,
         unhashedCall: call,
     };
 });
@@ -134,7 +133,7 @@ class BatchCall {
                 nonce: decodedTxData[4].toHexString(),
                 afterTimestamp: decodedTxData[5],
                 beforeTimestamp: decodedTxData[6],
-                maxGas: decodedTxData[7],
+                gasLimit: decodedTxData[7],
                 maxGasPrice: decodedTxData[8].toString(),
                 staticCall: decodedTxData[9],
                 payment: decodedTxData[10],

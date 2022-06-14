@@ -3,7 +3,7 @@ import { BatchCallBase, Params } from "../interfaces";
 export interface BatchCallInputInterface extends BatchCallBase {
   value: string;
   to: string;
-  toEnsHash?: string;
+  toEns?: string;
   signer: string;
 
   method?: string;
@@ -20,7 +20,7 @@ export interface BatchCallInterface {
   functionSignature: string;
   data: string;
   typedData: Object;
-  hashedMessage: string;
-  hashedTxMessage: string;
+  encodedMessage: string;
+  encodedTxMessage: string;
   unhashedCall: BatchCallInputInterface;
 }

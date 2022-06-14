@@ -20,7 +20,7 @@ export const getSessionIdDetails = (call: BatchCallBase, defaultFlags: Partial<B
   const nonce = getNonce(call.nonce);
   const after = getAfterTimestamp(call.afterTimestamp || 0);
   const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
+  const gasLimit = getMaxGas(call.gasLimit || 0);
   const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
 
   const pureFlags = { ...defaultFlags, ...call.flags };
@@ -31,11 +31,11 @@ export const getSessionIdDetails = (call: BatchCallBase, defaultFlags: Partial<B
     nonce,
     after,
     before,
-    maxGas,
+    gasLimit,
     maxGasPrice,
     flags,
     pureFlags,
-    sessionId: `0x${group}${nonce}${after}${before}${maxGas}${maxGasPrice}${flags}`,
+    sessionId: `0x${group}${nonce}${after}${before}${gasLimit}${maxGasPrice}${flags}`,
   };
 };
 

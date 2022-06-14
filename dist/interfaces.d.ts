@@ -35,7 +35,7 @@ export interface BatchCallBase {
     nonce: number;
     afterTimestamp?: number;
     beforeTimestamp?: number;
-    maxGas?: number;
+    gasLimit?: number;
     maxGasPrice?: number;
     flags?: Partial<BatchFlags>;
 }

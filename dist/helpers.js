@@ -30,7 +30,7 @@ const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
     const nonce = getNonce(call.nonce);
     const after = getAfterTimestamp(call.afterTimestamp || 0);
     const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-    const maxGas = getMaxGas(call.maxGas || 0);
+    const gasLimit = getMaxGas(call.gasLimit || 0);
     const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
     const pureFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
     const flags = (0, exports.getFlags)(pureFlags, smallFlags);
@@ -39,11 +39,11 @@ const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
         nonce,
         after,
         before,
-        maxGas,
+        gasLimit,
         maxGasPrice,
         flags,
         pureFlags,
-        sessionId: `0x${group}${nonce}${after}${before}${maxGas}${maxGasPrice}${flags}`,
+        sessionId: `0x${group}${nonce}${after}${before}${gasLimit}${maxGasPrice}${flags}`,
     };
 };
 exports.getSessionIdDetails = getSessionIdDetails;

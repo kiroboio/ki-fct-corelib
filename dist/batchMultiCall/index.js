@@ -37,7 +37,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCal
                     call_address: item.to,
                     call_ens: item.toEnsHash || "",
                     eth_value: item.value,
-                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
+                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
                     view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
                     continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
                     stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
@@ -106,7 +106,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCal
                 ? web3.utils.sha3(item.toEnsHash)
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
                 ? web3.utils.sha3((0, helpers_1.getMethodInterface)(item))
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", gasLimit: Number.parseInt("0x" + callDetails.maxGas) }, getHashedMulticallData(index)))),
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", gasLimit: Number.parseInt("0x" + callDetails.gasLimit) }, getHashedMulticallData(index)))),
     };
 });
 class BatchMultiCall {
