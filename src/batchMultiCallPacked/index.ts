@@ -1,23 +1,13 @@
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import {
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getFlags,
-  getGroupId,
-  getMaxGas,
-  getMaxGasPrice,
-  getNonce,
-  manageCallFlags,
-} from "../helpers";
+import { getEncodedMethodParams, getSessionIdDetails, manageCallFlags } from "../helpers";
 import {
   BatchMultiCallPackedInputInterface,
   BatchMultiCallPackedInterface,
   MultiCallInputInterface,
 } from "./interfaces";
-// import { MultiCallInput, MultiCallPacked, MultiCallPackedInput } from "./interfaces";
 
 // "f000" - not-ordered, payment
 const defaultFlags = {
@@ -33,37 +23,11 @@ const getMultiCallPackedData = async (
 ) => {
   const typeHash = await factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
 
-  const group = getGroupId(batchCall.groupId);
-  const tnonce = getNonce(batchCall.nonce);
-  const after = getAfterTimestamp(batchCall.afterTimestamp || 0);
-  const before = batchCall.beforeTimestamp
-    ? getBeforeTimestamp(false, batchCall.beforeTimestamp)
-    : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(batchCall.maxGas || 0);
-  const maxGasPrice = batchCall.maxGasPrice ? getMaxGasPrice(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const eip712 = getFlags({ ...defaultFlags, ...batchCall.flags }, false);
-
-  const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-
-  const getEncodedMethodParamsData = (item) => {
-    return item.method
-      ? web3.eth.abi.encodeFunctionCall(
-          {
-            name: item.method,
-            type: "function",
-            inputs: item.params.map((param) => ({
-              type: param.type,
-              name: param.name,
-            })),
-          },
-          item.params.map((param) => param.value)
-        )
-      : "0x";
-  };
+  const { sessionId } = getSessionIdDetails(batchCall, defaultFlags, false);
 
   const mcallHash = defaultAbiCoder.encode(
     ["(bytes32,address,uint256,uint256,bytes)[]"],
-    [batchCall.calls.map((item) => [typeHash, item.to, item.value, getSessionId(), getEncodedMethodParamsData(item)])]
+    [batchCall.calls.map((item) => [typeHash, item.to, item.value, sessionId, getEncodedMethodParams(item, true)])]
   );
 
   return {
@@ -72,10 +36,10 @@ const getMultiCallPackedData = async (
       to: item.to,
       gasLimit: item.gasLimit || 0,
       flags: manageCallFlags(item.flags || {}),
-      data: getEncodedMethodParamsData(item),
+      data: getEncodedMethodParams(item, true),
     })),
     encodedData: mcallHash,
-    sessionId: getSessionId(),
+    sessionId: sessionId,
     signer: batchCall.signer,
     unhashedCall: batchCall,
   };

@@ -1,18 +1,53 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParamsOffset = exports.getParamsLength = exports.manageCallFlags = exports.getFlags = exports.getMaxGasPrice = exports.getMaxGas = exports.getBeforeTimestamp = exports.getAfterTimestamp = exports.getNonce = exports.getGroupId = void 0;
+exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
+const web3_1 = __importDefault(require("web3"));
+const ethers_1 = require("ethers");
+const ethers_eip712_1 = require("ethers-eip712");
+const utils_1 = require("ethers/lib/utils");
+// Everything for sessionId
 const getGroupId = (group) => group.toString(16).padStart(6, "0");
-exports.getGroupId = getGroupId;
 const getNonce = (nonce) => nonce.toString(16).padStart(10, "0");
-exports.getNonce = getNonce;
 const getAfterTimestamp = (epochDate) => epochDate.toString(16).padStart(10, "0");
-exports.getAfterTimestamp = getAfterTimestamp;
 const getBeforeTimestamp = (infinity, epochDate) => infinity ? "ffffffffff" : epochDate.toString(16).padStart(10, "0");
-exports.getBeforeTimestamp = getBeforeTimestamp;
 const getMaxGas = (maxGas) => maxGas.toString(16).padStart(8, "0");
-exports.getMaxGas = getMaxGas;
 const getMaxGasPrice = (gasPrice) => gasPrice.toString(16).padStart(16, "0");
-exports.getMaxGasPrice = getMaxGasPrice;
+// Get session id with all the details
+const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
+    const group = getGroupId(call.groupId);
+    const nonce = getNonce(call.nonce);
+    const after = getAfterTimestamp(call.afterTimestamp || 0);
+    const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
+    const maxGas = getMaxGas(call.maxGas || 0);
+    const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+    const pureFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
+    const flags = (0, exports.getFlags)(pureFlags, smallFlags);
+    return {
+        group,
+        nonce,
+        after,
+        before,
+        maxGas,
+        maxGasPrice,
+        flags,
+        pureFlags,
+        sessionId: `0x${group}${nonce}${after}${before}${maxGas}${maxGasPrice}${flags}`,
+    };
+};
+exports.getSessionIdDetails = getSessionIdDetails;
+// Get batch flags
 const getFlags = (flags, small) => {
     const array = ["0", "0", "0", "0"];
     if (flags.eip712 || flags.staticCall || flags.cancelable) {
@@ -26,6 +61,7 @@ const getFlags = (flags, small) => {
     return small ? array.slice(0, 2).join("") : array.join("");
 };
 exports.getFlags = getFlags;
+// Get flags for single call in multicalls
 const manageCallFlags = (flags) => {
     const array = ["0", "x", "0", "0"];
     if (flags.onFailContinue && flags.onFailStop) {
@@ -39,6 +75,57 @@ const manageCallFlags = (flags) => {
     return array.join("");
 };
 exports.manageCallFlags = manageCallFlags;
+// From method and params create tuple
+const getMethodInterface = (call) => {
+    return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
+};
+exports.getMethodInterface = getMethodInterface;
+// Get typehash from typedData
+const getTypeHash = (typedData) => {
+    const m2 = ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
+    return ethers_1.ethers.utils.hexZeroPad(ethers_1.ethers.utils.hexlify(m2), 32);
+};
+exports.getTypeHash = getTypeHash;
+// Get Typed Data domain for EIP712
+const getTypedDataDomain = (web3, factoryProxy, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
+    const chainId = yield factoryProxy.methods.CHAIN_ID().call();
+    return {
+        name: yield factoryProxy.methods.NAME().call(),
+        version: yield factoryProxy.methods.VERSION().call(),
+        chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
+        verifyingContract: factoryProxyAddress,
+        salt: yield factoryProxy.methods.uid().call(),
+    };
+});
+exports.getTypedDataDomain = getTypedDataDomain;
+const getEncodedMethodParams = (call, withFunction) => {
+    if (!call.method)
+        return "0x";
+    if (withFunction) {
+        const web3 = new web3_1.default();
+        return web3.eth.abi.encodeFunctionCall({
+            name: call.method,
+            type: "function",
+            inputs: call.params.map((param) => ({
+                type: param.type,
+                name: param.name,
+            })),
+        }, call.params.map((param) => param.value));
+    }
+    return utils_1.defaultAbiCoder.encode([(0, exports.getMethodInterface)(call)], [call.params.map((item) => item.value)]);
+};
+exports.getEncodedMethodParams = getEncodedMethodParams;
+const generateTxType = (item) => {
+    const defaults = [
+        { name: "details", type: "Transaction_" },
+        { name: "method_params_offset", type: "uint256" },
+        { name: "method_params_length", type: "uint256" },
+    ];
+    return item.params
+        ? [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
+        : [{ name: "details", type: "Transaction_" }];
+};
+exports.generateTxType = generateTxType;
 /*
 Couldn't find a way to calculate params offset.
 

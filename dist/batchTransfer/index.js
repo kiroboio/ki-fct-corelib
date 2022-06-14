@@ -16,21 +16,8 @@ exports.BatchTransfer = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
-const web3_1 = __importDefault(require("web3"));
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
-// import { Transfer, TransferCall } from "./interfaces";
-const web3 = new web3_1.default();
-const getTypedDataDomain = (factoryProxy, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const chainId = yield factoryProxy.methods.CHAIN_ID().call();
-    return {
-        name: yield factoryProxy.methods.NAME().call(),
-        version: yield factoryProxy.methods.VERSION().call(),
-        chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
-        verifyingContract: factoryProxyAddress,
-        salt: yield factoryProxy.methods.uid().call(),
-    };
-});
 const batchTransferTypedData = {
     types: {
         EIP712Domain: [
@@ -62,27 +49,19 @@ const defaultFlags = {
     payment: true,
 };
 const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
-    const group = (0, helpers_1.getGroupId)(call.groupId);
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const flags = Object.assign(Object.assign({}, defaultFlags), call.flags);
-    const eip712 = (0, helpers_1.getFlags)(flags, true);
-    const getSessionIdERC20 = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-    const typedData = Object.assign(Object.assign({}, batchTransferTypedData), { domain: yield getTypedDataDomain(FactoryProxy, factoryProxyAddress), message: {
+    const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
+    const typedData = Object.assign(Object.assign({}, batchTransferTypedData), { domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress), message: {
             token_address: call.token,
             token_ens: call.tokenEnsHash || "",
             to: call.to,
             to_ens: call.toEnsHash || "",
             value: call.value,
-            nonce: "0x" + group + tnonce,
-            valid_from: "0x" + after,
-            expires_at: "0x" + before,
-            gas_limit: "0x" + maxGas,
-            gas_price_limit: "0x" + maxGasPrice,
-            refund: flags.payment,
+            nonce: "0x" + callDetails.group + callDetails.nonce,
+            valid_from: "0x" + callDetails.after,
+            expires_at: "0x" + callDetails.before,
+            gas_limit: "0x" + callDetails.maxGas,
+            gas_price_limit: "0x" + callDetails.maxGasPrice,
+            refund: callDetails.pureFlags.payment,
         } });
     const hashedData = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     return {
@@ -96,7 +75,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
             ? web3.utils.sha3(call.toEnsHash)
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: call.value,
-        sessionId: getSessionIdERC20(),
+        sessionId: callDetails.sessionId,
         hashedData,
         typedData,
         unhashedCall: call,

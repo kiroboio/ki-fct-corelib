@@ -2,16 +2,7 @@ import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-// import { Transfer, TransferCall } from "./interfaces";
-import {
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getFlags,
-  getGroupId,
-  getMaxGas,
-  getMaxGasPrice,
-  getNonce,
-} from "../helpers";
+import { getSessionIdDetails } from "../helpers";
 import { TransferPackedInputInterface, TransferPackedInterface } from "./interfaces";
 
 // DefaultFlag - "f0" // payment + eip712
@@ -22,23 +13,11 @@ const defaultFlags = {
 
 const getBatchTransferPackedData = async (FactoryProxy: Contract, call: TransferPackedInputInterface) => {
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
-
-  const group = getGroupId(call.groupId); // Has to be a way to determine group dynamically
-  const tnonce = getNonce(call.nonce);
-  const after = getAfterTimestamp(call.afterTimestamp || 0);
-  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
-  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const flags = { ...defaultFlags, ...call.flags };
-  const eip712 = getFlags(flags, true); // payment + eip712
-
-  const getSessionId = () => {
-    return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-  };
+  const { sessionId } = getSessionIdDetails(call, defaultFlags, true);
 
   const hashedData = defaultAbiCoder.encode(
     ["bytes32", "address", "address", "uint256", "uint256"],
-    [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]
+    [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, sessionId]
   );
 
   return {
@@ -46,8 +25,7 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
     token: call.token,
     to: call.to,
     value: call.value,
-    // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
-    sessionId: getSessionId(),
+    sessionId,
     hashedData,
     unhashedCall: call,
   };

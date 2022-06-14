@@ -1,42 +1,20 @@
+import Web3 from "web3";
 import { ethers } from "ethers";
+import Contract from "web3/eth/contract";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import Web3 from "web3";
-import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
 import { Params } from "../interfaces";
 import {
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getFlags,
-  getGroupId,
-  getMaxGas,
-  getMaxGasPrice,
-  getNonce,
+  getEncodedMethodParams,
+  getMethodInterface,
   getParamsLength,
   getParamsOffset,
+  getSessionIdDetails,
+  getTypedDataDomain,
+  getTypeHash,
 } from "../helpers";
-
-const getMethodInterface = (call: BatchCallInputInterface) => {
-  return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
-};
-
-const getTypeHash = (typedData) => {
-  const m2 = TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
-  return ethers.utils.hexZeroPad(ethers.utils.hexlify(m2), 32);
-};
-
-const getTypedDataDomain = async (web3: Web3, factoryProxy: Contract, factoryProxyAddress: string) => {
-  const chainId = await factoryProxy.methods.CHAIN_ID().call();
-  return {
-    name: await factoryProxy.methods.NAME().call(), // await factoryProxy.NAME(),
-    version: await factoryProxy.methods.VERSION().call(), // await factoryProxy.VERSION(),
-    chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")), // await web3.eth.getChainId(),
-    verifyingContract: factoryProxyAddress,
-    salt: await factoryProxy.methods.uid().call(),
-  };
-};
 
 // DefaultFlag - "f1" // payment + eip712
 const defaultFlags = {
@@ -51,27 +29,12 @@ const getBatchCallData = async (
   factoryProxyAddress: string,
   call: BatchCallInputInterface
 ) => {
-  const group = getGroupId(call.groupId);
-  const tnonce = getNonce(call.nonce);
-  const after = getAfterTimestamp(call.afterTimestamp || 0);
-  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
-  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const flags = { ...defaultFlags, ...call.flags };
-  const eip712 = getFlags(flags, true);
-
-  const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-
-  const encodedMethodParamsData = `0x${
-    call.method
-      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-      : ""
-  }`;
+  const callDetails = getSessionIdDetails(call, defaultFlags, true);
 
   const methodParams = call.params
     ? {
         method_params_offset: getParamsOffset(call.params), // '0x1c0', // '480', // 13*32
-        method_params_length: getParamsLength(encodedMethodParamsData),
+        method_params_length: getParamsLength(getEncodedMethodParams(call)),
         ...call.params.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}),
       }
     : {};
@@ -115,13 +78,13 @@ const getBatchCallData = async (
         call_address: call.to,
         call_ens: call.toEnsHash || "",
         eth_value: call.value,
-        nonce: "0x" + group + tnonce,
-        valid_from: Number.parseInt("0x" + after),
-        expires_at: Number.parseInt("0x" + before),
-        gas_limit: Number.parseInt("0x" + maxGas),
-        gas_price_limit: Number.parseInt("0x" + maxGasPrice),
-        view_only: flags.staticCall,
-        refund: flags.payment,
+        nonce: "0x" + callDetails.group + callDetails.nonce,
+        valid_from: Number.parseInt("0x" + callDetails.after),
+        expires_at: Number.parseInt("0x" + callDetails.before),
+        gas_limit: Number.parseInt("0x" + callDetails.maxGas),
+        gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
+        view_only: callDetails.pureFlags.staticCall,
+        refund: callDetails.pureFlags.payment,
         method_interface: call.method ? getMethodInterface(call) : "",
       },
       ...methodParams,
@@ -143,13 +106,12 @@ const getBatchCallData = async (
       ? web3.utils.sha3(call.toEnsHash)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
-    // sessionId: getSessionId() + signature.v.slice(2).padStart(2, "0"),
-    sessionId: getSessionId(),
+    sessionId: callDetails.sessionId,
     signer: call.signer,
     functionSignature: call.method
       ? web3.utils.sha3(getMethodInterface(call))
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-    data: encodedMethodParamsData,
+    data: getEncodedMethodParams(call),
     typedData,
     hashedMessage,
     hashedTxMessage,

@@ -1,16 +1,8 @@
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import {
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getFlags,
-  getGroupId,
-  getMaxGas,
-  getMaxGasPrice,
-  getNonce,
-} from "../helpers";
+import { getSessionIdDetails } from "../helpers";
 import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
 
 const defaultFlags = {
@@ -22,17 +14,7 @@ const defaultFlags = {
 const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputInterface) => {
   const typeHash = await factoryProxy.methods.BATCH_CALL_PACKED_TYPEHASH_().call();
 
-  const group = getGroupId(call.groupId);
-  const tnonce = getNonce(call.nonce);
-  const after = getAfterTimestamp(call.afterTimestamp || 0);
-  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
-  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const flags = { ...defaultFlags, ...call.flags };
-  const eip712 = getFlags(flags, true); // ordered, payment
-
-  const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-
+  const { sessionId } = getSessionIdDetails(call, defaultFlags, true);
   const encodedMethodParamsData = call.method
     ? web3.eth.abi.encodeFunctionCall(
         {
@@ -49,14 +31,14 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
 
   const hashedData = defaultAbiCoder.encode(
     ["bytes32", "address", "uint256", "uint256", "bytes"],
-    [typeHash, call.to, call.value, getSessionId(), encodedMethodParamsData]
+    [typeHash, call.to, call.value, sessionId, encodedMethodParamsData]
   );
 
   return {
     to: call.to,
     value: call.value,
     signer: call.signer,
-    sessionId: getSessionId(),
+    sessionId,
     data: encodedMethodParamsData,
     hashedData,
     unhashedCall: call,

@@ -900,7 +900,6 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "5" },
             ],
-            gasLimit: 0,
             flags: {
               onFailStop: true,
               onFailContinue: false,
@@ -916,7 +915,6 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "12" },
             ],
-            gasLimit: 0,
             flags: {
               onFailStop: true,
               onFailContinue: false,

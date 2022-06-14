@@ -18,25 +18,6 @@ const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
-// import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
-const contractInteractionDefaults = [
-    { name: "details", type: "Transaction_" },
-    { name: "method_params_offset", type: "uint256" },
-    { name: "method_params_length", type: "uint256" },
-];
-const getMethodInterface = (call) => {
-    return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
-};
-const generateTxType = (item) => {
-    return item.params
-        ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
-        : [{ name: "details", type: "Transaction_" }];
-};
-const getEncodedMethodParamsData = (call) => {
-    return `0x${call.method
-        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-        : ""}`;
-};
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -44,36 +25,26 @@ const defaultFlags = {
     flow: false,
 };
 const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
-    const group = (0, helpers_1.getGroupId)(batchCall.groupId);
-    const tnonce = (0, helpers_1.getNonce)(batchCall.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(batchCall.afterTimestamp || 0);
-    const before = batchCall.beforeTimestamp
-        ? (0, helpers_1.getBeforeTimestamp)(false, batchCall.beforeTimestamp)
-        : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(batchCall.maxGas || 0);
-    const maxGasPrice = batchCall.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const batchFlags = Object.assign(Object.assign({}, defaultFlags), batchCall.flags);
-    const eip712 = (0, helpers_1.getFlags)(batchFlags, false); // not-ordered, payment, eip712
-    const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+    const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
     // Creates messages from multiCalls array for EIP712 sign
     // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
     // Else multicall is ETH Transfer - add only details
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
         var _a, _b, _c, _d, _e;
         const additionalTxData = item.params
-            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(item.params), method_params_length: (0, helpers_1.getParamsLength)(getEncodedMethodParamsData(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
+            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(item.params), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
         return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
                     signer: item.signer,
                     call_address: item.to,
                     call_ens: item.toEnsHash || "",
                     eth_value: item.value,
-                    gas_limit: Number.parseInt("0x" + maxGas),
+                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
                     view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
                     continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
                     stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
                     stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
                     revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
-                    method_interface: item.method ? getMethodInterface(item) : "",
+                    method_interface: item.method ? (0, helpers_1.getMethodInterface)(item) : "",
                 } }, additionalTxData) });
     }, {});
     const typedData = {
@@ -107,21 +78,15 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
                 { name: "stop_on_success", type: "bool" },
                 { name: "revert_on_success", type: "bool" },
                 { name: "method_interface", type: "string" },
-            ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: generateTxType(item) })), {})),
+            ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})),
         primaryType: "BatchMultiSigCall_",
-        domain: {
-            name: yield FactoryProxy.methods.NAME().call(),
-            version: yield FactoryProxy.methods.VERSION().call(),
-            chainId: Number("0x" + web3.utils.toBN(yield FactoryProxy.methods.CHAIN_ID().call()).toString("hex")),
-            verifyingContract: factoryProxyAddress,
-            salt: yield FactoryProxy.methods.uid().call(),
-        },
+        domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress),
         message: Object.assign({ limits: {
-                nonce: "0x" + group + tnonce,
-                refund: batchFlags.payment,
-                valid_from: Number.parseInt("0x" + after),
-                expires_at: Number.parseInt("0x" + before),
-                gas_price_limit: Number.parseInt("0x" + maxGasPrice),
+                nonce: "0x" + callDetails.group + callDetails.nonce,
+                refund: callDetails.pureFlags.payment,
+                valid_from: Number.parseInt("0x" + callDetails.after),
+                expires_at: Number.parseInt("0x" + callDetails.before),
+                gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
             } }, typedDataMessage),
     };
     const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
@@ -137,15 +102,15 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
     return {
         typedData,
         typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
-        sessionId: getSessionId(),
+        sessionId: callDetails.sessionId,
         encodedMessage,
         encodedLimits,
         unhashedCall: batchCall,
         mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type), functionSignature: item.method
-                ? web3.utils.sha3(getMethodInterface(item))
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: Number.parseInt("0x" + maxGas), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
+                ? web3.utils.sha3((0, helpers_1.getMethodInterface)(item))
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: getEncodedMethodParamsData(item) }, getEncodedMulticallData(index)))),
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
     };
 });
 class BatchMultiSigCall {

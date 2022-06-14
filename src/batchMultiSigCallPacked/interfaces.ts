@@ -1,22 +1,12 @@
-import { BatchFlags, MultiCallFlags } from "../interfaces";
+import { BatchCallBase, MultiCallBase } from "../interfaces";
 
-export interface MultiSigCallPackedInputInterface {
+export interface MultiSigCallPackedInputInterface extends MultiCallBase {
   value: string;
   to: string;
-  data: string;
   signer: string;
-  gasLimit?: number;
-  flags?: Partial<MultiCallFlags>;
 }
 
-export interface BatchMultiSigCallPackedInputInterface {
-  groupId: number;
-  nonce: number;
-  afterTimestamp?: number;
-  beforeTimestamp?: number;
-  maxGas?: number;
-  maxGasPrice?: number;
-  flags?: Partial<BatchFlags>;
+export interface BatchMultiSigCallPackedInputInterface extends BatchCallBase {
   calls: MultiSigCallPackedInputInterface[];
 }
 

@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchTransferPacked = void 0;
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
-// import { Transfer, TransferCall } from "./interfaces";
 const helpers_1 = require("../helpers");
 // DefaultFlag - "f0" // payment + eip712
 const defaultFlags = {
@@ -24,25 +23,14 @@ const defaultFlags = {
 };
 const getBatchTransferPackedData = (FactoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
     const BATCH_TRANSFER_PACKED_TYPEHASH = yield FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
-    const group = (0, helpers_1.getGroupId)(call.groupId); // Has to be a way to determine group dynamically
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const flags = Object.assign(Object.assign({}, defaultFlags), call.flags);
-    const eip712 = (0, helpers_1.getFlags)(flags, true); // payment + eip712
-    const getSessionId = () => {
-        return `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-    };
-    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, getSessionId()]);
+    const { sessionId } = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
+    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, sessionId]);
     return {
         signer: call.signer,
         token: call.token,
         to: call.to,
         value: call.value,
-        // sessionId: getSessionId() + v.slice(2).padStart(2, "0"),
-        sessionId: getSessionId(),
+        sessionId,
         hashedData,
         unhashedCall: call,
     };

@@ -2,16 +2,7 @@ import { defaultAbiCoder, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import {
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getFlags,
-  getGroupId,
-  getMaxGas,
-  getMaxGasPrice,
-  getNonce,
-  manageCallFlags,
-} from "../helpers";
+import { getEncodedMethodParams, getSessionIdDetails, manageCallFlags } from "../helpers";
 import {
   BatchMultiSigCallPackedInputInterface,
   BatchMultiSigCallPackedInterface,
@@ -34,37 +25,10 @@ const getMultiSigCallPackedData = async (
   const txTypeHash = await factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_().call();
   const limitsTypeHash = await factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_().call();
 
-  const group = getGroupId(batchCall.groupId);
-  const tnonce = getNonce(batchCall.nonce);
-  const after = getAfterTimestamp(batchCall.afterTimestamp || 0);
-  const before = batchCall.beforeTimestamp
-    ? getBeforeTimestamp(false, batchCall.beforeTimestamp)
-    : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(batchCall.maxGas || 0);
-  const maxGasPrice = batchCall.maxGasPrice ? getMaxGasPrice(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const batchFlags = { ...defaultFlags, ...batchCall.flags };
-  const eip712 = getFlags(batchFlags, false); // not-ordered, payment
-
-  const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-
-  const getEncodedMethodParamsData = (item) => {
-    return item.method
-      ? web3.eth.abi.encodeFunctionCall(
-          {
-            name: item.method,
-            type: "function",
-            inputs: item.params.map((param) => ({
-              type: param.type,
-              name: param.name,
-            })),
-          },
-          item.params.map((param) => param.value)
-        )
-      : "0x";
-  };
+  const { sessionId } = getSessionIdDetails(batchCall, defaultFlags, false);
 
   // Encode Limits as bytes32
-  const encodeLimit = defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
+  const encodeLimit = defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, sessionId]);
   // Encode multi calls as bytes32
   const encodedTxs = batchCall.calls.map((item) =>
     defaultAbiCoder.encode(
@@ -76,7 +40,7 @@ const getMultiSigCallPackedData = async (
         item.value,
         item.gasLimit || 0,
         item.flags ? manageCallFlags(item.flags) : "0x0",
-        getEncodedMethodParamsData(item),
+        getEncodedMethodParams(item, true),
       ]
     )
   );
@@ -88,7 +52,7 @@ const getMultiSigCallPackedData = async (
   );
 
   return {
-    sessionId: getSessionId(),
+    sessionId,
     encodedLimits: encodeLimit,
     encodedData: fullEncode,
     unhashedCall: batchCall,
@@ -98,7 +62,7 @@ const getMultiSigCallPackedData = async (
       gasLimit: item.gasLimit || 0,
       flags: item.flags ? manageCallFlags(item.flags) : "0x0",
       to: item.to,
-      data: getEncodedMethodParamsData(item),
+      data: getEncodedMethodParams(item, true),
       encodedTx: encodedTxs[i],
     })),
   };

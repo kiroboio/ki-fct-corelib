@@ -1,19 +1,11 @@
-import { BatchFlags, Params } from "../interfaces";
-export interface BatchCallInputInterface {
+import { BatchCallBase, Params } from "../interfaces";
+export interface BatchCallInputInterface extends BatchCallBase {
     value: string;
     to: string;
     toEnsHash?: string;
     signer: string;
-    groupId: number;
-    nonce: number;
-    data?: string;
     method?: string;
     params?: Params[];
-    afterTimestamp?: number;
-    beforeTimestamp?: number;
-    maxGas?: number;
-    maxGasPrice?: number;
-    flags?: Partial<BatchFlags>;
 }
 export interface BatchCallInterface {
     typeHash: string;

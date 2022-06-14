@@ -10,7 +10,6 @@ export interface DecodeTx {
   params?: Params[];
 }
 
-// For multiBatchCalls
 export interface BatchFlags {
   staticCall: boolean;
   cancelable: boolean;
@@ -26,4 +25,34 @@ export interface MultiCallFlags {
   onFailContinue: boolean;
   onSuccessStop: boolean;
   onSuccessRevert: boolean;
+}
+
+export interface MethodParamsInterface {
+  method: string;
+  params: Params[];
+}
+
+export interface ContractInteractionInterface {
+  name: string;
+  type: string;
+}
+
+export interface BatchCallBase {
+  groupId: number;
+  nonce: number;
+
+  afterTimestamp?: number;
+  beforeTimestamp?: number;
+  maxGas?: number;
+  maxGasPrice?: number;
+  flags?: Partial<BatchFlags>;
+}
+
+export interface MultiCallBase {
+  data?: string;
+  method?: string;
+  params?: Params[];
+
+  gasLimit?: number;
+  flags?: Partial<MultiCallFlags>;
 }

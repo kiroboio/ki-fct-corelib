@@ -1,47 +1,21 @@
+import Web3 from "web3";
+import Contract from "web3/eth/contract";
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import Web3 from "web3";
-import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import {
-  getGroupId,
-  getMaxGasPrice,
-  getNonce,
-  getAfterTimestamp,
-  getBeforeTimestamp,
-  getMaxGas,
-  manageCallFlags,
-  getFlags,
-  getParamsLength,
-  getParamsOffset,
-} from "../helpers";
 import { DecodeTx } from "../interfaces";
 import { BatchMultiCallInputInterface, BatchMultiCallInterface, MultiCallInputInterface } from "./interfaces";
-
-const contractInteractionDefaults = [
-  { name: "details", type: "Transaction_" },
-  { name: "method_params_offset", type: "uint256" },
-  { name: "method_params_length", type: "uint256" },
-];
-
-const getMethodInterface = (call: MultiCallInputInterface) => {
-  return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
-};
-
-const generateTxType = (item: MultiCallInputInterface) => {
-  return item.params
-    ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
-    : [{ name: "details", type: "Transaction_" }];
-};
-
-const getEncodedMethodParamsData = (call: MultiCallInputInterface) => {
-  return `0x${
-    call.method
-      ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-      : ""
-  }`;
-};
+import {
+  manageCallFlags,
+  getParamsLength,
+  getParamsOffset,
+  getSessionIdDetails,
+  getEncodedMethodParams,
+  getTypedDataDomain,
+  getMethodInterface,
+  generateTxType,
+} from "../helpers";
 
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
@@ -56,18 +30,7 @@ const getBatchMultiCallData = async (
   factoryProxyAddress: string,
   batchCall: BatchMultiCallInputInterface
 ) => {
-  const group = getGroupId(batchCall.groupId);
-  const tnonce = getNonce(batchCall.nonce);
-  const after = getAfterTimestamp(batchCall.afterTimestamp || 0);
-  const before = batchCall.beforeTimestamp
-    ? getBeforeTimestamp(false, batchCall.beforeTimestamp)
-    : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(batchCall.maxGas || 0);
-  const maxGasPrice = batchCall.maxGasPrice ? getMaxGasPrice(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const batchFlags = { ...defaultFlags, ...batchCall.flags };
-  const eip712 = getFlags(batchFlags, false); // not-ordered, payment, eip712
-
-  const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
+  const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
   // Creates messages from multiCalls array for EIP712 sign
   // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
@@ -76,7 +39,7 @@ const getBatchMultiCallData = async (
     const additionalTxData = item.params
       ? {
           method_params_offset: getParamsOffset(item.params), //'0x180', // '480', // 13*32
-          method_params_length: getParamsLength(getEncodedMethodParamsData(item)),
+          method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
           ...item.params.reduce(
             (acc, param) => ({
               ...acc,
@@ -93,7 +56,7 @@ const getBatchMultiCallData = async (
           call_address: item.to,
           call_ens: item.toEnsHash || "",
           eth_value: item.value,
-          gas_limit: Number.parseInt("0x" + maxGas),
+          gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.maxGas),
           view_only: item.flags?.viewOnly || false,
           continue_on_fail: item.flags?.onFailContinue || false,
           stop_on_fail: item.flags?.onFailStop || false,
@@ -147,20 +110,14 @@ const getBatchMultiCallData = async (
       ),
     },
     primaryType: "BatchMultiCall_",
-    domain: {
-      name: await FactoryProxy.methods.NAME().call(),
-      version: await FactoryProxy.methods.VERSION().call(),
-      chainId: Number("0x" + web3.utils.toBN(await FactoryProxy.methods.CHAIN_ID().call()).toString("hex")),
-      verifyingContract: factoryProxyAddress,
-      salt: await FactoryProxy.methods.uid().call(),
-    },
+    domain: await getTypedDataDomain(web3, FactoryProxy, factoryProxyAddress),
     message: {
       limits: {
-        nonce: "0x" + group + tnonce,
-        refund: batchFlags.payment,
-        valid_from: Number.parseInt("0x" + after),
-        expires_at: Number.parseInt("0x" + before),
-        gas_price_limit: Number.parseInt("0x" + maxGasPrice),
+        nonce: "0x" + callDetails.group + callDetails.nonce,
+        refund: callDetails.pureFlags.payment,
+        valid_from: Number.parseInt("0x" + callDetails.after),
+        expires_at: Number.parseInt("0x" + callDetails.before),
+        gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
       },
       ...typedDataMessage,
     },
@@ -189,7 +146,7 @@ const getBatchMultiCallData = async (
 
   return {
     typeHash: TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
-    sessionId: getSessionId(),
+    sessionId: callDetails.sessionId,
     signer: batchCall.signer,
     typedData,
     encodedMessage,
@@ -198,7 +155,7 @@ const getBatchMultiCallData = async (
     mcall: batchCall.calls.map((item, index) => ({
       value: item.value,
       to: item.to,
-      data: getEncodedMethodParamsData(item),
+      data: getEncodedMethodParams(item, false),
       ensHash: item.toEnsHash
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
@@ -207,7 +164,7 @@ const getBatchMultiCallData = async (
       functionSignature: item.method
         ? web3.utils.sha3(getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      gasLimit: Number.parseInt("0x" + maxGas),
+      gasLimit: Number.parseInt("0x" + callDetails.maxGas),
       ...getHashedMulticallData(index),
     })),
   };

@@ -1,5 +1,5 @@
-import { MultiCallFlags } from "../interfaces";
-export interface TransferInputInterface {
+import { BatchCallBase } from "../interfaces";
+export interface TransferInputInterface extends BatchCallBase {
     token: string;
     tokenEnsHash?: string;
     to: string;
@@ -8,11 +8,6 @@ export interface TransferInputInterface {
     nonce: number;
     value: number;
     signer: string;
-    afterTimestamp?: number;
-    beforeTimestamp?: number;
-    maxGas?: number;
-    maxGasPrice?: number;
-    flags?: Partial<MultiCallFlags>;
 }
 export interface TransferInterface {
     token: string;

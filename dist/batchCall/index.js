@@ -18,23 +18,6 @@ const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
-const getMethodInterface = (call) => {
-    return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
-};
-const getTypeHash = (typedData) => {
-    const m2 = ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
-    return ethers_1.ethers.utils.hexZeroPad(ethers_1.ethers.utils.hexlify(m2), 32);
-};
-const getTypedDataDomain = (web3, factoryProxy, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const chainId = yield factoryProxy.methods.CHAIN_ID().call();
-    return {
-        name: yield factoryProxy.methods.NAME().call(),
-        version: yield factoryProxy.methods.VERSION().call(),
-        chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
-        verifyingContract: factoryProxyAddress,
-        salt: yield factoryProxy.methods.uid().call(),
-    };
-});
 // DefaultFlag - "f1" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -42,20 +25,9 @@ const defaultFlags = {
     staticCall: false,
 };
 const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
-    const group = (0, helpers_1.getGroupId)(call.groupId);
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const flags = Object.assign(Object.assign({}, defaultFlags), call.flags);
-    const eip712 = (0, helpers_1.getFlags)(flags, true);
-    const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
-    const encodedMethodParamsData = `0x${call.method
-        ? utils_1.defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
-        : ""}`;
+    const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
     const methodParams = call.params
-        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params), method_params_length: (0, helpers_1.getParamsLength)(encodedMethodParamsData) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
+        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(call)) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
     const contractType = call.params
         ? [
             { name: "method_params_offset", type: "uint256" },
@@ -88,37 +60,36 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
             ],
         },
         primaryType: "BatchCall_",
-        domain: yield getTypedDataDomain(web3, factoryProxy, factoryProxyAddress),
+        domain: yield (0, helpers_1.getTypedDataDomain)(web3, factoryProxy, factoryProxyAddress),
         message: Object.assign({ transaction: {
                 call_address: call.to,
                 call_ens: call.toEnsHash || "",
                 eth_value: call.value,
-                nonce: "0x" + group + tnonce,
-                valid_from: Number.parseInt("0x" + after),
-                expires_at: Number.parseInt("0x" + before),
-                gas_limit: Number.parseInt("0x" + maxGas),
-                gas_price_limit: Number.parseInt("0x" + maxGasPrice),
-                view_only: flags.staticCall,
-                refund: flags.payment,
-                method_interface: call.method ? getMethodInterface(call) : "",
+                nonce: "0x" + callDetails.group + callDetails.nonce,
+                valid_from: Number.parseInt("0x" + callDetails.after),
+                expires_at: Number.parseInt("0x" + callDetails.before),
+                gas_limit: Number.parseInt("0x" + callDetails.maxGas),
+                gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
+                view_only: callDetails.pureFlags.staticCall,
+                refund: callDetails.pureFlags.payment,
+                method_interface: call.method ? (0, helpers_1.getMethodInterface)(call) : "",
             } }, methodParams),
     };
     const hashedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     const hashedTxMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Transaction_", typedData.message.transaction));
     return {
-        typeHash: getTypeHash(typedData),
+        typeHash: (0, helpers_1.getTypeHash)(typedData),
         to: call.to,
         ensHash: call.toEnsHash
             ? web3.utils.sha3(call.toEnsHash)
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: call.value,
-        // sessionId: getSessionId() + signature.v.slice(2).padStart(2, "0"),
-        sessionId: getSessionId(),
+        sessionId: callDetails.sessionId,
         signer: call.signer,
         functionSignature: call.method
-            ? web3.utils.sha3(getMethodInterface(call))
+            ? web3.utils.sha3((0, helpers_1.getMethodInterface)(call))
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-        data: encodedMethodParamsData,
+        data: (0, helpers_1.getEncodedMethodParams)(call),
         typedData,
         hashedMessage,
         hashedTxMessage,
