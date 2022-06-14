@@ -1,10 +1,9 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
+import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
 import { Params } from "../interfaces";
-import { BatchCallData, BatchCallInputData } from "./interfaces";
 export declare class BatchCall {
-    unhashedCalls: Array<BatchCallInputData>;
-    calls: Array<BatchCallData>;
+    calls: Array<BatchCallInterface>;
     web3: Web3;
     FactoryProxy: Contract;
     factoryProxyAddress: string;
@@ -26,8 +25,8 @@ export declare class BatchCall {
             methodHash: any;
         };
     };
-    addTx(tx: BatchCallInputData): Promise<BatchCallData[]>;
-    addMultipleTx(txs: BatchCallInputData[]): Promise<BatchCallData[]>;
-    editTx(index: number, tx: BatchCallInputData): Promise<BatchCallData[]>;
-    removeTx(index: number): Promise<BatchCallData[]>;
+    addTx(tx: BatchCallInputInterface): Promise<BatchCallInterface[]>;
+    addMultipleTx(txs: BatchCallInputInterface[]): Promise<BatchCallInterface[]>;
+    editTx(index: number, tx: BatchCallInputInterface): Promise<BatchCallInterface[]>;
+    removeTx(index: number): Promise<BatchCallInterface[]>;
 }

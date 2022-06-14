@@ -1,4 +1,4 @@
-import { Params } from "./interfaces";
+import { BatchFlags, MultiCallFlags, Params } from "./interfaces";
 
 export const getGroupId = (group: number): string => group.toString(16).padStart(6, "0");
 export const getNonce = (nonce: number): string => nonce.toString(16).padStart(10, "0");
@@ -8,7 +8,7 @@ export const getBeforeTimestamp = (infinity: boolean, epochDate?: number): strin
 export const getMaxGas = (maxGas: number): string => maxGas.toString(16).padStart(8, "0");
 export const getMaxGasPrice = (gasPrice: number): string => gasPrice.toString(16).padStart(16, "0");
 
-export const getFlags = (flags, small: boolean) => {
+export const getFlags = (flags: Partial<BatchFlags>, small: boolean) => {
   const array = ["0", "0", "0", "0"];
   if (flags.eip712 || flags.staticCall || flags.cancelable) {
     array[1] = flags.cancelable ? "8" : flags.staticCall ? "4" : "1";
@@ -22,7 +22,7 @@ export const getFlags = (flags, small: boolean) => {
   return small ? array.slice(0, 2).join("") : array.join("");
 };
 
-export const manageCallFlags = (flags) => {
+export const manageCallFlags = (flags: Partial<MultiCallFlags>) => {
   const array = ["0", "x", "0", "0"];
   if (flags.onFailContinue && flags.onFailStop) {
     throw new Error("Both flags onFailContinue and onFailStop can't be enabled at once");

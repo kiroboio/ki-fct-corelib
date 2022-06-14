@@ -3,7 +3,7 @@ export interface TransferFlags {
   cancelable?: boolean;
   payment?: boolean;
 }
-export interface TransferCall {
+export interface TransferPackedInputInterface {
   token: string;
   to: string;
   value: number;
@@ -17,12 +17,12 @@ export interface TransferCall {
   flags?: TransferFlags;
 }
 
-export interface Transfer {
+export interface TransferPackedInterface {
   signer: string;
   token: string;
   to: string;
   value: number;
   sessionId: string;
   hashedData: string;
-  unhashedCall: TransferCall;
+  unhashedCall: TransferPackedInputInterface;
 }

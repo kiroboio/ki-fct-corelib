@@ -4,6 +4,8 @@ import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
+import { Params } from "../interfaces";
 import {
   getAfterTimestamp,
   getBeforeTimestamp,
@@ -15,10 +17,8 @@ import {
   getParamsLength,
   getParamsOffset,
 } from "../helpers";
-import { Params } from "../interfaces";
-import { BatchCallData, BatchCallInputData } from "./interfaces";
 
-const getMethodInterface = (call: BatchCallInputData) => {
+const getMethodInterface = (call: BatchCallInputInterface) => {
   return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
 };
 
@@ -49,7 +49,7 @@ const getBatchCallData = async (
   web3: Web3,
   factoryProxy: Contract,
   factoryProxyAddress: string,
-  call: BatchCallInputData
+  call: BatchCallInputInterface
 ) => {
   const group = getGroupId(call.groupId);
   const tnonce = getNonce(call.nonce);
@@ -158,15 +158,13 @@ const getBatchCallData = async (
 };
 
 export class BatchCall {
-  unhashedCalls: Array<BatchCallInputData>;
-  calls: Array<BatchCallData>;
+  calls: Array<BatchCallInterface>;
   web3: Web3;
   FactoryProxy: Contract;
   factoryProxyAddress: string;
 
   constructor(web3: Web3, contractAddress: string) {
     this.calls = [];
-    this.unhashedCalls = [];
     this.web3 = web3;
     // @ts-ignore
     this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
@@ -235,7 +233,7 @@ export class BatchCall {
     return { ...defaultReturn, ...extraData };
   }
 
-  async addTx(tx: BatchCallInputData) {
+  async addTx(tx: BatchCallInputInterface) {
     const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].unhashedCall.nonce : 0;
 
     if (tx.nonce <= lastNonce) {
@@ -248,7 +246,7 @@ export class BatchCall {
     return this.calls;
   }
 
-  async addMultipleTx(txs: BatchCallInputData[]) {
+  async addMultipleTx(txs: BatchCallInputInterface[]) {
     const data = await Promise.all(
       txs.map((tx) => getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
@@ -257,7 +255,7 @@ export class BatchCall {
     return this.calls;
   }
 
-  async editTx(index: number, tx: BatchCallInputData) {
+  async editTx(index: number, tx: BatchCallInputInterface) {
     const data = await getBatchCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
 
     this.calls[index] = data;

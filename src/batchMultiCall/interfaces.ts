@@ -1,4 +1,4 @@
-import { Params } from "../interfaces";
+import { MultiCallFlags, Params } from "../interfaces";
 
 export interface DecodeTx {
   encodedData: string;
@@ -6,21 +6,14 @@ export interface DecodeTx {
   params?: Params[];
 }
 
-export interface MultiCallFlags {
-  viewOnly?: boolean;
-  continueOnFail?: boolean;
-  stopOnFail?: boolean;
-  stopOnSuccess?: boolean;
-  revertOnSuccess?: boolean;
-}
-
 export interface BatchFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
+  staticCall: boolean;
+  cancelable: boolean;
+  payment: boolean;
+  flow: boolean;
 }
 
-export interface MultiCallInputData {
+export interface MultiCallInputInterface {
   value: string;
   to: string;
 
@@ -35,9 +28,9 @@ export interface MultiCallInputData {
   maxGas?: number;
   maxGasPrice?: number;
 
-  flags?: MultiCallFlags;
+  flags?: Partial<MultiCallFlags>;
 }
-export interface BatchMultiCallInputData {
+export interface BatchMultiCallInputInterface {
   groupId: number;
   nonce: number;
   signer: string;
@@ -46,8 +39,9 @@ export interface BatchMultiCallInputData {
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  flags?: BatchFlags;
-  multiCalls: MultiCallInputData[];
+  flags?: Partial<BatchFlags>;
+
+  calls: MultiCallInputInterface[];
 }
 
 export interface MultiCall {
@@ -61,13 +55,13 @@ export interface MultiCall {
   gasLimit: number;
 }
 
-export interface BatchMultiCallData {
+export interface BatchMultiCallInterface {
   typeHash: Uint8Array;
   sessionId: string;
   signer: string;
   encodedMessage: string;
   encodedLimits: string;
   typedData: object;
-  unhashedCall: BatchMultiCallInputData;
+  unhashedCall: BatchMultiCallInputInterface;
   mcall: MultiCall[];
 }

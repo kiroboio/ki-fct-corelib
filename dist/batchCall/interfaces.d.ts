@@ -4,7 +4,7 @@ export interface Flags {
     cancelable?: boolean;
     payment?: boolean;
 }
-export interface BatchCallInputData {
+export interface BatchCallInputInterface {
     value: string;
     to: string;
     toEnsHash?: string;
@@ -20,7 +20,7 @@ export interface BatchCallInputData {
     maxGasPrice?: number;
     flags?: Flags;
 }
-export interface BatchCallData {
+export interface BatchCallInterface {
     typeHash: string;
     to: string;
     ensHash: string;
@@ -32,5 +32,5 @@ export interface BatchCallData {
     typedData: Object;
     hashedMessage: string;
     hashedTxMessage: string;
-    unhashedCall: BatchCallInputData;
+    unhashedCall: BatchCallInputInterface;
 }

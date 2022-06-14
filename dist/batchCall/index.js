@@ -128,7 +128,6 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
 class BatchCall {
     constructor(web3, contractAddress) {
         this.calls = [];
-        this.unhashedCalls = [];
         this.web3 = web3;
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);

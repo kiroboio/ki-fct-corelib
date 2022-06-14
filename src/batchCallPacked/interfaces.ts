@@ -6,7 +6,7 @@ export interface Flags {
   payment?: boolean;
 }
 
-export interface BatchCallInputData {
+export interface BatchCallInputInterface {
   value: string;
   to: string;
   data: string;
@@ -23,12 +23,12 @@ export interface BatchCallInputData {
   flags?: Flags;
 }
 
-export interface BatchCallPackedData {
+export interface BatchCallInterface {
   to: string;
   value: string;
   sessionId: string;
   signer: string;
   data: string;
   hashedData: string;
-  unhashedCall: BatchCallInputData;
+  unhashedCall: BatchCallInputInterface;
 }

@@ -1,8 +1,8 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
+import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, DecodeTx, MultiSigCallInputInterface } from "./interfaces";
 export declare class BatchMultiSigCall {
-    calls: Array<BatchMultiSigCallData>;
+    calls: Array<BatchMultiSigCallInterface>;
     web3: Web3;
     FactoryProxy: Contract;
     factoryProxyAddress: string;
@@ -31,10 +31,10 @@ export declare class BatchMultiSigCall {
             methodHash: any;
         };
     }[];
-    addBatchCall(tx: BatchMultiSigCallInputData): Promise<BatchMultiSigCallData[]>;
-    addMultipleBatchCalls(txs: BatchMultiSigCallInputData[]): Promise<BatchMultiSigCallData[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallInputData): Promise<BatchMultiSigCallData[]>;
-    removeBatchCall(index: number): Promise<BatchMultiSigCallData[]>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputData): Promise<BatchMultiSigCallData[]>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallData[]>;
+    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<BatchMultiSigCallInterface[]>;
+    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface[]>;
 }

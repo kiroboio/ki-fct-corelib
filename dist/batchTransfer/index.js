@@ -19,6 +19,7 @@ const utils_1 = require("ethers/lib/utils");
 const web3_1 = __importDefault(require("web3"));
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
+// import { Transfer, TransferCall } from "./interfaces";
 const web3 = new web3_1.default();
 const getTypedDataDomain = (factoryProxy, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
     const chainId = yield factoryProxy.methods.CHAIN_ID().call();

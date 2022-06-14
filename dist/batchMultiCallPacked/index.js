@@ -16,21 +16,24 @@ exports.BatchMultiCallPacked = void 0;
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
+// import { MultiCallInput, MultiCallPacked, MultiCallPackedInput } from "./interfaces";
 // "f000" - not-ordered, payment
 const defaultFlags = {
     payment: true,
     flow: false,
     eip712: false,
 };
-const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
+const getMultiCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
     const typeHash = yield factoryProxy.methods.BATCH_MULTI_CALL_TYPEHASH_().call();
-    const group = (0, helpers_1.getGroupId)(call.groupId);
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const eip712 = (0, helpers_1.getFlags)(Object.assign(Object.assign({}, defaultFlags), call.flags), false);
+    const group = (0, helpers_1.getGroupId)(batchCall.groupId);
+    const tnonce = (0, helpers_1.getNonce)(batchCall.nonce);
+    const after = (0, helpers_1.getAfterTimestamp)(batchCall.afterTimestamp || 0);
+    const before = batchCall.beforeTimestamp
+        ? (0, helpers_1.getBeforeTimestamp)(false, batchCall.beforeTimestamp)
+        : (0, helpers_1.getBeforeTimestamp)(true);
+    const maxGas = (0, helpers_1.getMaxGas)(batchCall.maxGas || 0);
+    const maxGasPrice = batchCall.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+    const eip712 = (0, helpers_1.getFlags)(Object.assign(Object.assign({}, defaultFlags), batchCall.flags), false);
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     const getEncodedMethodParamsData = (item) => {
         return item.method
@@ -44,19 +47,19 @@ const getMultiCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
             }, item.params.map((param) => param.value))
             : "0x";
     };
-    const mcallHash = utils_1.defaultAbiCoder.encode(["(bytes32,address,uint256,uint256,bytes)[]"], [call.mcall.map((item) => [typeHash, item.to, item.value, getSessionId(), getEncodedMethodParamsData(item)])]);
+    const mcallHash = utils_1.defaultAbiCoder.encode(["(bytes32,address,uint256,uint256,bytes)[]"], [batchCall.calls.map((item) => [typeHash, item.to, item.value, getSessionId(), getEncodedMethodParamsData(item)])]);
     return {
-        mcall: call.mcall.map((item) => ({
+        mcall: batchCall.calls.map((item) => ({
             value: item.value,
             to: item.to,
             gasLimit: item.gasLimit || 0,
-            flags: (0, helpers_1.manageCallFlags)(item),
+            flags: (0, helpers_1.manageCallFlags)(item.flags || {}),
             data: getEncodedMethodParamsData(item),
         })),
         encodedData: mcallHash,
         sessionId: getSessionId(),
-        signer: call.signer,
-        unhashedCall: call,
+        signer: batchCall.signer,
+        unhashedCall: batchCall,
     };
 });
 class BatchMultiCallPacked {
@@ -115,7 +118,7 @@ class BatchMultiCallPacked {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.mcall[indexOfMulticall] = tx;
+            batch.calls[indexOfMulticall] = tx;
             const data = yield getMultiCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;
@@ -127,7 +130,7 @@ class BatchMultiCallPacked {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.mcall.splice(indexOfMulticall, 1);
+            batch.calls.splice(indexOfMulticall, 1);
             const data = yield getMultiCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;

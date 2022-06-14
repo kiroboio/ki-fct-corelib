@@ -1,22 +1,10 @@
-import { Params } from "../interfaces";
+import { BatchFlags, MultiCallFlags, Params } from "../interfaces";
 export interface DecodeTx {
     encodedData: string;
     encodedDetails: string;
     params?: Params[];
 }
-export interface BatchFlags {
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-}
-export interface MultiCallFlags {
-    viewOnly: boolean;
-    continueOnFail: boolean;
-    stopOnFail: boolean;
-    stopOnSuccess: boolean;
-    revertOnSuccess: boolean;
-}
-export interface MultiSigCallInputData {
+export interface MultiSigCallInputInterface {
     value: string;
     to: string;
     signer: string;
@@ -28,17 +16,17 @@ export interface MultiSigCallInputData {
     beforeTimestamp?: number;
     maxGas?: number;
     maxGasPrice?: number;
-    flags?: MultiCallFlags;
+    flags?: Partial<MultiCallFlags>;
 }
-export interface BatchMultiSigCallInputData {
+export interface BatchMultiSigCallInputInterface {
     groupId: number;
     nonce: number;
     afterTimestamp?: number;
     beforeTimestamp?: number;
     maxGas?: number;
     maxGasPrice?: number;
-    flags?: BatchFlags;
-    multiCalls: MultiSigCallInputData[];
+    flags?: Partial<BatchFlags>;
+    calls: MultiSigCallInputInterface[];
 }
 export interface MultiSigCall {
     typeHash: Uint8Array;
@@ -53,12 +41,12 @@ export interface MultiSigCall {
     encodedData: string;
     encodedDetails: string;
 }
-export interface BatchMultiSigCallData {
+export interface BatchMultiSigCallInterface {
     typeHash: Uint8Array;
     sessionId: string;
     typedData: object;
     encodedMessage: string;
     encodedLimits: string;
-    unhashedCall: BatchMultiSigCallInputData;
+    unhashedCall: BatchMultiSigCallInputInterface;
     mcall: MultiSigCall[];
 }

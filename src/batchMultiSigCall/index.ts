@@ -16,7 +16,13 @@ import {
   getParamsOffset,
   getParamsLength,
 } from "../helpers";
-import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
+import {
+  BatchMultiSigCallInputInterface,
+  BatchMultiSigCallInterface,
+  DecodeTx,
+  MultiSigCallInputInterface,
+} from "./interfaces";
+// import { BatchMultiSigCallData, BatchMultiSigCallInputData, DecodeTx, MultiSigCallInputData } from "./interfaces";
 
 const contractInteractionDefaults = [
   { name: "details", type: "Transaction_" },
@@ -24,17 +30,17 @@ const contractInteractionDefaults = [
   { name: "method_params_length", type: "uint256" },
 ];
 
-const getMethodInterface = (call: MultiSigCallInputData) => {
+const getMethodInterface = (call: MultiSigCallInputInterface) => {
   return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
 };
 
-const generateTxType = (item: MultiSigCallInputData) => {
+const generateTxType = (item: MultiSigCallInputInterface) => {
   return item.params
     ? [...contractInteractionDefaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
     : [{ name: "details", type: "Transaction_" }];
 };
 
-const getEncodedMethodParamsData = (call: MultiSigCallInputData) => {
+const getEncodedMethodParamsData = (call: MultiSigCallInputInterface) => {
   return `0x${
     call.method
       ? defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]).slice(2)
@@ -53,15 +59,17 @@ const getMultiSigCallData = async (
   web3: Web3,
   FactoryProxy: Contract,
   factoryProxyAddress: string,
-  call: BatchMultiSigCallInputData
+  batchCall: BatchMultiSigCallInputInterface
 ) => {
-  const group = getGroupId(call.groupId);
-  const tnonce = getNonce(call.nonce);
-  const after = getAfterTimestamp(call.afterTimestamp || 0);
-  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
-  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const batchFlags = { ...defaultFlags, ...call.flags };
+  const group = getGroupId(batchCall.groupId);
+  const tnonce = getNonce(batchCall.nonce);
+  const after = getAfterTimestamp(batchCall.afterTimestamp || 0);
+  const before = batchCall.beforeTimestamp
+    ? getBeforeTimestamp(false, batchCall.beforeTimestamp)
+    : getBeforeTimestamp(true);
+  const maxGas = getMaxGas(batchCall.maxGas || 0);
+  const maxGasPrice = batchCall.maxGasPrice ? getMaxGasPrice(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+  const batchFlags = { ...defaultFlags, ...batchCall.flags };
   const eip712 = getFlags(batchFlags, false); // not-ordered, payment, eip712
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
@@ -69,7 +77,7 @@ const getMultiSigCallData = async (
   // Creates messages from multiCalls array for EIP712 sign
   // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
   // Else multicall is ETH Transfer - add only details
-  const typedDataMessage = call.multiCalls.reduce((acc, item, index) => {
+  const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
     const additionalTxData = item.params
       ? {
           method_params_offset: getParamsOffset(item.params), //'0x180', // '480', // 13*32
@@ -94,10 +102,10 @@ const getMultiSigCallData = async (
           eth_value: item.value,
           gas_limit: Number.parseInt("0x" + maxGas),
           view_only: item.flags?.viewOnly || false,
-          continue_on_fail: item.flags?.continueOnFail || false,
-          stop_on_fail: item.flags?.stopOnFail || false,
-          stop_on_success: item.flags?.stopOnSuccess || false,
-          revert_on_success: item.flags?.revertOnSuccess || false,
+          continue_on_fail: item.flags?.onFailContinue || false,
+          stop_on_fail: item.flags?.onFailStop || false,
+          stop_on_success: item.flags?.onSuccessStop || false,
+          revert_on_success: item.flags?.onSuccessRevert || false,
           method_interface: item.method ? getMethodInterface(item) : "",
         },
         ...additionalTxData,
@@ -116,7 +124,10 @@ const getMultiSigCallData = async (
       ],
       BatchMultiSigCall_: [
         { name: "limits", type: "Limits_" },
-        ...call.multiCalls.map((_, index) => ({ name: `transaction_${index + 1}`, type: `Transaction_${index + 1}` })),
+        ...batchCall.calls.map((_, index) => ({
+          name: `transaction_${index + 1}`,
+          type: `Transaction_${index + 1}`,
+        })),
       ],
       Limits_: [
         { name: "nonce", type: "uint64" },
@@ -138,7 +149,7 @@ const getMultiSigCallData = async (
         { name: "revert_on_success", type: "bool" },
         { name: "method_interface", type: "string" },
       ],
-      ...call.multiCalls.reduce(
+      ...batchCall.calls.reduce(
         (acc, item, index) => ({
           ...acc,
           [`Transaction_${index + 1}`]: generateTxType(item),
@@ -193,8 +204,8 @@ const getMultiSigCallData = async (
     sessionId: getSessionId(),
     encodedMessage,
     encodedLimits,
-    unhashedCall: call,
-    mcall: call.multiCalls.map((item, index) => ({
+    unhashedCall: batchCall,
+    mcall: batchCall.calls.map((item, index) => ({
       typeHash: TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type),
       functionSignature: item.method
         ? web3.utils.sha3(getMethodInterface(item))
@@ -214,7 +225,7 @@ const getMultiSigCallData = async (
 };
 
 export class BatchMultiSigCall {
-  calls: Array<BatchMultiSigCallData>;
+  calls: Array<BatchMultiSigCallInterface>;
   web3: Web3;
   FactoryProxy: Contract;
   factoryProxyAddress: string;
@@ -308,13 +319,13 @@ export class BatchMultiSigCall {
     });
   }
 
-  async addBatchCall(tx: BatchMultiSigCallInputData) {
+  async addBatchCall(tx: BatchMultiSigCallInputInterface) {
     const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultipleBatchCalls(txs: BatchMultiSigCallInputData[]) {
+  async addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]) {
     const data = await Promise.all(
       txs.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
@@ -322,7 +333,7 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  async editBatchCall(index: number, tx: BatchMultiSigCallInputData) {
+  async editBatchCall(index: number, tx: BatchMultiSigCallInputInterface) {
     const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
 
     this.calls[index] = data;
@@ -348,12 +359,12 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputData) {
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {
     const batch = this.calls[indexOfBatch].unhashedCall;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
-    batch.multiCalls[indexOfMulticall] = tx;
+    batch.calls[indexOfMulticall] = tx;
 
     const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
 
@@ -369,7 +380,7 @@ export class BatchMultiSigCall {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
 
-    batch.multiCalls.splice(indexOfMulticall, 1);
+    batch.calls.splice(indexOfMulticall, 1);
 
     const data = await getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
 

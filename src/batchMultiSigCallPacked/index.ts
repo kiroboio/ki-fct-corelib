@@ -12,7 +12,11 @@ import {
   getNonce,
   manageCallFlags,
 } from "../helpers";
-import { BatchMultiSigCallPackedData, BatchMultiSigCallPackedInput, CallInput } from "./interfaces";
+import {
+  BatchMultiSigCallPackedInputInterface,
+  BatchMultiSigCallPackedInterface,
+  MultiSigCallPackedInputInterface,
+} from "./interfaces";
 
 // "f000" - not-ordered, payment
 const defaultFlags = {
@@ -21,18 +25,24 @@ const defaultFlags = {
   eip712: false,
 };
 
-const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchMultiSigCallPackedInput) => {
+const getMultiSigCallPackedData = async (
+  web3: Web3,
+  factoryProxy: Contract,
+  batchCall: BatchMultiSigCallPackedInputInterface
+) => {
   const batchMultiSigTypeHash = await factoryProxy.methods.BATCH_MULTI_SIG_CALL_TYPEHASH_().call();
   const txTypeHash = await factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_().call();
   const limitsTypeHash = await factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_().call();
 
-  const group = getGroupId(call.groupId);
-  const tnonce = getNonce(call.nonce);
-  const after = getAfterTimestamp(call.afterTimestamp || 0);
-  const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
-  const maxGas = getMaxGas(call.maxGas || 0);
-  const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-  const batchFlags = { ...defaultFlags, ...call.flags };
+  const group = getGroupId(batchCall.groupId);
+  const tnonce = getNonce(batchCall.nonce);
+  const after = getAfterTimestamp(batchCall.afterTimestamp || 0);
+  const before = batchCall.beforeTimestamp
+    ? getBeforeTimestamp(false, batchCall.beforeTimestamp)
+    : getBeforeTimestamp(true);
+  const maxGas = getMaxGas(batchCall.maxGas || 0);
+  const maxGasPrice = batchCall.maxGasPrice ? getMaxGasPrice(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+  const batchFlags = { ...defaultFlags, ...batchCall.flags };
   const eip712 = getFlags(batchFlags, false); // not-ordered, payment
 
   const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
@@ -56,7 +66,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
   // Encode Limits as bytes32
   const encodeLimit = defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
   // Encode multi calls as bytes32
-  const encodedTxs = call.multiCalls.map((item) =>
+  const encodedTxs = batchCall.calls.map((item) =>
     defaultAbiCoder.encode(
       ["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"],
       [
@@ -81,8 +91,8 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
     sessionId: getSessionId(),
     encodedLimits: encodeLimit,
     encodedData: fullEncode,
-    unhashedCall: call,
-    mcall: call.multiCalls.map((item, i) => ({
+    unhashedCall: batchCall,
+    mcall: batchCall.calls.map((item, i) => ({
       value: item.value,
       signer: item.signer,
       gasLimit: item.gasLimit || 0,
@@ -95,7 +105,7 @@ const getMultiSigCallPackedData = async (web3: Web3, factoryProxy: Contract, cal
 };
 
 export class BatchMultiSigCallPacked {
-  calls: Array<BatchMultiSigCallPackedData>;
+  calls: Array<BatchMultiSigCallPackedInterface>;
   web3: Web3;
   FactoryProxy: Contract;
   constructor(web3: Web3, contractAddress: string) {
@@ -131,19 +141,19 @@ export class BatchMultiSigCallPacked {
     });
   }
 
-  async addPackedMulticall(tx: BatchMultiSigCallPackedInput) {
+  async addPackedMulticall(tx: BatchMultiSigCallPackedInputInterface) {
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInput[]) {
+  async addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return this.calls;
   }
 
-  async editBatchCall(index: number, tx: BatchMultiSigCallPackedInput) {
+  async editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface) {
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
 
     this.calls[index] = data;
@@ -169,12 +179,12 @@ export class BatchMultiSigCallPacked {
     return this.calls;
   }
 
-  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: CallInput) {
+  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallPackedInputInterface) {
     const batch = this.calls[indexOfBatch].unhashedCall;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
-    batch.multiCalls[indexOfMulticall] = tx;
+    batch.calls[indexOfMulticall] = tx;
 
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
 
@@ -190,7 +200,7 @@ export class BatchMultiSigCallPacked {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
 
-    batch.multiCalls.splice(indexOfMulticall, 1);
+    batch.calls.splice(indexOfMulticall, 1);
 
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
 

@@ -11,7 +11,7 @@ import {
   getMaxGasPrice,
   getNonce,
 } from "../helpers";
-import { BatchCallInputData, BatchCallPackedData } from "./interfaces";
+import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
 
 const defaultFlags = {
   eip712: false,
@@ -19,7 +19,7 @@ const defaultFlags = {
   staticCall: false,
 };
 
-const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputData) => {
+const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputInterface) => {
   const typeHash = await factoryProxy.methods.BATCH_CALL_PACKED_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId);
@@ -64,7 +64,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
 };
 
 export class BatchCallPacked {
-  calls: Array<BatchCallPackedData>;
+  calls: Array<BatchCallInterface>;
   web3: Web3;
   FactoryProxy: Contract;
   constructor(web3: Web3, contractAddress: string) {
@@ -89,19 +89,19 @@ export class BatchCallPacked {
     };
   }
 
-  async addTx(tx: BatchCallInputData) {
+  async addTx(tx: BatchCallInputInterface) {
     const data = await getBatchCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultipleTx(txs: BatchCallInputData[]) {
+  async addMultipleTx(txs: BatchCallInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => getBatchCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return data;
   }
 
-  async editTx(index: number, tx: BatchCallInputData) {
+  async editTx(index: number, tx: BatchCallInputInterface) {
     const data = await getBatchCallPackedData(this.web3, this.FactoryProxy, tx);
 
     this.calls[index] = data;

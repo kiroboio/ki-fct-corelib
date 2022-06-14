@@ -42,20 +42,22 @@ const defaultFlags = {
     payment: true,
     flow: false,
 };
-const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
-    const group = (0, helpers_1.getGroupId)(call.groupId);
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const batchFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
+const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
+    const group = (0, helpers_1.getGroupId)(batchCall.groupId);
+    const tnonce = (0, helpers_1.getNonce)(batchCall.nonce);
+    const after = (0, helpers_1.getAfterTimestamp)(batchCall.afterTimestamp || 0);
+    const before = batchCall.beforeTimestamp
+        ? (0, helpers_1.getBeforeTimestamp)(false, batchCall.beforeTimestamp)
+        : (0, helpers_1.getBeforeTimestamp)(true);
+    const maxGas = (0, helpers_1.getMaxGas)(batchCall.maxGas || 0);
+    const maxGasPrice = batchCall.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+    const batchFlags = Object.assign(Object.assign({}, defaultFlags), batchCall.flags);
     const eip712 = (0, helpers_1.getFlags)(batchFlags, false); // not-ordered, payment, eip712
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     // Creates messages from multiCalls array for EIP712 sign
     // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
     // Else multicall is ETH Transfer - add only details
-    const typedDataMessage = call.multiCalls.reduce((acc, item, index) => {
+    const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
         var _a, _b, _c, _d, _e;
         const additionalTxData = item.params
             ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(item.params), method_params_length: (0, helpers_1.getParamsLength)(getEncodedMethodParamsData(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
@@ -65,10 +67,10 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, call) =>
                     eth_value: item.value,
                     gas_limit: Number.parseInt("0x" + maxGas),
                     view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
-                    continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.continueOnFail) || false,
-                    stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.stopOnFail) || false,
-                    stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.stopOnSuccess) || false,
-                    revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.revertOnSuccess) || false,
+                    continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
+                    stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
+                    stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
+                    revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
                     method_interface: item.method ? getMethodInterface(item) : "",
                 } }, additionalTxData) });
     }, {});
@@ -81,7 +83,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, call) =>
                 { name: "salt", type: "bytes32" },
             ], BatchMultiCall_: [
                 { name: "limits", type: "Limits_" },
-                ...call.multiCalls.map((_, index) => ({ name: `transaction_${index + 1}`, type: `Transaction_${index + 1}` })),
+                ...batchCall.calls.map((_, index) => ({ name: `transaction_${index + 1}`, type: `Transaction_${index + 1}` })),
             ], Limits_: [
                 { name: "nonce", type: "uint64" },
                 { name: "refund", type: "bool" },
@@ -99,7 +101,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, call) =>
                 { name: "stop_on_success", type: "bool" },
                 { name: "revert_on_success", type: "bool" },
                 { name: "method_interface", type: "string" },
-            ] }, call.multiCalls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: generateTxType(item) })), {})),
+            ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: generateTxType(item) })), {})),
         primaryType: "BatchMultiCall_",
         domain: {
             name: yield FactoryProxy.methods.NAME().call(),
@@ -129,12 +131,12 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, call) =>
     return {
         typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
         sessionId: getSessionId(),
-        signer: call.signer,
+        signer: batchCall.signer,
         typedData,
         encodedMessage,
         encodedLimits,
-        unhashedCall: call,
-        mcall: call.multiCalls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: getEncodedMethodParamsData(item), ensHash: item.toEnsHash
+        unhashedCall: batchCall,
+        mcall: batchCall.calls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: getEncodedMethodParamsData(item), ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
                 ? web3.utils.sha3(getMethodInterface(item))
@@ -231,7 +233,7 @@ class BatchMultiCall {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.multiCalls[indexOfMulticall] = tx;
+            batch.calls[indexOfMulticall] = tx;
             const data = yield getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;
@@ -243,7 +245,7 @@ class BatchMultiCall {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.multiCalls.splice(indexOfMulticall, 1);
+            batch.calls.splice(indexOfMulticall, 1);
             const data = yield getBatchMultiCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;

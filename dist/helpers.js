@@ -40,26 +40,12 @@ const manageCallFlags = (flags) => {
 };
 exports.manageCallFlags = manageCallFlags;
 /*
-Couldn't find a way to calculate params length and params offset.
+Couldn't find a way to calculate params offset.
 
-I think I found a way to calculate paramsLength (params * 32),
-but I am not sure about params offset. As soon as I try to test a call
-with 3 or 1 parameters, I get error for Factory signer
+
+Params Length = (encodedParams string length - 2) / 2
+And convert it into hexadecimal number.
 */
-// Every value's decoded length is 32.
-// Except array values - arrays are (2 * array length) * 32.
-// For example decoded array's length with 3 values would be 192.
-// export const getParamsLength = (params: Array<Params>) => {
-//   const paramsLengthNumber = params.reduce((acc, param) => {
-//     if (Array.isArray(param.value)) {
-//       const arrayParametersLength = 2;
-//       return acc + (arrayParametersLength + param.value.length) * 32;
-//     }
-//     return acc + 32;
-//   }, 0);
-//   return `0x${paramsLengthNumber.toString(16)}`;
-// };
-// Takes encodedParams string and calculates the length of bytes in hexadecimal
 const getParamsLength = (encodedParams) => {
     return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
 };
@@ -67,7 +53,5 @@ exports.getParamsLength = getParamsLength;
 const getParamsOffset = (params) => {
     const constantValue = 32;
     return `0x60`;
-    // return `0x${(params.length * 32 + constantValue).toString(16)}`;
-    // return `0x${(length + constantValue).toString(16)}`;
 };
 exports.getParamsOffset = getParamsOffset;

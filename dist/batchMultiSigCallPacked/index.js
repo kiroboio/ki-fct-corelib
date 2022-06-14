@@ -22,17 +22,19 @@ const defaultFlags = {
     flow: false,
     eip712: false,
 };
-const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
+const getMultiSigCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
     const batchMultiSigTypeHash = yield factoryProxy.methods.BATCH_MULTI_SIG_CALL_TYPEHASH_().call();
     const txTypeHash = yield factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_().call();
     const limitsTypeHash = yield factoryProxy.methods.PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_().call();
-    const group = (0, helpers_1.getGroupId)(call.groupId);
-    const tnonce = (0, helpers_1.getNonce)(call.nonce);
-    const after = (0, helpers_1.getAfterTimestamp)(call.afterTimestamp || 0);
-    const before = call.beforeTimestamp ? (0, helpers_1.getBeforeTimestamp)(false, call.beforeTimestamp) : (0, helpers_1.getBeforeTimestamp)(true);
-    const maxGas = (0, helpers_1.getMaxGas)(call.maxGas || 0);
-    const maxGasPrice = call.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const batchFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
+    const group = (0, helpers_1.getGroupId)(batchCall.groupId);
+    const tnonce = (0, helpers_1.getNonce)(batchCall.nonce);
+    const after = (0, helpers_1.getAfterTimestamp)(batchCall.afterTimestamp || 0);
+    const before = batchCall.beforeTimestamp
+        ? (0, helpers_1.getBeforeTimestamp)(false, batchCall.beforeTimestamp)
+        : (0, helpers_1.getBeforeTimestamp)(true);
+    const maxGas = (0, helpers_1.getMaxGas)(batchCall.maxGas || 0);
+    const maxGasPrice = batchCall.maxGasPrice ? (0, helpers_1.getMaxGasPrice)(batchCall.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
+    const batchFlags = Object.assign(Object.assign({}, defaultFlags), batchCall.flags);
     const eip712 = (0, helpers_1.getFlags)(batchFlags, false); // not-ordered, payment
     const getSessionId = () => `0x${group}${tnonce}${after}${before}${maxGas}${maxGasPrice}${eip712}`;
     const getEncodedMethodParamsData = (item) => {
@@ -50,7 +52,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
     // Encode Limits as bytes32
     const encodeLimit = utils_1.defaultAbiCoder.encode(["bytes32", "uint256"], [limitsTypeHash, getSessionId()]);
     // Encode multi calls as bytes32
-    const encodedTxs = call.multiCalls.map((item) => utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], [
+    const encodedTxs = batchCall.calls.map((item) => utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], [
         txTypeHash,
         item.signer,
         item.to,
@@ -65,8 +67,8 @@ const getMultiSigCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0
         sessionId: getSessionId(),
         encodedLimits: encodeLimit,
         encodedData: fullEncode,
-        unhashedCall: call,
-        mcall: call.multiCalls.map((item, i) => ({
+        unhashedCall: batchCall,
+        mcall: batchCall.calls.map((item, i) => ({
             value: item.value,
             signer: item.signer,
             gasLimit: item.gasLimit || 0,
@@ -143,7 +145,7 @@ class BatchMultiSigCallPacked {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.multiCalls[indexOfMulticall] = tx;
+            batch.calls[indexOfMulticall] = tx;
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;
@@ -155,7 +157,7 @@ class BatchMultiSigCallPacked {
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
-            batch.multiCalls.splice(indexOfMulticall, 1);
+            batch.calls.splice(indexOfMulticall, 1);
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
             return this.calls;

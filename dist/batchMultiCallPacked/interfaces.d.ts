@@ -1,20 +1,23 @@
-export interface TransferFlags {
-    staticCall?: boolean;
-    cancelable?: boolean;
-    payment?: boolean;
-    flow?: boolean;
+export interface BatchFlags {
+    staticCall: boolean;
+    cancelable: boolean;
+    payment: boolean;
+    flow: boolean;
 }
-export interface MultiCallInput {
+export interface MultiCallFlags {
+    onFailStop: boolean;
+    onFailContinue: boolean;
+    onSuccessStop: boolean;
+    onSuccessRevert: boolean;
+}
+export interface MultiCallInputInterface {
     value: string;
     to: string;
     data: string;
     gasLimit?: number;
-    onFailStop?: boolean;
-    onFailContinue?: boolean;
-    onSuccessStop?: boolean;
-    onSuccessRevert?: boolean;
+    flags?: Partial<MultiCallFlags>;
 }
-export interface MultiCallPackedInput {
+export interface BatchMultiCallPackedInputInterface {
     groupId: number;
     nonce: number;
     signer: string;
@@ -22,20 +25,20 @@ export interface MultiCallPackedInput {
     beforeTimestamp?: number;
     maxGas?: number;
     maxGasPrice?: number;
-    flags?: TransferFlags;
-    mcall: MultiCallInput[];
+    flags?: Partial<BatchFlags>;
+    calls: MultiCallInputInterface[];
 }
-export interface MultiCall {
+export interface MultiCallPacked {
     value: string;
     to: string;
     gasLimit: number;
     flags: string;
     data: string;
 }
-export interface MultiCallPacked {
+export interface BatchMultiCallPackedInterface {
     encodedData: string;
     sessionId: string;
     signer: string;
-    unhashedCall: MultiCallPackedInput;
-    mcall: MultiCall[];
+    unhashedCall: BatchMultiCallPackedInputInterface;
+    mcall: MultiCallPacked[];
 }

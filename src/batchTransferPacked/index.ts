@@ -1,8 +1,8 @@
-import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+// import { Transfer, TransferCall } from "./interfaces";
 import {
   getAfterTimestamp,
   getBeforeTimestamp,
@@ -12,7 +12,7 @@ import {
   getMaxGasPrice,
   getNonce,
 } from "../helpers";
-import { Transfer, TransferCall } from "./interfaces";
+import { TransferPackedInputInterface, TransferPackedInterface } from "./interfaces";
 
 // DefaultFlag - "f0" // payment + eip712
 const defaultFlags = {
@@ -20,7 +20,7 @@ const defaultFlags = {
   payment: true,
 };
 
-const getBatchTransferPackedData = async (FactoryProxy: Contract, call: TransferCall) => {
+const getBatchTransferPackedData = async (FactoryProxy: Contract, call: TransferPackedInputInterface) => {
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
 
   const group = getGroupId(call.groupId); // Has to be a way to determine group dynamically
@@ -54,7 +54,7 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
 };
 
 export class BatchTransferPacked {
-  calls: Array<Transfer>;
+  calls: Array<TransferPackedInterface>;
   web3: Web3;
   FactoryProxy: Contract;
 
@@ -76,19 +76,19 @@ export class BatchTransferPacked {
     };
   }
 
-  async addTx(tx: TransferCall) {
+  async addTx(tx: TransferPackedInputInterface) {
     const data = await getBatchTransferPackedData(this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultipleTx(tx: TransferCall[]) {
+  async addMultipleTx(tx: TransferPackedInputInterface[]) {
     const data = await Promise.all(tx.map((item, i) => getBatchTransferPackedData(this.FactoryProxy, item)));
     this.calls = [...this.calls, ...data];
     return this.calls;
   }
 
-  async editTx(index: number, tx: TransferCall) {
+  async editTx(index: number, tx: TransferPackedInputInterface) {
     const data = await getBatchTransferPackedData(this.FactoryProxy, tx);
 
     this.calls[index] = data;

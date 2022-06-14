@@ -4,7 +4,7 @@ export interface TransferFlags {
     cancelable?: boolean;
     payment?: boolean;
 }
-export interface TransferCall {
+export interface TransferInputInterface {
     token: string;
     tokenEnsHash?: string;
     to: string;
@@ -19,7 +19,7 @@ export interface TransferCall {
     maxGasPrice?: number;
     flags?: TransferFlags;
 }
-export interface Transfer {
+export interface TransferInterface {
     token: string;
     tokenEnsHash: string;
     to: string;
@@ -29,5 +29,5 @@ export interface Transfer {
     sessionId: string;
     typedData: object;
     hashedData: string;
-    unhashedCall: TransferCall;
+    unhashedCall: TransferInputInterface;
 }

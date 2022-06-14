@@ -14,7 +14,8 @@ import {
   getMaxGas,
   getFlags,
 } from "../helpers";
-import { Transfer, TransferCall } from "./interfaces";
+import { TransferInputInterface, TransferInterface } from "./interfaces";
+// import { Transfer, TransferCall } from "./interfaces";
 
 const web3 = new Web3();
 
@@ -65,7 +66,7 @@ const getBatchTransferData = async (
   web3: Web3,
   FactoryProxy: Contract,
   factoryProxyAddress: string,
-  call: TransferCall
+  call: TransferInputInterface
 ) => {
   const group = getGroupId(call.groupId);
   const tnonce = getNonce(call.nonce);
@@ -118,7 +119,7 @@ const getBatchTransferData = async (
 };
 
 export class BatchTransfer {
-  calls: Array<Transfer>;
+  calls: Array<TransferInterface>;
   web3: Web3;
   FactoryProxy: Contract;
   factoryProxyAddress: string;
@@ -170,13 +171,13 @@ export class BatchTransfer {
     };
   }
 
-  async addTx(tx: TransferCall) {
+  async addTx(tx: TransferInputInterface) {
     const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultipleTx(txs: TransferCall[]) {
+  async addMultipleTx(txs: TransferInputInterface[]) {
     const data = await Promise.all(
       txs.map((tx) => getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx))
     );
@@ -184,7 +185,7 @@ export class BatchTransfer {
     return this.calls;
   }
 
-  async editTx(index: number, tx: TransferCall) {
+  async editTx(index: number, tx: TransferInputInterface) {
     const data = await getBatchTransferData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
 
     this.calls[index] = data;

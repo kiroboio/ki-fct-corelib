@@ -1,8 +1,8 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
-import { Transfer, TransferCall } from "./interfaces";
+import { TransferInputInterface, TransferInterface } from "./interfaces";
 export declare class BatchTransfer {
-    calls: Array<Transfer>;
+    calls: Array<TransferInterface>;
     web3: Web3;
     FactoryProxy: Contract;
     factoryProxyAddress: string;
@@ -20,8 +20,8 @@ export declare class BatchTransfer {
         maxGasPrice: any;
         payable: any;
     };
-    addTx(tx: TransferCall): Promise<Transfer[]>;
-    addMultipleTx(txs: TransferCall[]): Promise<Transfer[]>;
-    editTx(index: number, tx: TransferCall): Promise<Transfer[]>;
-    removeTx(index: number): Promise<Transfer[]>;
+    addTx(tx: TransferInputInterface): Promise<TransferInterface[]>;
+    addMultipleTx(txs: TransferInputInterface[]): Promise<TransferInterface[]>;
+    editTx(index: number, tx: TransferInputInterface): Promise<TransferInterface[]>;
+    removeTx(index: number): Promise<TransferInterface[]>;
 }

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchTransferPacked = void 0;
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
+// import { Transfer, TransferCall } from "./interfaces";
 const helpers_1 = require("../helpers");
 // DefaultFlag - "f0" // payment + eip712
 const defaultFlags = {

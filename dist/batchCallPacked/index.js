@@ -42,7 +42,6 @@ const getBatchCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
             })),
         }, call.params.map((param) => param.value))
         : "0x";
-    console.log(encodedMethodParamsData);
     const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes"], [typeHash, call.to, call.value, getSessionId(), encodedMethodParamsData]);
     return {
         to: call.to,

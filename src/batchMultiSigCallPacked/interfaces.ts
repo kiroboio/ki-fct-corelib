@@ -1,45 +1,26 @@
-export interface BatchFlags {
-  staticCall?: boolean;
-  cancelable?: boolean;
-  payment?: boolean;
-  flow?: boolean;
-}
+import { BatchFlags, MultiCallFlags } from "../interfaces";
 
-export interface MultiCallFlags {
-  viewOnly: boolean;
-  continueOnFail: boolean;
-  stopOnFail: boolean;
-  stopOnSuccess: boolean;
-  revertOnSuccess: boolean;
-}
-
-export interface CallInput {
+export interface MultiSigCallPackedInputInterface {
   value: string;
   to: string;
   data: string;
   signer: string;
   gasLimit?: number;
-  flags?: MultiCallFlags;
+  flags?: Partial<MultiCallFlags>;
 }
 
-export interface BatchMultiSigCallPackedInput {
+export interface BatchMultiSigCallPackedInputInterface {
   groupId: number;
   nonce: number;
   afterTimestamp?: number;
   beforeTimestamp?: number;
   maxGas?: number;
   maxGasPrice?: number;
-  flags?: BatchFlags;
-  multiCalls: CallInput[];
+  flags?: Partial<BatchFlags>;
+  calls: MultiSigCallPackedInputInterface[];
 }
 
-export interface Signature {
-  r: string;
-  s: string;
-  v: string;
-}
-
-export interface PackedMSCall {
+export interface MultiSigCallPacked {
   value: string;
   signer: string;
   gasLimit: number;
@@ -50,10 +31,10 @@ export interface PackedMSCall {
   encodedTx: string;
 }
 
-export interface BatchMultiSigCallPackedData {
+export interface BatchMultiSigCallPackedInterface {
   sessionId: string;
   encodedLimits: string;
   encodedData: string;
-  unhashedCall: BatchMultiSigCallPackedInput;
-  mcall: PackedMSCall[];
+  unhashedCall: BatchMultiSigCallPackedInputInterface;
+  mcall: MultiSigCallPacked[];
 }

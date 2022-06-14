@@ -682,7 +682,7 @@ describe("FactoryProxy contract library", function () {
         flags: {
           payment: false,
         },
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -723,7 +723,7 @@ describe("FactoryProxy contract library", function () {
           flags: {
             payment: false,
           },
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -746,7 +746,7 @@ describe("FactoryProxy contract library", function () {
           flags: {
             payment: false,
           },
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -810,7 +810,7 @@ describe("FactoryProxy contract library", function () {
         flags: {
           payment: true,
         },
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -892,7 +892,7 @@ describe("FactoryProxy contract library", function () {
         flags: {
           payment: true,
         },
-        mcall: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -902,10 +902,12 @@ describe("FactoryProxy contract library", function () {
               { name: "token_amount", type: "uint256", value: "5" },
             ],
             gasLimit: 0,
-            onFailStop: true,
-            onFailContinue: false,
-            onSuccessStop: false,
-            onSuccessRevert: false,
+            flags: {
+              onFailStop: true,
+              onFailContinue: false,
+              onSuccessStop: false,
+              onSuccessRevert: false,
+            },
           },
           {
             value: 0,
@@ -916,10 +918,12 @@ describe("FactoryProxy contract library", function () {
               { name: "token_amount", type: "uint256", value: "12" },
             ],
             gasLimit: 0,
-            onFailStop: true,
-            onFailContinue: false,
-            onSuccessStop: false,
-            onSuccessRevert: false,
+            flags: {
+              onFailStop: true,
+              onFailContinue: false,
+              onSuccessStop: false,
+              onSuccessRevert: false,
+            },
           },
         ],
       };
@@ -938,7 +942,7 @@ describe("FactoryProxy contract library", function () {
           flags: {
             payment: true,
           },
-          mcall: [
+          calls: [
             {
               value: 15,
               to: getSigner(11),
@@ -956,7 +960,7 @@ describe("FactoryProxy contract library", function () {
           flags: {
             payment: true,
           },
-          mcall: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -989,7 +993,7 @@ describe("FactoryProxy contract library", function () {
         flags: {
           payment: false,
         },
-        mcall: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -1067,7 +1071,7 @@ describe("FactoryProxy contract library", function () {
           payment: false,
           flow: true,
         },
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -1103,7 +1107,7 @@ describe("FactoryProxy contract library", function () {
         {
           groupId: 1,
           nonce: 20,
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -1129,7 +1133,7 @@ describe("FactoryProxy contract library", function () {
         {
           groupId: 1,
           nonce: 21,
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -1187,7 +1191,7 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         groupId: 1,
         nonce: 21,
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -1271,7 +1275,7 @@ describe("FactoryProxy contract library", function () {
           payment: false,
           flow: true,
         },
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
@@ -1307,7 +1311,7 @@ describe("FactoryProxy contract library", function () {
         {
           groupId: 1,
           nonce: 23,
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -1335,7 +1339,7 @@ describe("FactoryProxy contract library", function () {
         {
           groupId: 1,
           nonce: 24,
-          multiCalls: [
+          calls: [
             {
               value: 0,
               to: token20.address,
@@ -1344,7 +1348,6 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[11] },
                 { name: "token_amount", type: "uint256", value: "25" },
               ],
-
               signer: signer1,
             },
             {
@@ -1355,7 +1358,6 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[11] },
                 { name: "token_amount", type: "uint256", value: "25" },
               ],
-
               signer: signer2,
             },
           ],
@@ -1384,7 +1386,7 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         groupId: 1,
         nonce: 24,
-        multiCalls: [
+        calls: [
           {
             value: 0,
             to: token20.address,
