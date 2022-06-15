@@ -5,7 +5,6 @@ export interface BatchCallInputInterface extends BatchCallBase {
   to: string;
   toEns?: string;
   signer: string;
-
   method?: string;
   params?: Params[];
 }

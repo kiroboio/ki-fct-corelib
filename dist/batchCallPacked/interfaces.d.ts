@@ -1,13 +1,11 @@
-import { BatchCallBase, Params } from "../interfaces";
+import { BatchCallBase, BatchFlags, Params } from "../interfaces";
 export interface BatchCallInputInterface extends BatchCallBase {
     value: string;
     to: string;
-    data: string;
-    method: string;
-    params: Params[];
     signer: string;
-    groupId: number;
-    nonce: number;
+    method?: string;
+    params?: Params[];
+    flags?: Pick<BatchFlags, "viewOnly" | "payment">;
 }
 export interface BatchCallInterface {
     to: string;
@@ -15,6 +13,6 @@ export interface BatchCallInterface {
     sessionId: string;
     signer: string;
     data: string;
-    hashedData: string;
+    encodedMessage: string;
     unhashedCall: BatchCallInputInterface;
 }

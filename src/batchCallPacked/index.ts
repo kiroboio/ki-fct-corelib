@@ -1,14 +1,15 @@
+import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { getSessionIdDetails } from "../helpers";
+import { Params } from "../interfaces";
 import { BatchCallInputInterface, BatchCallInterface } from "./interfaces";
 
 const defaultFlags = {
   eip712: false,
   payment: true,
-  staticCall: false,
 };
 
 const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: BatchCallInputInterface) => {
@@ -29,7 +30,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
       )
     : "0x";
 
-  const hashedData = defaultAbiCoder.encode(
+  const encodedMessage = defaultAbiCoder.encode(
     ["bytes32", "address", "uint256", "uint256", "bytes"],
     [typeHash, call.to, call.value, sessionId, encodedMethodParamsData]
   );
@@ -40,7 +41,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     signer: call.signer,
     sessionId,
     data: encodedMethodParamsData,
-    hashedData,
+    encodedMessage,
     unhashedCall: call,
   };
 };
@@ -61,13 +62,34 @@ export class BatchCallPacked {
     return messageAddress.toLowerCase() === address.toLowerCase();
   }
 
-  decodeData(data: string) {
+  decodeData(data: string, params?: Params[]) {
     const decodedData = defaultAbiCoder.decode(["bytes32", "address", "uint256", "uint256", "bytes"], data);
+
+    const decodedParamsData = params
+      ? defaultAbiCoder.decode(
+          params.map((item) => item.type),
+          `0x${decodedData[4].slice(10)}`
+        )
+      : null;
+
+    const additionalDecodedData = decodedParamsData
+      ? params.reduce(
+          (acc, item, i) => ({
+            ...acc,
+            [item.name]: ethers.BigNumber.isBigNumber(decodedParamsData[i])
+              ? decodedParamsData[i].toString()
+              : decodedParamsData[i],
+          }),
+          {}
+        )
+      : {};
+
     return {
       to: decodedData[1],
       value: decodedData[2].toString(),
       sessionId: decodedData[3].toHexString(),
       data: decodedData[4],
+      decodedParams: additionalDecodedData,
     };
   }
 

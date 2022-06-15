@@ -82,7 +82,7 @@ const getBatchCallData = async (
         expires_at: Number.parseInt("0x" + callDetails.before),
         gas_limit: Number.parseInt("0x" + callDetails.gasLimit),
         gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
-        view_only: callDetails.pureFlags.staticCall,
+        view_only: callDetails.pureFlags.viewOnly,
         refund: callDetails.pureFlags.payment,
         method_interface: call.method ? getMethodInterface(call) : "",
       },

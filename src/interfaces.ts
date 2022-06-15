@@ -11,7 +11,7 @@ export interface DecodeTx {
 }
 
 export interface BatchFlags {
-  staticCall: boolean;
+  viewOnly: boolean;
   cancelable: boolean;
   payment: boolean;
   eip712: boolean;

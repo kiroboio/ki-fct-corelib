@@ -13,13 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchCallPacked = void 0;
+const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
 const defaultFlags = {
     eip712: false,
     payment: true,
-    staticCall: false,
 };
 const getBatchCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
     const typeHash = yield factoryProxy.methods.BATCH_CALL_PACKED_TYPEHASH_().call();
@@ -34,14 +34,14 @@ const getBatchCallPackedData = (web3, factoryProxy, call) => __awaiter(void 0, v
             })),
         }, call.params.map((param) => param.value))
         : "0x";
-    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes"], [typeHash, call.to, call.value, sessionId, encodedMethodParamsData]);
+    const encodedMessage = utils_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes"], [typeHash, call.to, call.value, sessionId, encodedMethodParamsData]);
     return {
         to: call.to,
         value: call.value,
         signer: call.signer,
         sessionId,
         data: encodedMethodParamsData,
-        hashedData,
+        encodedMessage,
         unhashedCall: call,
     };
 });
@@ -56,13 +56,22 @@ class BatchCallPacked {
         const messageAddress = this.web3.eth.accounts.recover(message, signature);
         return messageAddress.toLowerCase() === address.toLowerCase();
     }
-    decodeData(data) {
+    decodeData(data, params) {
         const decodedData = utils_1.defaultAbiCoder.decode(["bytes32", "address", "uint256", "uint256", "bytes"], data);
+        const decodedParamsData = params
+            ? utils_1.defaultAbiCoder.decode(params.map((item) => item.type), `0x${decodedData[4].slice(10)}`)
+            : null;
+        const additionalDecodedData = decodedParamsData
+            ? params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(decodedParamsData[i])
+                    ? decodedParamsData[i].toString()
+                    : decodedParamsData[i] })), {})
+            : {};
         return {
             to: decodedData[1],
             value: decodedData[2].toString(),
             sessionId: decodedData[3].toHexString(),
             data: decodedData[4],
+            decodedParams: additionalDecodedData,
         };
     }
     addTx(tx) {

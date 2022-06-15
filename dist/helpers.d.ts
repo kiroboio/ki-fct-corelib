@@ -11,7 +11,7 @@ export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Pa
     maxGasPrice: string;
     flags: string;
     pureFlags: {
-        staticCall?: boolean;
+        viewOnly?: boolean;
         cancelable?: boolean;
         payment?: boolean;
         eip712?: boolean;

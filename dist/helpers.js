@@ -50,8 +50,8 @@ exports.getSessionIdDetails = getSessionIdDetails;
 // Get batch flags
 const getFlags = (flags, small) => {
     const array = ["0", "0", "0", "0"];
-    if (flags.eip712 || flags.staticCall || flags.cancelable) {
-        array[1] = flags.cancelable ? "8" : flags.staticCall ? "4" : "1";
+    if (flags.eip712 || flags.viewOnly || flags.cancelable) {
+        array[1] = flags.cancelable ? "8" : flags.viewOnly ? "4" : "1";
     }
     array[0] = flags.payment ? "f" : "0";
     if (flags.flow) {
