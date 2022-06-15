@@ -293,8 +293,6 @@ describe("FactoryProxy contract library", function () {
     it("Should add multiple tx", async () => {
       const signer = getSigner(10);
 
-      console.log(instances[0]);
-
       const txs = [
         {
           value: 0,
@@ -321,36 +319,48 @@ describe("FactoryProxy contract library", function () {
           ],
           signer,
         },
+        {
+          value: 5,
+          to: accounts[11],
+          groupId: 1,
+          nonce: 4,
+          signer: getSigner(10),
+        },
       ];
       await batchCall.addMultipleTx(txs);
 
-      expect(batchCall.calls.length).to.eq(3);
+      expect(batchCall.calls.length).to.eq(4);
     });
-    // it("Should edit tx", async () => {
-    //   const tx = {
-    //     value: 15,
-    //     to: accounts[11],
-    //     groupId: 1,
-    //     nonce: 3,
-    //     signer: getSigner(10),
-    //   };
+    it("Should edit tx", async () => {
+      const tx = {
+        value: 15,
+        to: accounts[11],
+        groupId: 1,
+        nonce: 4,
+        signer: getSigner(10),
+      };
 
-    //   const calls = await batchCall.editTx(2, tx);
+      const calls = await batchCall.editTx(3, tx);
 
-    //   expect(calls[2].value).to.eq(15);
-    // });
-    // it("Should remove call", async () => {
-    //   const calls = await batchCall.removeTx(2);
+      expect(calls[3].value).to.eq(15);
+    });
+    it("Should remove call", async () => {
+      const calls = await batchCall.removeTx(3);
 
-    //   expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(2);
-    // });
-    // it("Should decode data", async () => {
-    //   const call = batchCall.calls[1];
+      expect(calls.length).to.eq(3) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(3);
+    });
+    it("Should decode data", async () => {
+      const call = batchCall.calls[1];
 
-    //   const params = [{ name: "tokenURI", type: "string", value: "uri" }];
+      const params = [
+        { name: "spender", type: "address", value: instances[0] },
+        { name: "amount", type: "uint256", value: "2000" },
+      ];
 
-    //   const decoded = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage, params);
-    // });
+      const decoded = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage, params);
+
+      expect(decoded.amount).to.eq("2000");
+    });
     it("Should execute", async () => {
       const calls = batchCall.calls;
       const signer = getSigner(10);
@@ -368,9 +378,8 @@ describe("FactoryProxy contract library", function () {
       const data = await factoryProxy.batchCall_(signedCalls, 1, true, { from: activator });
 
       const allowance = await token20.allowance(instances[0], instances[0]);
-      console.log(allowance.toString());
 
-      expect(data).to.have.property("receipt");
+      expect(data).to.have.property("receipt") && expect(allowance.toString()).to.eq("1950");
     });
   });
 
