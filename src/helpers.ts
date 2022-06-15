@@ -110,7 +110,10 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
     );
   }
 
-  return defaultAbiCoder.encode([getMethodInterface(call)], [call.params.map((item) => item.value)]);
+  return defaultAbiCoder.encode(
+    call.params.map((item) => item.type),
+    call.params.map((item) => item.value)
+  );
 };
 
 export const generateTxType = (item: Partial<MethodParamsInterface>) => {
@@ -134,9 +137,10 @@ And convert it into hexadecimal number.
 
 export const getParamsLength = (encodedParams: string) => {
   const paramsLength = defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
+  // return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
   return `0x${paramsLength}`;
 };
 
 export const getParamsOffset = () => {
-  return `0x60`;
+  return `0x0000000000000000000000000000000000000000000000000000000000000060`;
 };

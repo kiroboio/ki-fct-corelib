@@ -134,7 +134,7 @@ export class BatchCall {
 
   decodeData(data: string, txData: string, params?: Params[]) {
     const decodedData = params
-      ? defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...params.map((item) => item.type)], data)
+      ? defaultAbiCoder.decode(["bytes32", "bytes32", "bytes32", "bytes32", ...params.map((item) => item.type)], data)
       : defaultAbiCoder.decode(["bytes32", "bytes32"], data);
 
     const decodedTxData = defaultAbiCoder.decode(

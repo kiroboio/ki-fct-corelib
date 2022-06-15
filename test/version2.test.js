@@ -22,6 +22,7 @@ const Factory = artifacts.require("Factory");
 const FactoryProxy = artifacts.require("FactoryProxy");
 const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
+const ERC721Token = artifacts.require("ERC721Token");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -31,6 +32,7 @@ describe("FactoryProxy contract library", function () {
   let factory;
   let factoryProxy;
   let token20;
+  let token721;
   let oracle;
   let activatorContract;
   let accounts = [];
@@ -122,6 +124,7 @@ describe("FactoryProxy contract library", function () {
     token20 = await ERC20Token.new("Kirobo ERC20 Token", "KDB20", {
       from: owner,
     });
+    token721 = await ERC721Token.new("Kirobo NFT", "kNFT");
     activatorContract = await Activator.new(token20.address, sw_factory_proxy.address, {
       from: owner,
       nonce: await web3.eth.getTransactionCount(owner),
@@ -289,27 +292,33 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should add multiple tx", async () => {
       const signer = getSigner(10);
+
+      console.log(instances[0]);
+
       const txs = [
         {
           value: 0,
           to: token20.address,
           groupId: 1,
           nonce: 2,
-          method: "transfer",
+          method: "approve",
           params: [
-            { name: "to", type: "address", value: accounts[11] },
-            { name: "token_amount", type: "uint256", value: "5" },
+            { name: "spender", type: "address", value: instances[0] },
+            { name: "amount", type: "uint256", value: "2000" },
           ],
           signer,
-          flags: {
-            payment: true,
-          },
         },
         {
-          value: 5,
-          to: accounts[11],
+          value: 0,
+          to: token20.address,
           groupId: 1,
           nonce: 3,
+          method: "transferFrom",
+          params: [
+            { name: "from", type: "address", value: instances[0] },
+            { name: "to", type: "address", value: accounts[13] },
+            { name: "amount", type: "uint256", value: "50" },
+          ],
           signer,
         },
       ];
@@ -317,24 +326,31 @@ describe("FactoryProxy contract library", function () {
 
       expect(batchCall.calls.length).to.eq(3);
     });
-    it("Should edit tx", async () => {
-      const tx = {
-        value: 15,
-        to: accounts[11],
-        groupId: 1,
-        nonce: 3,
-        signer: getSigner(10),
-      };
+    // it("Should edit tx", async () => {
+    //   const tx = {
+    //     value: 15,
+    //     to: accounts[11],
+    //     groupId: 1,
+    //     nonce: 3,
+    //     signer: getSigner(10),
+    //   };
 
-      const calls = await batchCall.editTx(2, tx);
+    //   const calls = await batchCall.editTx(2, tx);
 
-      expect(calls[2].value).to.eq(15);
-    });
-    it("Should remove call", async () => {
-      const calls = await batchCall.removeTx(1);
+    //   expect(calls[2].value).to.eq(15);
+    // });
+    // it("Should remove call", async () => {
+    //   const calls = await batchCall.removeTx(2);
 
-      expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(2);
-    });
+    //   expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(2);
+    // });
+    // it("Should decode data", async () => {
+    //   const call = batchCall.calls[1];
+
+    //   const params = [{ name: "tokenURI", type: "string", value: "uri" }];
+
+    //   const decoded = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage, params);
+    // });
     it("Should execute", async () => {
       const calls = batchCall.calls;
       const signer = getSigner(10);
@@ -350,6 +366,9 @@ describe("FactoryProxy contract library", function () {
       });
 
       const data = await factoryProxy.batchCall_(signedCalls, 1, true, { from: activator });
+
+      const allowance = await token20.allowance(instances[0], instances[0]);
+      console.log(allowance.toString());
 
       expect(data).to.have.property("receipt");
     });

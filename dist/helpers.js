@@ -112,7 +112,7 @@ const getEncodedMethodParams = (call, withFunction) => {
             })),
         }, call.params.map((param) => param.value));
     }
-    return utils_1.defaultAbiCoder.encode([(0, exports.getMethodInterface)(call)], [call.params.map((item) => item.value)]);
+    return utils_1.defaultAbiCoder.encode(call.params.map((item) => item.type), call.params.map((item) => item.value));
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
 const generateTxType = (item) => {
@@ -135,10 +135,11 @@ And convert it into hexadecimal number.
 */
 const getParamsLength = (encodedParams) => {
     const paramsLength = utils_1.defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
+    // return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
     return `0x${paramsLength}`;
 };
 exports.getParamsLength = getParamsLength;
 const getParamsOffset = () => {
-    return `0x60`;
+    return `0x0000000000000000000000000000000000000000000000000000000000000060`;
 };
 exports.getParamsOffset = getParamsOffset;
