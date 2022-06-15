@@ -134,11 +134,11 @@ Params Length = (encodedParams string length - 2) / 2
 And convert it into hexadecimal number.
 */
 const getParamsLength = (encodedParams) => {
-    return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
+    const paramsLength = utils_1.defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
+    return `0x${paramsLength}`;
 };
 exports.getParamsLength = getParamsLength;
-const getParamsOffset = (params) => {
-    const constantValue = 32;
+const getParamsOffset = () => {
     return `0x60`;
 };
 exports.getParamsOffset = getParamsOffset;

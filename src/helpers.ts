@@ -133,10 +133,10 @@ And convert it into hexadecimal number.
 */
 
 export const getParamsLength = (encodedParams: string) => {
-  return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
+  const paramsLength = defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
+  return `0x${paramsLength}`;
 };
 
-export const getParamsOffset = (params) => {
-  const constantValue = 32;
+export const getParamsOffset = () => {
   return `0x60`;
 };

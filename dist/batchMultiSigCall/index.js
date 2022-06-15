@@ -32,7 +32,7 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
         var _a, _b, _c, _d, _e;
         const additionalTxData = item.params
-            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(item.params), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
+            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
         return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
                     signer: item.signer,
                     call_address: item.to,

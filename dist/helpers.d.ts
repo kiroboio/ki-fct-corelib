@@ -36,4 +36,4 @@ export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {
     type: string;
 }[];
 export declare const getParamsLength: (encodedParams: string) => string;
-export declare const getParamsOffset: (params: any) => string;
+export declare const getParamsOffset: () => string;

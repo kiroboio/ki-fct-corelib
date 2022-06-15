@@ -32,7 +32,7 @@ const getBatchCallData = async (
 
   const methodParams = call.params
     ? {
-        method_params_offset: getParamsOffset(call.params), // '0x1c0', // '480', // 13*32
+        method_params_offset: getParamsOffset(),
         method_params_length: getParamsLength(getEncodedMethodParams(call)),
         ...call.params.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}),
       }

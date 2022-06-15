@@ -26,7 +26,7 @@ const defaultFlags = {
 const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
     const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
     const methodParams = call.params
-        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(call.params), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(call)) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
+        ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(call)) }, call.params.reduce((acc, item) => (Object.assign(Object.assign({}, acc), { [item.name]: item.value })), {})) : {};
     const contractType = call.params
         ? [
             { name: "method_params_offset", type: "uint256" },

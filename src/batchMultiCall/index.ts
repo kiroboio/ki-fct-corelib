@@ -38,7 +38,7 @@ const getBatchMultiCallData = async (
   const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
     const additionalTxData = item.params
       ? {
-          method_params_offset: getParamsOffset(item.params), //'0x180', // '480', // 13*32
+          method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
           method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
           ...item.params.reduce(
             (acc, param) => ({
