@@ -5,8 +5,6 @@ export interface MultiCallInputInterface extends MultiCallBase {
     to: string;
 }
 export interface BatchMultiCallInputInterface extends BatchCallBase {
-    groupId: number;
-    nonce: number;
     signer: string;
     calls: MultiCallInputInterface[];
 }

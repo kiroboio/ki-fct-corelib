@@ -22,7 +22,6 @@ const helpers_1 = require("../helpers");
 const defaultFlags = {
     eip712: true,
     payment: true,
-    flow: false,
 };
 const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
     const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);

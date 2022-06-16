@@ -21,7 +21,6 @@ import {
 const defaultFlags = {
   eip712: true,
   payment: true,
-  flow: false,
 };
 
 const getBatchMultiCallData = async (
