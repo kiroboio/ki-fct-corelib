@@ -660,9 +660,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchTransferPacked.calls.length).to.eq(3);
     });
     it("Should decode", async () => {
-      console.log(batchTransferPacked.calls[2].encodedMessage);
-      const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[2].encodedMessage);
-      console.log(decodedData);
+      const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[1].encodedMessage);
       expect(decodedData.value).to.eq("10");
     });
 
