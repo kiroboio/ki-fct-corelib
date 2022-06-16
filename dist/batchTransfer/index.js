@@ -18,6 +18,7 @@ const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const batchTransferTypedData = {
     types: {
         EIP712Domain: [
@@ -51,10 +52,10 @@ const defaultFlags = {
 const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
     const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
     const typedData = Object.assign(Object.assign({}, batchTransferTypedData), { domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress), message: {
-            token_address: call.token,
-            token_ens: call.tokenEnsHash || "",
+            token_address: call.token || ZERO_ADDRESS,
+            token_ens: call.tokenEns || "",
             to: call.to,
-            to_ens: call.toEnsHash || "",
+            to_ens: call.toEns || "",
             value: call.value,
             nonce: "0x" + callDetails.group + callDetails.nonce,
             valid_from: "0x" + callDetails.after,
@@ -63,20 +64,20 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
             gas_price_limit: "0x" + callDetails.maxGasPrice,
             refund: callDetails.pureFlags.payment,
         } });
-    const hashedData = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
+    const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     return {
         signer: call.signer,
-        token: call.token,
-        tokenEnsHash: call.tokenEnsHash
-            ? web3.utils.sha3(call.tokenEnsHash)
+        token: call.token || ZERO_ADDRESS,
+        tokenEnsHash: call.tokenEns
+            ? web3.utils.sha3(call.tokenEns)
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         to: call.to,
-        toEnsHash: call.toEnsHash
-            ? web3.utils.sha3(call.toEnsHash)
+        toEnsHash: call.toEns
+            ? web3.utils.sha3(call.toEns)
             : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: call.value,
         sessionId: callDetails.sessionId,
-        hashedData,
+        encodedMessage,
         typedData,
         unhashedCall: call,
     };

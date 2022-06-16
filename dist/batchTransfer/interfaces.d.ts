@@ -1,13 +1,12 @@
-import { BatchCallBase } from "../interfaces";
+import { BatchCallBase, BatchFlags } from "../interfaces";
 export interface TransferInputInterface extends BatchCallBase {
-    token: string;
-    tokenEnsHash?: string;
     to: string;
-    toEnsHash?: string;
-    groupId: number;
-    nonce: number;
+    toEns?: string;
     value: number;
+    token: string;
+    tokenEns?: string;
     signer: string;
+    flags?: Pick<BatchFlags, "payment">;
 }
 export interface TransferInterface {
     token: string;
@@ -18,6 +17,6 @@ export interface TransferInterface {
     signer: string;
     sessionId: string;
     typedData: object;
-    hashedData: string;
+    encodedMessage: string;
     unhashedCall: TransferInputInterface;
 }

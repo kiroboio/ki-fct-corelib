@@ -7,6 +7,8 @@ import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { TransferInputInterface, TransferInterface } from "./interfaces";
 import { getTypedDataDomain, getSessionIdDetails } from "../helpers";
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 const batchTransferTypedData = {
   types: {
     EIP712Domain: [
@@ -50,10 +52,10 @@ const getBatchTransferData = async (
     ...batchTransferTypedData,
     domain: await getTypedDataDomain(web3, FactoryProxy, factoryProxyAddress),
     message: {
-      token_address: call.token,
-      token_ens: call.tokenEnsHash || "",
+      token_address: call.token || ZERO_ADDRESS,
+      token_ens: call.tokenEns || "",
       to: call.to,
-      to_ens: call.toEnsHash || "",
+      to_ens: call.toEns || "",
       value: call.value,
       nonce: "0x" + callDetails.group + callDetails.nonce,
       valid_from: "0x" + callDetails.after,
@@ -63,23 +65,23 @@ const getBatchTransferData = async (
       refund: callDetails.pureFlags.payment,
     },
   };
-  const hashedData = ethers.utils.hexlify(
+  const encodedMessage = ethers.utils.hexlify(
     TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
   );
 
   return {
     signer: call.signer,
-    token: call.token,
-    tokenEnsHash: call.tokenEnsHash
-      ? web3.utils.sha3(call.tokenEnsHash)
+    token: call.token || ZERO_ADDRESS,
+    tokenEnsHash: call.tokenEns
+      ? web3.utils.sha3(call.tokenEns)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     to: call.to,
-    toEnsHash: call.toEnsHash
-      ? web3.utils.sha3(call.toEnsHash)
+    toEnsHash: call.toEns
+      ? web3.utils.sha3(call.toEns)
       : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
     value: call.value,
     sessionId: callDetails.sessionId,
-    hashedData,
+    encodedMessage,
     typedData,
     unhashedCall: call,
   };

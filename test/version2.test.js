@@ -32,7 +32,6 @@ describe("FactoryProxy contract library", function () {
   let factory;
   let factoryProxy;
   let token20;
-  let token721;
   let oracle;
   let activatorContract;
   let accounts = [];
@@ -124,7 +123,6 @@ describe("FactoryProxy contract library", function () {
     token20 = await ERC20Token.new("Kirobo ERC20 Token", "KDB20", {
       from: owner,
     });
-    token721 = await ERC721Token.new("Kirobo NFT", "kNFT");
     activatorContract = await Activator.new(token20.address, sw_factory_proxy.address, {
       from: owner,
       nonce: await web3.eth.getTransactionCount(owner),
@@ -565,7 +563,7 @@ describe("FactoryProxy contract library", function () {
       expect(batchTransfer.calls.length).to.eq(3);
     });
     it("Should decode", async () => {
-      const decodedData = batchTransfer.decodeData(batchTransfer.calls[0].hashedData);
+      const decodedData = batchTransfer.decodeData(batchTransfer.calls[1].encodedMessage);
       expect(decodedData.value).to.eq("10");
     });
     it("Should edit tx", async () => {
@@ -625,7 +623,8 @@ describe("FactoryProxy contract library", function () {
           payment: false,
         },
       };
-      await batchTransferPacked.addTx(tx);
+      const calls = await batchTransferPacked.addTx(tx);
+      console.log(calls);
 
       expect(batchTransferPacked.calls.length).to.eq(1);
     });
@@ -661,7 +660,9 @@ describe("FactoryProxy contract library", function () {
       expect(batchTransferPacked.calls.length).to.eq(3);
     });
     it("Should decode", async () => {
-      const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[0].hashedData);
+      console.log(batchTransferPacked.calls[2].encodedMessage);
+      const decodedData = batchTransferPacked.decodeData(batchTransferPacked.calls[2].encodedMessage);
+      console.log(decodedData);
       expect(decodedData.value).to.eq("10");
     });
 
@@ -694,7 +695,7 @@ describe("FactoryProxy contract library", function () {
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
 
       const signedCalls = calls.map((item) => {
-        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.hashedData).slice(2);
+        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.encodedMessage).slice(2);
 
         const signature = web3.eth.accounts.sign(msg, getPrivateKey(item.signer));
 

@@ -5,8 +5,6 @@ export interface TransferPackedInputInterface extends BatchCallBase {
   to: string;
   value: number;
   signer: string;
-  groupId: number;
-  nonce: number;
 }
 
 export interface TransferPackedInterface {
@@ -15,6 +13,6 @@ export interface TransferPackedInterface {
   to: string;
   value: number;
   sessionId: string;
-  hashedData: string;
+  encodedMessage: string;
   unhashedCall: TransferPackedInputInterface;
 }

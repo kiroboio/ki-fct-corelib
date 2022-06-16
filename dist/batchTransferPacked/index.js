@@ -24,14 +24,14 @@ const defaultFlags = {
 const getBatchTransferPackedData = (FactoryProxy, call) => __awaiter(void 0, void 0, void 0, function* () {
     const BATCH_TRANSFER_PACKED_TYPEHASH = yield FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
     const { sessionId } = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
-    const hashedData = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, sessionId]);
+    const encodedMessage = utils_1.defaultAbiCoder.encode(["bytes32", "address", "address", "uint256", "uint256"], [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, sessionId]);
     return {
         signer: call.signer,
         token: call.token,
         to: call.to,
         value: call.value,
         sessionId,
-        hashedData,
+        encodedMessage,
         unhashedCall: call,
     };
 });

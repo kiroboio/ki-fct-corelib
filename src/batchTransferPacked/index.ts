@@ -15,7 +15,7 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
   const BATCH_TRANSFER_PACKED_TYPEHASH = await FactoryProxy.methods.BATCH_TRANSFER_PACKED_TYPEHASH_().call();
   const { sessionId } = getSessionIdDetails(call, defaultFlags, true);
 
-  const hashedData = defaultAbiCoder.encode(
+  const encodedMessage = defaultAbiCoder.encode(
     ["bytes32", "address", "address", "uint256", "uint256"],
     [BATCH_TRANSFER_PACKED_TYPEHASH, call.token, call.to, call.value, sessionId]
   );
@@ -26,7 +26,7 @@ const getBatchTransferPackedData = async (FactoryProxy: Contract, call: Transfer
     to: call.to,
     value: call.value,
     sessionId,
-    hashedData,
+    encodedMessage,
     unhashedCall: call,
   };
 };
