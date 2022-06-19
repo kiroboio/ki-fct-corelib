@@ -1407,18 +1407,24 @@ describe("FactoryProxy contract library", function () {
       await batchMultiSigCallPacked.addMultiplePackedMulticall(txs);
       expect(batchMultiSigCallPacked.calls.length).to.eq(3);
     });
-    it("Should decode limits", async () => {
-      const encodedLimits = batchMultiSigCallPacked.calls[0].encodedLimits;
-      const decodedLimits = batchMultiSigCallPacked.decodeLimits(encodedLimits);
+    // it("Should decode limits", async () => {
+    //   const encodedLimits = batchMultiSigCallPacked.calls[0].encodedLimits;
+    //   const decodedLimits = batchMultiSigCallPacked.decodeLimits(encodedLimits);
 
-      expect(decodedLimits).to.have.property("sessionId");
-    });
+    //   expect(decodedLimits).to.have.property("sessionId");
+    // });
 
     it("Should decode txs", async () => {
-      const encodedTxs = batchMultiSigCallPacked.calls[0].mcall.map((item) => item.encodedMessage);
-      const decodedTxs = batchMultiSigCallPacked.decodeTxs(encodedTxs);
+      const encodedLimits = batchMultiSigCallPacked.calls[0].encodedLimits;
 
-      expect(decodedTxs[0].signer).to.eq("0x08B7d04533DfAe2d72e693771b339FA6DF08635d");
+      const encodedTxs = batchMultiSigCallPacked.calls[0].mcall.map((item) => item.encodedMessage);
+      console.log(encodedTxs);
+      console.log(encodedLimits);
+      const decodedTxs = batchMultiSigCallPacked.decodeBatch(encodedLimits, encodedTxs);
+
+      console.log(decodedTxs);
+
+      expect(decodedTxs.transactions[0].signer).to.eq("0x08B7d04533DfAe2d72e693771b339FA6DF08635d");
     });
     it("Should edit batchTx", async () => {
       const signer1 = getSigner(10);

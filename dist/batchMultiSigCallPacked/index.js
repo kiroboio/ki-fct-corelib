@@ -70,18 +70,22 @@ class BatchMultiSigCallPacked {
             sessionId: lim[1].toHexString(),
         };
     }
-    decodeTxs(encodedTxs) {
-        return encodedTxs.map((tx) => {
-            const decTx = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], tx);
-            return {
-                signer: decTx[1],
-                to: decTx[2],
-                value: decTx[3].toString(),
-                gasLimit: decTx[4],
-                flags: decTx[5],
-                data: decTx[6],
-            };
-        });
+    decodeBatch(encodedLimits, encodedTxs) {
+        const lim = utils_1.defaultAbiCoder.decode(["bytes32", "uint256"], encodedLimits);
+        return {
+            sessionId: lim[1].toHexString(),
+            transactions: encodedTxs.map((tx) => {
+                const decTx = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "uint256", "uint32", "uint16", "bytes"], tx);
+                return {
+                    signer: decTx[1],
+                    to: decTx[2],
+                    value: decTx[3].toString(),
+                    gasLimit: decTx[4],
+                    flags: decTx[5],
+                    data: decTx[6],
+                };
+            }),
+        };
     }
     addPackedMulticall(tx) {
         return __awaiter(this, void 0, void 0, function* () {

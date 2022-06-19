@@ -9,14 +9,17 @@ export declare class BatchMultiSigCallPacked {
     decodeLimits(encodedLimits: string): {
         sessionId: any;
     };
-    decodeTxs(encodedTxs: string[]): {
-        signer: any;
-        to: any;
-        value: any;
-        gasLimit: any;
-        flags: any;
-        data: any;
-    }[];
+    decodeBatch(encodedLimits: string, encodedTxs: string[]): {
+        sessionId: any;
+        transactions: {
+            signer: any;
+            to: any;
+            value: any;
+            gasLimit: any;
+            flags: any;
+            data: any;
+        }[];
+    };
     addPackedMulticall(tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
     addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInputInterface[]): Promise<BatchMultiSigCallPackedInterface[]>;
     editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
