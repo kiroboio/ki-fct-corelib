@@ -22,7 +22,6 @@ const Factory = artifacts.require("Factory");
 const FactoryProxy = artifacts.require("FactoryProxy");
 const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
-const ERC721Token = artifacts.require("ERC721Token");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
