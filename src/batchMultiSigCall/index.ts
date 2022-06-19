@@ -136,7 +136,7 @@ const getMultiSigCallData = async (
   const encodedLimits = ethers.utils.hexlify(TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
 
   const getEncodedMulticallData = (index: number) => {
-    const encodedData = ethers.utils.hexlify(
+    const encodedMessage = ethers.utils.hexlify(
       TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`])
     );
 
@@ -145,7 +145,7 @@ const getMultiSigCallData = async (
     );
 
     return {
-      encodedData,
+      encodedMessage,
       encodedDetails,
     };
   };
@@ -207,9 +207,9 @@ export class BatchMultiSigCall {
         tx.params && tx.params.length !== 0
           ? defaultAbiCoder.decode(
               ["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)],
-              tx.encodedData
+              tx.encodedMessage
             )
-          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedData);
+          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
 
       const details = defaultAbiCoder.decode(
         [

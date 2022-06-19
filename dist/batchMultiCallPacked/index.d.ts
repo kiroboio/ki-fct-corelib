@@ -7,8 +7,8 @@ export declare class BatchMultiCallPacked {
     FactoryProxy: Contract;
     constructor(web3: Web3, contractAddress: string);
     decodeBatch(encodedData: string): any;
-    addPackedMulticall(tx: BatchMultiCallPackedInputInterface): Promise<BatchMultiCallPackedInterface[]>;
-    addMultiplePackedMulticalls(txs: BatchMultiCallPackedInputInterface[]): Promise<BatchMultiCallPackedInterface[]>;
+    addBatchCall(tx: BatchMultiCallPackedInputInterface): Promise<BatchMultiCallPackedInterface[]>;
+    addMultipleBatchCalls(txs: BatchMultiCallPackedInputInterface[]): Promise<BatchMultiCallPackedInterface[]>;
     editBatchCall(index: number, tx: BatchMultiCallPackedInputInterface): Promise<BatchMultiCallPackedInterface[]>;
     removeBatchCall(index: number): Promise<BatchMultiCallPackedInterface[]>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiCallInputInterface): Promise<BatchMultiCallPackedInterface[]>;

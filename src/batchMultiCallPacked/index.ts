@@ -38,7 +38,7 @@ const getMultiCallPackedData = async (
       flags: manageCallFlags(item.flags || {}),
       data: getEncodedMethodParams(item, true),
     })),
-    encodedData: mcallHash,
+    encodedMessage: mcallHash,
     sessionId: sessionId,
     signer: batchCall.signer,
     unhashedCall: batchCall,
@@ -67,13 +67,13 @@ export class BatchMultiCallPacked {
     }));
   }
 
-  async addPackedMulticall(tx: BatchMultiCallPackedInputInterface) {
+  async addBatchCall(tx: BatchMultiCallPackedInputInterface) {
     const data = await getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultiplePackedMulticalls(txs: BatchMultiCallPackedInputInterface[]) {
+  async addMultipleBatchCalls(txs: BatchMultiCallPackedInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return this.calls;

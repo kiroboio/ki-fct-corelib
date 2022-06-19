@@ -34,7 +34,7 @@ const getMultiCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(void
             flags: (0, helpers_1.manageCallFlags)(item.flags || {}),
             data: (0, helpers_1.getEncodedMethodParams)(item, true),
         })),
-        encodedData: mcallHash,
+        encodedMessage: mcallHash,
         sessionId: sessionId,
         signer: batchCall.signer,
         unhashedCall: batchCall,
@@ -56,14 +56,14 @@ class BatchMultiCallPacked {
             data: item[4],
         }));
     }
-    addPackedMulticall(tx) {
+    addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiCallPackedData(this.web3, this.FactoryProxy, tx);
             this.calls = [...this.calls, data];
             return this.calls;
         });
     }
-    addMultiplePackedMulticalls(txs) {
+    addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getMultiCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];

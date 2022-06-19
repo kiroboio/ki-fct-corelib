@@ -624,9 +624,8 @@ describe("FactoryProxy contract library", function () {
         },
       };
       const calls = await batchTransferPacked.addTx(tx);
-      console.log(calls);
 
-      expect(batchTransferPacked.calls.length).to.eq(1);
+      expect(calls.length).to.eq(1);
     });
     it("Should add multiple tx", async () => {
       const signer = getSigner(10);
@@ -827,7 +826,7 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should decode batch txs", async () => {
       const txs = batchMultiCall.calls[0].mcall.map((item) => ({
-        encodedData: item.encodedData,
+        encodedMessage: item.encodedMessage,
         encodedDetails: item.encodedDetails,
         params:
           item.functionSignature !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
@@ -967,9 +966,8 @@ describe("FactoryProxy contract library", function () {
           },
         ],
       };
-      await batchMultiCallPacked.addPackedMulticall(tx);
-
-      expect(batchMultiCallPacked.calls.length).to.eq(1);
+      const calls = await batchMultiCallPacked.addBatchCall(tx);
+      expect(calls.length).to.eq(1);
     });
 
     it("Should add multiple tx", async () => {
@@ -1014,13 +1012,15 @@ describe("FactoryProxy contract library", function () {
         },
       ];
 
-      const calls = await batchMultiCallPacked.addMultiplePackedMulticalls(txs);
+      const calls = await batchMultiCallPacked.addMultipleBatchCalls(txs);
 
       expect(calls.length).to.eq(3);
     });
 
     it("Should decode", async () => {
-      const decodedData = batchMultiCallPacked.decodeBatch(batchMultiCallPacked.calls[0].encodedData);
+      console.log(batchMultiCallPacked.calls[0].encodedMessage);
+      const decodedData = batchMultiCallPacked.decodeBatch(batchMultiCallPacked.calls[0].encodedMessage);
+      console.log(decodedData);
       expect(decodedData[0].value).to.eq("0");
     });
     it("Should edit batchTx", async () => {
@@ -1079,7 +1079,7 @@ describe("FactoryProxy contract library", function () {
       const FACTORY_DOMAIN_SEPARATOR = await factoryProxy.DOMAIN_SEPARATOR();
 
       const signedCalls = calls.map((item) => {
-        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.encodedData).slice(2);
+        const msg = FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(item.encodedMessage).slice(2);
 
         const signature = web3.eth.accounts.sign(msg, getPrivateKey(item.signer));
 
@@ -1210,7 +1210,7 @@ describe("FactoryProxy contract library", function () {
     });
     it("Should decode transactions", async () => {
       const txs = batchMultiSigCall.calls[0].mcall.map((item) => ({
-        encodedData: item.encodedData,
+        encodedMessage: item.encodedMessage,
         encodedDetails: item.encodedDetails,
         params:
           item.functionSignature !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
@@ -1220,7 +1220,9 @@ describe("FactoryProxy contract library", function () {
               ]
             : [],
       }));
+      console.log(txs);
       const decodedTxs = batchMultiSigCall.decodeTransactions(txs);
+      console.log(decodedTxs);
 
       expect(decodedTxs[0].token_amount).to.eq("15");
     });
@@ -1414,7 +1416,7 @@ describe("FactoryProxy contract library", function () {
     });
 
     it("Should decode txs", async () => {
-      const encodedTxs = batchMultiSigCallPacked.calls[0].mcall.map((item) => item.encodedTx);
+      const encodedTxs = batchMultiSigCallPacked.calls[0].mcall.map((item) => item.encodedMessage);
       const decodedTxs = batchMultiSigCallPacked.decodeTxs(encodedTxs);
 
       expect(decodedTxs[0].signer).to.eq("0x08B7d04533DfAe2d72e693771b339FA6DF08635d");
@@ -1481,7 +1483,7 @@ describe("FactoryProxy contract library", function () {
           const signatures = await Promise.all(
             [signer, signer1].map(async (item) => {
               const sign = await web3.eth.sign(
-                FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(call.encodedData).slice(2),
+                FACTORY_DOMAIN_SEPARATOR + web3.utils.sha3(call.encodedMessage).slice(2),
                 item
               );
               const signature = {

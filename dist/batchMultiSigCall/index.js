@@ -92,10 +92,10 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
     const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     const encodedLimits = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
     const getEncodedMulticallData = (index) => {
-        const encodedData = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`]));
+        const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`]));
         const encodedDetails = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_`, typedData.message[`transaction_${index + 1}`].details));
         return {
-            encodedData,
+            encodedMessage,
             encodedDetails,
         };
     };
@@ -134,8 +134,8 @@ class BatchMultiSigCall {
     decodeTransactions(txs) {
         return txs.map((tx) => {
             const data = tx.params && tx.params.length !== 0
-                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedData)
-                : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedData);
+                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedMessage)
+                : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
             const details = utils_1.defaultAbiCoder.decode([
                 "bytes32",
                 "address",

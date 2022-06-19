@@ -21,7 +21,7 @@ export interface MultiSigCall {
   to: string;
   ensHash?: string;
   data: string;
-  encodedData: string;
+  encodedMessage: string;
   encodedDetails: string;
 }
 

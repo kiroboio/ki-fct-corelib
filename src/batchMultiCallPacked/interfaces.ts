@@ -19,7 +19,7 @@ export interface MultiCallPacked {
 }
 
 export interface BatchMultiCallPackedInterface {
-  encodedData: string;
+  encodedMessage: string;
   sessionId: string;
   signer: string;
   unhashedCall: BatchMultiCallPackedInputInterface;

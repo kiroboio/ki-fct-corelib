@@ -17,6 +17,8 @@ export interface MultiCall {
     flags: string;
     functionSignature: string;
     gasLimit: number;
+    encodedMessage: string;
+    encodedDetails: string;
 }
 export interface BatchMultiCallInterface {
     typeHash: Uint8Array;

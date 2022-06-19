@@ -5,7 +5,7 @@ export interface Params {
 }
 
 export interface DecodeTx {
-  encodedData: string;
+  encodedMessage: string;
   encodedDetails: string;
   params?: Params[];
 }

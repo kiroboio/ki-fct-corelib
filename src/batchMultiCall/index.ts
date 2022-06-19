@@ -129,7 +129,7 @@ const getBatchMultiCallData = async (
   const encodedLimits = ethers.utils.hexlify(TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
 
   const getHashedMulticallData = (index) => {
-    const encodedData = ethers.utils.hexlify(
+    const encodedMessage = ethers.utils.hexlify(
       TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`])
     );
 
@@ -138,7 +138,7 @@ const getBatchMultiCallData = async (
     );
 
     return {
-      encodedData,
+      encodedMessage,
       encodedDetails,
     };
   };
@@ -200,9 +200,9 @@ export class BatchMultiCall {
         tx.params && tx.params.length !== 0
           ? defaultAbiCoder.decode(
               ["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)],
-              tx.encodedData
+              tx.encodedMessage
             )
-          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedData);
+          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
 
       const details = defaultAbiCoder.decode(
         ["bytes32", "address", "bytes32", "uint256", "uint32", "bool", "bool", "bool", "bool", "bool", "bytes32"],
@@ -225,7 +225,7 @@ export class BatchMultiCall {
           stopOnFail: details[7],
           stopOnSuccess: details[8],
           revertOnSuccess: details[9],
-          methodHash:
+          functionSignature:
             details[10] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
               ? details[10]
               : undefined,

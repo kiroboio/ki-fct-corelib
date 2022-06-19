@@ -44,7 +44,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(v
     return {
         sessionId,
         encodedLimits: encodeLimit,
-        encodedData: fullEncode,
+        encodedMessage: fullEncode,
         unhashedCall: batchCall,
         mcall: batchCall.calls.map((item, i) => ({
             value: item.value,
@@ -53,7 +53,7 @@ const getMultiSigCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(v
             flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0x0",
             to: item.to,
             data: (0, helpers_1.getEncodedMethodParams)(item, true),
-            encodedTx: encodedTxs[i],
+            encodedMessage: encodedTxs[i],
         })),
     };
 });

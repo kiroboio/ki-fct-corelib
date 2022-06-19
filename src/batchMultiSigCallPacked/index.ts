@@ -54,7 +54,7 @@ const getMultiSigCallPackedData = async (
   return {
     sessionId,
     encodedLimits: encodeLimit,
-    encodedData: fullEncode,
+    encodedMessage: fullEncode,
     unhashedCall: batchCall,
     mcall: batchCall.calls.map((item, i) => ({
       value: item.value,
@@ -63,7 +63,7 @@ const getMultiSigCallPackedData = async (
       flags: item.flags ? manageCallFlags(item.flags) : "0x0",
       to: item.to,
       data: getEncodedMethodParams(item, true),
-      encodedTx: encodedTxs[i],
+      encodedMessage: encodedTxs[i],
     })),
   };
 };

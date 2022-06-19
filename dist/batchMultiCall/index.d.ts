@@ -28,7 +28,7 @@ export declare class BatchMultiCall {
             stopOnFail: any;
             stopOnSuccess: any;
             revertOnSuccess: any;
-            methodHash: any;
+            functionSignature: any;
         };
     }[];
     addBatchCall(tx: BatchMultiCallInputInterface): Promise<BatchMultiCallInterface[]>;

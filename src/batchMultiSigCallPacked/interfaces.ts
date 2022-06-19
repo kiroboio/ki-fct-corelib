@@ -18,13 +18,13 @@ export interface MultiSigCallPacked {
   to: string;
   method?: string;
   params?: string;
-  encodedTx: string;
+  encodedMessage: string;
 }
 
 export interface BatchMultiSigCallPackedInterface {
   sessionId: string;
   encodedLimits: string;
-  encodedData: string;
+  encodedMessage: string;
   unhashedCall: BatchMultiSigCallPackedInputInterface;
   mcall: MultiSigCallPacked[];
 }
