@@ -31,6 +31,6 @@ export interface BatchMultiSigCallInterface {
   typedData: object;
   encodedMessage: string;
   encodedLimits: string;
-  unhashedCall: BatchMultiSigCallInputInterface;
+  inputData: BatchMultiSigCallInputInterface;
   mcall: MultiSigCall[];
 }
