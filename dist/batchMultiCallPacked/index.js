@@ -37,7 +37,7 @@ const getMultiCallPackedData = (web3, factoryProxy, batchCall) => __awaiter(void
         encodedMessage: mcallHash,
         sessionId: sessionId,
         signer: batchCall.signer,
-        unhashedCall: batchCall,
+        inputData: batchCall,
     };
 });
 class BatchMultiCallPacked {
@@ -81,7 +81,7 @@ class BatchMultiCallPacked {
         return __awaiter(this, void 0, void 0, function* () {
             const restOfCalls = this.calls
                 .slice(index + 1)
-                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+                .map((call) => (Object.assign(Object.assign({}, call.inputData), { nonce: call.inputData.nonce - 1 })));
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls
@@ -92,7 +92,7 @@ class BatchMultiCallPacked {
     }
     editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].unhashedCall;
+            const batch = this.calls[indexOfBatch].inputData;
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
@@ -104,7 +104,7 @@ class BatchMultiCallPacked {
     }
     removeMultiCallTx(indexOfBatch, indexOfMulticall) {
         return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].unhashedCall;
+            const batch = this.calls[indexOfBatch].inputData;
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }

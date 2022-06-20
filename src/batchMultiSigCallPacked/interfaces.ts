@@ -25,6 +25,6 @@ export interface BatchMultiSigCallPackedInterface {
   sessionId: string;
   encodedLimits: string;
   encodedMessage: string;
-  unhashedCall: BatchMultiSigCallPackedInputInterface;
+  inputData: BatchMultiSigCallPackedInputInterface;
   mcall: MultiSigCallPacked[];
 }

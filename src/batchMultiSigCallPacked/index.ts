@@ -55,7 +55,7 @@ const getMultiSigCallPackedData = async (
     sessionId,
     encodedLimits: encodeLimit,
     encodedMessage: fullEncode,
-    unhashedCall: batchCall,
+    inputData: batchCall,
     mcall: batchCall.calls.map((item, i) => ({
       value: item.value,
       signer: item.signer,
@@ -133,7 +133,7 @@ export class BatchMultiSigCallPacked {
   async removeBatchCall(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
-      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
 
     // Remove from calls
     this.calls.splice(index, 1);
@@ -149,7 +149,7 @@ export class BatchMultiSigCallPacked {
   }
 
   async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallPackedInputInterface) {
-    const batch = this.calls[indexOfBatch].unhashedCall;
+    const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
@@ -163,7 +163,7 @@ export class BatchMultiSigCallPacked {
   }
 
   async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
-    const batch = this.calls[indexOfBatch].unhashedCall;
+    const batch = this.calls[indexOfBatch].inputData;
 
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
