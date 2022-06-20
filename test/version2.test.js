@@ -838,7 +838,7 @@ describe("FactoryProxy contract library", function () {
 
       const decodedTxs = batchMultiCall.decodeTransactions(txs);
 
-      expect(decodedTxs[0].token_amount).to.eq("5");
+      expect(decodedTxs[0].decodedParams.token_amount).to.eq("5");
     });
     it("Should edit batchTx", async () => {
       const signer = getSigner(10);

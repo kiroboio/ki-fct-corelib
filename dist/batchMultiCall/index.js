@@ -155,7 +155,7 @@ class BatchMultiCall {
             const extraData = tx.params && tx.params.length !== 0
                 ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i] })), {})
                 : {};
-            return Object.assign(Object.assign({}, defaultReturn), extraData);
+            return Object.assign(Object.assign({}, defaultReturn), { decodedParams: extraData });
         });
     }
     addBatchCall(tx) {

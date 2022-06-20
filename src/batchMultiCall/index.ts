@@ -245,7 +245,7 @@ export class BatchMultiCall {
 
       return {
         ...defaultReturn,
-        ...extraData,
+        decodedParams: extraData,
       };
     });
   }

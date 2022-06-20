@@ -16,6 +16,7 @@ export declare class BatchMultiCall {
         maxGasPrice: any;
     };
     decodeTransactions(txs: DecodeTx[]): {
+        decodedParams: {};
         typeHash: any;
         txHash: any;
         transaction: {
