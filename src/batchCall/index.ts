@@ -114,7 +114,7 @@ const getBatchCallData = async (
     typedData,
     encodedMessage,
     encodedTxMessage,
-    unhashedCall: call,
+    inputData: call,
   };
 };
 
@@ -191,11 +191,11 @@ export class BatchCall {
         )
       : {};
 
-    return { ...defaultReturn, ...extraData };
+    return { ...defaultReturn, decodedParams: extraData };
   }
 
   async addTx(tx: BatchCallInputInterface) {
-    const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].unhashedCall.nonce : 0;
+    const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].inputData.nonce : 0;
 
     if (tx.nonce <= lastNonce) {
       tx.nonce = lastNonce + 1;
@@ -227,7 +227,7 @@ export class BatchCall {
   async removeTx(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
-      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
 
     // Remove from calls
     this.calls.splice(index, 1);

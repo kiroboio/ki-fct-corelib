@@ -364,13 +364,13 @@ describe("FactoryProxy contract library", function () {
       const call = batchCall.calls[1];
 
       const params = [
-        { name: "spender", type: "address", value: instances[0] },
-        { name: "amount", type: "uint256", value: "2000" },
+        { name: "spender", type: "address" },
+        { name: "amount", type: "uint256" },
       ];
 
       const decoded = batchCall.decodeData(call.encodedMessage, call.encodedTxMessage, params);
 
-      expect(decoded.amount).to.eq("2000");
+      expect(decoded.decodedParams.amount).to.eq("2000");
     });
     it("Should execute", async () => {
       const calls = batchCall.calls;
@@ -485,7 +485,7 @@ describe("FactoryProxy contract library", function () {
     it("Should remove tx", async () => {
       const calls = await batchCallPacked.removeTx(1);
 
-      expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].unhashedCall.nonce).to.eq(2);
+      expect(calls.length).to.eq(2) && expect(calls[calls.length - 1].inputData.nonce).to.eq(2);
     });
     it("Should execute", async () => {
       const calls = batchCallPacked.calls;

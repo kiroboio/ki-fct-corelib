@@ -9,6 +9,7 @@ export declare class BatchCall {
     factoryProxyAddress: string;
     constructor(web3: Web3, contractAddress: string);
     decodeData(data: string, txData: string, params?: Params[]): {
+        decodedParams: {};
         typeHash: any;
         txHash: any;
         transaction: {

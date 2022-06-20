@@ -83,7 +83,7 @@ const getBatchTransferData = async (
     sessionId: callDetails.sessionId,
     encodedMessage,
     typedData,
-    unhashedCall: call,
+    inputData: call,
   };
 };
 
@@ -165,7 +165,7 @@ export class BatchTransfer {
   async removeTx(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
-      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
 
     // Remove from calls
     this.calls.splice(index, 1);

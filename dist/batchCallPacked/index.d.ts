@@ -23,7 +23,7 @@ export declare class BatchCallPacked {
         sessionId: string;
         data: string;
         encodedMessage: string;
-        unhashedCall: BatchCallInputInterface;
+        inputData: BatchCallInputInterface;
     }[]>;
     editTx(index: number, tx: BatchCallInputInterface): Promise<BatchCallInterface[]>;
     removeTx(index: number): Promise<BatchCallInterface[]>;

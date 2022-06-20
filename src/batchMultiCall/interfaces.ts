@@ -30,6 +30,6 @@ export interface BatchMultiCallInterface {
   encodedMessage: string;
   encodedLimits: string;
   typedData: object;
-  unhashedCall: BatchMultiCallInputInterface;
+  inputData: BatchMultiCallInputInterface;
   mcall: MultiCall[];
 }

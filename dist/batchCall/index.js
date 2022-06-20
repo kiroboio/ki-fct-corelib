@@ -92,7 +92,7 @@ const getBatchCallData = (web3, factoryProxy, factoryProxyAddress, call) => __aw
         typedData,
         encodedMessage,
         encodedTxMessage,
-        unhashedCall: call,
+        inputData: call,
     };
 });
 class BatchCall {
@@ -147,11 +147,11 @@ class BatchCall {
                     ? decodedData[4 + i].toString()
                     : decodedData[4 + i] })), {})
             : {};
-        return Object.assign(Object.assign({}, defaultReturn), extraData);
+        return Object.assign(Object.assign({}, defaultReturn), { decodedParams: extraData });
     }
     addTx(tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].unhashedCall.nonce : 0;
+            const lastNonce = this.calls.length !== 0 ? this.calls[this.calls.length - 1].inputData.nonce : 0;
             if (tx.nonce <= lastNonce) {
                 tx.nonce = lastNonce + 1;
             }
@@ -178,7 +178,7 @@ class BatchCall {
         return __awaiter(this, void 0, void 0, function* () {
             const restOfCalls = this.calls
                 .slice(index + 1)
-                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+                .map((call) => (Object.assign(Object.assign({}, call.inputData), { nonce: call.inputData.nonce - 1 })));
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls

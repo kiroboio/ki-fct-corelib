@@ -42,7 +42,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
     sessionId,
     data: encodedMethodParamsData,
     encodedMessage,
-    unhashedCall: call,
+    inputData: call,
   };
 };
 
@@ -116,7 +116,7 @@ export class BatchCallPacked {
   async removeTx(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
-      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
 
     // Remove from calls
     this.calls.splice(index, 1);

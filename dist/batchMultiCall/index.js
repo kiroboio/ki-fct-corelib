@@ -100,7 +100,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCal
         typedData,
         encodedMessage,
         encodedLimits,
-        unhashedCall: batchCall,
+        inputData: batchCall,
         mcall: batchCall.calls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: (0, helpers_1.getEncodedMethodParams)(item, false), ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
@@ -183,7 +183,7 @@ class BatchMultiCall {
         return __awaiter(this, void 0, void 0, function* () {
             const restOfCalls = this.calls
                 .slice(index + 1)
-                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+                .map((call) => (Object.assign(Object.assign({}, call.inputData), { nonce: call.inputData.nonce - 1 })));
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls
@@ -194,7 +194,7 @@ class BatchMultiCall {
     }
     editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].unhashedCall;
+            const batch = this.calls[indexOfBatch].inputData;
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
@@ -206,7 +206,7 @@ class BatchMultiCall {
     }
     removeMultiCallTx(indexOfBatch, indexOfMulticall) {
         return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].unhashedCall;
+            const batch = this.calls[indexOfBatch].inputData;
             if (!batch) {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }

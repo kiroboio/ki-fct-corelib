@@ -14,5 +14,5 @@ export interface TransferPackedInterface {
   value: number;
   sessionId: string;
   encodedMessage: string;
-  unhashedCall: TransferPackedInputInterface;
+  inputData: TransferPackedInputInterface;
 }

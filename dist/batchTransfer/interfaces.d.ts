@@ -18,5 +18,5 @@ export interface TransferInterface {
     sessionId: string;
     typedData: object;
     encodedMessage: string;
-    unhashedCall: TransferInputInterface;
+    inputData: TransferInputInterface;
 }

@@ -21,5 +21,5 @@ export interface BatchCallInterface {
   typedData: Object;
   encodedMessage: string;
   encodedTxMessage: string;
-  unhashedCall: BatchCallInputInterface;
+  inputData: BatchCallInputInterface;
 }

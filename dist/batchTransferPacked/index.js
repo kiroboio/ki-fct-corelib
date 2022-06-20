@@ -32,7 +32,7 @@ const getBatchTransferPackedData = (FactoryProxy, call) => __awaiter(void 0, voi
         value: call.value,
         sessionId,
         encodedMessage,
-        unhashedCall: call,
+        inputData: call,
     };
 });
 class BatchTransferPacked {
@@ -76,7 +76,7 @@ class BatchTransferPacked {
         return __awaiter(this, void 0, void 0, function* () {
             const restOfCalls = this.calls
                 .slice(index + 1)
-                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+                .map((call) => (Object.assign(Object.assign({}, call.inputData), { nonce: call.inputData.nonce - 1 })));
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls

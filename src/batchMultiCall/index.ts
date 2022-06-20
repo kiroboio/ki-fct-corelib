@@ -150,7 +150,7 @@ const getBatchMultiCallData = async (
     typedData,
     encodedMessage,
     encodedLimits,
-    unhashedCall: batchCall,
+    inputData: batchCall,
     mcall: batchCall.calls.map((item, index) => ({
       value: item.value,
       to: item.to,
@@ -275,7 +275,7 @@ export class BatchMultiCall {
   async removeBatchCall(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
-      .map((call) => ({ ...call.unhashedCall, nonce: call.unhashedCall.nonce - 1 }));
+      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
 
     // Remove from calls
     this.calls.splice(index, 1);
@@ -291,7 +291,7 @@ export class BatchMultiCall {
   }
 
   async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiCallInputInterface) {
-    const batch = this.calls[indexOfBatch].unhashedCall;
+    const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
     }
@@ -305,7 +305,7 @@ export class BatchMultiCall {
   }
 
   async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
-    const batch = this.calls[indexOfBatch].unhashedCall;
+    const batch = this.calls[indexOfBatch].inputData;
 
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);

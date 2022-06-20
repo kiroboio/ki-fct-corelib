@@ -14,5 +14,5 @@ export interface BatchCallInterface {
     signer: string;
     data: string;
     encodedMessage: string;
-    unhashedCall: BatchCallInputInterface;
+    inputData: BatchCallInputInterface;
 }

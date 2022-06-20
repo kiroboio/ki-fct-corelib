@@ -79,7 +79,7 @@ const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => 
         sessionId: callDetails.sessionId,
         encodedMessage,
         typedData,
-        unhashedCall: call,
+        inputData: call,
     };
 });
 class BatchTransfer {
@@ -148,7 +148,7 @@ class BatchTransfer {
         return __awaiter(this, void 0, void 0, function* () {
             const restOfCalls = this.calls
                 .slice(index + 1)
-                .map((call) => (Object.assign(Object.assign({}, call.unhashedCall), { nonce: call.unhashedCall.nonce - 1 })));
+                .map((call) => (Object.assign(Object.assign({}, call.inputData), { nonce: call.inputData.nonce - 1 })));
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls
