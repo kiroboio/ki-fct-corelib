@@ -13,6 +13,10 @@ const {
 const assert = require("assert");
 const { expect } = require("chai");
 const { TypedDataUtils } = require("ethers-eip712");
+
+// All the contracts are imported from ki-eth-contracts repository.
+// To make the Hardhat work with contracts from ki-eth-contracts, contracts folder
+// contains all the necessary contracts, which just imports the dependency contracts.
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("RecoveryWalletCore");
 const Wallet = artifacts.require("RecoveryWallet");
