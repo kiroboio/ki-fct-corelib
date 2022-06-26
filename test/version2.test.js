@@ -376,6 +376,13 @@ describe("FactoryProxy contract library", function () {
 
       expect(decoded.decodedParams.amount).to.eq("2000");
     });
+    it("Should decode sessionId", async () => {
+      const call = batchCall.calls[0];
+
+      const decodedSessionId = utils.decodeSessionId(call.sessionId);
+
+      expect(decodedSessionId.group).to.eq(1);
+    });
     it("Should execute", async () => {
       const calls = batchCall.calls;
       const signer = getSigner(10);
