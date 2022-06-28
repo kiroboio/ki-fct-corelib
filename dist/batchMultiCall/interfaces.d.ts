@@ -13,7 +13,7 @@ export interface MultiCall {
     to: string;
     data: string;
     ensHash: string;
-    typeHash: Uint8Array;
+    typeHash: string;
     flags: string;
     functionSignature: string;
     gasLimit: number;
@@ -21,7 +21,7 @@ export interface MultiCall {
     encodedDetails: string;
 }
 export interface BatchMultiCallInterface {
-    typeHash: Uint8Array;
+    typeHash: string;
     sessionId: string;
     signer: string;
     encodedMessage: string;

@@ -9,7 +9,7 @@ export interface BatchMultiSigCallInputInterface extends BatchCallBase {
     calls: MultiSigCallInputInterface[];
 }
 export interface MultiSigCall {
-    typeHash: Uint8Array;
+    typeHash: string;
     functionSignature: string;
     value: string;
     signer: string;
@@ -22,7 +22,7 @@ export interface MultiSigCall {
     encodedDetails: string;
 }
 export interface BatchMultiSigCallInterface {
-    typeHash: Uint8Array;
+    typeHash: string;
     sessionId: string;
     typedData: object;
     encodedMessage: string;

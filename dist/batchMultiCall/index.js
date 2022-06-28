@@ -94,7 +94,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCal
         };
     };
     return {
-        typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
+        typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
         sessionId: callDetails.sessionId,
         signer: batchCall.signer,
         typedData,
@@ -103,7 +103,7 @@ const getBatchMultiCallData = (web3, FactoryProxy, factoryProxyAddress, batchCal
         inputData: batchCall,
         mcall: batchCall.calls.map((item, index) => (Object.assign({ value: item.value, to: item.to, data: (0, helpers_1.getEncodedMethodParams)(item, false), ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type)), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", functionSignature: item.method
                 ? web3.utils.sha3((0, helpers_1.getMethodInterface)(item))
                 : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", gasLimit: Number.parseInt("0x" + callDetails.gasLimit) }, getHashedMulticallData(index)))),
     };

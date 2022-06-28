@@ -144,7 +144,7 @@ const getBatchMultiCallData = async (
   };
 
   return {
-    typeHash: TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
+    typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
     sessionId: callDetails.sessionId,
     signer: batchCall.signer,
     typedData,
@@ -158,7 +158,9 @@ const getBatchMultiCallData = async (
       ensHash: item.toEnsHash
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      typeHash: TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type),
+      typeHash: ethers.utils.hexlify(
+        TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiCall_[index + 1].type)
+      ),
       flags: item.flags ? manageCallFlags(item.flags) : "0",
       functionSignature: item.method
         ? web3.utils.sha3(getMethodInterface(item))

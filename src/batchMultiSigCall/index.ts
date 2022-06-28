@@ -152,13 +152,15 @@ const getMultiSigCallData = async (
 
   return {
     typedData,
-    typeHash: TypedDataUtils.typeHash(typedData.types, typedData.primaryType),
+    typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
     sessionId: callDetails.sessionId,
     encodedMessage,
     encodedLimits,
     inputData: batchCall,
     mcall: batchCall.calls.map((item, index) => ({
-      typeHash: TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type),
+      typeHash: ethers.utils.hexlify(
+        TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)
+      ),
       functionSignature: item.method
         ? web3.utils.sha3(getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
