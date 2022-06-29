@@ -65,9 +65,12 @@ const transactionValidator = async (
   const signed = await web3.eth.accounts.signTransaction(options, activator as string);
 
   // Execute the transaction in forked ganache instance
-  await web3.eth.sendSignedTransaction(signed.rawTransaction as string);
+  const tx = await web3.eth.sendSignedTransaction(signed.rawTransaction as string);
 
-  return;
+  return {
+    isValid: true,
+    gasUsed: tx.gasUsed,
+  };
 };
 
 export default { verifyMessage, decodeSessionId, transactionValidator };
