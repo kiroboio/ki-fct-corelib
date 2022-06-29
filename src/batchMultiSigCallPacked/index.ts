@@ -110,13 +110,13 @@ export class BatchMultiSigCallPacked {
     };
   }
 
-  async addPackedMulticall(tx: BatchMultiSigCallPackedInputInterface) {
+  async addBatchCall(tx: BatchMultiSigCallPackedInputInterface) {
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
     return this.calls;
   }
 
-  async addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInputInterface[]) {
+  async addMultipleBatchCalls(txs: BatchMultiSigCallPackedInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
     return this.calls;

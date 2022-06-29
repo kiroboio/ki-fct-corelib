@@ -20,8 +20,8 @@ export declare class BatchMultiSigCallPacked {
             data: any;
         }[];
     };
-    addPackedMulticall(tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
-    addMultiplePackedMulticall(txs: BatchMultiSigCallPackedInputInterface[]): Promise<BatchMultiSigCallPackedInterface[]>;
+    addBatchCall(tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
+    addMultipleBatchCalls(txs: BatchMultiSigCallPackedInputInterface[]): Promise<BatchMultiSigCallPackedInterface[]>;
     editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallPackedInterface[]>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;

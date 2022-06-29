@@ -87,14 +87,14 @@ class BatchMultiSigCallPacked {
             }),
         };
     }
-    addPackedMulticall(tx) {
+    addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
             this.calls = [...this.calls, data];
             return this.calls;
         });
     }
-    addMultiplePackedMulticall(txs) {
+    addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
