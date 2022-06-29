@@ -11,6 +11,7 @@ const {
   utils,
 } = require("../dist/index.js");
 const assert = require("assert");
+const ABI = require("../src/abi/factoryProxy_.abi.json");
 const { expect } = require("chai");
 const { TypedDataUtils } = require("ethers-eip712");
 
@@ -1505,5 +1506,29 @@ describe("FactoryProxy contract library", function () {
 
       expect(data).to.have.property("receipt");
     });
+  });
+
+  describe("Verify transaction", async () => {
+    // const signer = getSigner(10);
+    // const rpcUrl = "http://127.0.0.1:8545/";
+    // const call = {
+    //   value: 0,
+    //   to: token20.address,
+    //   groupId: 1,
+    //   nonce: 1,
+    //   method: "transfer",
+    //   params: [
+    //     { name: "to", type: "address", value: accounts[11] },
+    //     { name: "token_amount", type: "uint256", value: "5" },
+    //   ],
+    //   signer,
+    //   flags: {
+    //     payment: false,
+    //   },
+    // };
+    // const factoryProxyContract = new web3.eth.Contract(ABI, factoryProxy.address);
+    // const transaction = factoryProxyContract.methods.batchCall_([call], 10, true);
+    // // Check if the transaction is valid to run before it gets executed on live blockchain
+    // await utils.transactionValidator(transaction, rpcUrl, getPrivateKey(activator), );
   });
 });
