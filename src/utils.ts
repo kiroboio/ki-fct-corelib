@@ -63,7 +63,6 @@ const transactionValidator = async (transactionValidatorInterface: transactionVa
     calls,
     method,
     groupId,
-    silentRevert,
     rpcUrl,
     activatorPrivateKey: activator,
     factoryProxyAddress,
@@ -78,7 +77,14 @@ const transactionValidator = async (transactionValidatorInterface: transactionVa
     }) as any
   );
 
-  const transaction = getTransaction(web3, factoryProxyAddress, `${method}_`, [calls, groupId, silentRevert]);
+  const transaction = getTransaction(
+    web3,
+    factoryProxyAddress,
+    `${method}_`,
+    transactionValidatorInterface.silentRevert
+      ? [calls, groupId, transactionValidatorInterface.silentRevert]
+      : [calls, groupId]
+  );
 
   // Create account from activator private key
   const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;

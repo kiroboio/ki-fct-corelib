@@ -53,14 +53,16 @@ const transactionValidator = (transactionValidatorInterface) => __awaiter(void 0
     if (!transactionValidatorInterface.factoryProxyAddress) {
         throw new Error("factoryProxyAddress is required");
     }
-    const { calls, method, groupId, silentRevert, rpcUrl, activatorPrivateKey: activator, factoryProxyAddress, } = transactionValidatorInterface;
+    const { calls, method, groupId, rpcUrl, activatorPrivateKey: activator, factoryProxyAddress, } = transactionValidatorInterface;
     // Creates a forked ganache instance from indicated chainId's rpcUrl
     const web3 = new web3_1.default(ganache_1.default.provider({
         fork: {
             url: rpcUrl,
         },
     }));
-    const transaction = (0, helpers_1.getTransaction)(web3, factoryProxyAddress, `${method}_`, [calls, groupId, silentRevert]);
+    const transaction = (0, helpers_1.getTransaction)(web3, factoryProxyAddress, `${method}_`, transactionValidatorInterface.silentRevert
+        ? [calls, groupId, transactionValidatorInterface.silentRevert]
+        : [calls, groupId]);
     // Create account from activator private key
     const account = web3.eth.accounts.privateKeyToAccount(activator).address;
     const options = {
