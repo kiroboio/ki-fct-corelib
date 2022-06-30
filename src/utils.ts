@@ -1,6 +1,27 @@
 import Web3 from "web3";
 import ganache from "ganache";
-import { Transaction, TransactionObject } from "web3/eth/types";
+import { getTransaction } from "./helpers";
+
+enum Method {
+  batchCall = "batchCall_",
+  batchCallPacked = "batchCallPacked_",
+  batchTransfer = "batchTransfer_",
+  batchTransferPacked = "batchTransferPacked_",
+  batchMultiCall = "batchMultiCall_",
+  batchMultiCallPacked = "batchMultiCallPacked_",
+  batchMultiSigCall = "batchMultiSigCall_",
+  batchMultiSigCallPacked = "batchMultiSigCallPacked_",
+}
+
+interface transactionValidatorInterface {
+  calls: any[];
+  method: Method;
+  groupId: number;
+  silentRevert: boolean;
+  rpcUrl: string;
+  activatorPrivateKey: string;
+  factoryProxyAddress: string;
+}
 
 const web3 = new Web3();
 
@@ -23,25 +44,28 @@ function decodeSessionId(sessionId: string) {
   };
 }
 
-const transactionValidator = async (
-  transaction: TransactionObject<Transaction>,
-  rpcUrl: string,
-  activatorPrivateKey: string,
-  factoryProxyAddress: string
-) => {
-  const activator = activatorPrivateKey;
-
-  if (!rpcUrl) {
+const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
+  if (!transactionValidatorInterface.rpcUrl) {
     throw new Error("rpcUrl is required");
   }
 
-  if (!activator) {
+  if (!transactionValidatorInterface.activatorPrivateKey) {
     throw new Error("activatorPrivateKey is required");
   }
 
-  if (!factoryProxyAddress) {
+  if (!transactionValidatorInterface.factoryProxyAddress) {
     throw new Error("factoryProxyAddress is required");
   }
+
+  const {
+    calls,
+    method,
+    groupId,
+    silentRevert,
+    rpcUrl,
+    activatorPrivateKey: activator,
+    factoryProxyAddress,
+  } = transactionValidatorInterface;
 
   // Creates a forked ganache instance from indicated chainId's rpcUrl
   const web3 = new Web3(
@@ -51,6 +75,8 @@ const transactionValidator = async (
       },
     }) as any
   );
+
+  const transaction = getTransaction(web3, factoryProxyAddress, method, [calls, groupId, silentRevert]);
 
   // Create account from activator private key
   const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;

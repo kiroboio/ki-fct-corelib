@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
+exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
+const factoryProxy__abi_json_1 = __importDefault(require("./abi/factoryProxy_.abi.json"));
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 // Everything for sessionId
@@ -143,3 +144,14 @@ const getParamsOffset = () => {
     return `0x0000000000000000000000000000000000000000000000000000000000000060`;
 };
 exports.getParamsOffset = getParamsOffset;
+const getFactoryProxyContract = (web3, proxyContractAddress) => {
+    const proxyContract = new web3.eth.Contract(factoryProxy__abi_json_1.default, proxyContractAddress);
+    return proxyContract;
+};
+exports.getFactoryProxyContract = getFactoryProxyContract;
+// Returns web3 transaction object
+const getTransaction = (web3, address, method, params) => {
+    const factoryProxyContract = (0, exports.getFactoryProxyContract)(web3, address);
+    return factoryProxyContract.methods[method](...params);
+};
+exports.getTransaction = getTransaction;

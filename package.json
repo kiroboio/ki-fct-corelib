@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "ethers-eip712": "^0.2.0",
-    "web3": "^1.7.4"
+    "web3": "^1.7.4",
+    "web3-utils": "^1.7.4"
   }
 }

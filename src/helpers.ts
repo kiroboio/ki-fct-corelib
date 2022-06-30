@@ -1,6 +1,8 @@
 import Web3 from "web3";
 import { ethers } from "ethers";
 import Contract from "web3/eth/contract";
+import { AbiItem } from "web3-utils";
+import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags } from "./interfaces";
 import { defaultAbiCoder } from "ethers/lib/utils";
@@ -143,4 +145,15 @@ export const getParamsLength = (encodedParams: string) => {
 
 export const getParamsOffset = () => {
   return `0x0000000000000000000000000000000000000000000000000000000000000060`;
+};
+
+export const getFactoryProxyContract = (web3: Web3, proxyContractAddress: string) => {
+  const proxyContract = new web3.eth.Contract(FactoryProxyContractABI as AbiItem[], proxyContractAddress);
+  return proxyContract;
+};
+
+// Returns web3 transaction object
+export const getTransaction = (web3: Web3, address: string, method: string, params: any[]) => {
+  const factoryProxyContract = getFactoryProxyContract(web3, address);
+  return factoryProxyContract.methods[method](...params);
 };

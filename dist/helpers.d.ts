@@ -37,3 +37,5 @@ export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {
 }[];
 export declare const getParamsLength: (encodedParams: string) => string;
 export declare const getParamsOffset: () => string;
+export declare const getFactoryProxyContract: (web3: Web3, proxyContractAddress: string) => import("web3-eth-contract").Contract;
+export declare const getTransaction: (web3: Web3, address: string, method: string, params: any[]) => any;

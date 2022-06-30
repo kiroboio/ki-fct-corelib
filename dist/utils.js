@@ -14,6 +14,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const web3_1 = __importDefault(require("web3"));
 const ganache_1 = __importDefault(require("ganache"));
+const helpers_1 = require("./helpers");
+var Method;
+(function (Method) {
+    Method["batchCall"] = "batchCall_";
+    Method["batchCallPacked"] = "batchCallPacked_";
+    Method["batchTransfer"] = "batchTransfer_";
+    Method["batchTransferPacked"] = "batchTransferPacked_";
+    Method["batchMultiCall"] = "batchMultiCall_";
+    Method["batchMultiCallPacked"] = "batchMultiCallPacked_";
+    Method["batchMultiSigCall"] = "batchMultiSigCall_";
+    Method["batchMultiSigCallPacked"] = "batchMultiSigCallPacked_";
+})(Method || (Method = {}));
 const web3 = new web3_1.default();
 function verifyMessage(message, signature, address) {
     const messageAddress = web3.eth.accounts.recover(message, signature);
@@ -31,23 +43,24 @@ function decodeSessionId(sessionId) {
         flags: sessionId.substring(60, 64),
     };
 }
-const transactionValidator = (transaction, rpcUrl, activatorPrivateKey, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const activator = activatorPrivateKey;
-    if (!rpcUrl) {
+const transactionValidator = (transactionValidatorInterface) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!transactionValidatorInterface.rpcUrl) {
         throw new Error("rpcUrl is required");
     }
-    if (!activator) {
+    if (!transactionValidatorInterface.activatorPrivateKey) {
         throw new Error("activatorPrivateKey is required");
     }
-    if (!factoryProxyAddress) {
+    if (!transactionValidatorInterface.factoryProxyAddress) {
         throw new Error("factoryProxyAddress is required");
     }
+    const { calls, method, groupId, silentRevert, rpcUrl, activatorPrivateKey: activator, factoryProxyAddress, } = transactionValidatorInterface;
     // Creates a forked ganache instance from indicated chainId's rpcUrl
     const web3 = new web3_1.default(ganache_1.default.provider({
         fork: {
             url: rpcUrl,
         },
     }));
+    const transaction = (0, helpers_1.getTransaction)(web3, factoryProxyAddress, method, [calls, groupId, silentRevert]);
     // Create account from activator private key
     const account = web3.eth.accounts.privateKeyToAccount(activator).address;
     const options = {
@@ -58,7 +71,10 @@ const transactionValidator = (transaction, rpcUrl, activatorPrivateKey, factoryP
     // Activator signs the transaction
     const signed = yield web3.eth.accounts.signTransaction(options, activator);
     // Execute the transaction in forked ganache instance
-    yield web3.eth.sendSignedTransaction(signed.rawTransaction);
-    return;
+    const tx = yield web3.eth.sendSignedTransaction(signed.rawTransaction);
+    return {
+        isValid: true,
+        gasUsed: tx.gasUsed,
+    };
 });
 exports.default = { verifyMessage, decodeSessionId, transactionValidator };
