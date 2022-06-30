@@ -13,9 +13,11 @@ enum Method {
   batchMultiSigCallPacked = "batchMultiSigCallPacked_",
 }
 
+type method = keyof typeof Method;
+
 interface transactionValidatorInterface {
   calls: any[];
-  method: Method;
+  method: method;
   groupId: number;
   silentRevert: boolean;
   rpcUrl: string;
