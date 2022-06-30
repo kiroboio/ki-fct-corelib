@@ -13,7 +13,7 @@ interface transactionValidatorInterface {
     calls: any[];
     method: method;
     groupId: number;
-    silentRevert: boolean;
+    silentRevert?: boolean;
     rpcUrl: string;
     activatorPrivateKey: string;
     factoryProxyAddress: string;
