@@ -3,14 +3,14 @@ import ganache from "ganache";
 import { getTransaction } from "./helpers";
 
 enum Method {
-  batchCall = "batchCall_",
-  batchCallPacked = "batchCallPacked_",
-  batchTransfer = "batchTransfer_",
-  batchTransferPacked = "batchTransferPacked_",
-  batchMultiCall = "batchMultiCall_",
-  batchMultiCallPacked = "batchMultiCallPacked_",
-  batchMultiSigCall = "batchMultiSigCall_",
-  batchMultiSigCallPacked = "batchMultiSigCallPacked_",
+  batchCall,
+  batchCallPacked,
+  batchTransfer,
+  batchTransferPacked,
+  batchMultiCall,
+  batchMultiCallPacked,
+  batchMultiSigCall,
+  batchMultiSigCallPacked,
 }
 
 type method = keyof typeof Method;
@@ -78,7 +78,7 @@ const transactionValidator = async (transactionValidatorInterface: transactionVa
     }) as any
   );
 
-  const transaction = getTransaction(web3, factoryProxyAddress, method, [calls, groupId, silentRevert]);
+  const transaction = getTransaction(web3, factoryProxyAddress, `${method}_`, [calls, groupId, silentRevert]);
 
   // Create account from activator private key
   const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;

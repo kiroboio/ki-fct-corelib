@@ -1,12 +1,12 @@
 declare enum Method {
-    batchCall = "batchCall_",
-    batchCallPacked = "batchCallPacked_",
-    batchTransfer = "batchTransfer_",
-    batchTransferPacked = "batchTransferPacked_",
-    batchMultiCall = "batchMultiCall_",
-    batchMultiCallPacked = "batchMultiCallPacked_",
-    batchMultiSigCall = "batchMultiSigCall_",
-    batchMultiSigCallPacked = "batchMultiSigCallPacked_"
+    batchCall = 0,
+    batchCallPacked = 1,
+    batchTransfer = 2,
+    batchTransferPacked = 3,
+    batchMultiCall = 4,
+    batchMultiCallPacked = 5,
+    batchMultiSigCall = 6,
+    batchMultiSigCallPacked = 7
 }
 declare type method = keyof typeof Method;
 interface transactionValidatorInterface {

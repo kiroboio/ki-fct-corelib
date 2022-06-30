@@ -17,14 +17,14 @@ const ganache_1 = __importDefault(require("ganache"));
 const helpers_1 = require("./helpers");
 var Method;
 (function (Method) {
-    Method["batchCall"] = "batchCall_";
-    Method["batchCallPacked"] = "batchCallPacked_";
-    Method["batchTransfer"] = "batchTransfer_";
-    Method["batchTransferPacked"] = "batchTransferPacked_";
-    Method["batchMultiCall"] = "batchMultiCall_";
-    Method["batchMultiCallPacked"] = "batchMultiCallPacked_";
-    Method["batchMultiSigCall"] = "batchMultiSigCall_";
-    Method["batchMultiSigCallPacked"] = "batchMultiSigCallPacked_";
+    Method[Method["batchCall"] = 0] = "batchCall";
+    Method[Method["batchCallPacked"] = 1] = "batchCallPacked";
+    Method[Method["batchTransfer"] = 2] = "batchTransfer";
+    Method[Method["batchTransferPacked"] = 3] = "batchTransferPacked";
+    Method[Method["batchMultiCall"] = 4] = "batchMultiCall";
+    Method[Method["batchMultiCallPacked"] = 5] = "batchMultiCallPacked";
+    Method[Method["batchMultiSigCall"] = 6] = "batchMultiSigCall";
+    Method[Method["batchMultiSigCallPacked"] = 7] = "batchMultiSigCallPacked";
 })(Method || (Method = {}));
 const web3 = new web3_1.default();
 function verifyMessage(message, signature, address) {
@@ -60,7 +60,7 @@ const transactionValidator = (transactionValidatorInterface) => __awaiter(void 0
             url: rpcUrl,
         },
     }));
-    const transaction = (0, helpers_1.getTransaction)(web3, factoryProxyAddress, method, [calls, groupId, silentRevert]);
+    const transaction = (0, helpers_1.getTransaction)(web3, factoryProxyAddress, `${method}_`, [calls, groupId, silentRevert]);
     // Create account from activator private key
     const account = web3.eth.accounts.privateKeyToAccount(activator).address;
     const options = {
