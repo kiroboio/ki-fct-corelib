@@ -15,6 +15,9 @@ import {
   getEncodedMethodParams,
   getMethodInterface,
   generateTxType,
+  createValidatorTxData,
+  getValidatorMethodInterface,
+  getValidatorData,
 } from "../helpers";
 
 // DefaultFlag - "f100" // payment + eip712
@@ -36,8 +39,12 @@ const getMultiSigCallData = async (
   // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
   // Else multicall is ETH Transfer - add only details
   const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
-    const additionalTxData = item.params
-      ? {
+    const txData = () => {
+      if (item.params) {
+        if (item.validator) {
+          return createValidatorTxData(item);
+        }
+        return {
           method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
           method_params_length: getParamsLength(getEncodedMethodParams(item)),
           ...item.params.reduce(
@@ -47,15 +54,17 @@ const getMultiSigCallData = async (
             }),
             {}
           ),
-        }
-      : {};
+        };
+      }
+      return {};
+    };
 
     return {
       ...acc,
       [`transaction_${index + 1}`]: {
         details: {
           signer: item.signer,
-          call_address: item.to,
+          call_address: item.validator ? item.validator.validatorAddress : item.to,
           call_ens: item.toEnsHash || "",
           eth_value: item.value,
           gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
@@ -64,9 +73,13 @@ const getMultiSigCallData = async (
           stop_on_fail: item.flags?.onFailStop || false,
           stop_on_success: item.flags?.onSuccessStop || false,
           revert_on_success: item.flags?.onSuccessRevert || false,
-          method_interface: item.method ? getMethodInterface(item) : "",
+          method_interface: item.method
+            ? item.validator
+              ? getValidatorMethodInterface(item.validator)
+              : getMethodInterface(item)
+            : "",
         },
-        ...additionalTxData,
+        ...txData(),
       },
     };
   }, {});
@@ -162,17 +175,17 @@ const getMultiSigCallData = async (
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)
       ),
       functionSignature: item.method
-        ? web3.utils.sha3(getMethodInterface(item))
+        ? web3.utils.sha3(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       value: item.value,
       signer: item.signer,
       gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
       flags: item.flags ? manageCallFlags(item.flags) : "0",
-      to: item.to,
+      to: item.validator ? item.validator.validatorAddress : item.to,
       ensHash: item.toEnsHash
         ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      data: getEncodedMethodParams(item),
+      data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
       ...getEncodedMulticallData(index),
     })),
   };

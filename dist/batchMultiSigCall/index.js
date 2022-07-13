@@ -31,11 +31,18 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
     // Else multicall is ETH Transfer - add only details
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
         var _a, _b, _c, _d, _e;
-        const additionalTxData = item.params
-            ? Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {})) : {};
+        const txData = () => {
+            if (item.params) {
+                if (item.validator) {
+                    return (0, helpers_1.createValidatorTxData)(item);
+                }
+                return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+            }
+            return {};
+        };
         return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
                     signer: item.signer,
-                    call_address: item.to,
+                    call_address: item.validator ? item.validator.validatorAddress : item.to,
                     call_ens: item.toEnsHash || "",
                     eth_value: item.value,
                     gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
@@ -44,8 +51,12 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
                     stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
                     stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
                     revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
-                    method_interface: item.method ? (0, helpers_1.getMethodInterface)(item) : "",
-                } }, additionalTxData) });
+                    method_interface: item.method
+                        ? item.validator
+                            ? (0, helpers_1.getValidatorMethodInterface)(item.validator)
+                            : (0, helpers_1.getMethodInterface)(item)
+                        : "",
+                } }, txData()) });
     }, {});
     const typedData = {
         types: Object.assign({ EIP712Domain: [
@@ -107,10 +118,10 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
         encodedLimits,
         inputData: batchCall,
         mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
-                ? web3.utils.sha3((0, helpers_1.getMethodInterface)(item))
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.to, ensHash: item.toEnsHash
+                ? web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator ? item.validator.validatorAddress : item.to, ensHash: item.toEnsHash
                 ? web3.utils.sha3(item.toEnsHash)
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
+                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
     };
 });
 class BatchMultiSigCall {

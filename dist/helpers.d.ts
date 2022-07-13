@@ -1,7 +1,8 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import { TypedData } from "ethers-eip712";
-import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags } from "./interfaces";
+import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Validator } from "./interfaces";
+import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
@@ -39,3 +40,6 @@ export declare const getParamsLength: (encodedParams: string) => string;
 export declare const getParamsOffset: () => string;
 export declare const getFactoryProxyContract: (web3: Web3, proxyContractAddress: string) => import("web3-eth-contract").Contract;
 export declare const getTransaction: (web3: Web3, address: string, method: string, params: any[]) => any;
+export declare const getValidatorMethodInterface: (validator: Validator) => string;
+export declare const getValidatorData: (call: Partial<MultiSigCallInputInterface>, noFunctionSignature: boolean) => string;
+export declare const createValidatorTxData: (call: Partial<MultiSigCallInputInterface>) => any;

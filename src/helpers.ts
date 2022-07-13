@@ -1,11 +1,14 @@
 import Web3 from "web3";
 import { ethers } from "ethers";
+import { defaultAbiCoder } from "ethers/lib/utils";
 import Contract from "web3/eth/contract";
 import { AbiItem } from "web3-utils";
-import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
-import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags } from "./interfaces";
-import { defaultAbiCoder } from "ethers/lib/utils";
+import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Validator } from "./interfaces";
+
+import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
+import ValidatorABI from "./abi/validator.abi.json";
+import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 
 // Everything for sessionId
 const getGroupId = (group: number): string => group.toString(16).padStart(6, "0");
@@ -94,6 +97,9 @@ export const getTypedDataDomain = async (web3: Web3, factoryProxy: Contract, fac
   };
 };
 
+//
+// METHOD HELPERS FOR FCTs
+//
 export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean) => {
   if (!call.method) return "0x";
 
@@ -124,28 +130,40 @@ export const generateTxType = (item: Partial<MethodParamsInterface>) => {
     { name: "method_params_offset", type: "uint256" },
     { name: "method_params_length", type: "uint256" },
   ];
-  return item.params
-    ? [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
-    : [{ name: "details", type: "Transaction_" }];
+
+  if (item.params) {
+    if (item.validator) {
+      // Only for greaterThen validator function
+      // TODO: Make it dynamic for validator contract
+      return [
+        { name: "details", type: "Transaction_" },
+        { name: "validation_data_offset", type: "uint256" },
+        { name: "validation_data_length", type: "uint256" },
+        { name: "amount", type: "uint256" },
+        { name: "token", type: "address" },
+        { name: "method_interface", type: "string" },
+        { name: "method_data_offset", type: "uint256" },
+        { name: "method_data_length", type: "uint256" },
+        ...item.params.map((param) => ({ name: param.name, type: param.type })),
+      ];
+    }
+    return [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))];
+  }
+
+  return [{ name: "details", type: "Transaction_" }];
 };
-
-/*
-Couldn't find a way to calculate params offset.
-
-
-Params Length = (encodedParams string length - 2) / 2
-And convert it into hexadecimal number.
-*/
 
 export const getParamsLength = (encodedParams: string) => {
   const paramsLength = defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
-  // return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
   return `0x${paramsLength}`;
 };
 
 export const getParamsOffset = () => {
   return `0x0000000000000000000000000000000000000000000000000000000000000060`;
 };
+//
+//  END OF METHOD HELPERS FOR FCTs
+//
 
 export const getFactoryProxyContract = (web3: Web3, proxyContractAddress: string) => {
   const proxyContract = new web3.eth.Contract(FactoryProxyContractABI as AbiItem[], proxyContractAddress);
@@ -156,4 +174,81 @@ export const getFactoryProxyContract = (web3: Web3, proxyContractAddress: string
 export const getTransaction = (web3: Web3, address: string, method: string, params: any[]) => {
   const factoryProxyContract = getFactoryProxyContract(web3, address);
   return factoryProxyContract.methods[method](...params);
+};
+
+//
+// VALIDATOR FUNCTION HELPERS
+//
+
+export const getValidatorMethodInterface = (validator: Validator) => {
+  const iface = new ethers.utils.Interface(ValidatorABI);
+  const validatorFunction = iface.getFunction(validator.method);
+
+  if (!validatorFunction) {
+    throw new Error(`Method ${validator.method} not found in Validator ABI`);
+  }
+
+  return `${validator.method}(${validatorFunction.inputs.map((item) => item.type).join(",")})`;
+};
+
+export const getValidatorData = (call: Partial<MultiSigCallInputInterface>, noFunctionSignature: boolean) => {
+  const iface = new ethers.utils.Interface(ValidatorABI);
+  const data = iface.encodeFunctionData(call.validator.method, [
+    call.validator.value,
+    call.to,
+    ethers.utils.keccak256(ethers.utils.toUtf8Bytes(getMethodInterface(call))),
+    getEncodedMethodParams(call),
+  ]);
+
+  return noFunctionSignature ? `0x${data.slice(10)}` : data;
+};
+
+const getValidatorDataOffset = (types: string[], data: string) => {
+  return `0x${defaultAbiCoder
+    .encode(types, [...types.slice(0, -1).map((item) => "0x" + "0".repeat(64)), data])
+    .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
+};
+
+export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>) => {
+  const iface = new ethers.utils.Interface(ValidatorABI);
+  let validator = call.validator;
+
+  if (!iface.getFunction(validator.method)) {
+    throw new Error(`Method ${validator.method} not found in Validator ABI`);
+  }
+
+  // dataMethodOffset = standard
+  // internDataMethodOffset = unique
+
+  const validatorDataStructure = {
+    greaterThen: (mcall: Partial<MultiSigCallInputInterface>, validator: Validator) => {
+      const encodedData = getValidatorData(call, true);
+
+      return {
+        validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
+        validation_data_length: getParamsLength(encodedData),
+        // validation_data_offset: "0x60",
+        // validation_data_length: "0xc0",
+        amount: validator.value,
+        token: mcall.to,
+        method_interface: getMethodInterface(mcall),
+        method_data_offset: getValidatorDataOffset(
+          ["bytes32", "bytes32", "bytes32", "bytes"],
+          getEncodedMethodParams(call)
+        ),
+        method_data_length: getParamsLength(getEncodedMethodParams(call)),
+        // method_data_offset: "0x80",
+        // method_data_length: "0x20",
+        ...mcall.params.reduce(
+          (acc, param) => ({
+            ...acc,
+            [param.name]: param.value,
+          }),
+          {}
+        ),
+      };
+    },
+  };
+
+  return validatorDataStructure[validator.method](call, validator);
 };

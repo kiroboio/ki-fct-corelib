@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
-const factoryProxy__abi_json_1 = __importDefault(require("./abi/factoryProxy_.abi.json"));
-const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
+const ethers_eip712_1 = require("ethers-eip712");
+const factoryProxy__abi_json_1 = __importDefault(require("./abi/factoryProxy_.abi.json"));
+const validator_abi_json_1 = __importDefault(require("./abi/validator.abi.json"));
 // Everything for sessionId
 const getGroupId = (group) => group.toString(16).padStart(6, "0");
 const getNonce = (nonce) => nonce.toString(16).padStart(10, "0");
@@ -99,6 +100,9 @@ const getTypedDataDomain = (web3, factoryProxy, factoryProxyAddress) => __awaite
     };
 });
 exports.getTypedDataDomain = getTypedDataDomain;
+//
+// METHOD HELPERS FOR FCTs
+//
 const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";
@@ -122,21 +126,29 @@ const generateTxType = (item) => {
         { name: "method_params_offset", type: "uint256" },
         { name: "method_params_length", type: "uint256" },
     ];
-    return item.params
-        ? [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))]
-        : [{ name: "details", type: "Transaction_" }];
+    if (item.params) {
+        if (item.validator) {
+            // Only for greaterThen validator function
+            // TODO: Make it dynamic for validator contract
+            return [
+                { name: "details", type: "Transaction_" },
+                { name: "validation_data_offset", type: "uint256" },
+                { name: "validation_data_length", type: "uint256" },
+                { name: "amount", type: "uint256" },
+                { name: "token", type: "address" },
+                { name: "method_interface", type: "string" },
+                { name: "method_data_offset", type: "uint256" },
+                { name: "method_data_length", type: "uint256" },
+                ...item.params.map((param) => ({ name: param.name, type: param.type })),
+            ];
+        }
+        return [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))];
+    }
+    return [{ name: "details", type: "Transaction_" }];
 };
 exports.generateTxType = generateTxType;
-/*
-Couldn't find a way to calculate params offset.
-
-
-Params Length = (encodedParams string length - 2) / 2
-And convert it into hexadecimal number.
-*/
 const getParamsLength = (encodedParams) => {
     const paramsLength = utils_1.defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
-    // return `0x${((encodedParams.length - 2) / 2).toString(16)}`;
     return `0x${paramsLength}`;
 };
 exports.getParamsLength = getParamsLength;
@@ -144,6 +156,9 @@ const getParamsOffset = () => {
     return `0x0000000000000000000000000000000000000000000000000000000000000060`;
 };
 exports.getParamsOffset = getParamsOffset;
+//
+//  END OF METHOD HELPERS FOR FCTs
+//
 const getFactoryProxyContract = (web3, proxyContractAddress) => {
     const proxyContract = new web3.eth.Contract(factoryProxy__abi_json_1.default, proxyContractAddress);
     return proxyContract;
@@ -155,3 +170,51 @@ const getTransaction = (web3, address, method, params) => {
     return factoryProxyContract.methods[method](...params);
 };
 exports.getTransaction = getTransaction;
+//
+// VALIDATOR FUNCTION HELPERS
+//
+const getValidatorMethodInterface = (validator) => {
+    const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
+    const validatorFunction = iface.getFunction(validator.method);
+    if (!validatorFunction) {
+        throw new Error(`Method ${validator.method} not found in Validator ABI`);
+    }
+    return `${validator.method}(${validatorFunction.inputs.map((item) => item.type).join(",")})`;
+};
+exports.getValidatorMethodInterface = getValidatorMethodInterface;
+const getValidatorData = (call, noFunctionSignature) => {
+    const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
+    const data = iface.encodeFunctionData(call.validator.method, [
+        call.validator.value,
+        call.to,
+        ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.toUtf8Bytes((0, exports.getMethodInterface)(call))),
+        (0, exports.getEncodedMethodParams)(call),
+    ]);
+    return noFunctionSignature ? `0x${data.slice(10)}` : data;
+};
+exports.getValidatorData = getValidatorData;
+const getValidatorDataOffset = (types, data) => {
+    return `0x${utils_1.defaultAbiCoder
+        .encode(types, [...types.slice(0, -1).map((item) => "0x" + "0".repeat(64)), data])
+        .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
+};
+const createValidatorTxData = (call) => {
+    const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
+    let validator = call.validator;
+    if (!iface.getFunction(validator.method)) {
+        throw new Error(`Method ${validator.method} not found in Validator ABI`);
+    }
+    // dataMethodOffset = standard
+    // internDataMethodOffset = unique
+    const validatorDataStructure = {
+        greaterThen: (mcall, validator) => {
+            const encodedData = (0, exports.getValidatorData)(call, true);
+            return Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData), 
+                // validation_data_offset: "0x60",
+                // validation_data_length: "0xc0",
+                amount: validator.value, token: mcall.to, method_interface: (0, exports.getMethodInterface)(mcall), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }, mcall.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+        },
+    };
+    return validatorDataStructure[validator.method](call, validator);
+};
+exports.createValidatorTxData = createValidatorTxData;

@@ -30,6 +30,8 @@ export interface MultiCallFlags {
 export interface MethodParamsInterface {
   method: string;
   params: Params[];
+  validator?: Validator;
+  to?: string;
 }
 
 export interface ContractInteractionInterface {
@@ -55,4 +57,10 @@ export interface MultiCallBase {
 
   gasLimit?: number;
   flags?: Partial<MultiCallFlags>;
+}
+
+export interface Validator {
+  method: string;
+  value: string;
+  validatorAddress: string;
 }

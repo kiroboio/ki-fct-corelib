@@ -27,6 +27,7 @@ const Factory = artifacts.require("Factory");
 const FactoryProxy = artifacts.require("FactoryProxy");
 const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
+const Validator = artifacts.require("Validator");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -38,6 +39,7 @@ describe("FactoryProxy contract library", function () {
   let token20;
   let oracle;
   let activatorContract;
+  let validator;
   let accounts = [];
   let factoryOwner1;
   let factoryOwner2;
@@ -180,6 +182,8 @@ describe("FactoryProxy contract library", function () {
     await sw_factory_proxy_ms.setLocalEns("token.kiro.eth", token20.address, {
       from: factoryOwner3,
     });
+
+    validator = await Validator.new({ from: owner });
   });
 
   describe("Inital for factoryProxy", function () {
@@ -1116,10 +1120,6 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         groupId: 7,
         nonce: 1,
-        flags: {
-          payment: false,
-          flow: true,
-        },
         calls: [
           {
             value: 0,
@@ -1139,6 +1139,18 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "20" },
             ],
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[13] }],
+            validator: {
+              method: "greaterThen",
+              value: "10",
+              validatorAddress: validator.address,
+            },
             signer: signer2,
           },
         ],
@@ -1218,7 +1230,7 @@ describe("FactoryProxy contract library", function () {
       expect(decodedLimits.maxGasPrice).to.eq("25000000000");
     });
     it("Should decode transactions", async () => {
-      const txs = batchMultiSigCall.calls[0].mcall.map((item) => ({
+      const txs = batchMultiSigCall.calls[1].mcall.map((item) => ({
         encodedMessage: item.encodedMessage,
         encodedDetails: item.encodedDetails,
         params:
@@ -1506,29 +1518,5 @@ describe("FactoryProxy contract library", function () {
 
       expect(data).to.have.property("receipt");
     });
-  });
-
-  describe("Verify transaction", async () => {
-    // const signer = getSigner(10);
-    // const rpcUrl = "http://127.0.0.1:8545/";
-    // const call = {
-    //   value: 0,
-    //   to: token20.address,
-    //   groupId: 1,
-    //   nonce: 1,
-    //   method: "transfer",
-    //   params: [
-    //     { name: "to", type: "address", value: accounts[11] },
-    //     { name: "token_amount", type: "uint256", value: "5" },
-    //   ],
-    //   signer,
-    //   flags: {
-    //     payment: false,
-    //   },
-    // };
-    // const factoryProxyContract = new web3.eth.Contract(ABI, factoryProxy.address);
-    // const transaction = factoryProxyContract.methods.batchCall_([call], 10, true);
-    // // Check if the transaction is valid to run before it gets executed on live blockchain
-    // await utils.transactionValidator(transaction, rpcUrl, getPrivateKey(activator), );
   });
 });

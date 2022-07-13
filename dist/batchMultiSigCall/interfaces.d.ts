@@ -1,9 +1,10 @@
-import { BatchCallBase, MultiCallBase } from "../interfaces";
+import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
 export interface MultiSigCallInputInterface extends MultiCallBase {
     value: string;
     to: string;
     toEnsHash?: string;
     signer: string;
+    validator?: Validator;
 }
 export interface BatchMultiSigCallInputInterface extends BatchCallBase {
     calls: MultiSigCallInputInterface[];
