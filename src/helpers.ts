@@ -221,13 +221,19 @@ const getValidatorDataOffset = (types: string[], data: string) => {
 
 export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>) => {
   const iface = new ethers.utils.Interface(ValidatorABI);
+  const validatorFunction = iface.getFunction(call.validator.method);
   let validator = call.validator;
 
-  if (!iface.getFunction(validator.method)) {
+  if (!validatorFunction) {
     throw new Error(`Method ${validator.method} not found in Validator ABI`);
   }
 
   const encodedData = getValidatorData(call, true);
+
+  const methodDataOffsetTypes = [
+    ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
+    "bytes",
+  ];
 
   return {
     validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
@@ -235,10 +241,7 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
     ...validator.params,
     contractAddress: call.to,
     functionSignature: getMethodInterface(call),
-    method_data_offset: getValidatorDataOffset(
-      ["bytes32", "bytes32", "bytes32", "bytes"],
-      getEncodedMethodParams(call)
-    ),
+    method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, getEncodedMethodParams(call)),
     method_data_length: getParamsLength(getEncodedMethodParams(call)),
     ...call.params.reduce(
       (acc, param) => ({

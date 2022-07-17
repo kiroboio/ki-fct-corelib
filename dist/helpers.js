@@ -209,11 +209,16 @@ const getValidatorDataOffset = (types, data) => {
 };
 const createValidatorTxData = (call) => {
     const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
+    const validatorFunction = iface.getFunction(call.validator.method);
     let validator = call.validator;
-    if (!iface.getFunction(validator.method)) {
+    if (!validatorFunction) {
         throw new Error(`Method ${validator.method} not found in Validator ABI`);
     }
     const encodedData = (0, exports.getValidatorData)(call, true);
-    return Object.assign(Object.assign(Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData) }, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+    const methodDataOffsetTypes = [
+        ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
+        "bytes",
+    ];
+    return Object.assign(Object.assign(Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData) }, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
 };
 exports.createValidatorTxData = createValidatorTxData;

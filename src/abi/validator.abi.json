@@ -173,7 +173,7 @@
         "type": "bytes"
       }
     ],
-    "name": "greaterThen",
+    "name": "greaterThan",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -241,7 +241,7 @@
         "type": "bytes"
       }
     ],
-    "name": "lessThen",
+    "name": "lessThan",
     "outputs": [
       {
         "internalType": "bytes32",

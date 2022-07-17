@@ -18,7 +18,7 @@ contract Validator {
         @param functionSignature (bytes32) - sha3 of the function name and param types 
         @param data (bytes) - funcion_signature + encoded_params
      */
-    function greaterThen(
+    function greaterThan(
         uint256 valueToCompare,
         address contractAddress,
         bytes32 functionSignature,
@@ -69,7 +69,7 @@ contract Validator {
         @param functionSignature (bytes32) - sha3 of the function name and param types 
         @param data (bytes) - funcion_signature + encoded_params
      */
-    function lessThen(
+    function lessThan(
         uint256 valueToCompare,
         address contractAddress,
         bytes32 functionSignature,

@@ -1150,7 +1150,7 @@ describe("FactoryProxy contract library", function () {
             method: "balanceOf",
             params: [{ name: "account", type: "address", value: accounts[11] }],
             validator: {
-              method: "greaterThen",
+              method: "greaterThan",
               params: {
                 valueToCompare: "10054",
               },
@@ -1178,7 +1178,7 @@ describe("FactoryProxy contract library", function () {
             method: "balanceOf",
             params: [{ name: "account", type: "address", value: accounts[11] }],
             validator: {
-              method: "lessThen",
+              method: "lessThan",
               params: {
                 valueToCompare: "10056",
               },
@@ -1208,8 +1208,23 @@ describe("FactoryProxy contract library", function () {
             validator: {
               method: "betweenEqual",
               params: {
-                value1ToCompare: "10050",
+                value1ToCompare: "10055",
                 value2ToCompare: "10060",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "betweenNotEqual",
+              params: {
+                value1ToCompare: "10050",
+                value2ToCompare: "10080",
               },
               validatorAddress: validator.address,
             },
