@@ -28,6 +28,7 @@ const FactoryProxy = artifacts.require("FactoryProxy");
 const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
 const Validator = artifacts.require("Validator");
+const ERC721 = artifacts.require("ERC721Token");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -40,6 +41,7 @@ describe("FactoryProxy contract library", function () {
   let oracle;
   let activatorContract;
   let validator;
+  let nft;
   let accounts = [];
   let factoryOwner1;
   let factoryOwner2;
@@ -184,6 +186,7 @@ describe("FactoryProxy contract library", function () {
     });
 
     validator = await Validator.new({ from: owner });
+    nft = await ERC721.new("NFT", "NFT contract", { from: owner });
   });
 
   describe("Inital for factoryProxy", function () {
@@ -1117,8 +1120,8 @@ describe("FactoryProxy contract library", function () {
       const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
-      const balanceOfSigner2 = await token20.balanceOf(signer2);
-      console.log(balanceOfSigner2.toString());
+      // Minting NFT for signer2 to check ownerOf with Validator function
+      await nft.mint("dd", { from: signer2 });
 
       const tx = {
         groupId: 7,
@@ -1225,6 +1228,20 @@ describe("FactoryProxy contract library", function () {
               params: {
                 value1ToCompare: "10050",
                 value2ToCompare: "10080",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: nft.address,
+            method: "ownerOf",
+            params: [{ name: "tokenId", type: "uint256", value: "1" }],
+            validator: {
+              method: "addressesCompare",
+              params: {
+                addressToCompare: signer2,
               },
               validatorAddress: validator.address,
             },
