@@ -32,10 +32,7 @@ export declare const getTypedDataDomain: (web3: Web3, factoryProxy: Contract, fa
     salt: any;
 }>;
 export declare const getEncodedMethodParams: (call: Partial<MethodParamsInterface>, withFunction?: boolean) => string;
-export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {
-    name: string;
-    type: string;
-}[];
+export declare const generateTxType: (item: Partial<MethodParamsInterface>) => any[];
 export declare const getParamsLength: (encodedParams: string) => string;
 export declare const getParamsOffset: () => string;
 export declare const getFactoryProxyContract: (web3: Web3, proxyContractAddress: string) => import("web3-eth-contract").Contract;
@@ -43,4 +40,11 @@ export declare const getTransaction: (web3: Web3, address: string, method: strin
 export declare const getValidatorFunctionData: (validator: Validator, params: any[]) => any[];
 export declare const getValidatorMethodInterface: (validator: Validator) => string;
 export declare const getValidatorData: (call: Partial<MultiSigCallInputInterface>, noFunctionSignature: boolean) => string;
-export declare const createValidatorTxData: (call: Partial<MultiSigCallInputInterface>) => any;
+export declare const createValidatorTxData: (call: Partial<MultiSigCallInputInterface>) => {
+    contractAddress: string;
+    functionSignature: string;
+    method_data_offset: string;
+    method_data_length: string;
+    validation_data_offset: string;
+    validation_data_length: string;
+};

@@ -133,19 +133,11 @@ export const generateTxType = (item: Partial<MethodParamsInterface>) => {
 
   if (item.params) {
     if (item.validator) {
-      // Only for greaterThen validator function
-      // TODO: Make it dynamic for validator contract
-      // ...getValidatorFunctionData(item.validator, item.params),
       return [
         { name: "details", type: "Transaction_" },
         { name: "validation_data_offset", type: "uint256" },
         { name: "validation_data_length", type: "uint256" },
-        { name: "amount", type: "uint256" },
-        { name: "token", type: "address" },
-        { name: "method_interface", type: "string" },
-        { name: "method_data_offset", type: "uint256" },
-        { name: "method_data_length", type: "uint256" },
-        ...item.params.map((param) => ({ name: param.name, type: param.type })),
+        ...getValidatorFunctionData(item.validator, item.params),
       ];
     }
     return [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))];
@@ -194,7 +186,7 @@ export const getValidatorFunctionData = (validator: Validator, params: any[]) =>
         ...params.map((param) => ({ name: param.name, type: param.type })),
       ];
     }
-    return [...acc, { name: item.name, type: item.type }];
+    return [...acc, { name: item.name, type: item.type === "bytes32" ? "string" : item.type }];
   }, []);
 };
 
@@ -212,7 +204,7 @@ export const getValidatorMethodInterface = (validator: Validator) => {
 export const getValidatorData = (call: Partial<MultiSigCallInputInterface>, noFunctionSignature: boolean) => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const data = iface.encodeFunctionData(call.validator.method, [
-    call.validator.value,
+    ...Object.values(call.validator.params),
     call.to,
     ethers.utils.keccak256(ethers.utils.toUtf8Bytes(getMethodInterface(call))),
     getEncodedMethodParams(call),
@@ -235,34 +227,25 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
     throw new Error(`Method ${validator.method} not found in Validator ABI`);
   }
 
-  // dataMethodOffset = standard
-  // internDataMethodOffset = unique
+  const encodedData = getValidatorData(call, true);
 
-  const validatorDataStructure = {
-    greaterThen: (mcall: Partial<MultiSigCallInputInterface>, validator: Validator) => {
-      const encodedData = getValidatorData(call, true);
-
-      return {
-        validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
-        validation_data_length: getParamsLength(encodedData),
-        amount: validator.value,
-        token: mcall.to,
-        method_interface: getMethodInterface(mcall),
-        method_data_offset: getValidatorDataOffset(
-          ["bytes32", "bytes32", "bytes32", "bytes"],
-          getEncodedMethodParams(call)
-        ),
-        method_data_length: getParamsLength(getEncodedMethodParams(call)),
-        ...mcall.params.reduce(
-          (acc, param) => ({
-            ...acc,
-            [param.name]: param.value,
-          }),
-          {}
-        ),
-      };
-    },
+  return {
+    validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
+    validation_data_length: getParamsLength(encodedData),
+    ...validator.params,
+    contractAddress: call.to,
+    functionSignature: getMethodInterface(call),
+    method_data_offset: getValidatorDataOffset(
+      ["bytes32", "bytes32", "bytes32", "bytes"],
+      getEncodedMethodParams(call)
+    ),
+    method_data_length: getParamsLength(getEncodedMethodParams(call)),
+    ...call.params.reduce(
+      (acc, param) => ({
+        ...acc,
+        [param.name]: param.value,
+      }),
+      {}
+    ),
   };
-
-  return validatorDataStructure[validator.method](call, validator);
 };

@@ -128,19 +128,11 @@ const generateTxType = (item) => {
     ];
     if (item.params) {
         if (item.validator) {
-            // Only for greaterThen validator function
-            // TODO: Make it dynamic for validator contract
-            // ...getValidatorFunctionData(item.validator, item.params),
             return [
                 { name: "details", type: "Transaction_" },
                 { name: "validation_data_offset", type: "uint256" },
                 { name: "validation_data_length", type: "uint256" },
-                { name: "amount", type: "uint256" },
-                { name: "token", type: "address" },
-                { name: "method_interface", type: "string" },
-                { name: "method_data_offset", type: "uint256" },
-                { name: "method_data_length", type: "uint256" },
-                ...item.params.map((param) => ({ name: param.name, type: param.type })),
+                ...(0, exports.getValidatorFunctionData)(item.validator, item.params),
             ];
         }
         return [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))];
@@ -186,7 +178,7 @@ const getValidatorFunctionData = (validator, params) => {
                 ...params.map((param) => ({ name: param.name, type: param.type })),
             ];
         }
-        return [...acc, { name: item.name, type: item.type }];
+        return [...acc, { name: item.name, type: item.type === "bytes32" ? "string" : item.type }];
     }, []);
 };
 exports.getValidatorFunctionData = getValidatorFunctionData;
@@ -202,7 +194,7 @@ exports.getValidatorMethodInterface = getValidatorMethodInterface;
 const getValidatorData = (call, noFunctionSignature) => {
     const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
     const data = iface.encodeFunctionData(call.validator.method, [
-        call.validator.value,
+        ...Object.values(call.validator.params),
         call.to,
         ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.toUtf8Bytes((0, exports.getMethodInterface)(call))),
         (0, exports.getEncodedMethodParams)(call),
@@ -221,14 +213,7 @@ const createValidatorTxData = (call) => {
     if (!iface.getFunction(validator.method)) {
         throw new Error(`Method ${validator.method} not found in Validator ABI`);
     }
-    // dataMethodOffset = standard
-    // internDataMethodOffset = unique
-    const validatorDataStructure = {
-        greaterThen: (mcall, validator) => {
-            const encodedData = (0, exports.getValidatorData)(call, true);
-            return Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData), amount: validator.value, token: mcall.to, method_interface: (0, exports.getMethodInterface)(mcall), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }, mcall.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
-        },
-    };
-    return validatorDataStructure[validator.method](call, validator);
+    const encodedData = (0, exports.getValidatorData)(call, true);
+    return Object.assign(Object.assign(Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData) }, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
 };
 exports.createValidatorTxData = createValidatorTxData;

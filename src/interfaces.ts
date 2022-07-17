@@ -61,6 +61,8 @@ export interface MultiCallBase {
 
 export interface Validator {
   method: string;
-  value: string;
+  params: {
+    [key: string]: string;
+  };
   validatorAddress: string;
 }

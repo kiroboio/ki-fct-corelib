@@ -1117,6 +1117,9 @@ describe("FactoryProxy contract library", function () {
       const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
+      const balanceOfSigner2 = await token20.balanceOf(signer2);
+      console.log(balanceOfSigner2.toString());
+
       const tx = {
         groupId: 7,
         nonce: 1,
@@ -1145,10 +1148,69 @@ describe("FactoryProxy contract library", function () {
             value: 0,
             to: token20.address,
             method: "balanceOf",
-            params: [{ name: "account", type: "address", value: accounts[13] }],
+            params: [{ name: "account", type: "address", value: accounts[11] }],
             validator: {
               method: "greaterThen",
-              value: "10",
+              params: {
+                valueToCompare: "10054",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "greaterEqual",
+              params: {
+                valueToCompare: "10055",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "lessThen",
+              params: {
+                valueToCompare: "10056",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "lessEqual",
+              params: {
+                valueToCompare: "10055",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "betweenEqual",
+              params: {
+                value1ToCompare: "10050",
+                value2ToCompare: "10060",
+              },
               validatorAddress: validator.address,
             },
             signer: signer2,

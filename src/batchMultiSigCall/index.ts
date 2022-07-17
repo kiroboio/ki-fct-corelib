@@ -142,8 +142,6 @@ const getMultiSigCallData = async (
     },
   };
 
-  console.log(JSON.stringify(typedData.message, null, 2));
-
   const encodedMessage = ethers.utils.hexlify(
     TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
   );

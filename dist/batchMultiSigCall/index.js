@@ -100,7 +100,6 @@ const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall)
                 gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
             } }, typedDataMessage),
     };
-    console.log(JSON.stringify(typedData.message, null, 2));
     const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
     const encodedLimits = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
     const getEncodedMulticallData = (index) => {
