@@ -135,6 +135,7 @@ export const generateTxType = (item: Partial<MethodParamsInterface>) => {
     if (item.validator) {
       // Only for greaterThen validator function
       // TODO: Make it dynamic for validator contract
+      // ...getValidatorFunctionData(item.validator, item.params),
       return [
         { name: "details", type: "Transaction_" },
         { name: "validation_data_offset", type: "uint256" },
@@ -179,6 +180,23 @@ export const getTransaction = (web3: Web3, address: string, method: string, para
 //
 // VALIDATOR FUNCTION HELPERS
 //
+
+export const getValidatorFunctionData = (validator: Validator, params: any[]) => {
+  const iface = new ethers.utils.Interface(ValidatorABI);
+  const validatorFunction = iface.getFunction(validator.method);
+
+  return validatorFunction.inputs.reduce((acc, item) => {
+    if (item.type === "bytes" && item.name === "data") {
+      return [
+        ...acc,
+        { name: "method_data_offset", type: "uint256" },
+        { name: "method_data_length", type: "uint256" },
+        ...params.map((param) => ({ name: param.name, type: param.type })),
+      ];
+    }
+    return [...acc, { name: item.name, type: item.type }];
+  }, []);
+};
 
 export const getValidatorMethodInterface = (validator: Validator) => {
   const iface = new ethers.utils.Interface(ValidatorABI);
@@ -227,8 +245,6 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
       return {
         validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
         validation_data_length: getParamsLength(encodedData),
-        // validation_data_offset: "0x60",
-        // validation_data_length: "0xc0",
         amount: validator.value,
         token: mcall.to,
         method_interface: getMethodInterface(mcall),
@@ -237,8 +253,6 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
           getEncodedMethodParams(call)
         ),
         method_data_length: getParamsLength(getEncodedMethodParams(call)),
-        // method_data_offset: "0x80",
-        // method_data_length: "0x20",
         ...mcall.params.reduce(
           (acc, param) => ({
             ...acc,

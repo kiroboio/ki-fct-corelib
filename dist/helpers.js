@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
@@ -130,6 +130,7 @@ const generateTxType = (item) => {
         if (item.validator) {
             // Only for greaterThen validator function
             // TODO: Make it dynamic for validator contract
+            // ...getValidatorFunctionData(item.validator, item.params),
             return [
                 { name: "details", type: "Transaction_" },
                 { name: "validation_data_offset", type: "uint256" },
@@ -173,6 +174,22 @@ exports.getTransaction = getTransaction;
 //
 // VALIDATOR FUNCTION HELPERS
 //
+const getValidatorFunctionData = (validator, params) => {
+    const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
+    const validatorFunction = iface.getFunction(validator.method);
+    return validatorFunction.inputs.reduce((acc, item) => {
+        if (item.type === "bytes" && item.name === "data") {
+            return [
+                ...acc,
+                { name: "method_data_offset", type: "uint256" },
+                { name: "method_data_length", type: "uint256" },
+                ...params.map((param) => ({ name: param.name, type: param.type })),
+            ];
+        }
+        return [...acc, { name: item.name, type: item.type }];
+    }, []);
+};
+exports.getValidatorFunctionData = getValidatorFunctionData;
 const getValidatorMethodInterface = (validator) => {
     const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
     const validatorFunction = iface.getFunction(validator.method);
@@ -209,10 +226,7 @@ const createValidatorTxData = (call) => {
     const validatorDataStructure = {
         greaterThen: (mcall, validator) => {
             const encodedData = (0, exports.getValidatorData)(call, true);
-            return Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData), 
-                // validation_data_offset: "0x60",
-                // validation_data_length: "0xc0",
-                amount: validator.value, token: mcall.to, method_interface: (0, exports.getMethodInterface)(mcall), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }, mcall.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+            return Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData), amount: validator.value, token: mcall.to, method_interface: (0, exports.getMethodInterface)(mcall), method_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes32", "bytes"], (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }, mcall.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
         },
     };
     return validatorDataStructure[validator.method](call, validator);
