@@ -1,5 +1,5 @@
 {
-  "name": "ki-eth-corelib",
+  "name": "ki-future-transactions",
   "version": "1.0.0",
   "description": "Kirobo.io Future Transactions",
   "main": "dist/index.js",
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiroboio/ki-eth-corelib.git"
+    "url": "git+https://github.com/kiroboio/ki-future-transactions.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kiroboio/ki-eth-corelib/issues"
+    "url": "https://github.com/kiroboio/ki-future-transactions/issues"
   },
-  "homepage": "https://github.com/kiroboio/ki-eth-corelib#readme",
+  "homepage": "https://github.com/kiroboio/ki-future-transactions#readme",
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
