@@ -18,115 +18,26 @@ const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
+const variableBase = "0x00FC00000000000000000000000000000000000000";
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
     payment: true,
     flow: false,
 };
-const getMultiSigCallData = (web3, FactoryProxy, factoryProxyAddress, batchCall) => __awaiter(void 0, void 0, void 0, function* () {
-    const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
-    // Creates messages from multiCalls array for EIP712 sign
-    // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
-    // Else multicall is ETH Transfer - add only details
-    const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
-        var _a, _b, _c, _d, _e;
-        const txData = () => {
-            if (item.params) {
-                if (item.validator) {
-                    return (0, helpers_1.createValidatorTxData)(item);
-                }
-                return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
-            }
-            return {};
-        };
-        return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
-                    signer: item.signer,
-                    call_address: item.validator ? item.validator.validatorAddress : item.to,
-                    call_ens: item.toEnsHash || "",
-                    eth_value: item.value,
-                    gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-                    view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
-                    continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
-                    stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
-                    stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
-                    revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
-                    method_interface: item.method
-                        ? item.validator
-                            ? (0, helpers_1.getValidatorMethodInterface)(item.validator)
-                            : (0, helpers_1.getMethodInterface)(item)
-                        : "",
-                } }, txData()) });
-    }, {});
-    const typedData = {
-        types: Object.assign({ EIP712Domain: [
-                { name: "name", type: "string" },
-                { name: "version", type: "string" },
-                { name: "chainId", type: "uint256" },
-                { name: "verifyingContract", type: "address" },
-                { name: "salt", type: "bytes32" },
-            ], BatchMultiSigCall_: [
-                { name: "limits", type: "Limits_" },
-                ...batchCall.calls.map((_, index) => ({
-                    name: `transaction_${index + 1}`,
-                    type: `Transaction_${index + 1}`,
-                })),
-            ], Limits_: [
-                { name: "nonce", type: "uint64" },
-                { name: "refund", type: "bool" },
-                { name: "valid_from", type: "uint40" },
-                { name: "expires_at", type: "uint40" },
-                { name: "gas_price_limit", type: "uint64" },
-            ], Transaction_: [
-                { name: "signer", type: "address" },
-                { name: "call_address", type: "address" },
-                { name: "call_ens", type: "string" },
-                { name: "eth_value", type: "uint256" },
-                { name: "gas_limit", type: "uint32" },
-                { name: "view_only", type: "bool" },
-                { name: "continue_on_fail", type: "bool" },
-                { name: "stop_on_fail", type: "bool" },
-                { name: "stop_on_success", type: "bool" },
-                { name: "revert_on_success", type: "bool" },
-                { name: "method_interface", type: "string" },
-            ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})),
-        primaryType: "BatchMultiSigCall_",
-        domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress),
-        message: Object.assign({ limits: {
-                nonce: "0x" + callDetails.group + callDetails.nonce,
-                refund: callDetails.pureFlags.payment,
-                valid_from: Number.parseInt("0x" + callDetails.after),
-                expires_at: Number.parseInt("0x" + callDetails.before),
-                gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
-            } }, typedDataMessage),
-    };
-    const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
-    const encodedLimits = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
-    const getEncodedMulticallData = (index) => {
-        const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`]));
-        const encodedDetails = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_`, typedData.message[`transaction_${index + 1}`].details));
-        return {
-            encodedMessage,
-            encodedDetails,
-        };
-    };
-    return {
-        typedData,
-        typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
-        sessionId: callDetails.sessionId,
-        encodedMessage,
-        encodedLimits,
-        inputData: batchCall,
-        mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
-                ? web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator ? item.validator.validatorAddress : item.to, ensHash: item.toEnsHash
-                ? web3.utils.sha3(item.toEnsHash)
-                : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
-    };
-});
+const handleVariable = (batchIndex, variableId, variables) => {
+    if (`${batchIndex}_${variableId}` in variables) {
+        const nextVariableId = Object.values(variables).length + 1;
+        const variableValue = variableBase.padEnd(variableId.length, String(nextVariableId));
+        variables[`${batchIndex}_${variableId}`] = variableValue;
+        return variableValue;
+    }
+    return variables[`${batchIndex}_${variableId}`];
+};
 class BatchMultiSigCall {
     constructor(web3, contractAddress) {
         this.calls = [];
+        this.variables = {};
         this.web3 = web3;
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
@@ -190,21 +101,21 @@ class BatchMultiSigCall {
     }
     addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+            const data = yield this.getMultiSigCallData(tx);
             this.calls = [...this.calls, data];
             return this.calls;
         });
     }
     addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield Promise.all(txs.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
+            const data = yield Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
             this.calls = [...this.calls, ...data];
             return this.calls;
         });
     }
     editBatchCall(index, tx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx);
+            const data = yield this.getMultiSigCallData(tx);
             this.calls[index] = data;
             return this.calls;
         });
@@ -217,7 +128,7 @@ class BatchMultiSigCall {
             // Remove from calls
             this.calls.splice(index, 1);
             // Adjust nonce number for the rest of the calls
-            const data = yield Promise.all(restOfCalls.map((tx) => getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, tx)));
+            const data = yield Promise.all(restOfCalls.map((tx) => this.getMultiSigCallData(tx)));
             this.calls.splice(-Math.abs(data.length), data.length, ...data);
             return this.calls;
         });
@@ -229,7 +140,7 @@ class BatchMultiSigCall {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
             batch.calls[indexOfMulticall] = tx;
-            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+            const data = yield this.getMultiSigCallData(batch);
             this.calls[indexOfBatch] = data;
             return this.calls;
         });
@@ -241,9 +152,115 @@ class BatchMultiSigCall {
                 throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
             }
             batch.calls.splice(indexOfMulticall, 1);
-            const data = yield getMultiSigCallData(this.web3, this.FactoryProxy, this.factoryProxyAddress, batch);
+            const data = yield this.getMultiSigCallData(batch);
             this.calls[indexOfBatch] = data;
             return this.calls;
+        });
+    }
+    getMultiSigCallData(batchCall) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
+            // TODO: Implement variable functionality
+            // Creates messages from multiCalls array for EIP712 sign
+            // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
+            // Else multicall is ETH Transfer - add only details
+            const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
+                var _a, _b, _c, _d, _e;
+                const txData = () => {
+                    if (item.params) {
+                        if (item.validator) {
+                            return (0, helpers_1.createValidatorTxData)(item);
+                        }
+                        return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => {
+                            var _a;
+                            return (Object.assign(Object.assign({}, acc), { [param.name]: (_a = param.value) !== null && _a !== void 0 ? _a : handleVariable(this.calls.length, param.variableId, this.variables) }));
+                        }, {}));
+                    }
+                    return {};
+                };
+                return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
+                            signer: item.signer,
+                            call_address: item.validator ? item.validator.validatorAddress : item.to,
+                            call_ens: item.toEnsHash || "",
+                            eth_value: item.value,
+                            gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
+                            view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
+                            continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
+                            stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
+                            stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
+                            revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
+                            method_interface: item.method
+                                ? item.validator
+                                    ? (0, helpers_1.getValidatorMethodInterface)(item.validator)
+                                    : (0, helpers_1.getMethodInterface)(item)
+                                : "",
+                        } }, txData()) });
+            }, {});
+            const typedData = {
+                types: Object.assign({ EIP712Domain: [
+                        { name: "name", type: "string" },
+                        { name: "version", type: "string" },
+                        { name: "chainId", type: "uint256" },
+                        { name: "verifyingContract", type: "address" },
+                        { name: "salt", type: "bytes32" },
+                    ], BatchMultiSigCall_: [
+                        { name: "limits", type: "Limits_" },
+                        ...batchCall.calls.map((_, index) => ({
+                            name: `transaction_${index + 1}`,
+                            type: `Transaction_${index + 1}`,
+                        })),
+                    ], Limits_: [
+                        { name: "nonce", type: "uint64" },
+                        { name: "refund", type: "bool" },
+                        { name: "valid_from", type: "uint40" },
+                        { name: "expires_at", type: "uint40" },
+                        { name: "gas_price_limit", type: "uint64" },
+                    ], Transaction_: [
+                        { name: "signer", type: "address" },
+                        { name: "call_address", type: "address" },
+                        { name: "call_ens", type: "string" },
+                        { name: "eth_value", type: "uint256" },
+                        { name: "gas_limit", type: "uint32" },
+                        { name: "view_only", type: "bool" },
+                        { name: "continue_on_fail", type: "bool" },
+                        { name: "stop_on_fail", type: "bool" },
+                        { name: "stop_on_success", type: "bool" },
+                        { name: "revert_on_success", type: "bool" },
+                        { name: "method_interface", type: "string" },
+                    ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})),
+                primaryType: "BatchMultiSigCall_",
+                domain: yield (0, helpers_1.getTypedDataDomain)(this.web3, this.FactoryProxy, this.factoryProxyAddress),
+                message: Object.assign({ limits: {
+                        nonce: "0x" + callDetails.group + callDetails.nonce,
+                        refund: callDetails.pureFlags.payment,
+                        valid_from: Number.parseInt("0x" + callDetails.after),
+                        expires_at: Number.parseInt("0x" + callDetails.before),
+                        gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
+                    } }, typedDataMessage),
+            };
+            const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message));
+            const encodedLimits = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits));
+            const getEncodedMulticallData = (index) => {
+                const encodedMessage = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`]));
+                const encodedDetails = ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, `Transaction_`, typedData.message[`transaction_${index + 1}`].details));
+                return {
+                    encodedMessage,
+                    encodedDetails,
+                };
+            };
+            return {
+                typedData,
+                typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
+                sessionId: callDetails.sessionId,
+                encodedMessage,
+                encodedLimits,
+                inputData: batchCall,
+                mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
+                        ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: item.signer, gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator ? item.validator.validatorAddress : item.to, ensHash: item.toEnsHash
+                        ? this.web3.utils.sha3(item.toEnsHash)
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
+            };
         });
     }
 }

@@ -1613,4 +1613,48 @@ describe("FactoryProxy contract library", function () {
       expect(data).to.have.property("receipt");
     });
   });
+
+  describe("BatchMultiSigCall with variables", async () => {
+    let batchMultiSigCall;
+    it("Should add batchMulticall", async () => {
+      batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
+
+      const signer1 = getSigner(10);
+      const signer2 = getSigner(11);
+
+      // Minting NFT for signer2 to check ownerOf with Validator function
+      await nft.mint("dd", { from: signer2 });
+
+      const tx = {
+        groupId: 7,
+        nonce: 1,
+        calls: [
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[11], variableId: "accountAddress" },
+              { name: "token_amount", type: "uint256", value: "15" },
+            ],
+            signer: signer1,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12], variableId: "accountAddress" },
+              { name: "token_amount", type: "uint256", value: "20" },
+            ],
+            signer: signer2,
+          },
+        ],
+      };
+
+      await batchMultiSigCall.addBatchCall(tx);
+
+      expect(batchMultiSigCall.calls.length).to.eq(1);
+    });
+  });
 });

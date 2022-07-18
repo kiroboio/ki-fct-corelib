@@ -4,6 +4,7 @@ import { DecodeTx } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 export declare class BatchMultiSigCall {
     calls: Array<BatchMultiSigCallInterface>;
+    variables: object;
     web3: Web3;
     FactoryProxy: Contract;
     factoryProxyAddress: string;
@@ -38,4 +39,5 @@ export declare class BatchMultiSigCall {
     removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
     removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface[]>;
+    private getMultiSigCallData;
 }

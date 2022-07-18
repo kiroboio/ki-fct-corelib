@@ -5,6 +5,7 @@ export interface MultiSigCallInputInterface extends MultiCallBase {
   to: string;
   toEnsHash?: string;
   signer: string;
+  signerVariableId?: string;
   validator?: Validator;
 }
 
