@@ -21,6 +21,7 @@ import {
 } from "../helpers";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
+const FDBase = "0xFD00000000000000000000000000000000000000";
 
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
@@ -48,9 +49,16 @@ export class BatchMultiSigCall {
     return this.variables;
   }
 
-  removeVariable(variableId: string) {
-    // TODO: Adjust all variables to account for removed variable
+  async removeVariable(variableId: string) {
+    // Remove from variables
     this.variables = this.variables.filter((item) => item[0] !== variableId);
+
+    // Adjust all calls to account for removed variable
+    const allCalls = this.calls.map((call) => call.inputData);
+    const data = await Promise.all(allCalls.map((tx) => this.getMultiSigCallData(tx)));
+
+    this.calls = data;
+
     return this.variables;
   }
 
@@ -143,8 +151,6 @@ export class BatchMultiSigCall {
   private async getMultiSigCallData(batchCall: BatchMultiSigCallInputInterface) {
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
-    // TODO: Implement variable functionality
-
     // Creates messages from multiCalls array for EIP712 sign
     // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
     // Else multicall is ETH Transfer - add only details
@@ -155,7 +161,7 @@ export class BatchMultiSigCall {
             return createValidatorTxData(item);
           }
           item.params.forEach((param) => {
-            param.value = param.value || this.getVariableFCValue(param.variable);
+            param.value = param.variable ? this.getVariableFCValue(param.variable) : param.value;
           });
           return {
             method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32

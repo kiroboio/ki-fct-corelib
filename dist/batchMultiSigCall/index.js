@@ -19,6 +19,7 @@ const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
 const variableBase = "0xFC00000000000000000000000000000000000000";
+const FDBase = "0xFD00000000000000000000000000000000000000";
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -39,9 +40,15 @@ class BatchMultiSigCall {
         return this.variables;
     }
     removeVariable(variableId) {
-        // TODO: Adjust all variables to account for removed variable
-        this.variables = this.variables.filter((item) => item[0] !== variableId);
-        return this.variables;
+        return __awaiter(this, void 0, void 0, function* () {
+            // Remove from variables
+            this.variables = this.variables.filter((item) => item[0] !== variableId);
+            // Adjust all calls to account for removed variable
+            const allCalls = this.calls.map((call) => call.inputData);
+            const data = yield Promise.all(allCalls.map((tx) => this.getMultiSigCallData(tx)));
+            this.calls = data;
+            return this.variables;
+        });
     }
     getVariableIndex(variableId) {
         const index = this.variables.findIndex((item) => item[0] === variableId);
@@ -121,7 +128,6 @@ class BatchMultiSigCall {
     getMultiSigCallData(batchCall) {
         return __awaiter(this, void 0, void 0, function* () {
             const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
-            // TODO: Implement variable functionality
             // Creates messages from multiCalls array for EIP712 sign
             // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
             // Else multicall is ETH Transfer - add only details
@@ -133,7 +139,7 @@ class BatchMultiSigCall {
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
                         item.params.forEach((param) => {
-                            param.value = param.value || this.getVariableFCValue(param.variable);
+                            param.value = param.variable ? this.getVariableFCValue(param.variable) : param.value;
                         });
                         return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
                             return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
