@@ -20,10 +20,80 @@ export declare class BatchMultiSigCallPacked {
             data: any;
         }[];
     };
-    addBatchCall(tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
-    addMultipleBatchCalls(txs: BatchMultiSigCallPackedInputInterface[]): Promise<BatchMultiSigCallPackedInterface[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
+    addBatchCall(tx: BatchMultiSigCallPackedInputInterface): Promise<{
+        sessionId: string;
+        encodedLimits: string;
+        encodedMessage: string;
+        inputData: BatchMultiSigCallPackedInputInterface;
+        mcall: {
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            data: string;
+            encodedMessage: string;
+        }[];
+    }>;
+    addMultipleBatchCalls(txs: BatchMultiSigCallPackedInputInterface[]): Promise<{
+        sessionId: string;
+        encodedLimits: string;
+        encodedMessage: string;
+        inputData: BatchMultiSigCallPackedInputInterface;
+        mcall: {
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            data: string;
+            encodedMessage: string;
+        }[];
+    }[]>;
+    editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface): Promise<{
+        sessionId: string;
+        encodedLimits: string;
+        encodedMessage: string;
+        inputData: BatchMultiSigCallPackedInputInterface;
+        mcall: {
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            data: string;
+            encodedMessage: string;
+        }[];
+    }>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallPackedInterface[]>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallPackedInputInterface): Promise<BatchMultiSigCallPackedInterface[]>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallPackedInterface[]>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallPackedInputInterface): Promise<{
+        sessionId: string;
+        encodedLimits: string;
+        encodedMessage: string;
+        inputData: BatchMultiSigCallPackedInputInterface;
+        mcall: {
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            data: string;
+            encodedMessage: string;
+        }[];
+    }>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<{
+        sessionId: string;
+        encodedLimits: string;
+        encodedMessage: string;
+        inputData: BatchMultiSigCallPackedInputInterface;
+        mcall: {
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            data: string;
+            encodedMessage: string;
+        }[];
+    }>;
 }

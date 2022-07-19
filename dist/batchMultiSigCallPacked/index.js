@@ -91,21 +91,21 @@ class BatchMultiSigCallPacked {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
             this.calls = [...this.calls, data];
-            return this.calls;
+            return data;
         });
     }
     addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
             this.calls = [...this.calls, ...data];
-            return this.calls;
+            return data;
         });
     }
     editBatchCall(index, tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
             this.calls[index] = data;
-            return this.calls;
+            return data;
         });
     }
     removeBatchCall(index) {
@@ -130,7 +130,7 @@ class BatchMultiSigCallPacked {
             batch.calls[indexOfMulticall] = tx;
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
-            return this.calls;
+            return data;
         });
     }
     removeMultiCallTx(indexOfBatch, indexOfMulticall) {
@@ -142,7 +142,7 @@ class BatchMultiSigCallPacked {
             batch.calls.splice(indexOfMulticall, 1);
             const data = yield getMultiSigCallPackedData(this.web3, this.FactoryProxy, batch);
             this.calls[indexOfBatch] = data;
-            return this.calls;
+            return data;
         });
     }
 }

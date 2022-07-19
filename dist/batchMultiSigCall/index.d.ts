@@ -14,12 +14,292 @@ export declare class BatchMultiSigCall {
     private getVariableIndex;
     getVariableFCValue(variableId: string): string;
     getVariablesAsBytes32(): string[];
-    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
-    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<BatchMultiSigCallInterface[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+        }[];
+    }>;
+    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+        }[];
+    }[]>;
+    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+        }[];
+    }>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface[]>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+        }[];
+    }>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            signer: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+        }[];
+    }>;
     private getMultiSigCallData;
     decodeLimits(encodedLimits: string): {
         nonce: any;

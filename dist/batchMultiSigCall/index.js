@@ -64,21 +64,21 @@ class BatchMultiSigCall {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.getMultiSigCallData(tx);
             this.calls = [...this.calls, data];
-            return this.calls;
+            return data;
         });
     }
     addMultipleBatchCalls(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
             this.calls = [...this.calls, ...data];
-            return this.calls;
+            return data;
         });
     }
     editBatchCall(index, tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.getMultiSigCallData(tx);
             this.calls[index] = data;
-            return this.calls;
+            return data;
         });
     }
     removeBatchCall(index) {
@@ -103,7 +103,7 @@ class BatchMultiSigCall {
             batch.calls[indexOfMulticall] = tx;
             const data = yield this.getMultiSigCallData(batch);
             this.calls[indexOfBatch] = data;
-            return this.calls;
+            return data;
         });
     }
     removeMultiCallTx(indexOfBatch, indexOfMulticall) {
@@ -115,7 +115,7 @@ class BatchMultiSigCall {
             batch.calls.splice(indexOfMulticall, 1);
             const data = yield this.getMultiSigCallData(batch);
             this.calls[indexOfBatch] = data;
-            return this.calls;
+            return data;
         });
     }
     getMultiSigCallData(batchCall) {

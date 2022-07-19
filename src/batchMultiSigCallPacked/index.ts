@@ -113,13 +113,13 @@ export class BatchMultiSigCallPacked {
   async addBatchCall(tx: BatchMultiSigCallPackedInputInterface) {
     const data = await getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx);
     this.calls = [...this.calls, data];
-    return this.calls;
+    return data;
   }
 
   async addMultipleBatchCalls(txs: BatchMultiSigCallPackedInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => getMultiSigCallPackedData(this.web3, this.FactoryProxy, tx)));
     this.calls = [...this.calls, ...data];
-    return this.calls;
+    return data;
   }
 
   async editBatchCall(index: number, tx: BatchMultiSigCallPackedInputInterface) {
@@ -127,7 +127,7 @@ export class BatchMultiSigCallPacked {
 
     this.calls[index] = data;
 
-    return this.calls;
+    return data;
   }
 
   async removeBatchCall(index: number) {
@@ -159,7 +159,7 @@ export class BatchMultiSigCallPacked {
 
     this.calls[indexOfBatch] = data;
 
-    return this.calls;
+    return data;
   }
 
   async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
@@ -175,6 +175,6 @@ export class BatchMultiSigCallPacked {
 
     this.calls[indexOfBatch] = data;
 
-    return this.calls;
+    return data;
   }
 }

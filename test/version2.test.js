@@ -1364,9 +1364,9 @@ describe("FactoryProxy contract library", function () {
           },
         ],
       };
-      const calls = await batchMultiSigCall.editBatchCall(2, tx);
+      const call = await batchMultiSigCall.editBatchCall(2, tx);
 
-      expect(calls[2].mcall[1].value).to.eq(15);
+      expect(call.mcall[1].value).to.eq(15);
     });
 
     it("Should edit multiCallTx in batchTx", async () => {
@@ -1375,14 +1375,14 @@ describe("FactoryProxy contract library", function () {
         to: accounts[13],
         signer: getSigner(11),
       };
-      const calls = await batchMultiSigCall.editMultiCallTx(2, 1, tx);
+      const call = await batchMultiSigCall.editMultiCallTx(2, 1, tx);
 
-      expect(calls[2].mcall[1].value).to.eq(25);
+      expect(call.mcall[1].value).to.eq(25);
     });
     it("Should remove a multiCallTx in batchTx", async () => {
-      const calls = await batchMultiSigCall.removeMultiCallTx(2, 1);
+      const call = await batchMultiSigCall.removeMultiCallTx(2, 1);
 
-      expect(calls[2].mcall.length).to.eq(1);
+      expect(call.mcall.length).to.eq(1);
     });
     it("Should remove batchTx", async () => {
       const calls = await batchMultiSigCall.removeBatchCall(1);
@@ -1556,9 +1556,9 @@ describe("FactoryProxy contract library", function () {
           },
         ],
       };
-      const calls = await batchMultiSigCallPacked.editBatchCall(2, tx);
+      const call = await batchMultiSigCallPacked.editBatchCall(2, tx);
 
-      expect(calls[2].mcall[1].value).to.eq(15);
+      expect(call.mcall[1].value).to.eq(15);
     });
 
     it("Should edit multiCallTx in batchTx", async () => {
@@ -1567,14 +1567,14 @@ describe("FactoryProxy contract library", function () {
         to: accounts[13],
         signer: getSigner(11),
       };
-      const calls = await batchMultiSigCallPacked.editMultiCallTx(2, 1, tx);
+      const call = await batchMultiSigCallPacked.editMultiCallTx(2, 1, tx);
 
-      expect(calls[2].mcall[1].value).to.eq(25) && expect(calls[2].mcall[1].to).to.eq(accounts[13]);
+      expect(call.mcall[1].value).to.eq(25) && expect(call.mcall[1].to).to.eq(accounts[13]);
     });
     it("Should remove a multiCallTx in batchTx", async () => {
-      const calls = await batchMultiSigCallPacked.removeMultiCallTx(2, 1);
+      const call = await batchMultiSigCallPacked.removeMultiCallTx(2, 1);
 
-      expect(calls[2].mcall.length).to.eq(1);
+      expect(call.mcall.length).to.eq(1);
     });
     it("Should remove batchTx", async () => {
       const calls = await batchMultiSigCallPacked.removeBatchCall(1);
@@ -1625,7 +1625,7 @@ describe("FactoryProxy contract library", function () {
       batchMultiSigCall.addVariable("ERC20Address", token20.address);
     });
     it("Should add batchMultiCall", async () => {
-      const signer1 = getSigner(10);
+      // const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
       const tx = {
@@ -1655,9 +1655,9 @@ describe("FactoryProxy contract library", function () {
         ],
       };
 
-      const calls = await batchMultiSigCall.addBatchCall(tx);
+      await batchMultiSigCall.addBatchCall(tx);
 
-      expect(calls.length).to.eq(1);
+      expect(batchMultiSigCall.calls.length).to.eq(1);
     });
     it("Should  get variables as bytes32", async () => {
       const variables = batchMultiSigCall.getVariablesAsBytes32();
