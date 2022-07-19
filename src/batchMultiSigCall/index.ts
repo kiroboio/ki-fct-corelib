@@ -176,7 +176,11 @@ export class BatchMultiSigCall {
         [`transaction_${index + 1}`]: {
           details: {
             signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
-            call_address: item.validator ? item.validator.validatorAddress : item.to,
+            call_address: item.validator
+              ? item.validator.validatorAddress
+              : this.web3.utils.isAddress(item.to)
+              ? item.to
+              : this.getVariableFCValue(item.to),
             call_ens: item.toEnsHash || "",
             eth_value: item.value,
             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
@@ -297,7 +301,11 @@ export class BatchMultiSigCall {
         signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
         gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
         flags: item.flags ? manageCallFlags(item.flags) : "0",
-        to: item.validator ? item.validator.validatorAddress : item.to,
+        to: item.validator
+          ? item.validator.validatorAddress
+          : this.web3.utils.isAddress(item.to)
+          ? item.to
+          : this.getVariableFCValue(item.to),
         ensHash: item.toEnsHash
           ? this.web3.utils.sha3(item.toEnsHash)
           : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",

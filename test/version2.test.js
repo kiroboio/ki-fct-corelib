@@ -1621,6 +1621,8 @@ describe("FactoryProxy contract library", function () {
 
       batchMultiSigCall.addVariable("accountAddress", accounts[12]);
       batchMultiSigCall.addVariable("value", "20");
+      batchMultiSigCall.addVariable("signerAddress", getSigner(10));
+      batchMultiSigCall.addVariable("ERC20Address", token20.address);
     });
     it("Should add batchMultiCall", async () => {
       const signer1 = getSigner(10);
@@ -1632,13 +1634,13 @@ describe("FactoryProxy contract library", function () {
         calls: [
           {
             value: 0,
-            to: token20.address,
+            to: "ERC20Address",
             method: "transfer",
             params: [
               { name: "to", type: "address", variable: "accountAddress" },
               { name: "token_amount", type: "uint256", value: "15" },
             ],
-            signer: signer1,
+            signer: "signerAddress",
           },
           {
             value: 0,

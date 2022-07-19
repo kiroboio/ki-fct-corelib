@@ -143,7 +143,11 @@ class BatchMultiSigCall {
                 };
                 return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
                             signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
-                            call_address: item.validator ? item.validator.validatorAddress : item.to,
+                            call_address: item.validator
+                                ? item.validator.validatorAddress
+                                : this.web3.utils.isAddress(item.to)
+                                    ? item.to
+                                    : this.getVariableFCValue(item.to),
                             call_ens: item.toEnsHash || "",
                             eth_value: item.value,
                             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
@@ -220,7 +224,11 @@ class BatchMultiSigCall {
                 inputData: batchCall,
                 mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
                         ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator ? item.validator.validatorAddress : item.to, ensHash: item.toEnsHash
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator
+                        ? item.validator.validatorAddress
+                        : this.web3.utils.isAddress(item.to)
+                            ? item.to
+                            : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
                         ? this.web3.utils.sha3(item.toEnsHash)
                         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
             };
