@@ -18,85 +18,46 @@ const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
-const variableBase = "0x00FC00000000000000000000000000000000000000";
+const variableBase = "0xFC00000000000000000000000000000000000000";
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
     payment: true,
     flow: false,
 };
-const handleVariable = (batchIndex, variableId, variables) => {
-    if (`${batchIndex}_${variableId}` in variables) {
-        const nextVariableId = Object.values(variables).length + 1;
-        const variableValue = variableBase.padEnd(variableId.length, String(nextVariableId));
-        variables[`${batchIndex}_${variableId}`] = variableValue;
-        return variableValue;
-    }
-    return variables[`${batchIndex}_${variableId}`];
-};
 class BatchMultiSigCall {
     constructor(web3, contractAddress) {
         this.calls = [];
-        this.variables = {};
+        this.variables = [];
         this.web3 = web3;
         // @ts-ignore
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
         this.factoryProxyAddress = contractAddress;
     }
-    decodeLimits(encodedLimits) {
-        const lim = utils_1.defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
-        return {
-            nonce: lim[1].toHexString(),
-            payment: lim[2],
-            afterTimestamp: lim[3],
-            beforeTimestamp: lim[4],
-            maxGasPrice: lim[5].toString(),
-        };
+    addVariable(variableId, value) {
+        this.variables = [...this.variables, [variableId, value]];
+        return this.variables;
     }
-    decodeTransactions(txs) {
-        return txs.map((tx) => {
-            const data = tx.params && tx.params.length !== 0
-                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedMessage)
-                : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
-            const details = utils_1.defaultAbiCoder.decode([
-                "bytes32",
-                "address",
-                "address",
-                "bytes32",
-                "uint256",
-                "uint32",
-                "bool",
-                "bool",
-                "bool",
-                "bool",
-                "bool",
-                "bytes32",
-            ], tx.encodedDetails);
-            const defaultReturn = {
-                typeHash: data[0],
-                txHash: data[1],
-                transaction: {
-                    signer: details[1],
-                    to: details[2],
-                    toEnsHash: details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-                        ? details[3]
-                        : undefined,
-                    value: details[4].toString(),
-                    gasLimit: details[5],
-                    staticCall: details[6],
-                    continueOnFail: details[7],
-                    stopOnFail: details[8],
-                    stopOnSuccess: details[9],
-                    revertOnSuccess: details[10],
-                    methodHash: details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-                        ? details[11]
-                        : undefined,
-                },
-            };
-            const extraData = tx.params && tx.params.length !== 0
-                ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i] })), {})
-                : {};
-            return Object.assign(Object.assign({}, defaultReturn), extraData);
+    removeVariable(variableId) {
+        // TODO: Adjust all variables to account for removed variable
+        this.variables = this.variables.filter((item) => item[0] !== variableId);
+        return this.variables;
+    }
+    getVariableIndex(variableId) {
+        const index = this.variables.findIndex((item) => item[0] === variableId);
+        if (index === -1) {
+            throw new Error(`Variable ${variableId} doesn't exist`);
+        }
+        return index;
+    }
+    getVariableFCValue(variableId) {
+        const index = this.getVariableIndex(variableId);
+        return String(index + 1).padStart(variableBase.length, variableBase);
+    }
+    getVariablesAsBytes32() {
+        return this.variables.map((item) => {
+            const value = item[1];
+            return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
         });
     }
     addBatchCall(tx) {
@@ -171,9 +132,11 @@ class BatchMultiSigCall {
                         if (item.validator) {
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
-                        return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item)) }, item.params.reduce((acc, param) => {
-                            var _a;
-                            return (Object.assign(Object.assign({}, acc), { [param.name]: (_a = param.value) !== null && _a !== void 0 ? _a : handleVariable(this.calls.length, param.variableId, this.variables) }));
+                        item.params.forEach((param) => {
+                            param.value = param.value || this.getVariableFCValue(param.variable);
+                        });
+                        return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
+                            return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
                         }, {}));
                     }
                     return {};
@@ -261,6 +224,62 @@ class BatchMultiSigCall {
                         ? this.web3.utils.sha3(item.toEnsHash)
                         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
             };
+        });
+    }
+    decodeLimits(encodedLimits) {
+        const lim = utils_1.defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+        return {
+            nonce: lim[1].toHexString(),
+            payment: lim[2],
+            afterTimestamp: lim[3],
+            beforeTimestamp: lim[4],
+            maxGasPrice: lim[5].toString(),
+        };
+    }
+    decodeTransactions(txs) {
+        return txs.map((tx) => {
+            const data = tx.params && tx.params.length !== 0
+                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedMessage)
+                : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+            const details = utils_1.defaultAbiCoder.decode([
+                "bytes32",
+                "address",
+                "address",
+                "bytes32",
+                "uint256",
+                "uint32",
+                "bool",
+                "bool",
+                "bool",
+                "bool",
+                "bool",
+                "bytes32",
+            ], tx.encodedDetails);
+            const defaultReturn = {
+                typeHash: data[0],
+                txHash: data[1],
+                transaction: {
+                    signer: details[1],
+                    to: details[2],
+                    toEnsHash: details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+                        ? details[3]
+                        : undefined,
+                    value: details[4].toString(),
+                    gasLimit: details[5],
+                    staticCall: details[6],
+                    continueOnFail: details[7],
+                    stopOnFail: details[8],
+                    stopOnSuccess: details[9],
+                    revertOnSuccess: details[10],
+                    methodHash: details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+                        ? details[11]
+                        : undefined,
+                },
+            };
+            const extraData = tx.params && tx.params.length !== 0
+                ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i] })), {})
+                : {};
+            return Object.assign(Object.assign({}, defaultReturn), extraData);
         });
     }
 }

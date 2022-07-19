@@ -29,6 +29,8 @@ const FactoryProxy_ = artifacts.require("FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
 const Validator = artifacts.require("Validator");
 const ERC721 = artifacts.require("ERC721Token");
+const Activators = artifacts.require("Activators");
+const UniswapPair = artifacts.require("UniswapPair");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -52,6 +54,12 @@ describe("FactoryProxy contract library", function () {
   let user3;
   let user4;
   let activator;
+  let activators;
+  let kiro;
+  let weth;
+  let uniswapPair;
+  let vault1;
+
   let instances = [];
 
   const val1 = web3.utils.toWei("0.5", "gwei");
@@ -92,6 +100,12 @@ describe("FactoryProxy contract library", function () {
     activator = accounts[7];
 
     multiSig = await MultiSigWallet.new(factoryOwner1, factoryOwner2, factoryOwner3);
+    kiro = await ERC20Token.new("Kirobo ERC20 Token", "KDB20", { from: owner });
+    weth = await ERC20Token.new("weth ERC20 Token", "WETH", { from: owner });
+
+    uniswapPair = await UniswapPair.new(kiro.address, weth.address, {
+      from: owner,
+    });
 
     const sw_factory = await Factory.new({
       from: owner,
@@ -187,6 +201,8 @@ describe("FactoryProxy contract library", function () {
 
     validator = await Validator.new({ from: owner });
     nft = await ERC721.new("NFT", "NFT contract", { from: owner });
+
+    activators = await Activators.new(sw_factory_proxy.address, kiro.address, uniswapPair.address, { from: owner });
   });
 
   describe("Inital for factoryProxy", function () {
@@ -250,6 +266,8 @@ describe("FactoryProxy contract library", function () {
         });
         instances.push(await factory.getWallet(accounts[i]));
       }
+      // vault1 = await Wallet.at(await factory.getWallet(user1));
+
       for (const instance of instances) {
         await token20.mint(instance, 10000, {
           from: owner,
@@ -1619,6 +1637,14 @@ describe("FactoryProxy contract library", function () {
     it("Should add batchMulticall", async () => {
       batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
 
+      batchMultiSigCall.addVariable("accountAddress", accounts[12]);
+      batchMultiSigCall.addVariable("value", "20");
+
+      const value = batchMultiSigCall.getVariableFCValue("accountAddress");
+
+      expect(value).to.eq("0xFC00000000000000000000000000000000000001");
+    });
+    it("Should add batchMultiCall", async () => {
       const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
@@ -1626,7 +1652,7 @@ describe("FactoryProxy contract library", function () {
       await nft.mint("dd", { from: signer2 });
 
       const tx = {
-        groupId: 7,
+        groupId: 8,
         nonce: 1,
         calls: [
           {
@@ -1634,7 +1660,7 @@ describe("FactoryProxy contract library", function () {
             to: token20.address,
             method: "transfer",
             params: [
-              { name: "to", type: "address", value: accounts[11], variableId: "accountAddress" },
+              { name: "to", type: "address", variable: "accountAddress" },
               { name: "token_amount", type: "uint256", value: "15" },
             ],
             signer: signer1,
@@ -1644,7 +1670,7 @@ describe("FactoryProxy contract library", function () {
             to: token20.address,
             method: "transfer",
             params: [
-              { name: "to", type: "address", value: accounts[12], variableId: "accountAddress" },
+              { name: "to", type: "address", variable: "accountAddress" },
               { name: "token_amount", type: "uint256", value: "20" },
             ],
             signer: signer2,
@@ -1652,9 +1678,24 @@ describe("FactoryProxy contract library", function () {
         ],
       };
 
-      await batchMultiSigCall.addBatchCall(tx);
+      const calls = await batchMultiSigCall.addBatchCall(tx);
 
-      expect(batchMultiSigCall.calls.length).to.eq(1);
+      expect(calls.length).to.eq(1);
+    });
+    it("Should  get variables as bytes32", async () => {
+      const variables = batchMultiSigCall.getVariablesAsBytes32();
+
+      expect(variables[0]).to.eq("0x000000000000000000000000C1B72812552554873dEd3eaC0B588cE78C3673E1");
+    });
+
+    // it("Should execute", async () => {
+    //   const data = activators.contract.methods
+    //     .activateBatchMultiSigCall(batchMultiSigCall.calls, batchMultiSigCall.getVariablesAsBytes32())
+    //     .encodeABI();
+
+    //   const res = await vault1.execute(activators.address, 0, data, {
+    //     from: user1,
+    //   });
     });
   });
 });

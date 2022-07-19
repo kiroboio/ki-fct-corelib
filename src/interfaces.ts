@@ -2,7 +2,7 @@ export interface Params {
   name: string;
   type: string;
   value?: string;
-  variableId?: string;
+  variable?: string;
 }
 
 export interface DecodeTx {

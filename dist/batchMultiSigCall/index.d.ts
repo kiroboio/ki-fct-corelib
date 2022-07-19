@@ -4,11 +4,23 @@ import { DecodeTx } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 export declare class BatchMultiSigCall {
     calls: Array<BatchMultiSigCallInterface>;
-    variables: object;
+    variables: Array<Array<string>>;
     web3: Web3;
     FactoryProxy: Contract;
     factoryProxyAddress: string;
     constructor(web3: Web3, contractAddress: string);
+    addVariable(variableId: string, value: string): string[][];
+    removeVariable(variableId: string): string[][];
+    private getVariableIndex;
+    getVariableFCValue(variableId: string): string;
+    getVariablesAsBytes32(): string[];
+    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<BatchMultiSigCallInterface[]>;
+    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface[]>;
+    private getMultiSigCallData;
     decodeLimits(encodedLimits: string): {
         nonce: any;
         payment: any;
@@ -33,11 +45,4 @@ export declare class BatchMultiSigCall {
             methodHash: any;
         };
     }[];
-    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
-    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<BatchMultiSigCallInterface[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
-    removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface[]>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface[]>;
-    private getMultiSigCallData;
 }

@@ -20,7 +20,8 @@ import {
   getValidatorData,
 } from "../helpers";
 
-const variableBase = "0x00FC00000000000000000000000000000000000000";
+const variableBase = "0xFC00000000000000000000000000000000000000";
+
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
   eip712: true,
@@ -28,19 +29,9 @@ const defaultFlags = {
   flow: false,
 };
 
-const handleVariable = (batchIndex: number, variableId: string, variables: object) => {
-  if (`${batchIndex}_${variableId}` in variables) {
-    const nextVariableId = Object.values(variables).length + 1;
-    const variableValue = variableBase.padEnd(variableId.length, String(nextVariableId));
-    variables[`${batchIndex}_${variableId}`] = variableValue;
-    return variableValue;
-  }
-  return variables[`${batchIndex}_${variableId}`];
-};
-
 export class BatchMultiSigCall {
   calls: Array<BatchMultiSigCallInterface> = [];
-  variables: object = {};
+  variables: Array<Array<string>> = [];
   web3: Web3;
   FactoryProxy: Contract;
   factoryProxyAddress: string;
@@ -52,85 +43,34 @@ export class BatchMultiSigCall {
     this.factoryProxyAddress = contractAddress;
   }
 
-  decodeLimits(encodedLimits: string) {
-    const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
-
-    return {
-      nonce: lim[1].toHexString(),
-      payment: lim[2],
-      afterTimestamp: lim[3],
-      beforeTimestamp: lim[4],
-      maxGasPrice: lim[5].toString(),
-    };
+  addVariable(variableId: string, value: string) {
+    this.variables = [...this.variables, [variableId, value]];
+    return this.variables;
   }
 
-  decodeTransactions(txs: DecodeTx[]) {
-    return txs.map((tx) => {
-      const data =
-        tx.params && tx.params.length !== 0
-          ? defaultAbiCoder.decode(
-              ["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)],
-              tx.encodedMessage
-            )
-          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+  removeVariable(variableId: string) {
+    // TODO: Adjust all variables to account for removed variable
+    this.variables = this.variables.filter((item) => item[0] !== variableId);
+    return this.variables;
+  }
 
-      const details = defaultAbiCoder.decode(
-        [
-          "bytes32",
-          "address",
-          "address",
-          "bytes32",
-          "uint256",
-          "uint32",
-          "bool",
-          "bool",
-          "bool",
-          "bool",
-          "bool",
-          "bytes32",
-        ],
-        tx.encodedDetails
-      );
+  private getVariableIndex(variableId: string) {
+    const index = this.variables.findIndex((item) => item[0] === variableId);
+    if (index === -1) {
+      throw new Error(`Variable ${variableId} doesn't exist`);
+    }
+    return index;
+  }
 
-      const defaultReturn = {
-        typeHash: data[0],
-        txHash: data[1],
-        transaction: {
-          signer: details[1],
-          to: details[2],
-          toEnsHash:
-            details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[3]
-              : undefined,
-          value: details[4].toString(),
-          gasLimit: details[5],
-          staticCall: details[6],
-          continueOnFail: details[7],
-          stopOnFail: details[8],
-          stopOnSuccess: details[9],
-          revertOnSuccess: details[10],
-          methodHash:
-            details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[11]
-              : undefined,
-        },
-      };
+  getVariableFCValue(variableId: string) {
+    const index = this.getVariableIndex(variableId);
+    return String(index + 1).padStart(variableBase.length, variableBase);
+  }
 
-      const extraData =
-        tx.params && tx.params.length !== 0
-          ? tx.params.reduce(
-              (acc, item, i) => ({
-                ...acc,
-                [item.name]: ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i],
-              }),
-              {}
-            )
-          : {};
-
-      return {
-        ...defaultReturn,
-        ...extraData,
-      };
+  getVariablesAsBytes32() {
+    return this.variables.map((item) => {
+      const value = item[1];
+      return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
     });
   }
 
@@ -214,16 +154,18 @@ export class BatchMultiSigCall {
           if (item.validator) {
             return createValidatorTxData(item);
           }
+          item.params.forEach((param) => {
+            param.value = param.value || this.getVariableFCValue(param.variable);
+          });
           return {
             method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
-            method_params_length: getParamsLength(getEncodedMethodParams(item)),
-            ...item.params.reduce(
-              (acc, param) => ({
+            method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
+            ...item.params.reduce((acc, param) => {
+              return {
                 ...acc,
-                [param.name]: param.value ?? handleVariable(this.calls.length, param.variableId, this.variables),
-              }),
-              {}
-            ),
+                [param.name]: param.value,
+              };
+            }, {}),
           };
         }
         return {};
@@ -363,5 +305,87 @@ export class BatchMultiSigCall {
         ...getEncodedMulticallData(index),
       })),
     };
+  }
+
+  decodeLimits(encodedLimits: string) {
+    const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+
+    return {
+      nonce: lim[1].toHexString(),
+      payment: lim[2],
+      afterTimestamp: lim[3],
+      beforeTimestamp: lim[4],
+      maxGasPrice: lim[5].toString(),
+    };
+  }
+
+  decodeTransactions(txs: DecodeTx[]) {
+    return txs.map((tx) => {
+      const data =
+        tx.params && tx.params.length !== 0
+          ? defaultAbiCoder.decode(
+              ["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)],
+              tx.encodedMessage
+            )
+          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+
+      const details = defaultAbiCoder.decode(
+        [
+          "bytes32",
+          "address",
+          "address",
+          "bytes32",
+          "uint256",
+          "uint32",
+          "bool",
+          "bool",
+          "bool",
+          "bool",
+          "bool",
+          "bytes32",
+        ],
+        tx.encodedDetails
+      );
+
+      const defaultReturn = {
+        typeHash: data[0],
+        txHash: data[1],
+        transaction: {
+          signer: details[1],
+          to: details[2],
+          toEnsHash:
+            details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              ? details[3]
+              : undefined,
+          value: details[4].toString(),
+          gasLimit: details[5],
+          staticCall: details[6],
+          continueOnFail: details[7],
+          stopOnFail: details[8],
+          stopOnSuccess: details[9],
+          revertOnSuccess: details[10],
+          methodHash:
+            details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              ? details[11]
+              : undefined,
+        },
+      };
+
+      const extraData =
+        tx.params && tx.params.length !== 0
+          ? tx.params.reduce(
+              (acc, item, i) => ({
+                ...acc,
+                [item.name]: ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i],
+              }),
+              {}
+            )
+          : {};
+
+      return {
+        ...defaultReturn,
+        ...extraData,
+      };
+    });
   }
 }
