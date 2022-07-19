@@ -175,7 +175,7 @@ export class BatchMultiSigCall {
         ...acc,
         [`transaction_${index + 1}`]: {
           details: {
-            signer: item.signer,
+            signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
             call_address: item.validator ? item.validator.validatorAddress : item.to,
             call_ens: item.toEnsHash || "",
             eth_value: item.value,
@@ -294,7 +294,7 @@ export class BatchMultiSigCall {
             )
           : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: item.value,
-        signer: item.signer,
+        signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
         gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
         flags: item.flags ? manageCallFlags(item.flags) : "0",
         to: item.validator ? item.validator.validatorAddress : item.to,
