@@ -139,7 +139,14 @@ class BatchMultiSigCall {
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
                         item.params.forEach((param) => {
-                            param.value = param.variable ? this.getVariableFCValue(param.variable) : param.value;
+                            if (param.variable) {
+                                param.value = this.getVariableFCValue(param.variable);
+                                return;
+                            }
+                            if (param.valueFromTx) {
+                                param.value = String(param.valueFromTx + 1).padStart(FDBase.length, FDBase);
+                                return;
+                            }
                         });
                         return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
                             return Object.assign(Object.assign({}, acc), { [param.name]: param.value });

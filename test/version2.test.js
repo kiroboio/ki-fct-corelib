@@ -1626,7 +1626,6 @@ describe("FactoryProxy contract library", function () {
     });
 
     it("Should add batchMultiCall", async () => {
-      // const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
       const tx = {
@@ -1646,10 +1645,24 @@ describe("FactoryProxy contract library", function () {
           {
             value: 0,
             to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "greaterThan",
+              params: {
+                valueToCompare: "10",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
             method: "transfer",
             params: [
               { name: "to", type: "address", variable: "accountAddress" },
-              { name: "token_amount", type: "uint256", value: "20" },
+              { name: "token_amount", type: "uint256", valueFromTx: 1 },
             ],
             signer: signer2,
           },

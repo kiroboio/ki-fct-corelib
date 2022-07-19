@@ -3,6 +3,7 @@ export interface Params {
   type: string;
   value?: string;
   variable?: string;
+  valueFromTx?: number;
 }
 
 export interface DecodeTx {
