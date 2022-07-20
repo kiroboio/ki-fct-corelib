@@ -62,6 +62,13 @@ export class BatchMultiSigCall {
     return this.variables;
   }
 
+  getVariablesAsBytes32() {
+    return this.variables.map((item) => {
+      const value = item[1];
+      return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
+    });
+  }
+
   private getVariableIndex(variableId: string) {
     const index = this.variables.findIndex((item) => item[0] === variableId);
     if (index === -1) {
@@ -70,16 +77,9 @@ export class BatchMultiSigCall {
     return index;
   }
 
-  getVariableFCValue(variableId: string) {
+  private getVariableFCValue(variableId: string) {
     const index = this.getVariableIndex(variableId);
     return String(index + 1).padStart(variableBase.length, variableBase);
-  }
-
-  getVariablesAsBytes32() {
-    return this.variables.map((item) => {
-      const value = item[1];
-      return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
-    });
   }
 
   async addBatchCall(tx: BatchMultiSigCallInputInterface) {
@@ -166,6 +166,9 @@ export class BatchMultiSigCall {
               return;
             }
             if (param.valueFromTx) {
+              if (index <= param.valueFromTx) {
+                throw new Error(`Parameter value should reference one of the previous calls`);
+              }
               param.value = String(param.valueFromTx + 1).padStart(FDBase.length, FDBase);
               return;
             }

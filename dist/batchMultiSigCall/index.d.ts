@@ -11,9 +11,9 @@ export declare class BatchMultiSigCall {
     constructor(web3: Web3, contractAddress: string);
     addVariable(variableId: string, value: string): string[][];
     removeVariable(variableId: string): Promise<string[][]>;
-    private getVariableIndex;
-    getVariableFCValue(variableId: string): string;
     getVariablesAsBytes32(): string[];
+    private getVariableIndex;
+    private getVariableFCValue;
     addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<{
         typedData: {
             types: {

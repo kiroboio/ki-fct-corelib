@@ -1676,8 +1676,6 @@ describe("FactoryProxy contract library", function () {
     it("Should remove variables", async () => {
       await batchMultiSigCall.removeVariable("variableToBeRemoved");
 
-      console.log(JSON.stringify(batchMultiSigCall.calls, null, 2));
-
       expect(batchMultiSigCall.variables.length).to.eq(3);
     });
     it("Should  get variables as bytes32", async () => {
