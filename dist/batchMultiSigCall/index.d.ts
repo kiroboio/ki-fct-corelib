@@ -9,8 +9,9 @@ export declare class BatchMultiSigCall {
     FactoryProxy: Contract;
     factoryProxyAddress: string;
     constructor(web3: Web3, contractAddress: string);
-    addVariable(variableId: string, value: string): string[][];
-    removeVariable(variableId: string): Promise<string[][]>;
+    createVariable(variableId: string, value?: string): string[];
+    addVariableValue(variableId: string, value: string): string[];
+    removeVariable(variableId: string): Promise<string[]>;
     getVariablesAsBytes32(): string[];
     private getVariableIndex;
     private getVariableFCValue;

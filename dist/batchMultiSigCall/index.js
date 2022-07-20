@@ -35,9 +35,14 @@ class BatchMultiSigCall {
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
         this.factoryProxyAddress = contractAddress;
     }
-    addVariable(variableId, value) {
-        this.variables = [...this.variables, [variableId, value]];
-        return this.variables;
+    createVariable(variableId, value) {
+        this.variables = [...this.variables, [variableId, value !== null && value !== void 0 ? value : undefined]];
+        return this.variables.map((item) => item[0]);
+    }
+    addVariableValue(variableId, value) {
+        const index = this.getVariableIndex(variableId);
+        this.variables[index][1] = value;
+        return this.variables.map((item) => item[0]);
     }
     removeVariable(variableId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -47,7 +52,7 @@ class BatchMultiSigCall {
             const allCalls = this.calls.map((call) => call.inputData);
             const data = yield Promise.all(allCalls.map((tx) => this.getMultiSigCallData(tx)));
             this.calls = data;
-            return this.variables;
+            return this.variables.map((item) => item[0]);
         });
     }
     getVariablesAsBytes32() {

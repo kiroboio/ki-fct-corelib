@@ -44,9 +44,15 @@ export class BatchMultiSigCall {
     this.factoryProxyAddress = contractAddress;
   }
 
-  addVariable(variableId: string, value: string) {
-    this.variables = [...this.variables, [variableId, value]];
-    return this.variables;
+  createVariable(variableId: string, value?: string) {
+    this.variables = [...this.variables, [variableId, value ?? undefined]];
+    return this.variables.map((item) => item[0]);
+  }
+
+  addVariableValue(variableId: string, value: string) {
+    const index = this.getVariableIndex(variableId);
+    this.variables[index][1] = value;
+    return this.variables.map((item) => item[0]);
   }
 
   async removeVariable(variableId: string) {
@@ -59,12 +65,15 @@ export class BatchMultiSigCall {
 
     this.calls = data;
 
-    return this.variables;
+    return this.variables.map((item) => item[0]);
   }
 
   getVariablesAsBytes32() {
     return this.variables.map((item) => {
       const value = item[1];
+      if (value === undefined) {
+        throw new Error(`Variable ${item[0]} doesn't have a value`);
+      }
       return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
     });
   }

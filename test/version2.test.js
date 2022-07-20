@@ -1619,10 +1619,10 @@ describe("FactoryProxy contract library", function () {
     it("Should add variables", async () => {
       batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
 
-      batchMultiSigCall.addVariable("accountAddress", accounts[12]);
-      batchMultiSigCall.addVariable("variableToBeRemoved", "12121212"); // Random variable that will be removed
-      batchMultiSigCall.addVariable("signerAddress", getSigner(10));
-      batchMultiSigCall.addVariable("ERC20Address", token20.address);
+      batchMultiSigCall.createVariable("accountAddress");
+      batchMultiSigCall.createVariable("variableToBeRemoved"); // Random variable that will be removed
+      batchMultiSigCall.createVariable("signerAddress");
+      batchMultiSigCall.createVariable("ERC20Address");
     });
 
     it("Should add batchMultiCall", async () => {
@@ -1679,6 +1679,10 @@ describe("FactoryProxy contract library", function () {
       expect(batchMultiSigCall.variables.length).to.eq(3);
     });
     it("Should  get variables as bytes32", async () => {
+      batchMultiSigCall.addVariableValue("accountAddress", accounts[12]);
+      batchMultiSigCall.addVariableValue("signerAddress", getSigner(10));
+      batchMultiSigCall.addVariableValue("ERC20Address", token20.address);
+
       const variables = batchMultiSigCall.getVariablesAsBytes32();
 
       expect(variables[0]).to.eq("0x000000000000000000000000C1B72812552554873dEd3eaC0B588cE78C3673E1");
