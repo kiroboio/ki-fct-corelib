@@ -319,8 +319,8 @@ export declare class BatchMultiSigCall {
             value: any;
             gasLimit: any;
             staticCall: any;
-            flowControl: any;
-            jumpOver: any;
+            flow: any;
+            jump: any;
             methodHash: any;
         };
     }[];
