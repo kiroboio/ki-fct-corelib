@@ -15,6 +15,11 @@ const ABI = require("../src/abi/factoryProxy_.abi.json");
 const { expect } = require("chai");
 const { TypedDataUtils } = require("ethers-eip712");
 
+//
+// FIXME: Currently this test is not viable, as it requires different contracts.
+//        Current contracts are adjusted for batchMultiSigCall
+//
+
 // All the contracts are imported from ki-eth-contracts repository.
 // To make the Hardhat work with contracts from ki-eth-contracts, contracts folder
 // contains all the necessary contracts, which just imports the dependency contracts.

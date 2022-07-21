@@ -1,5 +1,5 @@
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall, utils } = require("../dist/index.js");
+const { BatchMultiSigCall } = require("../dist/index.js");
 const assert = require("assert");
 //const ABI = require("../src/abi/factoryProxy_.abi.json");
 const { expect } = require("chai");
@@ -9,7 +9,6 @@ const { TypedDataUtils } = require("ethers-eip712");
 // All the contracts are imported from ki-eth-contracts repository.
 // To make the Hardhat work with contracts from ki-eth-contracts, contracts folder
 // contains all the necessary contracts, which just imports the dependency contracts.
-const MultiSigWallet = artifacts.require("MultiSigWallet");
 const WalletCore = artifacts.require("../contracts/RecoveryWalletCore");
 const RecoveryWallet = artifacts.require("../contracts/RecoveryWallet");
 const Oracle = artifacts.require("../contracts/RecoveryOracle");
@@ -20,23 +19,13 @@ const FactoryProxy_ = artifacts.require("../contracts/FactoryProxy_");
 const ERC20Token = artifacts.require("ERC20Token");
 const Validator = artifacts.require("../contracts/Validator");
 const ERC721 = artifacts.require("ERC721Token");
-const MultiplierTest = artifacts.require("MultiplyTest");
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-const addressToBytes32 = (address) => {
-  return "0x000000000000000000000000" + address.slice(2);
-};
-
-const numberToBytes32 = (value) => {
-  return "0x" + ("" + value).padStart(64, "0");
-};
-
 describe("FactoryProxy contract library", function () {
   let instance;
-  let multiSig;
   let factory;
   let factoryProxy;
   let token20;
@@ -45,22 +34,18 @@ describe("FactoryProxy contract library", function () {
   let activatorContract;
   let validator;
   let accounts = [];
-  let factoryOwner1;
-  let factoryOwner2;
   let factoryOwner3;
   let owner;
   let user1;
   let user2;
   let user3;
   let user4;
-  let activator;
   let instances = [];
   let nft;
-  let multiplier;
   let uniSwapPair;
   let activators;
   let weth;
-  let vault1, vault2, vault10, vault11, vault12, vault13;
+  let vault2, vault10, vault11, vault12, vault13;
 
   const val1 = web3.utils.toWei("0.5", "gwei");
   const val2 = web3.utils.toWei("0.4", "gwei");
@@ -89,17 +74,12 @@ describe("FactoryProxy contract library", function () {
 
   before("setup contract for the test", async () => {
     accounts = await web3.eth.getAccounts();
-    factoryOwner1 = accounts[0];
-    factoryOwner2 = accounts[1];
     factoryOwner3 = accounts[2];
     owner = accounts[3];
     user1 = accounts[4];
     user2 = accounts[5];
     user3 = accounts[6];
     user4 = accounts[8];
-    activator = accounts[7];
-
-    multiSig = await MultiSigWallet.new(factoryOwner1, factoryOwner2, factoryOwner3);
 
     const sw_factory = await Factory.new({
       from: owner,
@@ -183,7 +163,6 @@ describe("FactoryProxy contract library", function () {
     await factory.createWallet(false, { from: accounts[13] });
 
     instance = await RecoveryWallet.at(await factory.getWallet(owner));
-    vault1 = await RecoveryWallet.at(await factory.getWallet(accounts[1]));
     vault2 = await RecoveryWallet.at(await factory.getWallet(accounts[2]));
     vault10 = await RecoveryWallet.at(await factory.getWallet(accounts[10]));
     vault11 = await RecoveryWallet.at(await factory.getWallet(accounts[11]));
@@ -215,7 +194,6 @@ describe("FactoryProxy contract library", function () {
 
     validator = await Validator.new({ from: owner });
     nft = await ERC721.new("NFT", "NFT contract", { from: owner });
-    multiplier = await MultiplierTest.new({ from: owner });
     uniSwapPair = await UniSwapPair.new(kiro.address, weth.address, {
       from: owner,
     });
@@ -372,6 +350,10 @@ describe("FactoryProxy contract library", function () {
       // Minting NFT for signer2 to check ownerOf with Validator function
       await nft.mint("dd", { from: signer2 });
 
+      const balance = await token20.balanceOf(accounts[11]);
+
+      console.log(balance.toString());
+
       const tx = {
         groupId: 7,
         nonce: 1,
@@ -396,6 +378,36 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "20" },
             ],
+            signer: signer2,
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "greaterThan",
+              params: {
+                valueToCompare: "10014",
+              },
+              validatorAddress: validator.address,
+            },
+            signer: signer2,
+          },
+
+          {
+            value: 0,
+            to: token20.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: accounts[11] }],
+            validator: {
+              method: "betweenNotEqual",
+              params: {
+                value1ToCompare: "10014",
+                value2ToCompare: "10020",
+              },
+              validatorAddress: validator.address,
+            },
             signer: signer2,
           },
         ],
@@ -559,30 +571,16 @@ describe("FactoryProxy contract library", function () {
         return { ...item, signatures };
       });
 
-      //expect(data).to.have.property("receipt");
-      const balance = await token20.balanceOf(vault10.address);
-      console.log("token20 balance of vault10 before ", balance.toString(10));
-      const balanceT = await token20.balanceOf(accounts[11]);
-      console.log("token20 balance of accounts[11] before ", balanceT.toString(10));
-
-      const balanceK1 = await kiro.balanceOf(accounts[10]);
-      console.log("kiro balance of accounts[10] before", balanceK1.toString(10));
-      const balance1 = await kiro.balanceOf(accounts[11]);
-      console.log("kiro balance of accounts[11] before", balance1.toString(10));
-
       const data = activators.contract.methods
-        .activateBatchMultiSigCall(signedCalls, [addressToBytes32(accounts[11]), numberToBytes32(2000)])
+        .activateBatchMultiSigCall(signedCalls, batchMultiSigCall.getVariablesAsBytes32())
         .encodeABI();
 
       // console.log('final Data', data);
 
       try {
-        const res = await instance.execute(activators.address, 0, data, {
+        await instance.execute(activators.address, 0, data, {
           from: owner,
         });
-        console.log(res);
-        //expect(res).to.have.property("receipt");
-        //console.log(res)
       } catch (err) {
         console.log(err);
       }
