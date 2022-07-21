@@ -175,7 +175,7 @@ class BatchMultiSigCall {
                             eth_value: item.value,
                             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
                             view_only: item.viewOnly || false,
-                            flow_control: item.flow ? helpers_1.flows[item.flow] : "continue on success, revert on fail",
+                            flow_control: item.flow ? helpers_1.flows[item.flow].text : "continue on success, revert on fail",
                             jump_over: item.jump || 0,
                             method_interface: item.method
                                 ? item.validator

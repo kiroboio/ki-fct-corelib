@@ -12,7 +12,7 @@ import "hardhat/console.sol";
 contract Validator {
     constructor() {}
 
-    /** @notice greaterThen - reverts if the result of the call is not greater than a given value
+    /** @notice greaterThan - reverts if the result of the call is not greater than a given value
         @param valueToCompare (uint256) - value to compare the calling result to
         @param contractAddress (address) - the contract address 
         @param functionSignature (bytes32) - sha3 of the function name and param types 
@@ -30,7 +30,8 @@ contract Validator {
         if (!success) {
             revert("validator: call failed");
         }
-      
+        console.log("validator data %s", abi.decode(result, (uint256)));
+        console.logBytes(result);
         require(
             abi.decode(result, (uint256)) > valueToCompare,
             "validator: not met"
@@ -63,7 +64,7 @@ contract Validator {
         return abi.decode(result, (bytes32));
     }
 
-    /** @notice lessThen - reverts if the result of the call is not less than a given value
+    /** @notice lessThan - reverts if the result of the call is not less than a given value
         @param valueToCompare (uint256) - value to compare the calling result to
         @param contractAddress (address) - the contract address 
         @param functionSignature (bytes32) - sha3 of the function name and param types 

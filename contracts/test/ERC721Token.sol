@@ -13,6 +13,13 @@ contract ERC721Token is ERC721URIStorage {
         ERC721(name, symbol)
     {}
 
+    function createTimeframe(string memory tokenURI) public returns (bool) {
+        s_tokenId += 1;
+        _mint(msg.sender, s_tokenId);
+        _setTokenURI(s_tokenId, tokenURI);
+        return true;
+    }
+
     function mint(string memory tokenURI) public returns (bool) {
         s_tokenId += 1;
         _mint(msg.sender, s_tokenId);

@@ -4,14 +4,14 @@ pragma solidity ^0.8.0;
 pragma abicoder v1;
 
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
-import "./lib/Heritable.sol";
+import "../lib/Heritable.sol";
 
-contract RecoveryWalletCore is IVersion, Heritable, ReentrancyGuard {
+contract RecoveryWalletCore2 is IVersion, Heritable, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
-  uint8 public constant VERSION_NUMBER = 64;
+  uint8 public constant VERSION_NUMBER = 128;
   string public constant NAME = "Kirobo OCW";
-  string public constant VERSION = "RC07-1.1";
+  string public constant VERSION = "RC07-2.1";
 
   function version() public pure override returns (bytes8) {
     return bytes8(bytes(VERSION));

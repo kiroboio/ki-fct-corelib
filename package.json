@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "hardhat test test/batchMultiSigCall.test.js",
+    "test": "hardhat test test/v3.test.js",
     "build": "tsc"
   },
   "repository": {

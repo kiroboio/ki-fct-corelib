@@ -1,0 +1,35 @@
+(returnlll
+(seq
+    (unless (calldatasize)
+    (seq
+        (when (callvalue)
+           (seq
+            (mstore 0x20 (callvalue))
+            (log2 0x20 32 0x01 (caller)))
+        )
+        (stop)
+     ))
+
+    [0x00]: 0
+    (calldatacopy 0x1c 0x00 4)
+    (when (eq @0x00 0x02d05d3f)
+    (seq
+     	 [0x20]: 0xdadadadadadadadadadadadadadadadadadadada
+         (return 0x20 32)
+    ))
+    (calldatacopy 0x00 0x00 (calldatasize))
+    (if (iszero (delegatecall (gas) 0xbebebebebebebebebebebebebebebebebebebebe 0x00 (calldatasize) 0 0))
+    (seq
+        (returndatacopy 0x00 0x00 (returndatasize))
+        (revert 0x00 (returndatasize)))
+    (seq
+        (when (callvalue)
+        (seq
+            (mstore 0x20 (callvalue))
+            (log3 0x20 32 0x02 (caller) (mload 0x00))
+        ))
+        (returndatacopy 0x00 0x00 (returndatasize))
+        (return 0x00 (returndatasize))
+    ))
+))
+
