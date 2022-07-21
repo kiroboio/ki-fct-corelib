@@ -319,10 +319,8 @@ export declare class BatchMultiSigCall {
             value: any;
             gasLimit: any;
             staticCall: any;
-            continueOnFail: any;
-            stopOnFail: any;
-            stopOnSuccess: any;
-            revertOnSuccess: any;
+            flowControl: any;
+            jumpOver: any;
             methodHash: any;
         };
     }[];

@@ -58,6 +58,9 @@ class BatchMultiSigCall {
     getVariablesAsBytes32() {
         return this.variables.map((item) => {
             const value = item[1];
+            if (value === undefined) {
+                throw new Error(`Variable ${item[0]} doesn't have a value`);
+            }
             return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
         });
     }
@@ -137,7 +140,6 @@ class BatchMultiSigCall {
             // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
             // Else multicall is ETH Transfer - add only details
             const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
-                var _a, _b, _c, _d, _e;
                 const txData = () => {
                     if (item.params) {
                         if (item.validator) {
@@ -172,11 +174,9 @@ class BatchMultiSigCall {
                             call_ens: item.toEnsHash || "",
                             eth_value: item.value,
                             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-                            view_only: ((_a = item.flags) === null || _a === void 0 ? void 0 : _a.viewOnly) || false,
-                            continue_on_fail: ((_b = item.flags) === null || _b === void 0 ? void 0 : _b.onFailContinue) || false,
-                            stop_on_fail: ((_c = item.flags) === null || _c === void 0 ? void 0 : _c.onFailStop) || false,
-                            stop_on_success: ((_d = item.flags) === null || _d === void 0 ? void 0 : _d.onSuccessStop) || false,
-                            revert_on_success: ((_e = item.flags) === null || _e === void 0 ? void 0 : _e.onSuccessRevert) || false,
+                            view_only: item.viewOnly || false,
+                            flow_control: "continue on success, revert on fail",
+                            jump_over: "0",
                             method_interface: item.method
                                 ? item.validator
                                     ? (0, helpers_1.getValidatorMethodInterface)(item.validator)
@@ -210,10 +210,8 @@ class BatchMultiSigCall {
                         { name: "eth_value", type: "uint256" },
                         { name: "gas_limit", type: "uint32" },
                         { name: "view_only", type: "bool" },
-                        { name: "continue_on_fail", type: "bool" },
-                        { name: "stop_on_fail", type: "bool" },
-                        { name: "stop_on_success", type: "bool" },
-                        { name: "revert_on_success", type: "bool" },
+                        { name: "flow_control", type: "string" },
+                        { name: "jump_over", type: "uint8" },
                         { name: "method_interface", type: "string" },
                     ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})),
                 primaryType: "BatchMultiSigCall_",
@@ -245,7 +243,7 @@ class BatchMultiSigCall {
                 inputData: batchCall,
                 mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
                         ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flags ? (0, helpers_1.manageCallFlags)(item.flags) : "0", to: item.validator
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flow ? (0, helpers_1.manageCallFlagsV2)(item.flow, item.jump) : "0", to: item.validator
                         ? item.validator.validatorAddress
                         : this.web3.utils.isAddress(item.to)
                             ? item.to
@@ -270,20 +268,7 @@ class BatchMultiSigCall {
             const data = tx.params && tx.params.length !== 0
                 ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedMessage)
                 : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
-            const details = utils_1.defaultAbiCoder.decode([
-                "bytes32",
-                "address",
-                "address",
-                "bytes32",
-                "uint256",
-                "uint32",
-                "bool",
-                "bool",
-                "bool",
-                "bool",
-                "bool",
-                "bytes32",
-            ], tx.encodedDetails);
+            const details = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"], tx.encodedDetails);
             const defaultReturn = {
                 typeHash: data[0],
                 txHash: data[1],
@@ -296,12 +281,10 @@ class BatchMultiSigCall {
                     value: details[4].toString(),
                     gasLimit: details[5],
                     staticCall: details[6],
-                    continueOnFail: details[7],
-                    stopOnFail: details[8],
-                    stopOnSuccess: details[9],
-                    revertOnSuccess: details[10],
-                    methodHash: details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-                        ? details[11]
+                    flowControl: details[7],
+                    jumpOver: details[8],
+                    methodHash: details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+                        ? details[9]
                         : undefined,
                 },
             };

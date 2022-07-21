@@ -9,6 +9,34 @@ import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Valid
 import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
 import ValidatorABI from "./abi/validator.abi.json";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
+import { Flow } from "./constants";
+
+const flows = {
+  OK_CONT_FAIL_REVERT: {
+    text: "continue on success, revert on fail",
+    value: "1",
+  },
+  OK_CONT_FAIL_STOP: {
+    text: "continue on success, stop on fail",
+    value: "2",
+  },
+  OK_CONT_FAIL_JUMP: {
+    text: "continue on success, jump on fail",
+    value: "3",
+  },
+  OK_REVERT_FAIL_CONT: {
+    text: "revert on success, continue on fail",
+    value: "4",
+  },
+  OK_STOP_FAIL_CONT: {
+    text: "stop on success, continue on fail",
+    value: "5",
+  },
+  OK_JUMP_FAIL_CONT: {
+    text: "jump on success, continue on fail",
+    value: "6",
+  },
+};
 
 // Everything for sessionId
 const getGroupId = (group: number): string => group.toString(16).padStart(6, "0");
@@ -72,6 +100,20 @@ export const manageCallFlags = (flags: Partial<MultiCallFlags>) => {
   array[3] = flags.onFailContinue ? "2" : flags.onFailStop ? "1" : "0";
 
   return array.join("");
+};
+
+export const manageCallFlagsV2 = (flow: Flow, jump: number) => {
+  if (jump > 15) {
+    throw new Error("Jump value cannot exceed 15");
+  }
+
+  console.log(flow);
+
+  if (!flows[flow]) {
+    throw new Error("Flow not found");
+  }
+
+  return `0x${flows[flow].value}${jump.toString(16)}`;
 };
 
 // From method and params create tuple

@@ -3,6 +3,7 @@ import Contract from "web3/eth/contract";
 import { TypedData } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Validator } from "./interfaces";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
+import { Flow } from "./constants";
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
@@ -22,6 +23,7 @@ export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Pa
 };
 export declare const getFlags: (flags: Partial<BatchFlags>, small: boolean) => string;
 export declare const manageCallFlags: (flags: Partial<MultiCallFlags>) => string;
+export declare const manageCallFlagsV2: (flow: Flow, jump: number) => string;
 export declare const getMethodInterface: (call: Partial<MethodParamsInterface>) => string;
 export declare const getTypeHash: (typedData: TypedData) => string;
 export declare const getTypedDataDomain: (web3: Web3, factoryProxy: Contract, factoryProxyAddress: string) => Promise<{

@@ -1,12 +1,16 @@
+import { Flow } from "../constants";
 import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
 
-export interface MultiSigCallInputInterface extends MultiCallBase {
+export interface MultiSigCallInputInterface extends Omit<MultiCallBase, "flags"> {
   value: string;
   to: string;
   toEnsHash?: string;
   signer: string;
   signerVariableId?: string;
   validator?: Validator;
+  flow?: Flow;
+  jump?: number;
+  viewOnly?: boolean;
 }
 
 export interface BatchMultiSigCallInputInterface extends BatchCallBase {

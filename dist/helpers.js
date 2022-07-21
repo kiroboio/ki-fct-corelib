@@ -12,13 +12,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const ethers_eip712_1 = require("ethers-eip712");
 const factoryProxy__abi_json_1 = __importDefault(require("./abi/factoryProxy_.abi.json"));
 const validator_abi_json_1 = __importDefault(require("./abi/validator.abi.json"));
+const flows = {
+    OK_CONT_FAIL_REVERT: {
+        text: "continue on success, revert on fail",
+        value: "1",
+    },
+    OK_CONT_FAIL_STOP: {
+        text: "continue on success, stop on fail",
+        value: "2",
+    },
+    OK_CONT_FAIL_JUMP: {
+        text: "continue on success, jump on fail",
+        value: "3",
+    },
+    OK_REVERT_FAIL_CONT: {
+        text: "revert on success, continue on fail",
+        value: "4",
+    },
+    OK_STOP_FAIL_CONT: {
+        text: "stop on success, continue on fail",
+        value: "5",
+    },
+    OK_JUMP_FAIL_CONT: {
+        text: "jump on success, continue on fail",
+        value: "6",
+    },
+};
 // Everything for sessionId
 const getGroupId = (group) => group.toString(16).padStart(6, "0");
 const getNonce = (nonce) => nonce.toString(16).padStart(10, "0");
@@ -77,6 +103,17 @@ const manageCallFlags = (flags) => {
     return array.join("");
 };
 exports.manageCallFlags = manageCallFlags;
+const manageCallFlagsV2 = (flow, jump) => {
+    if (jump > 15) {
+        throw new Error("Jump value cannot exceed 15");
+    }
+    console.log(flow);
+    if (!flows[flow]) {
+        throw new Error("Flow not found");
+    }
+    return `0x${flows[flow].value}${jump.toString(16)}`;
+};
+exports.manageCallFlagsV2 = manageCallFlagsV2;
 // From method and params create tuple
 const getMethodInterface = (call) => {
     return `${call.method}(${call.params.map((item) => item.type).join(",")})`;

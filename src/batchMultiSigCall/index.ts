@@ -7,7 +7,6 @@ import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 import {
-  manageCallFlags,
   getParamsOffset,
   getParamsLength,
   getSessionIdDetails,
@@ -18,6 +17,7 @@ import {
   createValidatorTxData,
   getValidatorMethodInterface,
   getValidatorData,
+  manageCallFlagsV2,
 } from "../helpers";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
@@ -209,11 +209,9 @@ export class BatchMultiSigCall {
             call_ens: item.toEnsHash || "",
             eth_value: item.value,
             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-            view_only: item.flags?.viewOnly || false,
-            continue_on_fail: item.flags?.onFailContinue || false,
-            stop_on_fail: item.flags?.onFailStop || false,
-            stop_on_success: item.flags?.onSuccessStop || false,
-            revert_on_success: item.flags?.onSuccessRevert || false,
+            view_only: item.viewOnly || false,
+            flow_control: "continue on success, revert on fail",
+            jump_over: "0",
             method_interface: item.method
               ? item.validator
                 ? getValidatorMethodInterface(item.validator)
@@ -255,10 +253,8 @@ export class BatchMultiSigCall {
           { name: "eth_value", type: "uint256" },
           { name: "gas_limit", type: "uint32" },
           { name: "view_only", type: "bool" },
-          { name: "continue_on_fail", type: "bool" },
-          { name: "stop_on_fail", type: "bool" },
-          { name: "stop_on_success", type: "bool" },
-          { name: "revert_on_success", type: "bool" },
+          { name: "flow_control", type: "string" },
+          { name: "jump_over", type: "uint8" },
           { name: "method_interface", type: "string" },
         ],
         ...batchCall.calls.reduce(
@@ -325,7 +321,7 @@ export class BatchMultiSigCall {
         value: item.value,
         signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
         gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-        flags: item.flags ? manageCallFlags(item.flags) : "0",
+        flags: item.flow ? manageCallFlagsV2(item.flow, item.jump) : "0",
         to: item.validator
           ? item.validator.validatorAddress
           : this.web3.utils.isAddress(item.to)
@@ -363,20 +359,7 @@ export class BatchMultiSigCall {
           : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
 
       const details = defaultAbiCoder.decode(
-        [
-          "bytes32",
-          "address",
-          "address",
-          "bytes32",
-          "uint256",
-          "uint32",
-          "bool",
-          "bool",
-          "bool",
-          "bool",
-          "bool",
-          "bytes32",
-        ],
+        ["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"],
         tx.encodedDetails
       );
 
@@ -393,13 +376,11 @@ export class BatchMultiSigCall {
           value: details[4].toString(),
           gasLimit: details[5],
           staticCall: details[6],
-          continueOnFail: details[7],
-          stopOnFail: details[8],
-          stopOnSuccess: details[9],
-          revertOnSuccess: details[10],
+          flowControl: details[7],
+          jumpOver: details[8],
           methodHash:
-            details[11] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[11]
+            details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              ? details[9]
               : undefined,
         },
       };
