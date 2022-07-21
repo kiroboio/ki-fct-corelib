@@ -2,6 +2,7 @@ const { artifacts, web3 } = require("hardhat");
 const { BatchMultiSigCall } = require("../dist/index.js");
 const assert = require("assert");
 const { expect } = require("chai");
+const { Flow } = require("../dist/constants.js");
 
 // All the contracts are imported from ki-eth-contracts repository.
 // To make the Hardhat work with contracts from ki-eth-contracts, contracts folder
@@ -284,7 +285,7 @@ describe("BatchMultiSigCall", () => {
               { name: "to", type: "address", value: accounts[11] },
               { name: "token_amount", type: "uint256", value: "15" },
             ],
-            flow: "OK_CONT_FAIL_JUMP",
+            flow: Flow.OK_CONT_FAIL_JUMP,
             jump: 1,
             signer: signer1,
           },
