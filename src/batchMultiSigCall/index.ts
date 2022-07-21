@@ -18,6 +18,7 @@ import {
   getValidatorMethodInterface,
   getValidatorData,
   manageCallFlagsV2,
+  flows,
 } from "../helpers";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
@@ -211,8 +212,8 @@ export class BatchMultiSigCall {
             eth_value: item.value,
             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
             view_only: item.viewOnly || false,
-            flow_control: "continue on success, revert on fail",
-            jump_over: "0",
+            flow_control: item.flow ? flows[item.flow] : "continue on success, revert on fail",
+            jump_over: item.jump || 0,
             method_interface: item.method
               ? item.validator
                 ? getValidatorMethodInterface(item.validator)
@@ -322,7 +323,7 @@ export class BatchMultiSigCall {
         value: item.value,
         signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
         gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-        flags: item.flow ? manageCallFlagsV2(item.flow, item.jump) : "0",
+        flags: manageCallFlagsV2(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0),
         to: item.validator
           ? item.validator.validatorAddress
           : this.web3.utils.isAddress(item.to)

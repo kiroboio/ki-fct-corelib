@@ -175,8 +175,8 @@ class BatchMultiSigCall {
                             eth_value: item.value,
                             gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
                             view_only: item.viewOnly || false,
-                            flow_control: "continue on success, revert on fail",
-                            jump_over: "0",
+                            flow_control: item.flow ? helpers_1.flows[item.flow] : "continue on success, revert on fail",
+                            jump_over: item.jump || 0,
                             method_interface: item.method
                                 ? item.validator
                                     ? (0, helpers_1.getValidatorMethodInterface)(item.validator)
@@ -243,7 +243,7 @@ class BatchMultiSigCall {
                 inputData: batchCall,
                 mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
                         ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: item.flow ? (0, helpers_1.manageCallFlagsV2)(item.flow, item.jump) : "0", to: item.validator
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
                         ? item.validator.validatorAddress
                         : this.web3.utils.isAddress(item.to)
                             ? item.to

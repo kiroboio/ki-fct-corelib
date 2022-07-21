@@ -11,7 +11,7 @@ import ValidatorABI from "./abi/validator.abi.json";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 
-const flows = {
+export const flows = {
   OK_CONT_FAIL_REVERT: {
     text: "continue on success, revert on fail",
     value: "1",
@@ -102,12 +102,10 @@ export const manageCallFlags = (flags: Partial<MultiCallFlags>) => {
   return array.join("");
 };
 
-export const manageCallFlagsV2 = (flow: Flow, jump: number) => {
+export const manageCallFlagsV2 = (flow: Flow | string, jump: number) => {
   if (jump > 15) {
     throw new Error("Jump value cannot exceed 15");
   }
-
-  console.log(flow);
 
   if (!flows[flow]) {
     throw new Error("Flow not found");

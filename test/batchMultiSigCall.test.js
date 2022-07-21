@@ -402,7 +402,8 @@ describe("BatchMultiSigCall", () => {
         ],
       };
 
-      await batchMultiSigCall.addBatchCall(tx);
+      const call = await batchMultiSigCall.addBatchCall(tx);
+      console.log(JSON.stringify(call, null, 2));
 
       expect(batchMultiSigCall.calls.length).to.eq(1);
     });
@@ -489,8 +490,6 @@ describe("BatchMultiSigCall", () => {
       }));
       const decodedTxs = batchMultiSigCall.decodeTransactions(txs);
 
-      console.log(decodedTxs);
-
       expect(decodedTxs[0].token_amount).to.eq("15");
     });
     it("Should edit batchTx", async () => {
@@ -552,6 +551,8 @@ describe("BatchMultiSigCall", () => {
       batchMultiSigCall.createVariable("variableToBeRemoved"); // Random variable that will be removed
       batchMultiSigCall.createVariable("signerAddress");
       batchMultiSigCall.createVariable("ERC20Address");
+
+      batchMultiSigCall.createVariable("Random", 20);
     });
 
     it("Should add batchMultiCall", async () => {
