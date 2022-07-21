@@ -74,7 +74,8 @@ export class BatchMultiSigCall {
       if (value === undefined) {
         throw new Error(`Variable ${item[0]} doesn't have a value`);
       }
-      return `0x${this.web3.utils.padLeft(value.replace("0x", ""), 64)}`;
+
+      return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
     });
   }
 
@@ -376,8 +377,8 @@ export class BatchMultiSigCall {
           value: details[4].toString(),
           gasLimit: details[5],
           staticCall: details[6],
-          flowControl: details[7],
-          jumpOver: details[8],
+          flow: details[7],
+          jump: details[8],
           methodHash:
             details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
               ? details[9]
