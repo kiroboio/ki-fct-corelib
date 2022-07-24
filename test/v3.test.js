@@ -350,6 +350,15 @@ describe("FactoryProxy contract library", function () {
       const balanceOfSigner1 = await token20.balanceOf(signer1);
       console.log(balanceOfSigner1.toString());
 
+      await token20.approve(factoryProxy.address, "20", {
+        from: signer1,
+      });
+
+      const allownace = await token20.allowance(signer1, factoryProxy.address);
+      console.log(`Allowance`, allownace.toString());
+
+      batchMultiSigCall.createVariable("signer1", signer1);
+
       const tx = {
         groupId: 7,
         nonce: 1,
@@ -376,26 +385,6 @@ describe("FactoryProxy contract library", function () {
             ],
             from: vault11.address,
           },
-          // {
-          //   value: 0,
-          //   to: token20.address,
-          //   method: "approve",
-          //   params: [
-          //     { name: "spender", type: "address", value: instance.address },
-          //     { name: "amount", type: "uint256", value: "20" },
-          //   ],
-          //   from: signer1,
-          // },
-          // {
-          //   value: 0,
-          //   to: token20.address,
-          //   method: "transfer",
-          //   params: [
-          //     { name: "to", type: "address", value: accounts[12] },
-          //     { name: "token_amount", type: "uint256", value: "20" },
-          //   ],
-          //   from: signer1,
-          // },
           {
             value: 0,
             to: token20.address,
