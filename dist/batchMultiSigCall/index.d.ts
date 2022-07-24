@@ -64,7 +64,7 @@ export declare class BatchMultiSigCall {
             typeHash: string;
             functionSignature: string;
             value: string;
-            signer: string;
+            from: string;
             gasLimit: number;
             flags: string;
             to: string;
@@ -121,7 +121,7 @@ export declare class BatchMultiSigCall {
             typeHash: string;
             functionSignature: string;
             value: string;
-            signer: string;
+            from: string;
             gasLimit: number;
             flags: string;
             to: string;
@@ -178,7 +178,7 @@ export declare class BatchMultiSigCall {
             typeHash: string;
             functionSignature: string;
             value: string;
-            signer: string;
+            from: string;
             gasLimit: number;
             flags: string;
             to: string;
@@ -236,7 +236,7 @@ export declare class BatchMultiSigCall {
             typeHash: string;
             functionSignature: string;
             value: string;
-            signer: string;
+            from: string;
             gasLimit: number;
             flags: string;
             to: string;
@@ -293,7 +293,7 @@ export declare class BatchMultiSigCall {
             typeHash: string;
             functionSignature: string;
             value: string;
-            signer: string;
+            from: string;
             gasLimit: number;
             flags: string;
             to: string;

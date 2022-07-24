@@ -347,12 +347,8 @@ describe("FactoryProxy contract library", function () {
       const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
-      // Minting NFT for signer2 to check ownerOf with Validator function
-      await nft.mint("dd", { from: signer2 });
-
-      const balance = await token20.balanceOf(accounts[11]);
-
-      console.log(balance.toString());
+      const balanceOfSigner1 = await token20.balanceOf(signer1);
+      console.log(balanceOfSigner1.toString());
 
       const tx = {
         groupId: 7,
@@ -368,7 +364,7 @@ describe("FactoryProxy contract library", function () {
             ],
             flow: Flow.OK_CONT_FAIL_JUMP,
             jump: 1,
-            signer: signer1,
+            from: vault10.address,
           },
           {
             value: 0,
@@ -378,8 +374,28 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "20" },
             ],
-            signer: signer2,
+            from: vault11.address,
           },
+          // {
+          //   value: 0,
+          //   to: token20.address,
+          //   method: "approve",
+          //   params: [
+          //     { name: "spender", type: "address", value: instance.address },
+          //     { name: "amount", type: "uint256", value: "20" },
+          //   ],
+          //   from: signer1,
+          // },
+          // {
+          //   value: 0,
+          //   to: token20.address,
+          //   method: "transfer",
+          //   params: [
+          //     { name: "to", type: "address", value: accounts[12] },
+          //     { name: "token_amount", type: "uint256", value: "20" },
+          //   ],
+          //   from: signer1,
+          // },
           {
             value: 0,
             to: token20.address,
@@ -392,7 +408,7 @@ describe("FactoryProxy contract library", function () {
               },
               validatorAddress: validator.address,
             },
-            signer: signer2,
+            from: vault11.address,
           },
 
           {
@@ -408,7 +424,7 @@ describe("FactoryProxy contract library", function () {
               },
               validatorAddress: validator.address,
             },
-            signer: signer2,
+            from: vault11.address,
           },
         ],
       };
@@ -434,7 +450,7 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[11] },
                 { name: "token_amount", type: "uint256", value: "15" },
               ],
-              signer: signer1,
+              from: vault10.address,
             },
             {
               value: 0,
@@ -444,7 +460,7 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[12] },
                 { name: "token_amount", type: "uint256", value: "20" },
               ],
-              signer: signer2,
+              from: vault11.address,
             },
           ],
         },
@@ -460,7 +476,7 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[11] },
                 { name: "token_amount", type: "uint256", value: "15" },
               ],
-              signer: signer1,
+              from: vault10.address,
             },
             {
               value: 0,
@@ -470,7 +486,7 @@ describe("FactoryProxy contract library", function () {
                 { name: "to", type: "address", value: accounts[12] },
                 { name: "token_amount", type: "uint256", value: "20" },
               ],
-              signer: signer2,
+              from: vault11.address,
             },
           ],
         },
@@ -518,12 +534,12 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[11] },
               { name: "token_amount", type: "uint256", value: "15" },
             ],
-            signer: signer1,
+            from: vault10.address,
           },
           {
             value: 15,
             to: accounts[12],
-            signer: signer2,
+            from: vault11.address,
           },
         ],
       };
@@ -536,7 +552,7 @@ describe("FactoryProxy contract library", function () {
       const tx = {
         value: 25,
         to: accounts[13],
-        signer: getSigner(11),
+        from: getSigner(11),
       };
       const call = await batchMultiSigCall.editMultiCallTx(2, 1, tx);
 
@@ -578,9 +594,15 @@ describe("FactoryProxy contract library", function () {
       // console.log('final Data', data);
 
       try {
+        const balanceBefore = await token20.balanceOf(accounts[12]);
+
+        console.log(balanceBefore.toString());
         await instance.execute(activators.address, 0, data, {
           from: owner,
         });
+
+        const balance = await token20.balanceOf(accounts[12]);
+        console.log(balance.toString());
       } catch (err) {
         console.log(err);
       }

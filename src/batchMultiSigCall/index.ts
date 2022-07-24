@@ -202,7 +202,7 @@ export class BatchMultiSigCall {
         ...acc,
         [`transaction_${index + 1}`]: {
           details: {
-            signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
+            from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
             call_address: item.validator
               ? item.validator.validatorAddress
               : this.web3.utils.isAddress(item.to)
@@ -249,7 +249,7 @@ export class BatchMultiSigCall {
           { name: "gas_price_limit", type: "uint64" },
         ],
         Transaction_: [
-          { name: "signer", type: "address" },
+          { name: "from", type: "address" },
           { name: "call_address", type: "address" },
           { name: "call_ens", type: "string" },
           { name: "eth_value", type: "uint256" },
@@ -321,7 +321,7 @@ export class BatchMultiSigCall {
             )
           : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         value: item.value,
-        signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
+        from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
         gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
         flags: manageCallFlagsV2(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0),
         to: item.validator

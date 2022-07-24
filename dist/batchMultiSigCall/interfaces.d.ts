@@ -4,8 +4,8 @@ export interface MultiSigCallInputInterface extends Omit<MultiCallBase, "flags">
     value: string;
     to: string;
     toEnsHash?: string;
-    signer: string;
-    signerVariableId?: string;
+    from: string;
+    fromVariableId?: string;
     validator?: Validator;
     flow?: Flow;
     jump?: number;
@@ -18,7 +18,7 @@ export interface MultiSigCall {
     typeHash: string;
     functionSignature: string;
     value: string;
-    signer: string;
+    from: string;
     gasLimit: number;
     flags: string;
     to: string;

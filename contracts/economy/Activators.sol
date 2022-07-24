@@ -98,7 +98,7 @@ contract Activators is AccessControl {
         external
         onlyActivator
     {
-        uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
+        // uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
         MReturn[] memory rt = IFactoryProxy(s_factory).batchMultiCall_(
             tr,
             nonceGroup

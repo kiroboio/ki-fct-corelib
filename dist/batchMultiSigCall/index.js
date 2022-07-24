@@ -165,7 +165,7 @@ class BatchMultiSigCall {
                     return {};
                 };
                 return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
-                            signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer),
+                            from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
                             call_address: item.validator
                                 ? item.validator.validatorAddress
                                 : this.web3.utils.isAddress(item.to)
@@ -204,7 +204,7 @@ class BatchMultiSigCall {
                         { name: "expires_at", type: "uint40" },
                         { name: "gas_price_limit", type: "uint64" },
                     ], Transaction_: [
-                        { name: "signer", type: "address" },
+                        { name: "from", type: "address" },
                         { name: "call_address", type: "address" },
                         { name: "call_ens", type: "string" },
                         { name: "eth_value", type: "uint256" },
@@ -243,7 +243,7 @@ class BatchMultiSigCall {
                 inputData: batchCall,
                 mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
                         ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, signer: this.web3.utils.isAddress(item.signer) ? item.signer : this.getVariableFCValue(item.signer), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
                         ? item.validator.validatorAddress
                         : this.web3.utils.isAddress(item.to)
                             ? item.to

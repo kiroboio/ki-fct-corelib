@@ -165,6 +165,23 @@ contract RecoveryWallet is
         return s_blocked[messageHash];
     }
 
+    function allowedToExecute_(address[] calldata signers, uint256 fctVersion)
+        external
+        view
+        returns (uint256)
+    {
+        for (uint256 i = 0; i < signers.length; i++) {
+            if (
+                fctVersion == 0 &&
+                signers[i] == s_owner &&
+                s_backup.state != BACKUP_STATE_ACTIVATED
+            ) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     function sendEther(address payable to, uint256 value)
         external
         onlyActiveOwner

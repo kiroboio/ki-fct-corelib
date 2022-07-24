@@ -5,6 +5,7 @@ pragma abicoder v2;
 
 import "./FactoryStorage.sol";
 import "./interfaces/IFactoryProxy.sol";
+import "./interfaces/IFCT_Runner.sol";
 import "hardhat/console.sol";
 
 // 1-15     16bit flags
@@ -57,7 +58,8 @@ struct Call {
     bytes32 ensHash;
     uint256 value;
     uint256 sessionId;
-    address signer;
+    // address signer;
+    address from;
     bytes32 functionSignature;
     bytes data;
 }
@@ -91,7 +93,8 @@ struct Call {
 
 struct PackedMSCall {
     uint256 value;
-    address signer;
+    // address signer;
+    address from;
     uint32 gasLimit;
     uint16 flags;
     address to;
@@ -116,7 +119,9 @@ struct MultiSigCallLocals {
 }
 
 struct MultiSigInternalCallLocals {
+    address callFrom;
     address callTo;
+    uint256 value;
     uint256 dataIndex;
     uint256 varId;
     bytes32 varValue;
@@ -151,7 +156,7 @@ contract FactoryProxy_ is FactoryStorage {
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_TYPEHASH_ =
         keccak256(
-            "BatchMultiSigCall_(Limits limits,Transaction transaction)Limits_(uint256 sessionId)Transaction_(address signer,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
+            "BatchMultiSigCall_(Limits limits,Transaction transaction)Limits_(uint256 sessionId)Transaction_(address from,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
         );
 
     bytes32 public constant PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_ =
@@ -159,7 +164,7 @@ contract FactoryProxy_ is FactoryStorage {
 
     bytes32 public constant PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_ =
         keccak256(
-            "Transaction_(address signer,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
+            "Transaction_(address from,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
         );
 
     /* bytes32 public constant BATCH_TRANSFER_TYPEHASH_ =
@@ -189,7 +194,7 @@ contract FactoryProxy_ is FactoryStorage {
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_ =
         keccak256(
-            "Transaction_(address signer,address call_address,string call_ens,uint256 eth_value,uint32 gas_limit,bool view_only,string flow_control,uint8 jump_over,string method_interface)"
+            "Transaction_(address from,address call_address,string call_ens,uint256 eth_value,uint32 gas_limit,bool view_only,string flow_control,uint8 jump_over,string method_interface)"
         );
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_APPROVAL_TYPEHASH_ =
@@ -1073,7 +1078,7 @@ contract FactoryProxy_ is FactoryStorage {
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
             bytes32[] calldata variables_ = variables;
-            for (uint256 i = 0; i < trLength; i++) {
+            for (uint256 i = 0; i < trLength; ++i) {
                 uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];
                 // console.log("proxy: i: ", i);
@@ -1097,7 +1102,7 @@ contract FactoryProxy_ is FactoryStorage {
                 // maxNonce = sessionId;
 
                 uint256 length = mcalls.mcall.length;
-                for (uint256 j = 0; j < length; j++) {
+                for (uint256 j = 0; j < length; ++j) {
                     MSCall calldata call = mcalls.mcall[j];
                     // console.log(
                     //     "proxy start: call.to %s, call.value %s",
@@ -1126,7 +1131,7 @@ contract FactoryProxy_ is FactoryStorage {
                             : keccak256(
                                 abi.encode(
                                     BATCH_MULTI_SIG_CALL_APPROVAL_TYPEHASH_,
-                                    call.signer
+                                    call.from
                                 )
                             )
                     );
@@ -1140,46 +1145,66 @@ contract FactoryProxy_ is FactoryStorage {
                 require(s_fcts[messageHash] == 0, "allready executed");
                 s_fcts[messageHash] = 1;
                 //console.log("ori 3");
-                address[] memory signers = new address[](length);
+
+                address[] memory signers = new address[](
+                    mcalls.signatures.length
+                );
                 for (uint256 s = 0; s < mcalls.signatures.length; ++s) {
                     Signature calldata signature = mcalls.signatures[s];
-
-                    for (uint256 j = 0; j < length; j++) {
-                        MSCall calldata call = mcalls.mcall[j];
-                        //console.log("signature.v",signature.v);
-
-                        // console.log("proxy: signer:", signer);
-                        address callSigner = call.signer;
-                        {
-                            uint256 signerId = uint256(uint160(call.signer));
-                            if (signerId > VAR_MIN && signerId < VAR_MAX) {
-                                require(
-                                    signerId & VAR_MASK <= variables_.length,
-                                    "Factory: var out of bound"
-                                );
-
-                                callSigner = address(
-                                    uint160(
-                                        uint256(
-                                            variables_[
-                                                (signerId & VAR_MASK) - 1
-                                            ]
-                                        )
-                                    )
-                                );
-                            }
-                        }
-                        address signer = _addressFromMessageAndSignature(
-                            messageHash,
-                            signature.v,
-                            signature.r,
-                            signature.s
-                        );
-                        if (signer == callSigner && signers[j] == address(0)) {
-                            signers[j] = signer;
-                        }
-                    }
+                    signers[s] = _addressFromMessageAndSignature(
+                        messageHash,
+                        signature.v,
+                        signature.r,
+                        signature.s
+                    );
                 }
+                // address[] memory signers = new address[](length);
+
+                // for (uint256 k = 0; k < length; ++k) {
+                //     MSCall calldata call = mcalls.mcall[k];
+                //     for (uint256 s = 0; s < mcalls.signatures.length; ++s) {
+                //         Signature calldata signature = mcalls.signatures[s];
+                //         address callSigner = call.signer;
+                //         {
+                //             uint256 signerId = uint256(uint160(call.signer));
+                //             if (signerId > VAR_MIN && signerId < VAR_MAX) {
+                //                 require(
+                //                     signerId & VAR_MASK <= variables_.length,
+                //                     "Factory: var out of bound"
+                //                 );
+
+                //                 callSigner = address(
+                //                     uint160(
+                //                         uint256(
+                //                             variables_[
+                //                                 (signerId & VAR_MASK) - 1
+                //                             ]
+                //                         )
+                //                     )
+                //                 );
+                //                 for (uint256 l = 0; l < length; ++l) {
+                //                     require(
+                //                         callSigner != mcalls.mcall[l].signer,
+                //                         "Factory: singer exists"
+                //                     );
+                //                 }
+                //             }
+                //         }
+                //         address signer = _addressFromMessageAndSignature(
+                //             messageHash,
+                //             signature.v,
+                //             signature.r,
+                //             signature.s
+                //         );
+                //         // console.log('signer', signer);
+                //         // console.log('callSigner %s %s', k, callSigner);
+                //         if (signer == callSigner) {
+                //             signers[k] = signer;
+                //             break;
+                //         }
+                //     }
+                // }
+
                 MultiSigCallLocals memory locals;
                 {
                     locals.sessionId = sessionId;
@@ -1196,17 +1221,17 @@ contract FactoryProxy_ is FactoryStorage {
 
                 locals.returnedValues = new bytes[](length);
                 //console.log("gas until j:", locals.gas);
-                for (uint256 j = 0; j < length; j++) {
+                for (uint256 j = 0; j < length; ++j) {
                     // console.log(
                     //     "------------------ FTC %s ------------------",
                     //     j + 1
                     // );
                     uint256 gas = gasleft();
 
-                    require(
-                        signers[j] != address(0),
-                        "Factory: signer missing"
-                    );
+                    // require(
+                    //     signers[j] != address(0),
+                    //     "Factory: signer missing"
+                    // );
                     MSCall calldata call = mcalls.mcall[j];
                     // console.log(
                     //     "proxy: call.to %s, call.value %s",
@@ -1216,9 +1241,67 @@ contract FactoryProxy_ is FactoryStorage {
                     if (call.to == address(0)) {
                         continue;
                     }
-                    Wallet storage wallet = s_accounts_wallet[signers[j]];
-                    require(wallet.owner, "Factory: signer is not owner");
+
+                    // Wallet storage wallet = s_accounts_wallet[signers[j]];
+                    // require(wallet.owner, "Factory: signer is not owner");
                     MultiSigInternalCallLocals memory varLocals;
+                    {
+                        varLocals.callFrom = call.from;
+                        if (
+                            uint256(uint160(varLocals.callFrom)) > VAR_MIN &&
+                            uint256(uint160(varLocals.callFrom)) < VAR_MAX
+                        ) {
+                            require(
+                                uint256(uint160(varLocals.callFrom)) &
+                                    VAR_MASK <=
+                                    variables_.length,
+                                "Factory: var out of bound"
+                            );
+                            varLocals.callFrom = address(
+                                uint160(
+                                    uint256(
+                                        variables_[
+                                            (uint256(
+                                                uint160(varLocals.callFrom)
+                                            ) & VAR_MASK) - 1
+                                        ]
+                                    )
+                                )
+                            );
+                            for (uint256 l = 0; l < length; ++l) {
+                                require(
+                                    varLocals.callFrom != mcalls.mcall[l].from,
+                                    "FCT: from exists"
+                                );
+                            }
+                        } else if (
+                            uint256(uint160(varLocals.callFrom)) > RET_MIN &&
+                            uint256(uint160(varLocals.callFrom)) < RET_MAX
+                        ) {
+                            varLocals.callFrom = abi.decode(
+                                locals.returnedValues[
+                                    (uint256(uint160(varLocals.callFrom)) &
+                                        VAR_MASK) - 1
+                                ],
+                                (address)
+                            );
+                            for (uint256 l = 0; l < length; ++l) {
+                                require(
+                                    varLocals.callFrom != mcalls.mcall[l].from,
+                                    "FCT: from exists"
+                                );
+                            }
+                        }
+                    }
+
+                    require(
+                        IFCT_Runner(varLocals.callFrom).allowedToExecute_(
+                            signers,
+                            0
+                        ) > 0,
+                        "FCT: signers not allowed"
+                    );
+
                     {
                         varLocals.callTo = call.to;
                         if (
@@ -1228,7 +1311,7 @@ contract FactoryProxy_ is FactoryStorage {
                             require(
                                 uint256(uint160(varLocals.callTo)) & VAR_MASK <=
                                     variables_.length,
-                                "Factory: var out of bound"
+                                "FCT: var out of bound"
                             );
                             varLocals.callTo = address(
                                 uint160(
@@ -1245,19 +1328,104 @@ contract FactoryProxy_ is FactoryStorage {
                             uint256(uint160(varLocals.callTo)) > RET_MIN &&
                             uint256(uint160(varLocals.callTo)) < RET_MAX
                         ) {
+                            // varLocals.callTo = abi.decode(
+                            //     locals.returnedValues[
+                            //         (uint256(uint160(varLocals.callTo)) &
+                            //             VAR_MASK) - 1
+                            //     ],
+                            //     (address)
+                            // );
+
+                            require(
+                                (uint256(uint160(varLocals.callTo)) &
+                                    VAR_MASK) <= j,
+                                "FCT: tx out of bound"
+                            );
+                            bytes memory varData = varLocals.data;
+                            uint256 innerIndex = (uint256(
+                                uint160(varLocals.callTo)
+                            ) & RET_MASK) + 1;
+
+                            require(
+                                innerIndex * 32 < varData.length,
+                                "FCT: inner out of bound"
+                            );
                             varLocals.callTo = abi.decode(
                                 locals.returnedValues[
-                                    (uint256(uint160(varLocals.callTo)) &
-                                        VAR_MASK) - 1
+                                    (varLocals.value & VAR_MASK) - 1
                                 ],
                                 (address)
                             );
+                            uint256 dataIndex = varLocals.dataIndex;
+                            address callTo = varLocals.callTo;
+                            assembly {
+                                mstore(
+                                    add(
+                                        varData,
+                                        add(dataIndex, mul(innerIndex, 0x20))
+                                    ),
+                                    callTo
+                                )
+                            }
+                        }
+                    }
+                    {
+                        varLocals.value = call.value;
+                        if (
+                            (varLocals.value > VAR_MIN &&
+                                varLocals.value < VAR_MAX) ||
+                            (varLocals.value > VARX_MIN &&
+                                varLocals.value < VARX_MAX)
+                        ) {
+                            require(
+                                (varLocals.value & VAR_MASK) <=
+                                    variables_.length,
+                                "FCT: var out of bound"
+                            );
+                            varLocals.value = uint256(
+                                variables_[(varLocals.value & VAR_MASK) - 1]
+                            );
+                        } else if (
+                            (varLocals.value > RET_MIN &&
+                                varLocals.value < RET_MAX) ||
+                            (varLocals.value > RETX_MIN &&
+                                varLocals.value < RETX_MAX)
+                        ) {
+                            require(
+                                (varLocals.value & VAR_MASK) <= j,
+                                "FCT: tx out of bound"
+                            );
+                            bytes memory varData = varLocals.data;
+                            uint256 innerIndex = (varLocals.value & RET_MASK) +
+                                1;
+
+                            require(
+                                innerIndex * 32 < varData.length,
+                                "FCT: inner out of bound"
+                            );
+                            varLocals.value = abi.decode(
+                                locals.returnedValues[
+                                    (varLocals.value & VAR_MASK) - 1
+                                ],
+                                (uint256)
+                            );
+                            uint256 dataIndex = varLocals.dataIndex;
+                            uint256 value = varLocals.value;
+                            assembly {
+                                mstore(
+                                    add(
+                                        varData,
+                                        add(dataIndex, mul(innerIndex, 0x20))
+                                    ),
+                                    value
+                                )
+                            }
                         }
                     }
                     varLocals.data = call.data;
                     if (call.data.length > 0) {
-                        //console.log("varData Before");
-                        //console.logBytes(varLocals.data);
+                        // console.log("varData Before");
+                        // console.logBytes(varLocals.data);
                         for (
                             varLocals.dataIndex = 0;
                             varLocals.dataIndex <= call.data.length - 32;
@@ -1278,7 +1446,7 @@ contract FactoryProxy_ is FactoryStorage {
                                     require(
                                         (varLocals.varId & VAR_MASK) <=
                                             variables_.length,
-                                        "Factory: var out of bound"
+                                        "FCT: var out of bound"
                                     );
 
                                     varLocals.varValue = variables_[
@@ -1292,7 +1460,7 @@ contract FactoryProxy_ is FactoryStorage {
                                 ) {
                                     require(
                                         (varLocals.varId & VAR_MASK) <= j,
-                                        "Factory: tx out of bound"
+                                        "FCT: tx out of bound"
                                     );
                                     bytes memory varData = varLocals.data;
                                     uint256 innerIndex = (varLocals.varId &
@@ -1300,24 +1468,25 @@ contract FactoryProxy_ is FactoryStorage {
 
                                     require(
                                         innerIndex * 32 < varData.length,
-                                        "Factory: inner out of bound"
+                                        "FCT: inner out of bound"
                                     );
-                                    bytes32 varValue = varLocals.varValue;
-                                    uint256 dataIndex = varLocals.dataIndex;
+
+                                    // bytes32 varValue = varLocals.varValue;
+                                    // uint256 dataIndex = varLocals.dataIndex;
 
                                     // console.log("inner index %s", innerIndex);
-                                    assembly {
-                                        mstore(
-                                            add(
-                                                varData,
-                                                add(
-                                                    dataIndex,
-                                                    mul(innerIndex, 0x20)
-                                                )
-                                            ),
-                                            varValue
-                                        )
-                                    }
+                                    // assembly {
+                                    //     mstore(
+                                    //         add(
+                                    //             varData,
+                                    //             add(
+                                    //                 dataIndex,
+                                    //                 mul(innerIndex, 0x20)
+                                    //             )
+                                    //         ),
+                                    //         varValue
+                                    //     )
+                                    // }
 
                                     varLocals.varValue = abi.decode(
                                         locals.returnedValues[
@@ -1328,9 +1497,6 @@ contract FactoryProxy_ is FactoryStorage {
                                 }
                             }
                             {
-                                bytes memory varData = varLocals.data;
-                                uint256 dataIndex = varLocals.dataIndex;
-                                bytes32 varValue = varLocals.varValue;
                                 if (
                                     (varLocals.varId > VAR_MIN &&
                                         varLocals.varId < VAR_MAX) ||
@@ -1341,16 +1507,15 @@ contract FactoryProxy_ is FactoryStorage {
                                     (varLocals.varId > RETX_MIN &&
                                         varLocals.varId < RETX_MAX)
                                 ) {
-                                    // console.log(
-                                    //     "varData.length %s",
-                                    //     varValue.length
-                                    // );
+                                    bytes memory varData = varLocals.data;
+                                    uint256 dataIndex = varLocals.dataIndex;
+                                    bytes32 varValue = varLocals.varValue;
                                     uint256 innerIndex = (varLocals.varId &
                                         RET_MASK) + 1;
-                                    require(
-                                        innerIndex * 32 < varData.length,
-                                        "Factory: inner out of bound"
-                                    );
+                                    // require(
+                                    //     innerIndex * 32 < varData.length,
+                                    //     "Factory: inner out of bound"
+                                    // );
                                     // console.log("inner index %s", innerIndex);
                                     assembly {
                                         mstore(
@@ -1367,23 +1532,23 @@ contract FactoryProxy_ is FactoryStorage {
                                 }
                             }
                         }
-                        //console.log("varData After");
-                        //console.logBytes(varLocals.data);
+                        // console.log("varData After");
+                        // console.logBytes(varLocals.data);
                     }
 
                     (bool success, bytes memory res) = _executeCall(
-                        wallet.addr,
+                        varLocals.callFrom, // wallet.addr,
                         _ensToAddress(call.ensHash, varLocals.callTo),
                         call.flags,
                         call.gasLimit,
                         locals.messageHash,
                         call.functionSignature,
-                        call.value,
+                        varLocals.value,
                         varLocals.data
                     );
                     if (success) {
-                        //console.log("Returned bytes %s", res.length);
-                        //console.logBytes(res);
+                        // console.log("Returned bytes %s", res.length);
+                        // console.logBytes(res);
                         if (res.length > 64) {
                             // console.log(
                             //     "Keeping value %s",
@@ -1401,14 +1566,14 @@ contract FactoryProxy_ is FactoryStorage {
                         (33000 / (locals.trxCounter * length));
                     if (!success) {
                         emit BatchMultiSigCallFailed_(
-                            wallet.addr,
+                            varLocals.callFrom, // wallet.addr,
                             0,
                             locals.index,
                             j
                         );
                         if (call.flags & FLAG_FLOW >= OK_CONT_FAIL_JUMP) {
                             locals.rt[locals.index][j] = gasDiff(
-                                wallet.addr,
+                                varLocals.callFrom, // wallet.addr,
                                 gas,
                                 additionalGasPerVault
                             );
@@ -1420,7 +1585,7 @@ contract FactoryProxy_ is FactoryStorage {
                             call.flags & FLAG_FLOW == OK_CONT_FAIL_STOP
                         ) {
                             locals.rt[locals.index][j] = gasDiff(
-                                wallet.addr,
+                                varLocals.callFrom, // wallet.addr,
                                 gas,
                                 additionalGasPerVault
                             );
@@ -1429,13 +1594,13 @@ contract FactoryProxy_ is FactoryStorage {
                         revert(_getRevertMsg(res));
                     } else if (call.flags & FLAG_FLOW == OK_STOP_FAIL_CONT) {
                         locals.rt[locals.index][j] = gasDiff(
-                            wallet.addr,
+                            varLocals.callFrom, // wallet.addr,
                             gas,
                             additionalGasPerVault
                         );
                         break;
                     } else if (call.flags & FLAG_FLOW == OK_REVERT_FAIL_CONT) {
-                        revert("Factory: revert on success");
+                        revert("FCT: revert on success");
                     } else if (call.flags & FLAG_FLOW == OK_JUMP_FAIL_CONT) {
                         j = j + (call.flags & FLAG_JUMP);
                     }
@@ -1452,7 +1617,7 @@ contract FactoryProxy_ is FactoryStorage {
                     // }
                     //console.log("proxy: wallet.addr: %s , i: %s, j: %s", wallet.addr, locals.index, j);
                     locals.rt[locals.index][j] = gasDiff(
-                        wallet.addr,
+                        varLocals.callFrom, // wallet.addr,
                         gas,
                         additionalGasPerVault
                     ); //MReturn(wallet.addr, refund);
@@ -1731,14 +1896,11 @@ contract FactoryProxy_ is FactoryStorage {
     ) private pure returns (bytes32) {
         uint16 flags = call.flags;
 
-        // console.log("flags");
-        // console.logBytes32(_getFlowHash(flags & FLAG_FLOW));
-
         return
             keccak256(
                 abi.encode(
                     BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_,
-                    call.signer,
+                    call.from,
                     call.to,
                     call.ensHash,
                     call.value,
@@ -1746,10 +1908,6 @@ contract FactoryProxy_ is FactoryStorage {
                     flags & FLAG_STATICCALL > 0,
                     _getFlowHash(flags & FLAG_FLOW),
                     uint8(flags & FLAG_JUMP),
-                    // flags & ON_FAIL_CONTINUE > 0,
-                    // flags & ON_FAIL_STOP > 0,
-                    // flags & ON_SUCCESS_STOP > 0,
-                    // flags & ON_SUCCESS_REVERT > 0,
                     call.functionSignature
                 )
             );
@@ -1799,48 +1957,18 @@ contract FactoryProxy_ is FactoryStorage {
         return 0x0;
     }
 
-    function _checkSessionIdLimits(
-        // uint256 i,
-        uint256 sessionId // uint256 nonce, // uint256 maxNonce
-    ) private view {
-        // if (i == 0) {
-        //     require(
-        //         sessionId >> NONCE_BIT >= nonce >> NONCE_BIT,
-        //         "Factory: group+nonce too low"
-        //     );
-        // } else {
-        //     require(
-        //         maxNonce >> NONCE_BIT < sessionId >> NONCE_BIT,
-        //         "Factory: should be ordered"
-        //     );
-        // }
+    function _checkSessionIdLimits(uint256 sessionId) private view {
         require(
             tx.gasprice <= uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
-            "Factory: gas price too high"
+            "FCT: gas price too high"
         );
         require(
             block.timestamp > uint40(sessionId >> AFTER_TS_BIT),
-            "Factory: too early"
+            "FCT: too early"
         );
         require(
             block.timestamp < uint40(sessionId >> BEFORE_TS_BIT),
-            "Factory: too late"
+            "FCT: too late"
         );
-    }
-
-    function _nextNonce(uint256 nonce, uint256 maxNonce)
-        private
-        pure
-        returns (uint256)
-    {
-        require(
-            (maxNonce < nonce + (1 << MAX_NONCE_JUMP_BIT)) &&
-                (uint40(maxNonce >> NONCE_BIT) >= uint40(nonce >> NONCE_BIT)),
-            "Factory: group+nonce too high"
-        );
-        return
-            (maxNonce &
-                0x000000ffffffffff000000000000000000000000000000000000000000000000) +
-            (1 << NONCE_BIT);
     }
 }
