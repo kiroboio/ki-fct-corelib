@@ -61,12 +61,15 @@ class BatchMultiSigCall {
             if (value === undefined) {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
-            return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+            if (isNaN(Number(value))) {
+                return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+            }
+            return `0x${this.web3.utils.padLeft(Number(value).toString(16), 64)}`;
         });
     }
-    getVariableIndex(variableId) {
+    getVariableIndex(variableId, throwError = true) {
         const index = this.variables.findIndex((item) => item[0] === variableId);
-        if (index === -1) {
+        if (index === -1 && throwError) {
             throw new Error(`Variable ${variableId} doesn't exist`);
         }
         return index;
@@ -143,6 +146,12 @@ class BatchMultiSigCall {
                 const txData = () => {
                     if (item.params) {
                         if (item.validator) {
+                            Object.entries(item.validator.params).forEach(([key, value]) => {
+                                const index = this.getVariableIndex(value, false);
+                                if (index !== -1) {
+                                    item.validator.params[key] = this.getVariableFCValue(this.variables[index][0]);
+                                }
+                            });
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
                         item.params.forEach((param) => {

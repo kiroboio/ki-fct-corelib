@@ -347,17 +347,7 @@ describe("FactoryProxy contract library", function () {
       const signer1 = getSigner(10);
       const signer2 = getSigner(11);
 
-      const balanceOfSigner1 = await token20.balanceOf(signer1);
-      console.log(balanceOfSigner1.toString());
-
-      await token20.approve(factoryProxy.address, "20", {
-        from: signer1,
-      });
-
-      const allownace = await token20.allowance(signer1, factoryProxy.address);
-      console.log(`Allowance`, allownace.toString());
-
-      batchMultiSigCall.createVariable("signer1", signer1);
+      batchMultiSigCall.createVariable("valueToCompare", "10014");
 
       const tx = {
         groupId: 7,
@@ -393,7 +383,7 @@ describe("FactoryProxy contract library", function () {
             validator: {
               method: "greaterThan",
               params: {
-                valueToCompare: "10014",
+                valueToCompare: "valueToCompare",
               },
               validatorAddress: validator.address,
             },
@@ -575,6 +565,8 @@ describe("FactoryProxy contract library", function () {
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures };
       });
+
+      console.log(batchMultiSigCall.getVariablesAsBytes32());
 
       const data = activators.contract.methods
         .activateBatchMultiSigCall(signedCalls, batchMultiSigCall.getVariablesAsBytes32())
