@@ -41,7 +41,6 @@ describe("FactoryProxy contract library", function () {
   let user3;
   let user4;
   let instances = [];
-  let nft;
   let uniSwapPair;
   let activators;
   let weth;
@@ -193,7 +192,6 @@ describe("FactoryProxy contract library", function () {
     // });
 
     validator = await Validator.new({ from: owner });
-    nft = await ERC721.new("NFT", "NFT contract", { from: owner });
     uniSwapPair = await UniSwapPair.new(kiro.address, weth.address, {
       from: owner,
     });
@@ -344,9 +342,6 @@ describe("FactoryProxy contract library", function () {
     it("Should add batchMulticall", async () => {
       batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
 
-      const signer1 = getSigner(10);
-      const signer2 = getSigner(11);
-
       batchMultiSigCall.createVariable("valueToCompare", "10014");
 
       const tx = {
@@ -413,9 +408,6 @@ describe("FactoryProxy contract library", function () {
       expect(batchMultiSigCall.calls.length).to.eq(1);
     });
     it("Should add multiple batchMulticalls", async () => {
-      const signer1 = getSigner(10);
-      const signer2 = getSigner(11);
-
       const txs = [
         {
           groupId: 7,
@@ -498,9 +490,6 @@ describe("FactoryProxy contract library", function () {
       expect(decodedTxs[0].token_amount).to.eq("15");
     });
     it("Should edit batchTx", async () => {
-      const signer1 = getSigner(10);
-      const signer2 = getSigner(11);
-
       const tx = {
         groupId: 7,
         nonce: 3,
