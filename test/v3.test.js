@@ -389,15 +389,24 @@ describe("FactoryProxy contract library", function () {
             value: 0,
             to: token20.address,
             method: "balanceOf",
-            params: [{ name: "account", type: "address", value: accounts[11] }],
+            params: [{ name: "account", type: "address", variable: "vault11" }],
             validator: {
-              method: "betweenNotEqual",
+              method: "greaterThan",
               params: {
-                value1ToCompare: "10014",
-                value2ToCompare: "10020",
+                valueToCompare: "10",
               },
               validatorAddress: validator.address,
             },
+            from: "vault11",
+          },
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: batchMultiSigCall.getPreviousTxValue(3) },
+            ],
             from: "vault11",
           },
         ],

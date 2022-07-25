@@ -15,6 +15,7 @@ export declare class BatchMultiSigCall {
     getVariablesAsBytes32(): string[];
     private getVariableIndex;
     private getVariableFCValue;
+    getPreviousTxValue(index: number): string;
     addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<{
         typedData: {
             types: {

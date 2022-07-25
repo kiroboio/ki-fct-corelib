@@ -35,6 +35,9 @@ class BatchMultiSigCall {
         this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
         this.factoryProxyAddress = contractAddress;
     }
+    //
+    // Everything for variables
+    //
     createVariable(variableId, value) {
         this.variables = [...this.variables, [variableId, value !== null && value !== void 0 ? value : undefined]];
         return this.variables.map((item) => item[0]);
@@ -77,6 +80,15 @@ class BatchMultiSigCall {
     getVariableFCValue(variableId) {
         const index = this.getVariableIndex(variableId);
         return String(index + 1).padStart(variableBase.length, variableBase);
+    }
+    //
+    // End of everything for variables
+    //
+    //
+    // Handle FD
+    //
+    getPreviousTxValue(index) {
+        return (index + 1).toString(16).padStart(FDBase.length, FDBase);
     }
     addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -144,7 +156,24 @@ class BatchMultiSigCall {
             // Else multicall is ETH Transfer - add only details
             const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
                 const txData = () => {
+                    // If mcall has parameters
                     if (item.params) {
+                        item.params.forEach((param) => {
+                            if (param.variable) {
+                                param.value = this.getVariableFCValue(param.variable);
+                                return;
+                            }
+                            // If parameter value is FD (reference value to previous tx)
+                            if (param.value.includes("0xFD")) {
+                                const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
+                                // Checks if current transaction doesn't reference current or future transaction
+                                if (refIndex >= index) {
+                                    throw new Error(`Parameter ${param.name} references a future or current transaction, referencing transaction at position ${refIndex})`);
+                                }
+                                return;
+                            }
+                        });
+                        // If mcall is a validation call
                         if (item.validator) {
                             Object.entries(item.validator.params).forEach(([key, value]) => {
                                 const index = this.getVariableIndex(value, false);
@@ -154,19 +183,6 @@ class BatchMultiSigCall {
                             });
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
-                        item.params.forEach((param) => {
-                            if (param.variable) {
-                                param.value = this.getVariableFCValue(param.variable);
-                                return;
-                            }
-                            if (param.valueFromTx) {
-                                if (index <= param.valueFromTx) {
-                                    throw new Error(`Parameter value should reference one of the previous calls`);
-                                }
-                                param.value = String(param.valueFromTx + 1).padStart(FDBase.length, FDBase);
-                                return;
-                            }
-                        });
                         return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
                             return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
                         }, {}));

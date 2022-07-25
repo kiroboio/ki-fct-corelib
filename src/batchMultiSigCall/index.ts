@@ -45,6 +45,9 @@ export class BatchMultiSigCall {
     this.factoryProxyAddress = contractAddress;
   }
 
+  //
+  // Everything for variables
+  //
   createVariable(variableId: string, value?: string) {
     this.variables = [...this.variables, [variableId, value ?? undefined]];
     return this.variables.map((item) => item[0]);
@@ -95,6 +98,17 @@ export class BatchMultiSigCall {
   private getVariableFCValue(variableId: string) {
     const index = this.getVariableIndex(variableId);
     return String(index + 1).padStart(variableBase.length, variableBase);
+  }
+  //
+  // End of everything for variables
+  //
+
+  //
+  // Handle FD
+  //
+
+  getPreviousTxValue(index: number) {
+    return (index + 1).toString(16).padStart(FDBase.length, FDBase);
   }
 
   async addBatchCall(tx: BatchMultiSigCallInputInterface) {
@@ -171,7 +185,29 @@ export class BatchMultiSigCall {
     // Else multicall is ETH Transfer - add only details
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
       const txData = () => {
+        // If mcall has parameters
         if (item.params) {
+          item.params.forEach((param) => {
+            if (param.variable) {
+              param.value = this.getVariableFCValue(param.variable);
+              return;
+            }
+
+            // If parameter value is FD (reference value to previous tx)
+            if (param.value.includes("0xFD")) {
+              const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
+
+              // Checks if current transaction doesn't reference current or future transaction
+              if (refIndex >= index) {
+                throw new Error(
+                  `Parameter ${param.name} references a future or current transaction, referencing transaction at position ${refIndex})`
+                );
+              }
+              return;
+            }
+          });
+
+          // If mcall is a validation call
           if (item.validator) {
             Object.entries(item.validator.params).forEach(([key, value]) => {
               const index = this.getVariableIndex(value, false);
@@ -182,19 +218,6 @@ export class BatchMultiSigCall {
 
             return createValidatorTxData(item);
           }
-          item.params.forEach((param) => {
-            if (param.variable) {
-              param.value = this.getVariableFCValue(param.variable);
-              return;
-            }
-            if (param.valueFromTx) {
-              if (index <= param.valueFromTx) {
-                throw new Error(`Parameter value should reference one of the previous calls`);
-              }
-              param.value = String(param.valueFromTx + 1).padStart(FDBase.length, FDBase);
-              return;
-            }
-          });
           return {
             method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
             method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
