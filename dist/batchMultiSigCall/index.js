@@ -61,7 +61,7 @@ class BatchMultiSigCall {
             if (value === undefined) {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
-            if (isNaN(Number(value))) {
+            if (isNaN(Number(value)) || this.web3.utils.isAddress(value)) {
                 return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
             }
             return `0x${this.web3.utils.padLeft(Number(value).toString(16), 64)}`;

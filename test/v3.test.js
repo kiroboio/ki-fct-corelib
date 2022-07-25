@@ -343,6 +343,7 @@ describe("FactoryProxy contract library", function () {
       batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
 
       batchMultiSigCall.createVariable("valueToCompare", "10014");
+      batchMultiSigCall.createVariable("vault11", vault11.address);
 
       const tx = {
         groupId: 7,
@@ -368,7 +369,7 @@ describe("FactoryProxy contract library", function () {
               { name: "to", type: "address", value: accounts[12] },
               { name: "token_amount", type: "uint256", value: "20" },
             ],
-            from: vault11.address,
+            from: "vault11",
           },
           {
             value: 0,
