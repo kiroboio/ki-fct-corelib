@@ -194,7 +194,7 @@ export class BatchMultiSigCall {
             }
 
             // If parameter value is FD (reference value to previous tx)
-            if (param.value.includes("0xFD")) {
+            if (typeof param.value === "string" && param.value.includes("0xFD")) {
               const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
 
               // Checks if current transaction doesn't reference current or future transaction
