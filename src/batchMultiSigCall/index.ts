@@ -107,7 +107,7 @@ export class BatchMultiSigCall {
   // Handle FD
   //
 
-  getPreviousTxValue(index: number) {
+  refTxValue(index: number) {
     return (index + 1).toString(16).padStart(FDBase.length, FDBase);
   }
 

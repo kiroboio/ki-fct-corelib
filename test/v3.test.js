@@ -405,7 +405,7 @@ describe("FactoryProxy contract library", function () {
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[12] },
-              { name: "token_amount", type: "uint256", value: batchMultiSigCall.getPreviousTxValue(3) },
+              { name: "token_amount", type: "uint256", value: batchMultiSigCall.refTxValue(3) },
             ],
             from: "vault11",
           },
