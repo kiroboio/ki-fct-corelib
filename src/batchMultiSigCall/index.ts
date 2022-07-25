@@ -200,7 +200,7 @@ export class BatchMultiSigCall {
               // Checks if current transaction doesn't reference current or future transaction
               if (refIndex >= index) {
                 throw new Error(
-                  `Parameter ${param.name} references a future or current transaction, referencing transaction at position ${refIndex})`
+                  `Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`
                 );
               }
               return;
