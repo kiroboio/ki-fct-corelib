@@ -383,9 +383,8 @@ describe("FactoryProxy contract library", function () {
               },
               validatorAddress: validator.address,
             },
-            from: vault11.address,
+            from: "vault11",
           },
-
           {
             value: 0,
             to: token20.address,
@@ -399,7 +398,7 @@ describe("FactoryProxy contract library", function () {
               },
               validatorAddress: validator.address,
             },
-            from: vault11.address,
+            from: "vault11",
           },
         ],
       };
