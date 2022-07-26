@@ -181,8 +181,6 @@ export class BatchMultiSigCall {
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
     // Creates messages from multiCalls array for EIP712 sign
-    // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
-    // Else multicall is ETH Transfer - add only details
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
       const txData = () => {
         // If mcall has parameters

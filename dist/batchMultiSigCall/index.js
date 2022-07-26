@@ -152,8 +152,6 @@ class BatchMultiSigCall {
         return __awaiter(this, void 0, void 0, function* () {
             const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
             // Creates messages from multiCalls array for EIP712 sign
-            // If multicall has encoded contract data, add method_params_offset, method_params_length and method data variables
-            // Else multicall is ETH Transfer - add only details
             const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
                 const txData = () => {
                     // If mcall has parameters
@@ -164,11 +162,11 @@ class BatchMultiSigCall {
                                 return;
                             }
                             // If parameter value is FD (reference value to previous tx)
-                            if (param.value.includes("0xFD")) {
+                            if (typeof param.value === "string" && param.value.includes("0xFD")) {
                                 const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
                                 // Checks if current transaction doesn't reference current or future transaction
                                 if (refIndex >= index) {
-                                    throw new Error(`Parameter ${param.name} references a future or current transaction, referencing transaction at position ${refIndex})`);
+                                    throw new Error(`Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`);
                                 }
                                 return;
                             }
