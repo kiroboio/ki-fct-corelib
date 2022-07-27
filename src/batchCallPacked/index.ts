@@ -26,7 +26,7 @@ const getBatchCallPackedData = async (web3: Web3, factoryProxy: Contract, call: 
             name: param.name,
           })),
         },
-        call.params.map((param) => param.value)
+        call.params.map((param) => param.value as string)
       )
     : "0x";
 

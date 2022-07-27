@@ -33,6 +33,14 @@ describe("FactoryProxy contract library", function () {
       const data = utils.getEncodedData(types, values);
       console.log(ethers.utils.formatBytes32String("hello world hehe web3"));
 
+      console.log(
+        ethers.utils.hexlify(
+          ethers.utils.arrayify(
+            ethers.utils.hexZeroPad(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("hello world hehe web3")), 32)
+          )
+        )
+      );
+
       console.log(data);
     });
     it("Params ERC20 Transfer", async () => {

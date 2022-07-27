@@ -219,8 +219,6 @@ export class BatchMultiSigCall {
           }
 
           return {
-            // method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
-            // method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
             ...item.params.reduce((acc, param) => {
               return {
                 ...acc,

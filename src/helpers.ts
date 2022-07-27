@@ -4,7 +4,7 @@ import { defaultAbiCoder } from "ethers/lib/utils";
 import Contract from "web3/eth/contract";
 import { AbiItem } from "web3-utils";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
-import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Validator } from "./interfaces";
+import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
 import ValidatorABI from "./abi/validator.abi.json";
@@ -140,6 +140,36 @@ export const getTypedDataDomain = async (web3: Web3, factoryProxy: Contract, fac
 //
 // METHOD HELPERS FOR FCTs
 //
+
+const handleValues = (value: string | string[], type: string) => {
+  if (type === "bytes" || type === "string") {
+    let v: Uint8Array;
+    if (type === "string") {
+      v = ethers.utils.toUtf8Bytes(value as string);
+    } else {
+      v = ethers.utils.arrayify(value as string);
+    }
+
+    return ethers.utils.arrayify(ethers.utils.hexZeroPad(ethers.utils.keccak256(v), 32));
+  }
+  if (type.lastIndexOf("[") > 0) {
+    const values = value as string[];
+    const t = type.slice(0, type.lastIndexOf("["));
+    const v = values.map((item) => handleValues(item, t));
+    return ethers.utils.arrayify(
+      ethers.utils.keccak256(
+        ethers.utils.arrayify(
+          defaultAbiCoder.encode(
+            v.map(() => t),
+            v.map((value) => value)
+          )
+        )
+      )
+    );
+  }
+  return value;
+};
+
 export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean) => {
   if (!call.method) return "0x";
 
@@ -154,14 +184,20 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
           name: param.name,
         })),
       },
-      call.params.map((param) => param.value)
+      call.params.map((param) => param.value as string)
     );
   }
 
-  return defaultAbiCoder.encode(
-    call.params.map((item) => item.type),
-    call.params.map((item) => item.value)
-  );
+  const types = call.params.map((param) => {
+    if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
+      return "bytes32";
+    }
+    return param.type;
+  });
+
+  const values = call.params.map((param) => handleValues(param.value, param.type));
+
+  return defaultAbiCoder.encode(types, values);
 };
 
 export const generateTxType = (item: Partial<MethodParamsInterface>) => {

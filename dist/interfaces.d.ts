@@ -1,7 +1,7 @@
 export interface Params {
     name: string;
     type: string;
-    value?: string;
+    value?: string[] | string;
     variable?: string;
 }
 export interface DecodeTx {

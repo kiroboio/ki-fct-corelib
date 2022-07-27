@@ -139,6 +139,25 @@ exports.getTypedDataDomain = getTypedDataDomain;
 //
 // METHOD HELPERS FOR FCTs
 //
+const handleValues = (value, type) => {
+    if (type === "bytes" || type === "string") {
+        let v;
+        if (type === "string") {
+            v = ethers_1.ethers.utils.toUtf8Bytes(value);
+        }
+        else {
+            v = ethers_1.ethers.utils.arrayify(value);
+        }
+        return ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.hexZeroPad(ethers_1.ethers.utils.keccak256(v), 32));
+    }
+    if (type.lastIndexOf("[") > 0) {
+        const values = value;
+        const t = type.slice(0, type.lastIndexOf("["));
+        const v = values.map((item) => handleValues(item, t));
+        return ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.arrayify(utils_1.defaultAbiCoder.encode(v.map(() => t), v.map((value) => value)))));
+    }
+    return value;
+};
 const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";
@@ -153,7 +172,14 @@ const getEncodedMethodParams = (call, withFunction) => {
             })),
         }, call.params.map((param) => param.value));
     }
-    return utils_1.defaultAbiCoder.encode(call.params.map((item) => item.type), call.params.map((item) => item.value));
+    const types = call.params.map((param) => {
+        if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
+            return "bytes32";
+        }
+        return param.type;
+    });
+    const values = call.params.map((param) => handleValues(param.value, param.type));
+    return utils_1.defaultAbiCoder.encode(types, values);
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
 const generateTxType = (item) => {

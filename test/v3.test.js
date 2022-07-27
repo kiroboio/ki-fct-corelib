@@ -410,20 +410,7 @@ describe("FactoryProxy contract library", function () {
             ],
             from: "vault11",
           },
-          {
-            value: 0,
-            to: token20.address,
-            method: "balanceOf",
-            params: [{ name: "account", type: "address", variable: "vault11" }],
-            validator: {
-              method: "bytes32Compare",
-              params: {
-                bytes32ToCompare: batchMultiSigCall.refTxValue(3, true),
-              },
-              validatorAddress: validator.address,
-            },
-            from: "vault11",
-          },
+
           // {
           //   value: 0,
           //   to: token20.address,
@@ -434,19 +421,19 @@ describe("FactoryProxy contract library", function () {
           //   ],
           //   from: "vault11",
           // },
-          // {
-          //   value: 0,
-          //   to: token20.address,
-          //   method: "swapExactTokensForTokens",
-          //   params: [
-          //     { name: "amountIn", type: "uint256", value: "20" },
-          //     { name: "amountOutMin", type: "uint256", value: "0" },
-          //     { name: "path", type: "address[]", value: [vault11.address, vault12.address] },
-          //     { name: "to", type: "address", value: accounts[12] },
-          //     { name: "deadline", type: "uint256", value: Math.round(Date.now() / 1000) },
-          //   ],
-          //   from: "vault11",
-          // },
+          {
+            value: 0,
+            to: token20.address,
+            method: "swapExactTokensForTokens",
+            params: [
+              { name: "amountIn", type: "uint256", value: "20" },
+              { name: "amountOutMin", type: "uint256", value: "0" },
+              { name: "path", type: "address[]", value: [vault11.address, vault12.address] },
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "deadline", type: "uint256", value: Math.round(Date.now() / 1000) },
+            ],
+            from: "vault11",
+          },
         ],
       };
 
