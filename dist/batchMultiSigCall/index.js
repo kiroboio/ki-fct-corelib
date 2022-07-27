@@ -20,6 +20,7 @@ const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.a
 const helpers_1 = require("../helpers");
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
+const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
     eip712: true,
@@ -87,8 +88,8 @@ class BatchMultiSigCall {
     //
     // Handle FD
     //
-    refTxValue(index) {
-        return (index + 1).toString(16).padStart(FDBase.length, FDBase);
+    refTxValue(index, bytes = false) {
+        return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
     }
     addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
