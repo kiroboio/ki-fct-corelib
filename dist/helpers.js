@@ -253,7 +253,7 @@ const createValidatorTxData = (call) => {
     if (!validatorFunction) {
         throw new Error(`Method ${validator.method} not found in Validator ABI`);
     }
-    const encodedData = (0, exports.getValidatorData)(call, true);
+    // const encodedData = getValidatorData(call, true);
     const methodDataOffsetTypes = [
         ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
         "bytes",
