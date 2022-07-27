@@ -272,7 +272,7 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
     throw new Error(`Method ${validator.method} not found in Validator ABI`);
   }
 
-  const encodedData = getValidatorData(call, true);
+  // const encodedData = getValidatorData(call, true);
 
   const methodDataOffsetTypes = [
     ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
