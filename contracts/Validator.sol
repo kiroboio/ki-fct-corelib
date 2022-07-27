@@ -196,4 +196,29 @@ contract Validator {
         );
         return abi.decode(result, (bytes32));
     }
+
+     /** @notice bytes32Compare - reverts if the result address of the call is not equal to a given address
+        @param bytes32ToCompare (bytes32) - value to compare the calling result to
+        @param contractAddress (address) - the contract address 
+        @param functionSignature (bytes32) - sha3 of the function name and param types 
+        @param data (bytes) - funcion_signature + encoded_params
+     */
+    function bytes32Compare(
+        bytes32 bytes32ToCompare,
+        address contractAddress,
+        bytes32 functionSignature,
+        bytes calldata data
+    ) external returns (bytes32) {
+        (bool success, bytes memory result) = contractAddress.call(
+            abi.encodePacked(bytes4(functionSignature), data)
+        );
+        if (!success) {
+            revert("validator: call failed");
+        }
+        require(
+            abi.decode(result, (bytes32)) == bytes32ToCompare,
+            "validator: not met"
+        );
+        return abi.decode(result, (bytes32));
+    }
 }
