@@ -23,6 +23,7 @@ import {
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
+const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 
 // DefaultFlag - "f100" // payment + eip712
 const defaultFlags = {
@@ -107,8 +108,8 @@ export class BatchMultiSigCall {
   // Handle FD
   //
 
-  refTxValue(index: number) {
-    return (index + 1).toString(16).padStart(FDBase.length, FDBase);
+  refTxValue(index: number, bytes: boolean = false) {
+    return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
   async addBatchCall(tx: BatchMultiSigCallInputInterface) {
