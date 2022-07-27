@@ -180,7 +180,19 @@ export const generateTxType = (item: Partial<MethodParamsInterface>) => {
         ...getValidatorFunctionData(item.validator, item.params),
       ];
     }
-    return [...defaults, ...item.params.map((param) => ({ name: param.name, type: param.type }))];
+    const types = item.params.reduce((acc, param) => {
+      if (Array.isArray(param.value)) {
+        return [
+          ...acc,
+          { name: `${param.name}_offset`, type: "uint256" },
+          { name: `${param.name}_length`, type: "uint256" },
+          { name: param.name, type: param.type },
+        ];
+      }
+      return [...acc, { name: param.name, type: param.type }];
+    }, []);
+
+    return [...defaults, ...types];
   }
 
   return [{ name: "details", type: "Transaction_" }];

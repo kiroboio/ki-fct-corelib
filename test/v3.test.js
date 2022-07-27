@@ -5,6 +5,7 @@ const assert = require("assert");
 const { expect } = require("chai");
 const { Flow } = require("../dist/constants.js");
 const { TypedDataUtils } = require("ethers-eip712");
+const { defaultAbiCoder } = require("ethers/lib/utils.js");
 
 // All the contracts are imported from ki-eth-contracts repository.
 // To make the Hardhat work with contracts from ki-eth-contracts, contracts folder
@@ -409,10 +410,33 @@ describe("FactoryProxy contract library", function () {
             ],
             from: "vault11",
           },
+          // {
+          //   value: 0,
+          //   to: token20.address,
+          //   method: "randomMethod",
+          //   params: [
+          //     { name: "amount", type: "uint256", value: "20" },
+          //     { name: "value", type: "string", value: "helo" },
+          //   ],
+          //   from: "vault11",
+          // },
+          // {
+          //   value: 0,
+          //   to: token20.address,
+          //   method: "swapExactTokensForTokens",
+          //   params: [
+          //     { name: "amountIn", type: "uint256", value: "20" },
+          //     { name: "amountOutMin", type: "uint256", value: "0" },
+          //     { name: "path", type: "address[]", value: [vault11.address, vault12.address] },
+          //     { name: "to", type: "address", value: accounts[12] },
+          //     { name: "deadline", type: "uint256", value: Math.round(Date.now() / 1000) },
+          //   ],
+          //   from: "vault11",
+          // },
         ],
       };
 
-      await batchMultiSigCall.addBatchCall(tx);
+      const call = await batchMultiSigCall.addBatchCall(tx);
 
       expect(batchMultiSigCall.calls.length).to.eq(1);
     });
@@ -575,13 +599,13 @@ describe("FactoryProxy contract library", function () {
       try {
         const balanceBefore = await token20.balanceOf(accounts[12]);
 
-        console.log(balanceBefore.toString());
+        // console.log(balanceBefore.toString());
         await instance.execute(activators.address, 0, data, {
           from: owner,
         });
 
         const balance = await token20.balanceOf(accounts[12]);
-        console.log(balance.toString());
+        // console.log(balance.toString());
       } catch (err) {
         console.log(err);
       }

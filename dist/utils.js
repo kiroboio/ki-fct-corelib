@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const web3_1 = __importDefault(require("web3"));
 const ganache_1 = __importDefault(require("ganache"));
 const helpers_1 = require("./helpers");
+const ethers_1 = require("ethers");
+const ethers_eip712_1 = require("ethers-eip712");
+const utils_1 = require("ethers/lib/utils");
 var Method;
 (function (Method) {
     Method[Method["batchCall"] = 0] = "batchCall";
@@ -79,4 +82,32 @@ const transactionValidator = (transactionValidatorInterface) => __awaiter(void 0
         gasUsed: tx.gasUsed,
     };
 });
-exports.default = { verifyMessage, decodeSessionId, transactionValidator };
+const getEncodedData = (types, values) => {
+    const typedData = {
+        types: {
+            EIP712Domain: [
+                { name: "name", type: "string" },
+                { name: "version", type: "string" },
+                { name: "chainId", type: "uint256" },
+                { name: "verifyingContract", type: "address" },
+            ],
+            params: types.map((type, i) => ({ name: `param${i}`, type })),
+        },
+        primaryType: "params",
+        domain: {
+            name: "Ether Mail",
+            version: "1",
+            chainId: 1,
+            verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+        },
+        message: values.reduce((acc, value, i) => {
+            return Object.assign(Object.assign({}, acc), { [`param${i}`]: value });
+        }, {}),
+    };
+    const abiEncodedMessage = utils_1.defaultAbiCoder.encode(types, values);
+    return {
+        eipMessage: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)),
+        abiEncodedMessage,
+    };
+};
+exports.default = { verifyMessage, decodeSessionId, transactionValidator, getEncodedData };

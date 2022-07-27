@@ -1,6 +1,9 @@
 import Web3 from "web3";
 import ganache from "ganache";
 import { getTransaction } from "./helpers";
+import { ethers } from "ethers";
+import { TypedDataUtils } from "ethers-eip712";
+import { defaultAbiCoder } from "ethers/lib/utils";
 
 enum Method {
   batchCall,
@@ -107,4 +110,36 @@ const transactionValidator = async (transactionValidatorInterface: transactionVa
   };
 };
 
-export default { verifyMessage, decodeSessionId, transactionValidator };
+const getEncodedData = (types: string[], values: string[]) => {
+  const typedData = {
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+        { name: "verifyingContract", type: "address" },
+      ],
+
+      params: types.map((type, i) => ({ name: `param${i}`, type })),
+    },
+    primaryType: "params",
+    domain: {
+      name: "Ether Mail",
+      version: "1",
+      chainId: 1,
+      verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+    },
+    message: values.reduce((acc, value, i) => {
+      return { ...acc, [`param${i}`]: value };
+    }, {}),
+  };
+
+  const abiEncodedMessage = defaultAbiCoder.encode(types, values);
+
+  return {
+    eipMessage: ethers.utils.hexlify(TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)),
+    abiEncodedMessage,
+  };
+};
+
+export default { verifyMessage, decodeSessionId, transactionValidator, getEncodedData };

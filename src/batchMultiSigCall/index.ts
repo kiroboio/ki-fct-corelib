@@ -216,10 +216,21 @@ export class BatchMultiSigCall {
 
             return createValidatorTxData(item);
           }
+
+          // console.log(index, getEncodedMethodParams(item, false));
+
           return {
             method_params_offset: getParamsOffset(), //'0x180', // '480', // 13*32
             method_params_length: getParamsLength(getEncodedMethodParams(item, false)),
             ...item.params.reduce((acc, param) => {
+              if (Array.isArray(param.value)) {
+                return {
+                  ...acc,
+                  [`${param.name}_offset`]: "0x20",
+                  [`${param.name}_length`]: "0x80",
+                  [param.name]: param.value,
+                };
+              }
               return {
                 ...acc,
                 [param.name]: param.value,

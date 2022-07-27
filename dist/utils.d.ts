@@ -35,5 +35,9 @@ declare const _default: {
         isValid: boolean;
         gasUsed: number;
     }>;
+    getEncodedData: (types: string[], values: string[]) => {
+        eipMessage: string;
+        abiEncodedMessage: string;
+    };
 };
 export default _default;

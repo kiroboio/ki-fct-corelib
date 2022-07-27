@@ -1157,6 +1157,7 @@ contract FactoryProxy_ is FactoryStorage {
                         signature.r,
                         signature.s
                     );
+                    console.log("signer:", signers[s]);
                 }
                 // address[] memory signers = new address[](length);
 

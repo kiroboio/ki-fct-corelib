@@ -181,7 +181,11 @@ class BatchMultiSigCall {
                             });
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
+                        // console.log(index, getEncodedMethodParams(item, false));
                         return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
+                            if (Array.isArray(param.value)) {
+                                return Object.assign(Object.assign({}, acc), { [`${param.name}_offset`]: "0x20", [`${param.name}_length`]: "0x80", [param.name]: param.value });
+                            }
                             return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
                         }, {}));
                     }
