@@ -315,6 +315,8 @@ export class BatchMultiSigCall {
       },
     };
 
+    console.log(JSON.stringify(typedData, null, 2));
+
     const encodedMessage = ethers.utils.hexlify(
       TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
     );
