@@ -39,6 +39,33 @@ contract Validator {
         return abi.decode(result, (bytes32));
     }
 
+     /** @notice equal - reverts if the result of the call is not equal to a given value
+        @param valueToCompare (uint256) - value to compare the calling result to
+        @param contractAddress (address) - the contract address 
+        @param functionSignature (bytes32) - sha3 of the function name and param types 
+        @param data (bytes) - funcion_signature + encoded_params
+     */
+    function equal(
+        uint256 valueToCompare,
+        address contractAddress,
+        bytes32 functionSignature,
+        bytes calldata data
+    ) external returns (bytes32) {
+        (bool success, bytes memory result) = contractAddress.call(
+            abi.encodePacked(bytes4(functionSignature), data)
+        );
+        if (!success) {
+            revert("validator: call failed");
+        }
+        console.log("validator data %s", abi.decode(result, (uint256)));
+        console.logBytes(result);
+        require(
+            abi.decode(result, (uint256)) == valueToCompare,
+            "validator: not met"
+        );
+        return abi.decode(result, (bytes32));
+    }
+
     /** @notice greaterEqual - reverts if the result of the call is not greater or equal to a given value
         @param valueToCompare (uint256) - value to compare the calling result to
         @param contractAddress (address) - the contract address 
@@ -197,7 +224,7 @@ contract Validator {
         return abi.decode(result, (bytes32));
     }
 
-     /** @notice bytes32Compare - reverts if the result address of the call is not equal to a given address
+     /** @notice bytes32Compare - reverts if the result bytes32 of the call is not equal to a given bytes32
         @param bytes32ToCompare (bytes32) - value to compare the calling result to
         @param contractAddress (address) - the contract address 
         @param functionSignature (bytes32) - sha3 of the function name and param types 
