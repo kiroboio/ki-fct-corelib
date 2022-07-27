@@ -159,27 +159,19 @@ exports.getEncodedMethodParams = getEncodedMethodParams;
 const generateTxType = (item) => {
     const defaults = [
         { name: "details", type: "Transaction_" },
-        { name: "method_params_offset", type: "uint256" },
-        { name: "method_params_length", type: "uint256" },
+        // { name: "method_params_offset", type: "uint256" },
+        // { name: "method_params_length", type: "uint256" },
     ];
     if (item.params) {
         if (item.validator) {
             return [
                 { name: "details", type: "Transaction_" },
-                { name: "validation_data_offset", type: "uint256" },
-                { name: "validation_data_length", type: "uint256" },
+                // { name: "validation_data_offset", type: "uint256" },
+                // { name: "validation_data_length", type: "uint256" },
                 ...(0, exports.getValidatorFunctionData)(item.validator, item.params),
             ];
         }
         const types = item.params.reduce((acc, param) => {
-            if (Array.isArray(param.value)) {
-                return [
-                    ...acc,
-                    { name: `${param.name}_offset`, type: "uint256" },
-                    { name: `${param.name}_length`, type: "uint256" },
-                    { name: param.name, type: param.type },
-                ];
-            }
             return [...acc, { name: param.name, type: param.type }];
         }, []);
         return [...defaults, ...types];
@@ -266,6 +258,6 @@ const createValidatorTxData = (call) => {
         ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
         "bytes",
     ];
-    return Object.assign(Object.assign(Object.assign({ validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), validation_data_length: (0, exports.getParamsLength)(encodedData) }, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+    return Object.assign(Object.assign(Object.assign({}, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
 };
 exports.createValidatorTxData = createValidatorTxData;

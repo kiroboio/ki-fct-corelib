@@ -167,28 +167,20 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
 export const generateTxType = (item: Partial<MethodParamsInterface>) => {
   const defaults = [
     { name: "details", type: "Transaction_" },
-    { name: "method_params_offset", type: "uint256" },
-    { name: "method_params_length", type: "uint256" },
+    // { name: "method_params_offset", type: "uint256" },
+    // { name: "method_params_length", type: "uint256" },
   ];
 
   if (item.params) {
     if (item.validator) {
       return [
         { name: "details", type: "Transaction_" },
-        { name: "validation_data_offset", type: "uint256" },
-        { name: "validation_data_length", type: "uint256" },
+        // { name: "validation_data_offset", type: "uint256" },
+        // { name: "validation_data_length", type: "uint256" },
         ...getValidatorFunctionData(item.validator, item.params),
       ];
     }
     const types = item.params.reduce((acc, param) => {
-      if (Array.isArray(param.value)) {
-        return [
-          ...acc,
-          { name: `${param.name}_offset`, type: "uint256" },
-          { name: `${param.name}_length`, type: "uint256" },
-          { name: param.name, type: param.type },
-        ];
-      }
       return [...acc, { name: param.name, type: param.type }];
     }, []);
 
@@ -288,8 +280,8 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
   ];
 
   return {
-    validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
-    validation_data_length: getParamsLength(encodedData),
+    // validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
+    // validation_data_length: getParamsLength(encodedData),
     ...validator.params,
     contractAddress: call.to,
     functionSignature: getMethodInterface(call),

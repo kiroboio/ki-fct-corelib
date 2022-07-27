@@ -30,6 +30,7 @@ contract RecoveryWallet is
     string public constant VERSION = "RC07-1.1";
     address public immutable GAS_RETURN_CONTRACT;
     address public immutable RECOVERY_WALLET_CORE_CONTRACT;
+    // address public immutable FCT_ENGINE_CONTRACT;
 
     event SentEther(
         address indexed creator,
@@ -91,9 +92,14 @@ contract RecoveryWallet is
         _;
     }
 
-    constructor(address core, address gasReturn) {
+    constructor(
+        address core,
+        address gasReturn // address fctEngine
+    ) {
         GAS_RETURN_CONTRACT = gasReturn;
         RECOVERY_WALLET_CORE_CONTRACT = core;
+        // FCT_ENGINE_CONTRACT = fctEngine;
+
         require(
             IVersion(core).version() == bytes8(bytes(VERSION)),
             "Wrong Version"

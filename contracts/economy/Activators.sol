@@ -12,7 +12,7 @@ import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 import "../uniswap-oracle/UniswapV2OracleLibrary.sol";
 import "../uniswap-oracle/IUniswapV2Factory.sol";
 import "../interfaces/IFactory.sol";
-import "../interfaces/IFactoryProxy.sol";
+import "../interfaces/IFCT_BatchMultiSig.sol";
 import "../interfaces/IWallet.sol";
 
 import "hardhat/console.sol";
@@ -94,43 +94,41 @@ contract Activators is AccessControl {
         s_activators[activator] = 0;
     }
 
-    function activateBatchMultiCall(MCalls[] calldata tr, uint256 nonceGroup)
-        external
-        onlyActivator
-    {
-        // uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
-        MReturn[] memory rt = IFactoryProxy(s_factory).batchMultiCall_(
-            tr,
-            nonceGroup
-        );
+    // function activateBatchMultiCall(MCalls[] calldata tr, uint256 nonceGroup)
+    //     external
+    //     onlyActivator
+    // {
+    //     // uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
+    //     MReturn[] memory rt = IFCT_BatchMultiSig(s_factory).batchMultiCall_(
+    //         tr,
+    //         nonceGroup
+    //     );
 
-        //uint256 totalGas = (gasStart - gasleft());
+    //     //uint256 totalGas = (gasStart - gasleft());
 
-        if (
-            block.timestamp >
-            s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
-        ) {
-            updateKiroPrice();
-            s_lastUpdateDateOfPrice = block.timestamp;
-        }
+    //     if (
+    //         block.timestamp >
+    //         s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
+    //     ) {
+    //         updateKiroPrice();
+    //         s_lastUpdateDateOfPrice = block.timestamp;
+    //     }
 
-        uint256 toPayInKiro;
-        for (uint256 i = 0; i < rt.length; i++) {
-            toPayInKiro = getAmountOfKiroForGivenEth(rt[i].gas);
-            s_vaultBalance[rt[i].vault] -= toPayInKiro;
-            s_activatorBalance[msg.sender] += toPayInKiro;
-        }
-    }
+    //     uint256 toPayInKiro;
+    //     for (uint256 i = 0; i < rt.length; i++) {
+    //         toPayInKiro = getAmountOfKiroForGivenEth(rt[i].gas);
+    //         s_vaultBalance[rt[i].vault] -= toPayInKiro;
+    //         s_activatorBalance[msg.sender] += toPayInKiro;
+    //     }
+    // }
 
     function activateBatchMultiSigCall(
         MSCalls[] calldata tr,
         bytes32[] calldata variables
     ) external onlyActivator {
         uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
-        MReturn[][] memory rt = IFactoryProxy(s_factory).batchMultiSigCall_(
-            tr,
-            variables
-        );
+        MReturn[][] memory rt = IFCT_BatchMultiSig(s_factory)
+            .batchMultiSigCall_(tr, variables);
 
         uint256 totalGas = (gasStart - gasleft()); // * tx.gasprice;
         console.log("total gas:", totalGas);

@@ -181,11 +181,7 @@ class BatchMultiSigCall {
                             });
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
-                        // console.log(index, getEncodedMethodParams(item, false));
-                        return Object.assign({ method_params_offset: (0, helpers_1.getParamsOffset)(), method_params_length: (0, helpers_1.getParamsLength)((0, helpers_1.getEncodedMethodParams)(item, false)) }, item.params.reduce((acc, param) => {
-                            if (Array.isArray(param.value)) {
-                                return Object.assign(Object.assign({}, acc), { [`${param.name}_offset`]: "0x20", [`${param.name}_length`]: "0x80", [param.name]: param.value });
-                            }
+                        return Object.assign({}, item.params.reduce((acc, param) => {
                             return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
                         }, {}));
                     }
@@ -293,7 +289,7 @@ class BatchMultiSigCall {
     decodeTransactions(txs) {
         return txs.map((tx) => {
             const data = tx.params && tx.params.length !== 0
-                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", "uint256", "uint256", ...tx.params.map((item) => item.type)], tx.encodedMessage)
+                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
                 : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
             const details = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"], tx.encodedDetails);
             const defaultReturn = {
@@ -316,7 +312,7 @@ class BatchMultiSigCall {
                 },
             };
             const extraData = tx.params && tx.params.length !== 0
-                ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[4 + i]) ? data[4 + i].toString() : data[4 + i] })), {})
+                ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i] })), {})
                 : {};
             return Object.assign(Object.assign({}, defaultReturn), extraData);
         });

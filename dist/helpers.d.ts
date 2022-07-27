@@ -73,6 +73,4 @@ export declare const createValidatorTxData: (call: Partial<MultiSigCallInputInte
     functionSignature: string;
     method_data_offset: string;
     method_data_length: string;
-    validation_data_offset: string;
-    validation_data_length: string;
 };

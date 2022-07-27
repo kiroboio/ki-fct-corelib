@@ -24,7 +24,6 @@ contract Validator {
         bytes32 functionSignature,
         bytes calldata data
     ) external returns (bytes32) {
-        console.log("Value to compare", valueToCompare);
         (bool success, bytes memory result) = contractAddress.call(
             abi.encodePacked(bytes4(functionSignature), data)
         );
@@ -192,7 +191,7 @@ contract Validator {
             revert("validator: call failed");
         }
         require(
-            abi.decode(result, (address)) <= addressToCompare,
+            abi.decode(result, (address)) == addressToCompare,
             "validator: not met"
         );
         return abi.decode(result, (bytes32));
