@@ -189,13 +189,14 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
   }
 
   const types = call.params.map((param) => {
-    if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
-      return "bytes32";
-    }
+    // if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
+    //   return "bytes32";
+    // }
     return param.type;
   });
 
-  const values = call.params.map((param) => handleValues(param.value, param.type));
+  // const values = call.params.map((param) => handleValues(param.value, param.type));
+  const values = call.params.map((param) => param.value);
 
   return defaultAbiCoder.encode(types, values);
 };

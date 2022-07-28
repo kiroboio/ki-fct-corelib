@@ -1071,30 +1071,53 @@ contract FactoryProxy_ is FactoryStorage {
         string arg3;
     }
 
-    uint256 constant STRING = 1;
-    uint256 constant BYTES = 2;
-    uint256 constant ARRAY_UINT256 = 3;
+    uint256 constant TYPE_NATIVE = 0;
+    uint256 constant TYPE_STRING = 1;
+    uint256 constant TYPE_BYTES = 2;
 
-    function magic(bytes calldata data, uint256[] memory types)
-        public
+    function _decodeString(bytes calldata data, uint256 pos)
+        private
         pure
+        returns (string memory)
+    {
+        bytes memory strData = bytes.concat(
+            abi.encode(0x20),
+            data[(pos + 1) * 32:]
+        );
+        return abi.decode(strData, (string));
+    }
+
+    function _decodeBytes(bytes calldata data, uint256 pos)
+        private
+        pure
+        returns (bytes memory)
+    {
+        bytes memory strData = bytes.concat(
+            abi.encode(0x20),
+            data[(pos + 1) * 32:]
+        );
+        return abi.decode(strData, (bytes));
+    }
+
+    function abiToEIP712(bytes calldata data, uint256[] memory types)
+        public
+        view
         returns (bytes memory res)
     {
         for (uint256 i = 0; i < types.length; ++i) {
-            if (types[i] == STRING) {
-                bytes memory str = abi.encodePacked(abi.decode(data, (string)));
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
-            } else if (types[i] == BYTES) {
-                bytes memory str = abi.encodePacked(abi.decode(data, (bytes)));
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
-            } else if (types[i] == ARRAY_UINT256) {
-                bytes memory str = abi.encodePacked(
-                    abi.decode(data, (uint256[]))
-                );
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
+            if (types[i] == TYPE_STRING) {
+                string memory str = _decodeString(data, i);
+                console.log("string");
+                console.log(str);
+                bytes memory buff = abi.encodePacked(str);
+                res = bytes.concat(res, keccak256(buff));
+                i = i + 2 + buff.length;
+            } else if (types[i] == TYPE_BYTES) {
+                bytes memory bytesData = _decodeBytes(data, i);
+                console.log("bytes");
+                console.logBytes(bytesData);
+                res = bytes.concat(res, keccak256(bytesData));
+                i = i + 2 + bytesData.length;
             } else {
                 res = bytes.concat(res, data[i * 32:(i + 1) * 32]);
             }
@@ -1145,6 +1168,32 @@ contract FactoryProxy_ is FactoryStorage {
                     //     call.to,
                     //     call.value
                     // );
+                    console.log(
+                        "-------------------------- string -----------------------"
+                    );
+                    // console.logBytes(call.data);
+
+                    
+                    // (, , string memory r, string memory b, bytes memory x) = abi.decode(
+                    //     call.data,
+                    //     (address, uint256, string, string, bytes)
+                    // );
+                    // console.log(r);
+                    // console.logBytes32(keccak256(abi.encodePacked(r)));
+                    // console.log(b);
+                    // console.logBytes32(keccak256(abi.encodePacked(b)));
+                    // console.logBytes(x);
+                    // console.logBytes32(keccak256(abi.encodePacked(x)));
+                    uint256[] memory types = new uint256[](5);
+                    types[0] = TYPE_NATIVE;
+                    types[1] = TYPE_NATIVE;
+                    types[2] = TYPE_STRING;
+                    types[3] = TYPE_STRING;
+                    types[4] = TYPE_BYTES;
+                    
+                    console.logBytes(abiToEIP712(call.data, types));
+                   
+
                     msg2 = abi.encodePacked(
                         msg2,
                         // messageHash

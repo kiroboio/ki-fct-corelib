@@ -173,12 +173,13 @@ const getEncodedMethodParams = (call, withFunction) => {
         }, call.params.map((param) => param.value));
     }
     const types = call.params.map((param) => {
-        if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
-            return "bytes32";
-        }
+        // if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
+        //   return "bytes32";
+        // }
         return param.type;
     });
-    const values = call.params.map((param) => handleValues(param.value, param.type));
+    // const values = call.params.map((param) => handleValues(param.value, param.type));
+    const values = call.params.map((param) => param.value);
     return utils_1.defaultAbiCoder.encode(types, values);
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
