@@ -411,16 +411,6 @@ describe("FactoryProxy contract library", function () {
             from: "vault11",
           },
 
-          {
-            value: 0,
-            to: token20.address,
-            method: "randomMethod",
-            params: [
-              { name: "amount", type: "uint256", value: "20" },
-              { name: "value", type: "string", value: "helo" },
-            ],
-            from: "vault11",
-          },
           // {
           //   value: 0,
           //   to: token20.address,
