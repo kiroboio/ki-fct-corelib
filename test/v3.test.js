@@ -347,7 +347,7 @@ describe("FactoryProxy contract library", function () {
       batchMultiSigCall.createVariable("vault11", vault11.address);
 
       const tx = {
-        groupId: 7,
+        groupId: 1,
         nonce: 1,
         calls: [
           {
@@ -410,20 +410,6 @@ describe("FactoryProxy contract library", function () {
             ],
             from: "vault11",
           },
-
-          // {
-          //   value: 0,
-          //   to: token20.address,
-          //   method: "swapExactTokensForTokens",
-          //   params: [
-          //     { name: "amountIn", type: "uint256", value: "20" },
-          //     { name: "amountOutMin", type: "uint256", value: "0" },
-          //     { name: "path", type: "address[]", value: [vault11.address, vault12.address] },
-          //     { name: "to", type: "address", value: accounts[12] },
-          //     { name: "deadline", type: "uint256", value: Math.round(Date.now() / 1000) },
-          //   ],
-          //   from: "vault11",
-          // },
         ],
       };
 
@@ -434,8 +420,8 @@ describe("FactoryProxy contract library", function () {
     it("Should add multiple batchMulticalls", async () => {
       const txs = [
         {
-          groupId: 7,
-          nonce: 2,
+          groupId: 1,
+          nonce: 1,
           calls: [
             {
               value: 0,
@@ -461,7 +447,7 @@ describe("FactoryProxy contract library", function () {
         },
         {
           groupId: 7,
-          nonce: 3,
+          nonce: 4,
           calls: [
             {
               value: 0,
@@ -578,8 +564,6 @@ describe("FactoryProxy contract library", function () {
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures };
       });
-
-      console.log(batchMultiSigCall.getVariablesAsBytes32());
 
       const data = activators.contract.methods
         .activateBatchMultiSigCall(signedCalls, batchMultiSigCall.getVariablesAsBytes32())
