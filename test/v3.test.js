@@ -575,7 +575,7 @@ describe("FactoryProxy contract library", function () {
         const balanceBefore = await token20.balanceOf(accounts[12]);
 
         // console.log(balanceBefore.toString());
-        await instance.execute(activators.address, 0, data, {
+        const tx = await instance.execute(activators.address, 0, data, {
           from: owner,
         });
 
