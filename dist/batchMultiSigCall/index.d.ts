@@ -71,6 +71,7 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
+            types: any[];
         }[];
     }>;
     addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<{
@@ -128,6 +129,7 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
+            types: any[];
         }[];
     }[]>;
     editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<{
@@ -185,6 +187,7 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
+            types: any[];
         }[];
     }>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
@@ -243,6 +246,7 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
+            types: any[];
         }[];
     }>;
     removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<{
@@ -300,6 +304,7 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
+            types: any[];
         }[];
     }>;
     private getMultiSigCallData;

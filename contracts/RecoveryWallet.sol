@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0;
-pragma abicoder v1;
+pragma abicoder v2;
 
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
@@ -11,6 +11,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../contracts/lib/Interface.sol";
 import "../contracts/lib/Storage.sol";
 import "../contracts/interfaces/IOracle.sol";
+import "../contracts/interfaces/IFCT_Controller.sol";
 
 import "hardhat/console.sol";
 
@@ -30,7 +31,7 @@ contract RecoveryWallet is
     string public constant VERSION = "RC07-1.1";
     address public immutable GAS_RETURN_CONTRACT;
     address public immutable RECOVERY_WALLET_CORE_CONTRACT;
-    // address public immutable FCT_ENGINE_CONTRACT;
+    address public immutable FCT_CONTROLLER_CONTRACT;
 
     event SentEther(
         address indexed creator,
@@ -94,11 +95,12 @@ contract RecoveryWallet is
 
     constructor(
         address core,
-        address gasReturn // address fctEngine
+        address gasReturn,
+        address fctController
     ) {
         GAS_RETURN_CONTRACT = gasReturn;
         RECOVERY_WALLET_CORE_CONTRACT = core;
-        // FCT_ENGINE_CONTRACT = fctEngine;
+        FCT_CONTROLLER_CONTRACT = fctController;
 
         require(
             IVersion(core).version() == bytes8(bytes(VERSION)),
@@ -128,12 +130,14 @@ contract RecoveryWallet is
 } */
 
     function LocalCall_(
+        bytes32 funcID,
         address target,
         uint256 value,
         bytes calldata data,
         bytes32 messageHash
-    ) external onlyCreator returns (bytes memory) {
-        // console.log("target %s, value %s", target, value);
+    ) external /*onlyCreator*/ returns (bytes memory) {
+        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
+        // console.log("running target %s, value %s", target, value);
         // console.logBytes(data);
         // console.logBytes32(messageHash);
         if (messageHash != 0) {
@@ -146,14 +150,18 @@ contract RecoveryWallet is
         if (!success) {
             revert(_getRevertMsg(res));
         }
+        // console.log("success");
+        // console.logBytes(res);
         return res;
     }
 
     function LocalStaticCall_(
+        bytes32 funcID,
         address target,
         bytes calldata data,
         bytes32 messageHash
-    ) external view onlyCreator returns (bytes memory) {
+    ) external view /*onlyCreator*/ returns (bytes memory) {
+        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
         if (messageHash != 0) {
             require(
                 s_blocked[messageHash] == 0,

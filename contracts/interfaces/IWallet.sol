@@ -18,4 +18,10 @@ interface IWallet {
   ) external returns (bytes memory);
 
   function sendEther(address payable _to, uint256 _value) external;
+
+  function allowedToExecute_(address signer, uint256 version)
+    external
+    returns (uint256);
+
+  
 }

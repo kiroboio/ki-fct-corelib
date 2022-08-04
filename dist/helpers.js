@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.flows = void 0;
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypesArray = exports.flows = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
@@ -52,6 +52,37 @@ const getAfterTimestamp = (epochDate) => epochDate.toString(16).padStart(10, "0"
 const getBeforeTimestamp = (infinity, epochDate) => infinity ? "ffffffffff" : epochDate.toString(16).padStart(10, "0");
 const getMaxGas = (maxGas) => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice) => gasPrice.toString(16).padStart(16, "0");
+// Get Types array
+const getTypesArray = (params) => {
+    const TYPE_NATIVE = 0;
+    const TYPE_STRING = 1;
+    const TYPE_BYTES = 2;
+    const TYPE_ARRAY = 3;
+    return params.reduce((acc, item) => {
+        if (item.type === "string") {
+            return [...acc, TYPE_STRING];
+        }
+        if (item.type === "bytes") {
+            return [...acc, TYPE_BYTES];
+        }
+        if (item.type.lastIndexOf("[") > 0) {
+            const t = item.type.slice(0, item.type.lastIndexOf("["));
+            let insideType;
+            if (t === "string") {
+                insideType = TYPE_STRING;
+            }
+            else if (t === "bytes") {
+                insideType = TYPE_BYTES;
+            }
+            else {
+                insideType = TYPE_NATIVE;
+            }
+            return [...acc, TYPE_ARRAY, insideType];
+        }
+        return [...acc, TYPE_NATIVE];
+    }, []);
+};
+exports.getTypesArray = getTypesArray;
 // Get session id with all the details
 const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
     const group = getGroupId(call.groupId);
@@ -184,19 +215,10 @@ const getEncodedMethodParams = (call, withFunction) => {
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
 const generateTxType = (item) => {
-    const defaults = [
-        { name: "details", type: "Transaction_" },
-        // { name: "method_params_offset", type: "uint256" },
-        // { name: "method_params_length", type: "uint256" },
-    ];
+    const defaults = [{ name: "details", type: "Transaction_" }];
     if (item.params) {
         if (item.validator) {
-            return [
-                { name: "details", type: "Transaction_" },
-                // { name: "validation_data_offset", type: "uint256" },
-                // { name: "validation_data_length", type: "uint256" },
-                ...(0, exports.getValidatorFunctionData)(item.validator, item.params),
-            ];
+            return [{ name: "details", type: "Transaction_" }, ...(0, exports.getValidatorFunctionData)(item.validator, item.params)];
         }
         const types = item.params.reduce((acc, param) => {
             return [...acc, { name: param.name, type: param.type }];

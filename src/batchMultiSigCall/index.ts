@@ -19,6 +19,7 @@ import {
   getValidatorData,
   manageCallFlagsV2,
   flows,
+  getTypesArray,
 } from "../helpers";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
@@ -365,6 +366,7 @@ export class BatchMultiSigCall {
           ? this.web3.utils.sha3(item.toEnsHash)
           : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
         data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
+        types: item.params ? getTypesArray(item.params) : [],
         ...getEncodedMulticallData(index),
       })),
     };

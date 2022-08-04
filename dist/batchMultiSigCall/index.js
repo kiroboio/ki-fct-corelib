@@ -273,7 +273,7 @@ class BatchMultiSigCall {
                             ? item.to
                             : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
                         ? this.web3.utils.sha3(item.toEnsHash)
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item) }, getEncodedMulticallData(index)))),
+                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [] }, getEncodedMulticallData(index)))),
             };
         });
     }

@@ -12,7 +12,7 @@ import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 import "../uniswap-oracle/UniswapV2OracleLibrary.sol";
 import "../uniswap-oracle/IUniswapV2Factory.sol";
 import "../interfaces/IFactory.sol";
-import "../interfaces/IFCT_BatchMultiSig.sol";
+import "../interfaces/IFCT_Controller.sol";
 import "../interfaces/IWallet.sol";
 
 import "hardhat/console.sol";
@@ -37,6 +37,7 @@ contract Activators is AccessControl {
     address public immutable token0;
     address public immutable token1;
     address private immutable s_factory;
+    address private immutable s_fctController;
     address public immutable KIRO_ADDRESS;
 
     bytes32 public constant OPERATOR_ROLE =
@@ -56,6 +57,7 @@ contract Activators is AccessControl {
 
     constructor(
         address factory,
+        address fctController,
         address kiroAddress,
         address pairAddress
     ) {
@@ -63,6 +65,7 @@ contract Activators is AccessControl {
         _grantRole(OPERATOR_ROLE, msg.sender);
 
         s_factory = factory;
+        s_fctController = fctController;
         KIRO_ADDRESS = kiroAddress;
 
         IUniswapV2Pair _pair = IUniswapV2Pair(pairAddress);
@@ -122,16 +125,31 @@ contract Activators is AccessControl {
     //     }
     // }
 
-    function activateBatchMultiSigCall(
-        MSCalls[] calldata tr,
-        bytes32[] calldata variables
-    ) external onlyActivator {
-        uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
-        MReturn[][] memory rt = IFCT_BatchMultiSig(s_factory)
-            .batchMultiSigCall_(tr, variables);
+    function _getRevertMsg(bytes memory returnData)
+        internal
+        pure
+        returns (string memory)
+    {
+        if (returnData.length < 68)
+            return "Wallet: Transaction reverted silently";
 
+        assembly {
+            returnData := add(returnData, 0x04)
+        }
+        return abi.decode(returnData, (string));
+    }
+
+    function activate(bytes calldata data) external onlyActivator {
+        // console.log("---------------------> activating ", data.length);
+        uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
+        (bool success_, bytes memory data_) = s_fctController.call(data);
+        // console.log('success', success_);
+        if (!success_) {
+            revert(_getRevertMsg(data_));
+        }
+        MReturn[][] memory rt = abi.decode(data_, (MReturn[][]));
         uint256 totalGas = (gasStart - gasleft()); // * tx.gasprice;
-        console.log("total gas:", totalGas);
+        // console.log("total gas:", totalGas);
         if (
             block.timestamp >
             s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
@@ -155,10 +173,47 @@ contract Activators is AccessControl {
                 }
             }
         }
-
-        console.log("sumOfGas", sumOfGas);
-        //console.log("gas diff", totalGas-sumOfGas);
+        // console.log("sumOfGas", sumOfGas);
+        // console.log("gas diff", totalGas-sumOfGas);
     }
+
+    // function activateBatchMultiSigCall(
+    //     MSCalls[] calldata tr,
+    //     bytes32[][] calldata variables
+    // ) external onlyActivator {
+    //     uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
+    //     MReturn[][] memory rt = IFCT_BatchMultiSig(s_factory)
+    //         .batchMultiSigCall_(tr, variables);
+
+    //     uint256 totalGas = (gasStart - gasleft()); // * tx.gasprice;
+    //     console.log("total gas:", totalGas);
+    //     if (
+    //         block.timestamp >
+    //         s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
+    //     ) {
+    //         updateKiroPrice();
+    //         s_lastUpdateDateOfPrice = block.timestamp;
+    //     }
+
+    //     uint256 sumOfGas;
+    //     uint256 toPayInKiro;
+    //     for (uint256 i = 0; i < rt.length; i++) {
+    //         for (uint256 j = 0; j < rt[i].length; j++) {
+    //             if (rt[i][j].vault != address(0)) {
+    //                 toPayInKiro = getAmountOfKiroForGivenEth(rt[i][j].gas);
+    //                 //console.log("Activators: i", i, "j", j);
+    //                 //console.log("gas:", rt[i][j].gas);
+    //                 //console.log("toPayInKiro", toPayInKiro, "rt[i][j].vault", rt[i][j].vault);
+    //                 sumOfGas += rt[i][j].gas;
+    //                 s_vaultBalance[rt[i][j].vault] -= toPayInKiro;
+    //                 s_activatorBalance[msg.sender] += toPayInKiro;
+    //             }
+    //         }
+    //     }
+
+    //     console.log("sumOfGas", sumOfGas);
+    //     //console.log("gas diff", totalGas-sumOfGas);
+    // }
 
     function activatorWithdraw() external onlyActivator {
         address owner = IWallet(msg.sender).owner();

@@ -410,6 +410,19 @@ describe("FactoryProxy contract library", function () {
             ],
             from: "vault11",
           },
+          {
+            value: 0,
+            to: token20.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "hehe", type: "string", value: "Hello" },
+              { name: "test", type: "bytes", value: 0x12 },
+              { name: "test3", type: "string[]", value: ["string", "array"] },
+              { name: "token_amount", type: "uint256", value: batchMultiSigCall.refTxValue(3) },
+            ],
+            from: "vault11",
+          },
         ],
       };
 

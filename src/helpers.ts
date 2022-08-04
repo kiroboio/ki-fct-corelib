@@ -47,6 +47,36 @@ const getBeforeTimestamp = (infinity: boolean, epochDate?: number): string =>
 const getMaxGas = (maxGas: number): string => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice: number): string => gasPrice.toString(16).padStart(16, "0");
 
+// Get Types array
+export const getTypesArray = (params: Params[]) => {
+  const TYPE_NATIVE = 0;
+  const TYPE_STRING = 1;
+  const TYPE_BYTES = 2;
+  const TYPE_ARRAY = 3;
+  return params.reduce((acc, item) => {
+    if (item.type === "string") {
+      return [...acc, TYPE_STRING];
+    }
+    if (item.type === "bytes") {
+      return [...acc, TYPE_BYTES];
+    }
+    if (item.type.lastIndexOf("[") > 0) {
+      const t = item.type.slice(0, item.type.lastIndexOf("["));
+      let insideType: number;
+      if (t === "string") {
+        insideType = TYPE_STRING;
+      } else if (t === "bytes") {
+        insideType = TYPE_BYTES;
+      } else {
+        insideType = TYPE_NATIVE;
+      }
+
+      return [...acc, TYPE_ARRAY, insideType];
+    }
+    return [...acc, TYPE_NATIVE];
+  }, []);
+};
+
 // Get session id with all the details
 export const getSessionIdDetails = (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
   const group = getGroupId(call.groupId);
@@ -202,20 +232,11 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
 };
 
 export const generateTxType = (item: Partial<MethodParamsInterface>) => {
-  const defaults = [
-    { name: "details", type: "Transaction_" },
-    // { name: "method_params_offset", type: "uint256" },
-    // { name: "method_params_length", type: "uint256" },
-  ];
+  const defaults = [{ name: "details", type: "Transaction_" }];
 
   if (item.params) {
     if (item.validator) {
-      return [
-        { name: "details", type: "Transaction_" },
-        // { name: "validation_data_offset", type: "uint256" },
-        // { name: "validation_data_length", type: "uint256" },
-        ...getValidatorFunctionData(item.validator, item.params),
-      ];
+      return [{ name: "details", type: "Transaction_" }, ...getValidatorFunctionData(item.validator, item.params)];
     }
     const types = item.params.reduce((acc, param) => {
       return [...acc, { name: param.name, type: param.type }];

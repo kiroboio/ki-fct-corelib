@@ -19,6 +19,7 @@ struct MSCall {
     uint16 flags;
     address to;
     bytes data;
+    uint256[] types;
 }
 
 struct MSCalls {
@@ -61,6 +62,6 @@ interface IFactoryProxy {
 
     function batchMultiSigCall_(
         MSCalls[] calldata tr,
-        bytes32[] calldata variables
+        bytes32[][] calldata variables
     ) external returns (MReturn[][] memory);
 }

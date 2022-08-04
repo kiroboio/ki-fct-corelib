@@ -38,50 +38,6 @@ abstract contract FCT_Storage is Ownable {
 
     mapping(bytes32 => uint256) internal s_fcts;
 
-    uint256 internal constant FLAG_EIP712 = 0x0100;
-    uint256 internal constant FLAG_STATICCALL = 0x0400;
-    uint256 internal constant FLAG_CANCELABLE = 0x0800;
-    uint256 internal constant FLAG_PAYMENT = 0xf000;
-
-    uint256 internal constant FLAG_FLOW = 0x00f0;
-    uint256 internal constant FLAG_JUMP = 0x000f;
-
-    uint256 public constant OK_CONT_FAIL_REVERT = 0x0010;
-    string public constant OK_CONT_FAIL_REVERT_MSG =
-        "continue on success, revert on fail";
-    bytes32 public constant OK_CONT_FAIL_REVERT_HASH =
-        keccak256(abi.encodePacked(OK_CONT_FAIL_REVERT_MSG));
-
-    uint256 public constant OK_CONT_FAIL_STOP = 0x0020;
-    string public constant OK_CONT_FAIL_STOP_MSG =
-        "continue on success, stop on fail";
-    bytes32 public constant OK_CONT_FAIL_STOP_HASH =
-        keccak256(abi.encodePacked(OK_CONT_FAIL_STOP_MSG));
-
-    uint256 public constant OK_CONT_FAIL_JUMP = 0x0030;
-    string public constant OK_CONT_FAIL_JUMP_MSG =
-        "continue on success, jump on fail";
-    bytes32 public constant OK_CONT_FAIL_JUMP_HASH =
-        keccak256(abi.encodePacked(OK_CONT_FAIL_JUMP_MSG));
-
-    uint256 public constant OK_REVERT_FAIL_CONT = 0x0040;
-    string public constant OK_REVERT_FAIL_CONT_MSG =
-        "revert on success, continue on fail";
-    bytes32 public constant OK_REVERT_FAIL_CONT_HASH =
-        keccak256(abi.encodePacked(OK_REVERT_FAIL_CONT_MSG));
-
-    uint256 public constant OK_STOP_FAIL_CONT = 0x0050;
-    string public constant OK_STOP_FAIL_CONT_MSG =
-        "stop on success, continue on fail";
-    bytes32 public constant OK_STOP_FAIL_CONT_HASH =
-        keccak256(abi.encodePacked(OK_STOP_FAIL_CONT_MSG));
-
-    uint256 public constant OK_JUMP_FAIL_CONT = 0x0060;
-    string public constant OK_JUMP_FAIL_CONT_MSG =
-        "jump on success, continue on fail";
-    bytes32 public constant OK_JUMP_FAIL_CONT_HASH =
-        keccak256(abi.encodePacked(OK_JUMP_FAIL_CONT_MSG));
-
     constructor() {}
 
     function _resolve(bytes32 node) internal view returns (address result) {
@@ -92,8 +48,8 @@ abstract contract FCT_Storage is Ownable {
         require(result != address(0), "Factory: ens address not found");
     }
 
-    function _ensToAddress(bytes32 ensHash, address expectedAddress)
-        internal
+    function ensToAddress(bytes32 ensHash, address expectedAddress)
+        external
         view
         returns (address result)
     {
@@ -112,38 +68,6 @@ abstract contract FCT_Storage is Ownable {
             require(result == expectedAddress, "Factory: ens address mismatch");
         }
         require(result != address(0), "Factory: ens address not found");
-    }
-
-    function _addressFromMessageAndSignature(
-        bytes32 messageHash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address) {
-        if (v != 0) {
-            return messageHash.recover(v, r, s);
-        }
-        return
-            messageHash.recover(
-                27 + uint8(uint256(s) >> 255),
-                r,
-                s &
-                    0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-            );
-    }
-
-    function _getRevertMsg(bytes memory returnData)
-        internal
-        pure
-        returns (string memory)
-    {
-        if (returnData.length < 68)
-            return "Wallet: Transaction reverted silently";
-
-        assembly {
-            returnData := add(returnData, 0x04)
-        }
-        return abi.decode(returnData, (string));
     }
 
     function _messageToRecover(bytes32 hashedUnsignedMessage, bool eip712)
@@ -170,4 +94,5 @@ abstract contract FCT_Storage is Ownable {
                 )
             );
     }
+
 }

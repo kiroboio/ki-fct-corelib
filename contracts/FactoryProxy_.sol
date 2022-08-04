@@ -28,28 +28,6 @@ uint256 constant RETX_MAX = 0xFD000000000000000000000000000000000000000000000000
 uint256 constant VAR_MASK = 0x0000000000000000000000000000000000000000ff;
 uint256 constant RET_MASK = 0x00000000000000000000000000000000000000ff00;
 
-/* struct Transfer {
-    address signer;
-    bytes32 r;
-    bytes32 s;
-    address token;
-    bytes32 tokenEnsHash;
-    address to;
-    bytes32 toEnsHash;
-    uint256 value;
-    uint256 sessionId;
-} */
-
-/* struct PackedTransfer {
-    address signer;
-    bytes32 r;
-    bytes32 s;
-    address token;
-    address to;
-    uint256 value;
-    uint256 sessionId;
-} */
-
 struct Call {
     bytes32 r;
     bytes32 s;
@@ -64,36 +42,8 @@ struct Call {
     bytes data;
 }
 
-/* struct PackedCall {
-    bytes32 r;
-    bytes32 s;
-    address to;
-    uint256 value;
-    uint256 sessionId;
-    address signer;
-    bytes data;
-} */
-
-/* struct PackedMCall {
-    uint256 value;
-    address to;
-    uint32 gasLimit;
-    uint16 flags;
-    bytes data;
-} */
-
-/* struct PackedMCalls {
-    bytes32 r;
-    bytes32 s;
-    uint256 sessionId;
-    address signer;
-    uint8 v;
-    PackedMCall[] mcall;
-} */
-
 struct PackedMSCall {
     uint256 value;
-    // address signer;
     address from;
     uint32 gasLimit;
     uint16 flags;
@@ -144,49 +94,6 @@ contract FactoryProxy_ is FactoryStorage {
 
     // Stubs ends
 
-    /*  bytes32 public constant BATCH_CALL_PACKED_TYPEHASH_ =
-        keccak256(
-            "BatchCallPacked_(address to,uint256 value,uint256 sessionId,bytes data)"
-        ); */
-
-    /*  bytes32 public constant BATCH_MULTI_CALL_TYPEHASH_ =
-        keccak256(
-            "BatchMultiCallPacked_(address to,uint256 value,uint256 sessionId,bytes data)"
-        ); */
-
-    // bytes32 public constant BATCH_MULTI_SIG_CALL_TYPEHASH_ =
-    //     keccak256(
-    //         "BatchMultiSigCall_(Limits limits,Transaction transaction)Limits_(uint256 sessionId)Transaction_(address from,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
-    //     );
-
-    // bytes32 public constant PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_ =
-    //     keccak256("Limits_(uint256 sessionId)");
-
-    // bytes32 public constant PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_ =
-    //     keccak256(
-    //         "Transaction_(address from,address to,uint256 value,uint32 gasLimit,uint16 flags,bytes data)"
-    //     );
-
-    /* bytes32 public constant BATCH_TRANSFER_TYPEHASH_ =
-        keccak256(
-            "BatchTransfer_(address token_address,string token_ens,address to,string to_ens,uint256 value,uint64 nonce,uint40 valid_from,uint40 expires_at,uint32 gas_limit,uint64 gas_price_limit,bool refund)"
-        ); */
-
-    /* bytes32 public constant BATCH_CALL_TRANSACTION_TYPEHASH_ =
-        keccak256(
-            "Transaction_(address call_address,string call_ens,uint256 eth_value,uint64 nonce,uint40 valid_from,uint40 expires_at,uint32 gas_limit,uint64 gas_price_limit,bool view_only,bool refund,string method_interface)"
-        ); */
-
-    /*  bytes32 public constant BATCH_MULTI_CALL_LIMITS_TYPEHASH_ =
-        keccak256(
-            "Limits_(uint64 nonce,bool refund,uint40 valid_from,uint40 expires_at,uint64 gas_price_limit)"
-        ); */
-
-    /* bytes32 public constant BATCH_MULTI_CALL_TRANSACTION_TYPEHASH_ =
-        keccak256(
-            "Transaction_(address call_address,string call_ens,uint256 eth_value,uint32 gas_limit,bool view_only,bool continue_on_fail,bool stop_on_fail,bool stop_on_success,bool revert_on_success,string method_interface)"
-        ); */
-
     bytes32 public constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_ =
         keccak256(
             "Limits_(uint64 nonce,bool refund,uint40 valid_from,uint40 expires_at,uint64 gas_price_limit)"
@@ -200,44 +107,6 @@ contract FactoryProxy_ is FactoryStorage {
     bytes32 public constant BATCH_MULTI_SIG_CALL_APPROVAL_TYPEHASH_ =
         keccak256("Approval_(address signer)");
 
-    /* bytes32 public constant BATCH_TRANSFER_PACKED_TYPEHASH_ =
-        keccak256(
-            "BatchTransferPacked_(address token,address to,uint256 value,uint256 sessionId)"
-        ); */
-
-    // event ErrorHandled(bytes reason);
-    /* event TransferReverted_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index
-    ); */
-    /* event TransferPackedReverted_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index
-    ); */
-    /* event BatchCallReverted_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index
-    ); */
-    /* event BatchCallPackedReverted_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index
-    ); */
-    /* event BatchMultiCallFailed_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index,
-        uint256 innerIndex
-    ); */
-    /*  event BatchMultiCallPackedFailed_(
-        address indexed wallet,
-        uint256 nonce,
-        uint256 index,
-        uint256 innerIndex
-    ); */
     event BatchMultiSigCallFailed_(
         address indexed wallet,
         uint256 nonce,
@@ -317,216 +186,6 @@ contract FactoryProxy_ is FactoryStorage {
         }
     }
 
-    // Batch Transfers: ETH & ERC20 Tokens
-    /* function batchTransfer_(
-        Transfer[] calldata tr,
-        uint24 nonceGroup,
-        bool silentRevert
-    ) external {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        unchecked {
-            uint256 ng = nonceGroup;
-            uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            uint256 maxNonce = 0;
-            uint256 constGas = 12000 +
-                ((21000 + msg.data.length * 8) / tr.length);
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-                Transfer calldata call = tr[i];
-                address to = _ensToAddress(call.toEnsHash, call.to);
-                address token = _ensToAddress(call.tokenEnsHash, call.token);
-                uint256 sessionId = call.sessionId;
-                uint256 gasLimit = uint32(sessionId >> GAS_LIMIT_BIT);
-
-                // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
-                _checkSessionIdLimits(sessionId);
-                // maxNonce = sessionId;
-
-                bytes32 messageHash = _messageToRecover(
-                    _encodeTransfer(call),
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    call.signer,
-                    messageHash,
-                    uint8(sessionId), //v
-                    call.r,
-                    call.s
-                );
-
-                require(wallet.owner, "Factory: signer is not owner");
-
-                (bool success, bytes memory res) = call.token == address(0)
-                    ? wallet.addr.call{
-                        gas: gasLimit == 0 || gasLimit > gasleft()
-                            ? gasleft()
-                            : gasLimit
-                    }(
-                        abi.encodeWithSignature(
-                            "transferEth(address,uint256,bytes32)",
-                            to,
-                            call.value,
-                            sessionId & FLAG_CANCELABLE != 0
-                                ? messageHash
-                                : bytes32(0)
-                        )
-                    )
-                    : wallet.addr.call{
-                        gas: gasLimit == 0 || gasLimit > gasleft()
-                            ? gasleft()
-                            : gasLimit
-                    }(
-                        abi.encodeWithSignature(
-                            "transferERC20(address,address,uint256,bytes32)",
-                            token,
-                            to,
-                            call.value,
-                            sessionId & FLAG_CANCELABLE != 0
-                                ? messageHash
-                                : bytes32(0)
-                        )
-                    );
-                if (!success) {
-                    if (!silentRevert) {
-                        emit TransferReverted_(wallet.addr, nonce, i);
-                        continue;
-                    } else {
-                        revert(_getRevertMsg(res));
-                    }
-                }
-
-                if (sessionId & FLAG_PAYMENT != 0 && success) {
-                    wallet.debt += _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas, //  + 12000,
-                        uint64(sessionId >> 16)
-                    );
-                }
-            }
-            s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(0, block.number, maxNonce);
-        }
-    } */
-
-    // Batch Transfers: ETH & ERC20 Tokens
-    /*  function batchTransferPacked_(
-        PackedTransfer[] calldata tr,
-        uint24 nonceGroup,
-        bool silentRevert
-    ) external {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        unchecked {
-            uint256 ng = nonceGroup;
-            uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            uint256 maxNonce = 0;
-            uint256 constGas = 12000 +
-                ((21000 + msg.data.length * 8) / tr.length);
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-                PackedTransfer calldata call = tr[i];
-                address to = call.to;
-                uint256 sessionId = call.sessionId;
-                uint256 gasLimit = uint32(sessionId >> GAS_LIMIT_BIT);
-
-                // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
-                _checkSessionIdLimits(sessionId);
-                maxNonce = sessionId;
-
-                bytes32 messageHash = _messageToRecover(
-                    keccak256(
-                        abi.encode(
-                            BATCH_TRANSFER_PACKED_TYPEHASH_,
-                            call.token,
-                            to,
-                            call.value,
-                            sessionId >> 8
-                        )
-                    ),
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    call.signer,
-                    messageHash,
-                    uint8(sessionId), //v
-                    call.r,
-                    call.s
-                );
-
-                require(wallet.owner, "Factory: signer is not owner");
-
-                uint256 localNonce;
-                bool localSilentRevert;
-                {
-                    localNonce = nonce;
-                    localSilentRevert = silentRevert;
-                }
-
-                (bool success, bytes memory res) = call.token == address(0)
-                    ? wallet.addr.call{
-                        gas: gasLimit == 0 || gasLimit > gasleft()
-                            ? gasleft()
-                            : gasLimit
-                    }(
-                        abi.encodeWithSignature(
-                            "transferEth(address,uint256,bytes32)",
-                            to,
-                            call.value,
-                            sessionId & FLAG_CANCELABLE != 0
-                                ? messageHash
-                                : bytes32(0)
-                        )
-                    )
-                    : wallet.addr.call{
-                        gas: gasLimit == 0 || gasLimit > gasleft()
-                            ? gasleft()
-                            : gasLimit
-                    }(
-                        abi.encodeWithSignature(
-                            "transferERC20(address,address,uint256,bytes32)",
-                            call.token,
-                            to,
-                            call.value,
-                            sessionId & FLAG_CANCELABLE != 0
-                                ? messageHash
-                                : bytes32(0)
-                        )
-                    );
-                if (!success) {
-                    if (!localSilentRevert) {
-                        emit TransferPackedReverted_(
-                            wallet.addr,
-                            localNonce,
-                            i
-                        );
-                        continue;
-                    } else {
-                        revert(_getRevertMsg(res));
-                    }
-                }
-
-                if (sessionId & FLAG_PAYMENT != 0 && success) {
-                    wallet.debt += _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas, //  + 12000,
-                        uint64(sessionId >> 16)
-                    );
-                }
-            }
-            s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(4, block.number, maxNonce);
-        }
-    } */
-
     function _executeCall(
         address wallet,
         address to,
@@ -548,6 +207,11 @@ contract FactoryProxy_ is FactoryStorage {
         //         mstore(add(data.offset, 0x0), mload(add(addresses, addr)))
         //     }
         // }
+        // console.log("_executeCall, wallet:%s, to:%s, value:%s", wallet, to, value);
+        // console.log("packed",packed);
+        // console.logBytes32(messageHash);
+        // console.logBytes32(functionSignature);
+        // console.logBytes(data);
 
         return
             flags & FLAG_STATICCALL != 0
@@ -637,465 +301,65 @@ contract FactoryProxy_ is FactoryStorage {
             );
     }
 
-    // Batch Call: External Contract Functions
-    /* function batchCall_(
-        Call[] calldata tr,
-        uint256 nonceGroup,
-        bool silentRevert
-    ) external {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        unchecked {
-            uint256 ng = nonceGroup;
-            uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            uint256 maxNonce = 0;
-            uint256 constGas = (21000 + msg.data.length * 16) / tr.length;
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-
-                Call calldata call = tr[i];
-                uint256 sessionId = call.sessionId;
-
-                // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
-                _checkSessionIdLimits(sessionId);
-
-                maxNonce = sessionId;
-
-                (bytes32 callHash, address to) = _encodeCall(call);
-
-                bytes32 messageHash = _messageToRecover(
-                    callHash,
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    call.signer,
-                    messageHash,
-                    uint8(sessionId), //v
-                    call.r,
-                    call.s
-                );
-
-                require(wallet.owner, "Factory: signer is not owner");
-
-                (bool success, bytes memory res) = _executeCall(
-                    wallet.addr,
-                    to,
-                    uint16(sessionId),
-                    uint32(sessionId >> GAS_LIMIT_BIT),
-                    messageHash,
-                    call.functionSignature,
-                    call.value,
-                    call.data
-                );
-                if (!success) {
-                    if (!silentRevert) {
-                        emit BatchCallReverted_(wallet.addr, nonce, i);
-                        continue;
-                    } else {
-                        revert(_getRevertMsg(res));
-                    }
-                }
-                if (sessionId & FLAG_PAYMENT != 0 && success) {
-                    wallet.debt += _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas,
-                        uint64(sessionId >> 16)
-                    );
-                }
-            }
-
-            s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(1, block.number, maxNonce);
-        }
-    } */
-
-    /*  function batchCallPacked_(
-        PackedCall[] calldata tr,
-        uint256 nonceGroup,
-        bool silentRevert
-    ) external {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        unchecked {
-            uint256 ng = nonceGroup;
-            uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            uint256 maxNonce = 0;
-            // uint256 length = tr.length;
-            uint256 constGas = (21000 + msg.data.length * 8) / tr.length;
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-
-                PackedCall calldata call = tr[i];
-                address to = call.to;
-                uint256 sessionId = call.sessionId;
-
-                // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
-                _checkSessionIdLimits(sessionId);
-                maxNonce = sessionId;
-
-                bytes32 trHash = keccak256(
-                    abi.encode(
-                        BATCH_CALL_PACKED_TYPEHASH_,
-                        to,
-                        call.value,
-                        sessionId >> 8,
-                        call.data
-                    )
-                );
-                bytes32 messageHash = _messageToRecover(
-                    trHash,
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    call.signer,
-                    messageHash,
-                    uint8(sessionId), //v
-                    call.r,
-                    call.s
-                );
-
-                require(wallet.owner, "Factory: signer is not owner");
-
-                (bool success, bytes memory res) = _executePackedCall(
-                    wallet.addr,
-                    to,
-                    uint16(sessionId),
-                    uint32(sessionId >> GAS_LIMIT_BIT),
-                    messageHash,
-                    call.value,
-                    call.data
-                );
-
-                if (!success) {
-                    if (!silentRevert) {
-                        emit BatchCallPackedReverted_(wallet.addr, nonce, i);
-                        continue;
-                    } else {
-                        revert(_getRevertMsg(res));
-                    }
-                }
-                if (sessionId & FLAG_PAYMENT != 0 && success) {
-                    wallet.debt += _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas,
-                        uint64(sessionId >> 16)
-                    );
-                }
-            }
-            s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(5, block.number, maxNonce);
-        }
-    } */
-
-    // Batch Call: Multi External Contract Functions
-    /*  function batchMultiCall_(MCalls[] calldata tr, uint256 nonceGroup)
-        external
-        returns (MReturn[] memory rt)
-    {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        rt = new MReturn[](tr.length);
-        unchecked {
-            // uint256 ng = nonceGroup;
-            // uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            // uint256 maxNonce = 0;
-            uint256 constGas = (21000 + msg.data.length * 8) / tr.length;
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-                MCalls calldata mcalls = tr[i];
-                uint256 sessionId = mcalls.sessionId;
-                bytes memory msg2 = abi.encode(
-                    mcalls.typeHash,
-                    keccak256(
-                        abi.encode(
-                            BATCH_MULTI_CALL_LIMITS_TYPEHASH_,
-                            uint64(sessionId >> NONCE_BIT), // group + nonce
-                            sessionId & FLAG_PAYMENT != 0,
-                            uint40(sessionId >> AFTER_TS_BIT),
-                            uint40(sessionId >> BEFORE_TS_BIT),
-                            uint64(sessionId >> GAS_PRICE_LIMIT_BIT)
-                        )
-                    )
-                );
-
-                // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
-                _checkSessionIdLimits(sessionId);
-                // maxNonce = sessionId;
-
-                uint256 length = mcalls.mcall.length;
-
-                for (uint256 j = 0; j < length; j++) {
-                    MCall calldata call = mcalls.mcall[j];
-                    uint16 flags = call.flags;
-
-                    bytes32 transactionHash = keccak256(
-                        abi.encode(
-                            BATCH_MULTI_CALL_TRANSACTION_TYPEHASH_,
-                            call.to,
-                            call.ensHash,
-                            call.value,
-                            call.gasLimit,
-                            flags & FLAG_STATICCALL,
-                            flags & ON_FAIL_CONTINUE > 0,
-                            flags & ON_FAIL_STOP > 0,
-                            flags & ON_SUCCESS_STOP > 0,
-                            flags & ON_SUCCESS_REVERT > 0,
-                            call.functionSignature
-                        )
-                    );
-
-                    msg2 = abi.encodePacked(
-                        msg2,
-                        call.functionSignature !=
-                            0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
-                            ? keccak256(
-                                abi.encode(
-                                    call.typeHash,
-                                    transactionHash,
-                                    call.data
-                                )
-                            )
-                            : keccak256(
-                                abi.encode(call.typeHash, transactionHash)
-                            )
-                    );
-                }
-
-                bytes32 messageHash = _messageToRecover(
-                    keccak256(msg2),
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    mcalls.signer,
-                    messageHash,
-                    mcalls.v,
-                    mcalls.r,
-                    mcalls.s
-                );
-
-                require(wallet.owner, "Factory: signer is not owner");
-
-                uint256 localNonce;
-                uint256 localIndex;
-                bytes32 localMessageHash;
-                {
-                    localNonce = 0;
-                    localIndex = i;
-                    localMessageHash = messageHash;
-                }
-
-                for (uint256 j = 0; j < length; j++) {
-                    MCall calldata call = mcalls.mcall[j];
-                    uint16 flags = call.flags;
-
-                    (bool success, bytes memory res) = _executeCall(
-                        wallet.addr,
-                        _ensToAddress(call.ensHash, call.to),
-                        flags,
-                        call.gasLimit,
-                        localMessageHash,
-                        call.functionSignature,
-                        call.value,
-                        call.data
-                    );
-
-                    if (!success) {
-                        emit BatchMultiCallFailed_(
-                            wallet.addr,
-                            localNonce,
-                            localIndex,
-                            j
-                        );
-                        if (flags & ON_FAIL_CONTINUE != 0) {
-                            continue;
-                        } else if (flags & ON_FAIL_STOP != 0) {
-                            break;
-                        }
-                        revert(_getRevertMsg(res));
-                    } else if (flags & ON_SUCCESS_STOP != 0) {
-                        break;
-                    } else if (flags & ON_SUCCESS_REVERT != 0) {
-                        revert("Factory: revert on success");
-                    }
-                }
-                uint88 refund;
-                if (sessionId & FLAG_PAYMENT != 0) {
-                    refund = _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas,
-                        uint64(sessionId >> 16) //gasPriceLimit
-                    );
-                    wallet.debt += refund;
-                }
-                rt[localIndex] = MReturn(wallet.addr, refund);
-            }
-            // s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(2, block.number, 0);
-        }
-    } */
-
-    /*  function batchMultiCallPacked_(
-        PackedMCalls[] calldata tr,
-        uint256 nonceGroup
-    ) external {
-        require(msg.sender == s_activator, "Wallet: sender not allowed");
-        unchecked {
-            uint256 ng = nonceGroup;
-            uint256 nonce = s_nonce_group[ng] + (ng << GROUP_BIT);
-            uint256 maxNonce = 0;
-            uint256 constGas = (21000 + msg.data.length * 8) / tr.length;
-            for (uint256 i = 0; i < tr.length; i++) {
-                uint256 gas = gasleft();
-                PackedMCalls calldata mcalls = tr[i];
-                bytes memory msgPre = abi.encode(
-                    0x20,
-                    mcalls.mcall.length,
-                    32 * mcalls.mcall.length
-                );
-                bytes memory msg2;
-                uint256 sessionId = mcalls.sessionId;
-                uint256 gasPriceLimit = uint64(sessionId >> 16);
-
-                // _checkSessionIdLimits(sessionId, nonce, maxNonce, i);
-                _checkSessionIdLimits(sessionId);
-                // maxNonce = sessionId;
-
-                uint256 length = mcalls.mcall.length;
-                for (uint256 j = 0; j < length; j++) {
-                    PackedMCall calldata call = mcalls.mcall[j];
-                    address to = call.to;
-                    msg2 = abi.encodePacked(
-                        msg2,
-                        abi.encode(
-                            BATCH_MULTI_CALL_TYPEHASH_,
-                            to,
-                            call.value,
-                            sessionId,
-                            call.data
-                        )
-                    );
-                    if (j < mcalls.mcall.length - 1) {
-                        msgPre = abi.encodePacked(
-                            msgPre,
-                            msg2.length + 32 * mcalls.mcall.length
-                        );
-                    }
-                }
-
-                bytes32 messageHash = _messageToRecover(
-                    keccak256(abi.encodePacked(msgPre, msg2)),
-                    sessionId & FLAG_EIP712 != 0
-                );
-
-                require(s_fcts[messageHash] == 0, "allready executed");
-                s_fcts[messageHash] = 1;
-
-                Wallet storage wallet = _getWalletFromMessage(
-                    mcalls.signer,
-                    messageHash,
-                    mcalls.v,
-                    mcalls.r,
-                    mcalls.s
-                );
-                require(wallet.owner, "Factory: signer is not owner");
-
-                uint256 localNonce;
-                uint256 localIndex;
-                {
-                    localNonce = nonce;
-                    localIndex = i;
-                }
-
-                for (uint256 j = 0; j < length; j++) {
-                    PackedMCall calldata call = mcalls.mcall[j];
-                    uint16 flags = call.flags;
-
-                    (bool success, bytes memory res) = _executePackedCall(
-                        wallet.addr,
-                        call.to,
-                        flags,
-                        call.gasLimit,
-                        messageHash,
-                        call.value,
-                        call.data
-                    );
-
-                    if (!success) {
-                        emit BatchMultiCallPackedFailed_(
-                            wallet.addr,
-                            localNonce,
-                            localIndex,
-                            j
-                        );
-                        if (flags & ON_FAIL_CONTINUE > 0) {
-                            continue;
-                        } else if (flags & ON_FAIL_STOP > 0) {
-                            break;
-                        }
-                        revert(_getRevertMsg(res));
-                    } else if (flags & ON_SUCCESS_STOP > 0) {
-                        break;
-                    } else if (flags & ON_SUCCESS_REVERT > 0) {
-                        revert("Factory: revert on success");
-                    }
-                }
-                if (sessionId & FLAG_PAYMENT > 0) {
-                    wallet.debt += _calcRefund(
-                        wallet.debt,
-                        gas,
-                        constGas,
-                        gasPriceLimit
-                    );
-                }
-            }
-            s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
-            emit BatchTransfered_(6, block.number, maxNonce);
-        }
-    } */
-
     struct TYPES {
         string arg1;
         string arg2;
         string arg3;
     }
 
-    uint256 constant STRING = 1;
-    uint256 constant BYTES = 2;
-    uint256 constant ARRAY_UINT256 = 3;
+    uint256 constant TYPE_NATIVE = 0;
+    uint256 constant TYPE_STRING = 1;
+    uint256 constant TYPE_BYTES = 2;
 
-    function magic(bytes calldata data, uint256[] memory types)
+    function _decodeString(bytes calldata data, uint256 pos)
+        private
+        pure
+        returns (string memory)
+    {
+        //console.logBytes(data);
+        bytes memory strData = bytes.concat(
+            abi.encode(0x20),
+            data[(pos + 3) * 32:(pos + 5)* 32]
+        );
+        //console.log("print");
+        //console.logBytes(strData);
+        return abi.decode(strData, (string));
+    }//ori shalom
+
+    function _decodeBytes(bytes calldata data, uint256 pos)
+        private
+        pure
+        returns (bytes memory)
+    {
+        bytes memory strData = bytes.concat(
+            abi.encode(0x20),
+            data[(pos + 3) * 32:(pos + 5)* 32]
+        );
+        return abi.decode(strData, (bytes));
+    }
+//to,tokenAmount,
+    function abiToEIP712(bytes calldata data, uint256[] memory types)
         public
         pure
         returns (bytes memory res)
     {
+        uint256 j = 0;
         for (uint256 i = 0; i < types.length; ++i) {
-            if (types[i] == STRING) {
-                bytes memory str = abi.encodePacked(abi.decode(data, (string)));
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
-            } else if (types[i] == BYTES) {
-                bytes memory str = abi.encodePacked(abi.decode(data, (bytes)));
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
-            } else if (types[i] == ARRAY_UINT256) {
-                bytes memory str = abi.encodePacked(
-                    abi.decode(data, (uint256[]))
-                );
-                res = bytes.concat(res, keccak256(str));
-                i = i + 2 + str.length;
+            if (types[i] == TYPE_STRING) {
+                //console.log("string:", i);
+                string memory str = _decodeString(data, i +j);
+                //console.log(str);
+                bytes memory buff = abi.encodePacked(str);
+                res = bytes.concat(res, keccak256(buff));
+                j = j + 1;
+            } else if (types[i] == TYPE_BYTES) {
+                //console.log("bytes:", i);
+                bytes memory bytesData = _decodeBytes(data, i +j);
+                //console.logBytes(bytesData);
+                res = bytes.concat(res, keccak256(bytesData));
+                j = j + 1;//+ bytesData.length;
             } else {
+                //console.log("basic:", i);
                 res = bytes.concat(res, data[i * 32:(i + 1) * 32]);
             }
         }
@@ -1104,7 +368,7 @@ contract FactoryProxy_ is FactoryStorage {
     // Batch Call: Multi Signature, Multi External Contract Functions
     function batchMultiSigCall_(
         MSCalls[] calldata tr,
-        bytes32[] calldata variables
+        bytes32[][] calldata variables
     ) external returns (MReturn[][] memory rt) {
         // uint256 startGas = gasleft();
         require(msg.sender == s_activator, "Wallet: sender not allowed");
@@ -1113,8 +377,8 @@ contract FactoryProxy_ is FactoryStorage {
             uint256 trLength = tr.length;
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
-            bytes32[] calldata variables_ = variables;
             for (uint256 i = 0; i < trLength; ++i) {
+                bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];
                 // console.log("proxy: i: ", i);
@@ -1145,6 +409,35 @@ contract FactoryProxy_ is FactoryStorage {
                     //     call.to,
                     //     call.value
                     // );
+                    // console.log(
+                    //     "-------------------------- string -----------------------"
+                    // );
+                    // console.logBytes(call.data);
+                    
+                    // (, , string memory r, string memory b, bytes memory x) = abi.decode(
+                    //     call.data,
+                    //     (address, uint256, string, string, bytes)
+                    // );
+                    // (, , string memory r) = abi.decode(
+                    //     call.data,
+                    //     (address, uint256, string)
+                    // );
+                    // console.log(r);
+                    // console.logBytes32(keccak256(abi.encodePacked(r)));
+                    // console.log(b);
+                    // console.logBytes32(keccak256(abi.encodePacked(b)));
+                    // console.logBytes(x);
+                    // console.logBytes32(keccak256(abi.encodePacked(x)));
+                    // uint256[] memory types = new uint256[](5);
+                    // types[0] = TYPE_NATIVE;
+                    // types[1] = TYPE_NATIVE;
+                    // types[2] = TYPE_STRING;
+                    // types[3] = TYPE_STRING;
+                    // types[4] = TYPE_BYTES;
+                    //console.log("t1:%s, t2:%s", call.types[0], call.types[1]);
+                    console.logBytes(call.types.length > 0 ? abiToEIP712(call.data, call.types) : call.data);
+                   
+
                     msg2 = abi.encodePacked(
                         msg2,
                         // messageHash
@@ -1156,7 +449,7 @@ contract FactoryProxy_ is FactoryStorage {
                                         call.typeHash,
                                         _calcMultiSigTransactionHash(call)
                                     ),
-                                    call.data
+                                    call.types.length > 0 ? abiToEIP712(call.data, call.types) : call.data
                                 )
                             )
                             : call.to != address(0)
@@ -1174,15 +467,16 @@ contract FactoryProxy_ is FactoryStorage {
                             )
                     );
                 }
-                //console.log("ori 1");
+                console.log('message hash 1');
+                console.logBytes32(keccak256(msg2));
                 bytes32 messageHash = _messageToRecover(
                     keccak256(msg2),
                     sessionId & FLAG_EIP712 != 0
                 );
-                //console.log("ori 2");
+                console.log('message hash 2');
+                console.logBytes32(messageHash);
                 require(s_fcts[messageHash] == 0, "allready executed");
                 s_fcts[messageHash] = 1;
-                //console.log("ori 3");
 
                 address[] memory signers = new address[](
                     mcalls.signatures.length
@@ -1196,52 +490,6 @@ contract FactoryProxy_ is FactoryStorage {
                         signature.s
                     );
                 }
-                // address[] memory signers = new address[](length);
-
-                // for (uint256 k = 0; k < length; ++k) {
-                //     MSCall calldata call = mcalls.mcall[k];
-                //     for (uint256 s = 0; s < mcalls.signatures.length; ++s) {
-                //         Signature calldata signature = mcalls.signatures[s];
-                //         address callSigner = call.signer;
-                //         {
-                //             uint256 signerId = uint256(uint160(call.signer));
-                //             if (signerId > VAR_MIN && signerId < VAR_MAX) {
-                //                 require(
-                //                     signerId & VAR_MASK <= variables_.length,
-                //                     "Factory: var out of bound"
-                //                 );
-
-                //                 callSigner = address(
-                //                     uint160(
-                //                         uint256(
-                //                             variables_[
-                //                                 (signerId & VAR_MASK) - 1
-                //                             ]
-                //                         )
-                //                     )
-                //                 );
-                //                 for (uint256 l = 0; l < length; ++l) {
-                //                     require(
-                //                         callSigner != mcalls.mcall[l].signer,
-                //                         "Factory: singer exists"
-                //                     );
-                //                 }
-                //             }
-                //         }
-                //         address signer = _addressFromMessageAndSignature(
-                //             messageHash,
-                //             signature.v,
-                //             signature.r,
-                //             signature.s
-                //         );
-                //         // console.log('signer', signer);
-                //         // console.log('callSigner %s %s', k, callSigner);
-                //         if (signer == callSigner) {
-                //             signers[k] = signer;
-                //             break;
-                //         }
-                //     }
-                // }
 
                 MultiSigCallLocals memory locals;
                 {
@@ -1264,6 +512,7 @@ contract FactoryProxy_ is FactoryStorage {
                     //     "------------------ FTC %s ------------------",
                     //     j + 1
                     // );
+                    //console.log("test1");
                     uint256 gas = gasleft();
 
                     // require(
@@ -1271,6 +520,7 @@ contract FactoryProxy_ is FactoryStorage {
                     //     "Factory: signer missing"
                     // );
                     MSCall calldata call = mcalls.mcall[j];
+                    //console.log("test2");
                     // console.log(
                     //     "proxy: call.to %s, call.value %s",
                     //     call.to,
@@ -1279,22 +529,25 @@ contract FactoryProxy_ is FactoryStorage {
                     if (call.to == address(0)) {
                         continue;
                     }
-
+                   // console.log("test3");
                     // Wallet storage wallet = s_accounts_wallet[signers[j]];
                     // require(wallet.owner, "Factory: signer is not owner");
                     MultiSigInternalCallLocals memory varLocals;
                     {
+                        //console.log("test3.1, call.from:", call.from);
                         varLocals.callFrom = call.from;
                         if (
                             uint256(uint160(varLocals.callFrom)) > VAR_MIN &&
                             uint256(uint160(varLocals.callFrom)) < VAR_MAX
                         ) {
+                            //console.log("test3.2");
                             require(
                                 uint256(uint160(varLocals.callFrom)) &
                                     VAR_MASK <=
                                     variables_.length,
                                 "Factory: var out of bound"
                             );
+                            //console.log("test3.3, index: ", (uint256(uint160(varLocals.callFrom)) & VAR_MASK) - 1);
                             varLocals.callFrom = address(
                                 uint160(
                                     uint256(
@@ -1306,16 +559,19 @@ contract FactoryProxy_ is FactoryStorage {
                                     )
                                 )
                             );
+                            //console.log("test3.4");
                             for (uint256 l = 0; l < length; ++l) {
                                 require(
                                     varLocals.callFrom != mcalls.mcall[l].from,
                                     "FCT: from exists"
                                 );
                             }
+                           // console.log("test3.5");
                         } else if (
                             uint256(uint160(varLocals.callFrom)) > RET_MIN &&
                             uint256(uint160(varLocals.callFrom)) < RET_MAX
                         ) {
+                            //console.log("test3.6");
                             varLocals.callFrom = abi.decode(
                                 locals.returnedValues[
                                     (uint256(uint160(varLocals.callFrom)) &
@@ -1323,15 +579,18 @@ contract FactoryProxy_ is FactoryStorage {
                                 ],
                                 (address)
                             );
+                            //console.log("test3.7");
                             for (uint256 l = 0; l < length; ++l) {
                                 require(
                                     varLocals.callFrom != mcalls.mcall[l].from,
                                     "FCT: from exists"
                                 );
                             }
+                            //console.log("test3.8");
                         }
+                        //console.log("test3.9");
                     }
-
+                    //console.log("test3.10, varLocals.callFrom:", varLocals.callFrom);
                     require(
                         IFCT_Runner(varLocals.callFrom).allowedToExecute_(
                             signers,
@@ -1339,7 +598,7 @@ contract FactoryProxy_ is FactoryStorage {
                         ) > 0,
                         "FCT: signers not allowed"
                     );
-
+                    //console.log("test4, call.to:", call.to);
                     {
                         varLocals.callTo = call.to;
                         if (
@@ -1407,6 +666,7 @@ contract FactoryProxy_ is FactoryStorage {
                             }
                         }
                     }
+                    //console.log("test5, varLocals.callTo: ", varLocals.callTo);
                     {
                         varLocals.value = call.value;
                         if (
@@ -1460,10 +720,11 @@ contract FactoryProxy_ is FactoryStorage {
                             }
                         }
                     }
+                    //console.log("test6");
                     varLocals.data = call.data;
                     if (call.data.length > 0) {
-                        // console.log("varData Before");
-                        // console.logBytes(varLocals.data);
+                        //  console.log("varData Before");
+                        //  console.logBytes(varLocals.data);
                         for (
                             varLocals.dataIndex = 0;
                             varLocals.dataIndex <= call.data.length - 32;
@@ -1486,7 +747,6 @@ contract FactoryProxy_ is FactoryStorage {
                                             variables_.length,
                                         "FCT: var out of bound"
                                     );
-
                                     varLocals.varValue = variables_[
                                         (varLocals.varId & VAR_MASK) - 1
                                     ];
@@ -1508,23 +768,6 @@ contract FactoryProxy_ is FactoryStorage {
                                         innerIndex * 32 < varData.length,
                                         "FCT: inner out of bound"
                                     );
-
-                                    // bytes32 varValue = varLocals.varValue;
-                                    // uint256 dataIndex = varLocals.dataIndex;
-
-                                    // console.log("inner index %s", innerIndex);
-                                    // assembly {
-                                    //     mstore(
-                                    //         add(
-                                    //             varData,
-                                    //             add(
-                                    //                 dataIndex,
-                                    //                 mul(innerIndex, 0x20)
-                                    //             )
-                                    //         ),
-                                    //         varValue
-                                    //     )
-                                    // }
 
                                     varLocals.varValue = abi.decode(
                                         locals.returnedValues[
@@ -1570,10 +813,12 @@ contract FactoryProxy_ is FactoryStorage {
                                 }
                             }
                         }
-                        // console.log("varData After");
-                        // console.logBytes(varLocals.data);
                     }
-
+                    // console.log("varLocals.callFrom", varLocals.callFrom);
+                    // console.log("call.flags", call.flags);
+                    // console.logBytes32(call.functionSignature);
+                    // console.log("varLocals.value", varLocals.value);
+                    // console.logBytes(varLocals.data);
                     (bool success, bytes memory res) = _executeCall(
                         varLocals.callFrom, // wallet.addr,
                         _ensToAddress(call.ensHash, varLocals.callTo),
@@ -1585,13 +830,8 @@ contract FactoryProxy_ is FactoryStorage {
                         varLocals.data
                     );
                     if (success) {
-                        // console.log("Returned bytes %s", res.length);
-                        // console.logBytes(res);
+                        //console.log("success");
                         if (res.length > 64) {
-                            // console.log(
-                            //     "Keeping value %s",
-                            //     abi.decode(abi.decode(res, (bytes)), (address))
-                            // );
                             locals.returnedValues[j] = abi.decode(res, (bytes));
                             // locals.returnedValues[j] = abi.decode(
                             //     abi.decode(res, (bytes)),
@@ -1599,10 +839,11 @@ contract FactoryProxy_ is FactoryStorage {
                             // );
                         }
                     }
-
+                    //console.log("ori 1");
                     uint256 additionalGasPerVault = (locals.gas / length) +
                         (33000 / (locals.trxCounter * length));
                     if (!success) {
+                        //console.log("ori 2");
                         emit BatchMultiSigCallFailed_(
                             varLocals.callFrom, // wallet.addr,
                             0,
@@ -1631,6 +872,7 @@ contract FactoryProxy_ is FactoryStorage {
                         }
                         revert(_getRevertMsg(res));
                     } else if (call.flags & FLAG_FLOW == OK_STOP_FAIL_CONT) {
+                        //console.log("ori 3");
                         locals.rt[locals.index][j] = gasDiff(
                             varLocals.callFrom, // wallet.addr,
                             gas,
@@ -1638,27 +880,19 @@ contract FactoryProxy_ is FactoryStorage {
                         );
                         break;
                     } else if (call.flags & FLAG_FLOW == OK_REVERT_FAIL_CONT) {
+                        //console.log("ori 4");
                         revert("FCT: revert on success");
                     } else if (call.flags & FLAG_FLOW == OK_JUMP_FAIL_CONT) {
+                        //console.log("ori 5");
                         j = j + (call.flags & FLAG_JUMP);
                     }
-
-                    // uint88 refund;
-                    // if (locals.sessionId & FLAG_PAYMENT != 0) {
-                    //     refund = _calcRefund(
-                    //         wallet.debt,
-                    //         locals.gas,
-                    //         locals.constGas,
-                    //         uint64(locals.sessionId >> 16) /*gasPriceLimit*/
-                    //     );
-                    //     wallet.debt += refund;
-                    // }
-                    //console.log("proxy: wallet.addr: %s , i: %s, j: %s", wallet.addr, locals.index, j);
+                    //console.log("ori 6");
                     locals.rt[locals.index][j] = gasDiff(
                         varLocals.callFrom, // wallet.addr,
                         gas,
                         additionalGasPerVault
                     ); //MReturn(wallet.addr, refund);
+                    //console.log("ori 7");
                 }
             }
             // s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
@@ -1859,75 +1093,6 @@ contract FactoryProxy_ is FactoryStorage {
                 )
         );
     }
-
-    /* function _encodeTransfer(Transfer memory call)
-        private
-        pure
-        returns (bytes32 messageHash)
-    {
-        return
-            keccak256(
-                abi.encode(
-                    BATCH_TRANSFER_TYPEHASH_,
-                    call.token,
-                    call.tokenEnsHash,
-                    call.to,
-                    call.toEnsHash,
-                    call.value,
-                    uint64(call.sessionId >> NONCE_BIT), // group + nonce
-                    uint40(call.sessionId >> AFTER_TS_BIT),
-                    uint40(call.sessionId >> BEFORE_TS_BIT),
-                    uint32(call.sessionId >> GAS_LIMIT_BIT),
-                    uint64(call.sessionId >> GAS_PRICE_LIMIT_BIT),
-                    bool(call.sessionId & FLAG_PAYMENT != 0)
-                )
-            );
-    } */
-
-    /* function _calcCallTransactionHash(Call memory call)
-        private
-        pure
-        returns (bytes32)
-    {
-        return
-            keccak256(
-                abi.encode(
-                    BATCH_CALL_TRANSACTION_TYPEHASH_,
-                    call.to,
-                    call.ensHash,
-                    call.value,
-                    uint64(call.sessionId >> NONCE_BIT), // group + nonce
-                    uint40(call.sessionId >> AFTER_TS_BIT),
-                    uint40(call.sessionId >> BEFORE_TS_BIT),
-                    uint32(call.sessionId >> GAS_LIMIT_BIT),
-                    uint64(call.sessionId >> GAS_PRICE_LIMIT_BIT),
-                    bool(call.sessionId & FLAG_STATICCALL != 0),
-                    bool(call.sessionId & FLAG_PAYMENT != 0),
-                    call.functionSignature
-                )
-            );
-    } */
-
-    /* function _encodeCall(Call memory call)
-        private
-        view
-        returns (bytes32 messageHash, address to)
-    {
-        to = _ensToAddress(call.ensHash, call.to);
-
-        messageHash = call.functionSignature !=
-            0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
-            ? keccak256(
-                abi.encode(
-                    call.typeHash,
-                    _calcCallTransactionHash(call),
-                    call.data
-                )
-            )
-            : keccak256(
-                abi.encode(call.typeHash, _calcCallTransactionHash(call))
-            );
-    } */
 
     function _calcMultiSigTransactionHash(
         MSCall memory call // , address[] memory addresses

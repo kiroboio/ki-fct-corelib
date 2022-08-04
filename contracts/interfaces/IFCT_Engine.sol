@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.0;
 
+import "../interfaces/IFCT_Controller.sol";
+
 struct Signature {
     bytes32 r;
     bytes32 s;
@@ -19,6 +21,7 @@ struct MSCall {
     uint16 flags;
     address to;
     bytes data;
+    uint256[] types;
 }
 
 struct MSCalls {
@@ -49,14 +52,19 @@ struct MCalls {
     MCall[] mcall;
 }
 
-struct MReturn {
-    address vault;
-    uint88 gas;
-}
+// struct MReturn {
+//     address vault;
+//     uint88 gas;
+// }
 
-interface IFCT_BatchMultiSig {
+interface IFCT_Engine {
+    function getIDs() external pure returns (bytes32[] memory);
+    function VERSION() external pure returns (bytes4);
+
     function batchMultiSigCall_(
+        bytes4 version,
         MSCalls[] calldata tr,
-        bytes32[] calldata variables
+        bytes32[][] calldata variables
     ) external returns (MReturn[][] memory);
+
 }

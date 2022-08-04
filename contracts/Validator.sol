@@ -30,8 +30,6 @@ contract Validator {
         if (!success) {
             revert("validator: call failed");
         }
-        console.log("validator data %s", abi.decode(result, (uint256)));
-        console.logBytes(result);
         require(
             abi.decode(result, (uint256)) > valueToCompare,
             "validator: not met"
@@ -57,8 +55,6 @@ contract Validator {
         if (!success) {
             revert("validator: call failed");
         }
-        console.log("validator data %s", abi.decode(result, (uint256)));
-        console.logBytes(result);
         require(
             abi.decode(result, (uint256)) == valueToCompare,
             "validator: not met"

@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import { TypedData } from "ethers-eip712";
-import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Validator } from "./interfaces";
+import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 export declare const flows: {
@@ -30,6 +30,7 @@ export declare const flows: {
         value: string;
     };
 };
+export declare const getTypesArray: (params: Params[]) => any[];
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
