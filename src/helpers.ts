@@ -53,6 +53,7 @@ export const getTypesArray = (params: Params[]) => {
   const TYPE_STRING = 1;
   const TYPE_BYTES = 2;
   const TYPE_ARRAY = 3;
+  const TYPE_STRUCT = 4;
   return params.reduce((acc, item) => {
     if (item.type === "string") {
       return [...acc, TYPE_STRING];
@@ -67,8 +68,19 @@ export const getTypesArray = (params: Params[]) => {
         insideType = TYPE_STRING;
       } else if (t === "bytes") {
         insideType = TYPE_BYTES;
-      } else {
+      } else if (
+        t === "address" ||
+        t === "uint256" ||
+        t === "uint8" ||
+        t === "uint16" ||
+        t === "uint32" ||
+        t === "uint64" ||
+        t === "uint128" ||
+        t === "uint256"
+      ) {
         insideType = TYPE_NATIVE;
+      } else {
+        insideType = TYPE_STRUCT;
       }
 
       return [...acc, TYPE_ARRAY, insideType];
