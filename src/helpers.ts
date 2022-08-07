@@ -61,30 +61,38 @@ export const getTypesArray = (params: Params[]) => {
     if (item.type === "bytes") {
       return [...acc, TYPE_BYTES];
     }
-    if (item.type.lastIndexOf("[") > 0) {
-      const t = item.type.slice(0, item.type.lastIndexOf("["));
-      let insideType: number;
-      if (t === "string") {
-        insideType = TYPE_STRING;
-      } else if (t === "bytes") {
-        insideType = TYPE_BYTES;
-      } else if (
-        t === "address" ||
-        t === "uint256" ||
-        t === "uint8" ||
-        t === "uint16" ||
-        t === "uint32" ||
-        t === "uint64" ||
-        t === "uint128" ||
-        t === "uint256"
-      ) {
-        insideType = TYPE_NATIVE;
-      } else {
-        insideType = TYPE_STRUCT;
-      }
+    if (
+      item.type === "address" ||
+      item.type === "uint8" ||
+      item.type === "uint16" ||
+      item.type === "uint32" ||
+      item.type === "uint64" ||
+      item.type === "uint128" ||
+      item.type === "uint256"
+    )
+      if (item.type.lastIndexOf("[") > 0) {
+        const t = item.type.slice(0, item.type.lastIndexOf("["));
+        let insideType: number;
+        if (t === "string") {
+          insideType = TYPE_STRING;
+        } else if (t === "bytes") {
+          insideType = TYPE_BYTES;
+        } else if (
+          t === "address" ||
+          t === "uint8" ||
+          t === "uint16" ||
+          t === "uint32" ||
+          t === "uint64" ||
+          t === "uint128" ||
+          t === "uint256"
+        ) {
+          insideType = TYPE_NATIVE;
+        } else {
+          insideType = TYPE_STRUCT;
+        }
 
-      return [...acc, TYPE_ARRAY, insideType];
-    }
+        return [...acc, TYPE_ARRAY, insideType];
+      }
     return [...acc, TYPE_NATIVE];
   }, []);
 };
