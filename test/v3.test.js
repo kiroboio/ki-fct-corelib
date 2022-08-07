@@ -449,11 +449,15 @@ describe("FactoryProxy contract library", function () {
             {
               value: 0,
               to: token20.address,
-              method: "transfer",
-              params: [
-                { name: "to", type: "address", value: accounts[12] },
-                { name: "token_amount", type: "uint256", value: "20" },
-              ],
+              method: "balanceOf",
+              params: [{ name: "account", type: "address", value: accounts[13] }],
+              validator: {
+                method: "greaterThan",
+                params: {
+                  valueToCompare: "1000",
+                },
+                validatorAddress: validator.address,
+              },
               from: vault11.address,
             },
           ],
