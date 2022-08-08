@@ -143,7 +143,7 @@ contract Activators is AccessControl {
         // console.log("---------------------> activating ", data.length);
         uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
         (bool success_, bytes memory data_) = s_fctController.call(data);
-        // console.log('success', success_);
+        console.log('success', success_);
         if (!success_) {
             revert(_getRevertMsg(data_));
         }

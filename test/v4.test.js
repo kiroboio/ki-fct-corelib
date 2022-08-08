@@ -21,7 +21,7 @@ const MultiplierTest = artifacts.require("MultiplyTest");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-describe("BatchMultiSigCall tests", () => {
+describe("batchMultiSigCall", () => {
   let vault1;
   let vault2;
   let vault10;
@@ -43,38 +43,35 @@ describe("BatchMultiSigCall tests", () => {
   let validator;
   let multiplier;
   let accounts = [];
-  const factoryOwner1 = accounts[0];
-  const factoryOwner2 = accounts[1];
-  const factoryOwner3 = accounts[2];
-  const owner = accounts[3];
-  const user1 = accounts[4];
-  const user2 = accounts[5];
-  const user3 = accounts[6];
-  const activator = accounts[7];
-  const operator = accounts[7];
-  const user10 = accounts[10];
-  const user11 = accounts[11];
-  const user12 = accounts[12];
-  const user13 = accounts[13];
-  const user4 = accounts[8];
+  let factoryOwner1 = accounts[0];
+  let factoryOwner2 = accounts[1];
+  let factoryOwner3 = accounts[2];
+  let owner = accounts[3];
+  let user1 = accounts[4];
+  let user2 = accounts[5];
+  let user3 = accounts[6];
+  let activator = accounts[7];
+  let operator = accounts[7];
+  let user10 = accounts[10];
+  let user11 = accounts[11];
+  let user12 = accounts[12];
+  let user13 = accounts[13];
+  let user4 = accounts[8];
 
   const userCount = 2;
   const userCountParameters = 1;
   const val1 = web3.utils.toWei("0.5", "gwei");
   const val2 = web3.utils.toWei("0.4", "gwei");
   const val3 = web3.utils.toWei("0.6", "gwei");
-  //const valBN = web3.utils.toBN(val1).add(web3.utils.toBN(val2)).add(web3.utils.toBN(val3));
 
-  let OK_CONT_FAIL_REVERT; // 0x10
-  let OK_CONT_FAIL_REVERT_MSG; // 'continue on success, revert on fail'
+  const getSigner = (index) => {
+    return accounts[index];
+  };
 
   const getPrivateKey = (address) => {
     // const wallet = web3.currentProvider.wallets[address.toLowerCase()]
     if (address === owner) {
       return "0x5f055f3bc7f2c8cabcc5132d97d6b594c25becbc57139221f1ef89263efc99c7"; // `0x${wallet._privKey.toString('hex')}`
-    }
-    if (address === accounts[5]) {
-      return "0x6526bc2e0536920488919e6fd86845141eb2886294d576ceb29445e59b398fad";
     }
     if (address === accounts[10]) {
       return "0x557bca6ef564e9573c073ca84c6b8093063221807abc5abf784b9c0ad1cc94a1";
@@ -82,33 +79,27 @@ describe("BatchMultiSigCall tests", () => {
     if (address === accounts[11]) {
       return "0x90f789c3b13f709b8638f8641e5123cc06e540e5dcc34287b820485c1948b9f5";
     }
-    if (address === accounts[12]) {
-      return "0x9a4a566d5c0fefaf2817dd2d31cd91ad2635c3eb06336ca14611ddb25a9d2bda";
-    }
-    if (address === accounts[13]) {
-      return "0x071cf463bfe72143005c4c28b15f21bfafc43c21cb0617c2a7bd2c3acb244a30";
-    }
   };
+  //const valBN = web3.utils.toBN(val1).add(web3.utils.toBN(val2)).add(web3.utils.toBN(val3));
 
-  const getSigner = (index) => {
-    return accounts[index];
-  };
-
-  before("checking constants", async () => {
-    assert(typeof factoryOwner1 == "string", "factoryOwner1 should be string");
-    assert(typeof factoryOwner2 == "string", "factoryOwner2 should be string");
-    assert(typeof factoryOwner3 == "string", "factoryOwner3 should be string");
-    assert(typeof owner == "string", "owner   should be string");
-    assert(typeof user1 == "string", "user1   should be string");
-    assert(typeof user2 == "string", "user2   should be string");
-    assert(typeof val1 == "string", "val1    should be string");
-    assert(typeof val2 == "string", "val2    should be string");
-    assert(typeof val3 == "string", "val2    should be string");
-    //assert(valBN instanceof web3.utils.BN, 'valBN should be big number');
-  });
-
+  let OK_CONT_FAIL_REVERT; // 0x10
+  let OK_CONT_FAIL_REVERT_MSG; // 'continue on success, revert on fail'
   before("setup contract for the test", async () => {
     accounts = await web3.eth.getAccounts();
+    factoryOwner1 = accounts[0];
+    factoryOwner2 = accounts[1];
+    factoryOwner3 = accounts[2];
+    owner = accounts[3];
+    user1 = accounts[4];
+    user2 = accounts[5];
+    user3 = accounts[6];
+    activator = accounts[7];
+    operator = accounts[7];
+    user10 = accounts[10];
+    user11 = accounts[11];
+    user12 = accounts[12];
+    user13 = accounts[13];
+    user4 = accounts[8];
 
     kiro = await ERC20Token.new("Kirobo ERC20 Token", "KDB20", { from: owner });
     weth = await ERC20Token.new("weth ERC20 Token", "WETH", { from: owner });
@@ -206,9 +197,6 @@ describe("BatchMultiSigCall tests", () => {
 
   it("should create empty wallet", async () => {
     const balance = await web3.eth.getBalance(vault1.address);
-    //console.log("balance", balance)
-    //console.log("user1", user1)
-    //console.log("val2", val2)
     assert.equal(balance.toString(10), web3.utils.toBN("0").toString(10));
     await web3.eth.sendTransaction({
       from: owner,
@@ -283,7 +271,7 @@ describe("BatchMultiSigCall tests", () => {
   });
 
   it("check kiro for eth ", async () => {
-    await activators.getAmountOfKiroForGivenEth(1909173750113105);
+    const totalGasUsed = await activators.getAmountOfKiroForGivenEth(1909173750113105);
   });
 
   //user1 -> vault1 -> activator
@@ -358,22 +346,20 @@ describe("BatchMultiSigCall tests", () => {
       nonce: await web3.eth.getTransactionCount(user13),
     });
   });
-  describe("batchMultiSigCall core lib", () => {
+
+  describe("BatchMultiSigCall core lib", () => {
     let batchMultiSigCall;
-    it("Should add batchMulticall", async () => {
-      batchMultiSigCall = new BatchMultiSigCall(web3, factoryProxy.address);
 
-      batchMultiSigCall.createVariable("valueToCompare", "10014");
-      batchMultiSigCall.createVariable("vault11", vault11.address);
-
+    it("Should add call", async () => {
+      batchMultiSigCall = new BatchMultiSigCall(web3, fctController.address);
       const tx = {
         groupId: 1,
         nonce: 1,
         calls: [
           {
             value: 0,
-            to: kiro.address,
-            method: "transfer",
+            to: multiplier.address,
+            method: "testCall",
             params: [
               { name: "to", type: "address", value: accounts[11] },
               { name: "token_amount", type: "uint256", value: "15" },
@@ -385,11 +371,10 @@ describe("BatchMultiSigCall tests", () => {
         ],
       };
 
-      const call = await batchMultiSigCall.addBatchCall(tx);
-
-      expect(batchMultiSigCall.calls.length).to.eq(1);
+      await batchMultiSigCall.addBatchCall(tx);
     });
-    it("Should execute", async () => {
+
+    it("Should execute batch", async () => {
       const calls = batchMultiSigCall.calls;
       const signer = getSigner(10);
       const signer2 = getSigner(11);
@@ -410,8 +395,12 @@ describe("BatchMultiSigCall tests", () => {
       });
 
       const callData = fctBatchMultiSig.contract.methods
-        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [])
+        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [
+          [],
+        ])
         .encodeABI();
+
+      // const data = activators.contract.methods.activate(callData).encodeABI();
 
       await activators.addActivator(user1, {
         from: owner,

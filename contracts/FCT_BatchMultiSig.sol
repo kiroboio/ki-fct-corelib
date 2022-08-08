@@ -507,6 +507,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
             for (uint256 i = 0; i < trLength; ++i) {
+
                 bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];
