@@ -47,53 +47,51 @@ const getBeforeTimestamp = (infinity: boolean, epochDate?: number): string =>
 const getMaxGas = (maxGas: number): string => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice: number): string => gasPrice.toString(16).padStart(16, "0");
 
-// Get Types array
-export const getTypesArray = (params: Params[]) => {
+const typeValue = (type: string) => {
   const TYPE_NATIVE = 0;
   const TYPE_STRING = 1;
   const TYPE_BYTES = 2;
   const TYPE_ARRAY = 3;
   const TYPE_STRUCT = 4;
-  return params.reduce((acc, item) => {
-    if (item.type === "string") {
-      return [...acc, TYPE_STRING];
-    }
-    if (item.type === "bytes") {
-      return [...acc, TYPE_BYTES];
-    }
-    if (
-      item.type === "address" ||
-      item.type === "uint8" ||
-      item.type === "uint16" ||
-      item.type === "uint32" ||
-      item.type === "uint64" ||
-      item.type === "uint128" ||
-      item.type === "uint256"
-    )
-      if (item.type.lastIndexOf("[") > 0) {
-        const t = item.type.slice(0, item.type.lastIndexOf("["));
-        let insideType: number;
-        if (t === "string") {
-          insideType = TYPE_STRING;
-        } else if (t === "bytes") {
-          insideType = TYPE_BYTES;
-        } else if (
-          t === "address" ||
-          t === "uint8" ||
-          t === "uint16" ||
-          t === "uint32" ||
-          t === "uint64" ||
-          t === "uint128" ||
-          t === "uint256"
-        ) {
-          insideType = TYPE_NATIVE;
-        } else {
-          insideType = TYPE_STRUCT;
-        }
 
-        return [...acc, TYPE_ARRAY, insideType];
-      }
-    return [...acc, TYPE_NATIVE];
+  // If type is a string
+  if (type === "string") {
+    return [TYPE_STRING];
+  }
+
+  // If type is bytes
+  if (type === "bytes") {
+    return [TYPE_BYTES];
+  }
+
+  // If type is one of the native types
+  if (
+    type === "address" ||
+    type === "uint8" ||
+    type === "uint16" ||
+    type === "uint32" ||
+    type === "uint64" ||
+    type === "uint128" ||
+    type === "uint256"
+  ) {
+    return [TYPE_NATIVE];
+  }
+
+  if (type.lastIndexOf("[") > 0) {
+    const t = type.slice(0, type.lastIndexOf("["));
+    const insideType = typeValue(t);
+
+    return [TYPE_ARRAY, ...insideType];
+  }
+
+  return [TYPE_STRUCT];
+};
+
+// Get Types array
+export const getTypesArray = (params: Params[]) => {
+  return params.reduce((acc, item) => {
+    const data = typeValue(item.type);
+    return [...acc, ...data];
   }, []);
 };
 

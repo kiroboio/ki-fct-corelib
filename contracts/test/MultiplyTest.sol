@@ -11,6 +11,13 @@ import '@uniswap/v2-core/contracts/UniswapV2Factory.sol';
 contract MultiplyTest {
     uint256 public multiplier = 2;
 
+    struct Test{
+      uint256 value;
+      address from;
+      string name;
+      bytes number;
+    }
+
     function getMultiCalc(uint256 input) public view returns(uint256){
       return multiplier * input;
     }
@@ -44,6 +51,17 @@ contract MultiplyTest {
                       string[] memory strArr,
                       bytes memory b2,
                       address from
+                      ) public pure returns(bool)
+    {
+      return true;
+    }
+
+    //testCall3(address,string,uint256,Test,address)
+    function testCall3(bytes memory to, 
+                      string memory name1, 
+                      bytes memory value, 
+                      Test memory test,
+                      bytes memory from
                       ) public pure returns(bool)
     {
       return true;

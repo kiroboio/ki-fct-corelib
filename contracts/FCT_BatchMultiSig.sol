@@ -347,6 +347,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     uint256 constant TYPE_STRING = 1;
     uint256 constant TYPE_BYTES = 2;
     uint256 constant TYPE_ARRAY = 3;
+    uint256 constant TYPE_STRUCT = 4;
 
 
      function _decodeString(bytes calldata data, uint256 index)
@@ -400,13 +401,13 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         //console.log("types.length", types.length);
         for (uint256 i = 0; i < types.length ; ++i) {
             if (types[i] == TYPE_STRING) {
-                //console.log("string:", i);
                 string memory str = _decodeString(data, j);
-                console.log(str);
+                console.log("string: %s, str: %s",i, str);
                 bytes memory buff = abi.encodePacked(str);
                 res = bytes.concat(res, keccak256(buff));
                 j = j + 1;
             } else if (types[i] == TYPE_BYTES) {
+                console.log("bytes:", i);
                 //console.log("bytes i:%s, j:%s, numOfElements:%s", i, j, numOfElements);
                 bytes memory bytesData = _decodeBytes(data, j);
                 console.logBytes(bytesData);
@@ -427,8 +428,20 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 res = bytes.concat(res, keccak256(arrayData));
                 j = j + 1;
                 i = i + 1;
+            } else if(types[i] == TYPE_STRUCT){
+                console.log("struct:", i);
+                uint256 numOfElements = types[i + 1];
+                console.log("num of elements in struct: %s", numOfElements);
+                uint256 structOffset = abi.decode(data[j*32:(j+1)*32], (uint256));
+                bytes memory structData;
+                for (uint256 s=0; s < numOfElements; ++s) {
+                  structData = bytes.concat(structData, abiToEIP712(data[structOffset:], types[i + 2 + s : i + 3 + s], s));
+                }
+                res = bytes.concat(res, keccak256(structData));
+                j = j + 1;
+                i = i + numOfElements + 1;
             } else {
-                //console.log("basic:", i);
+                console.log("basic:", i);
                 res = bytes.concat(res, data[j * 32:(j + 1) * 32]);
                 j = j + 1;
             }
@@ -507,7 +520,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
             for (uint256 i = 0; i < trLength; ++i) {
-
                 bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];

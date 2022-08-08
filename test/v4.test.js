@@ -352,6 +352,10 @@ describe("batchMultiSigCall", () => {
 
     it("Should add call", async () => {
       batchMultiSigCall = new BatchMultiSigCall(web3, fctController.address);
+
+      batchMultiSigCall.createVariable("to", accounts[12]);
+      batchMultiSigCall.createVariable("amount", 0);
+
       const tx = {
         groupId: 1,
         nonce: 1,
@@ -361,8 +365,13 @@ describe("batchMultiSigCall", () => {
             to: multiplier.address,
             method: "testCall",
             params: [
-              { name: "to", type: "address", value: accounts[11] },
-              { name: "token_amount", type: "uint256", value: "15" },
+              { name: "to", type: "address", variable: "to" },
+              { name: "value", type: "uint256", variable: "amount" },
+              { name: "name1", type: "string", value: "Tal" },
+              { name: "name2", type: "string", value: "Ori" },
+              { name: "b", type: "bytes", value: 0x12345678 },
+              { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
+              { name: "b2", type: "bytes", value: 0x122 },
             ],
             flow: Flow.OK_CONT_FAIL_JUMP,
             jump: 1,
@@ -394,9 +403,13 @@ describe("batchMultiSigCall", () => {
         return { ...item, signatures };
       });
 
+      console.log(calls[0].mcall[0].types);
+
+      const variables = batchMultiSigCall.getVariablesAsBytes32();
+
       const callData = fctBatchMultiSig.contract.methods
         .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [
-          [],
+          variables,
         ])
         .encodeABI();
 
