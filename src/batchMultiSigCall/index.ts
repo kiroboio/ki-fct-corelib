@@ -50,18 +50,18 @@ export class BatchMultiSigCall {
   //
   // Everything for variables
   //
-  createVariable(variableId: string, value?: string) {
+  public createVariable(variableId: string, value?: string) {
     this.variables = [...this.variables, [variableId, value ?? undefined]];
     return this.variables.map((item) => item[0]);
   }
 
-  addVariableValue(variableId: string, value: string) {
+  public addVariableValue(variableId: string, value: string) {
     const index = this.getVariableIndex(variableId);
     this.variables[index][1] = value;
     return this.variables.map((item) => item[0]);
   }
 
-  async removeVariable(variableId: string) {
+  public async removeVariable(variableId: string) {
     // Remove from variables
     this.variables = this.variables.filter((item) => item[0] !== variableId);
 
@@ -74,7 +74,7 @@ export class BatchMultiSigCall {
     return this.variables.map((item) => item[0]);
   }
 
-  getVariablesAsBytes32() {
+  public getVariablesAsBytes32() {
     return this.variables.map((item) => {
       const value = item[1];
       if (value === undefined) {
@@ -109,23 +109,28 @@ export class BatchMultiSigCall {
   // Handle FD
   //
 
-  refTxValue(index: number, bytes: boolean = false) {
+  public refTxValue(index: number, bytes: boolean = false) {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
-  async addBatchCall(tx: BatchMultiSigCallInputInterface) {
+  addExistingBatchCall(batchCall: BatchMultiSigCallInterface) {
+    this.calls = [...this.calls, batchCall];
+    return this.calls;
+  }
+
+  public async addBatchCall(tx: BatchMultiSigCallInputInterface) {
     const data = await this.getMultiSigCallData(tx);
     this.calls = [...this.calls, data];
     return data;
   }
 
-  async addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]) {
+  public async addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
     this.calls = [...this.calls, ...data];
     return data;
   }
 
-  async editBatchCall(index: number, tx: BatchMultiSigCallInputInterface) {
+  public async editBatchCall(index: number, tx: BatchMultiSigCallInputInterface) {
     const data = await this.getMultiSigCallData(tx);
 
     this.calls[index] = data;
@@ -133,7 +138,7 @@ export class BatchMultiSigCall {
     return data;
   }
 
-  async removeBatchCall(index: number) {
+  public async removeBatchCall(index: number) {
     const restOfCalls = this.calls
       .slice(index + 1)
       .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
@@ -149,7 +154,7 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {
+  public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {
     const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
@@ -163,7 +168,7 @@ export class BatchMultiSigCall {
     return data;
   }
 
-  async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
+  public async removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number) {
     const batch = this.calls[indexOfBatch].inputData;
 
     if (!batch) {
@@ -372,7 +377,7 @@ export class BatchMultiSigCall {
     };
   }
 
-  decodeLimits(encodedLimits: string) {
+  public decodeLimits(encodedLimits: string) {
     const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
 
     return {
@@ -384,7 +389,7 @@ export class BatchMultiSigCall {
     };
   }
 
-  decodeTransactions(txs: DecodeTx[]) {
+  public decodeTransactions(txs: DecodeTx[]) {
     return txs.map((tx) => {
       const data =
         tx.params && tx.params.length !== 0
