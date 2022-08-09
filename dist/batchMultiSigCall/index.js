@@ -91,6 +91,10 @@ class BatchMultiSigCall {
     refTxValue(index, bytes = false) {
         return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
     }
+    addExistingBatchCall(batchCall) {
+        this.calls = [...this.calls, batchCall];
+        return this.calls;
+    }
     addBatchCall(tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.getMultiSigCallData(tx);
@@ -123,6 +127,18 @@ class BatchMultiSigCall {
             const data = yield Promise.all(restOfCalls.map((tx) => this.getMultiSigCallData(tx)));
             this.calls.splice(-Math.abs(data.length), data.length, ...data);
             return this.calls;
+        });
+    }
+    addMultiCallTx(indexOfBatch, tx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const batch = this.calls[indexOfBatch].inputData;
+            if (!batch) {
+                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+            }
+            batch.calls.push(tx);
+            const data = yield this.getMultiSigCallData(batch);
+            this.calls[indexOfBatch] = data;
+            return data;
         });
     }
     editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {

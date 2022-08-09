@@ -7,8 +7,6 @@ import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 import {
-  getParamsOffset,
-  getParamsLength,
   getSessionIdDetails,
   getTypedDataDomain,
   getEncodedMethodParams,
@@ -152,6 +150,18 @@ export class BatchMultiSigCall {
     this.calls.splice(-Math.abs(data.length), data.length, ...data);
 
     return this.calls;
+  }
+
+  public async addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface) {
+    const batch = this.calls[indexOfBatch].inputData;
+    if (!batch) {
+      throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+    }
+    batch.calls.push(tx);
+    const data = await this.getMultiSigCallData(batch);
+    this.calls[indexOfBatch] = data;
+
+    return data;
   }
 
   public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {

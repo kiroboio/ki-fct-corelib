@@ -381,6 +381,26 @@ describe("batchMultiSigCall", () => {
       };
 
       await batchMultiSigCall.addBatchCall(tx);
+
+      const call = {
+        value: 0,
+        to: multiplier.address,
+        method: "testCall",
+        params: [
+          { name: "to", type: "address", variable: "to" },
+          { name: "value", type: "uint256", variable: "amount" },
+          { name: "name1", type: "string", value: "Tal" },
+          { name: "name2", type: "string", value: "Ori" },
+          { name: "b", type: "bytes", value: 0x12345678 },
+          { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
+          { name: "b2", type: "bytes", value: 0x122 },
+        ],
+        flow: Flow.OK_CONT_FAIL_JUMP,
+        jump: 1,
+        from: vault10.address,
+      };
+
+      await batchMultiSigCall.addMultiCallTx(0, call);
     });
 
     it("Should execute batch", async () => {
@@ -402,8 +422,6 @@ describe("batchMultiSigCall", () => {
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures };
       });
-
-      console.log(calls[0].mcall[0].types);
 
       const variables = batchMultiSigCall.getVariablesAsBytes32();
 

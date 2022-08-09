@@ -87,7 +87,6 @@ const typeValue = (type) => {
 const getTypesArray = (params) => {
     return params.reduce((acc, item) => {
         const data = typeValue(item.type);
-        console.log(acc);
         return [...acc, ...data];
     }, []);
 };

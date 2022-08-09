@@ -16,6 +16,7 @@ export declare class BatchMultiSigCall {
     private getVariableIndex;
     private getVariableFCValue;
     refTxValue(index: number, bytes?: boolean): string;
+    addExistingBatchCall(batchCall: BatchMultiSigCallInterface): BatchMultiSigCallInterface[];
     addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<{
         typedData: {
             types: {
@@ -191,6 +192,64 @@ export declare class BatchMultiSigCall {
         }[];
     }>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
+    addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface): Promise<{
+        typedData: {
+            types: {
+                EIP712Domain: {
+                    name: string;
+                    type: string;
+                }[];
+                BatchMultiSigCall_: {
+                    name: string;
+                    type: string;
+                }[];
+                Limits_: {
+                    name: string;
+                    type: string;
+                }[];
+                Transaction_: {
+                    name: string;
+                    type: string;
+                }[];
+            };
+            primaryType: string;
+            domain: {
+                name: any;
+                version: any;
+                chainId: number;
+                verifyingContract: string;
+                salt: any;
+            };
+            message: {
+                limits: {
+                    nonce: string;
+                    refund: boolean;
+                    valid_from: number;
+                    expires_at: number;
+                    gas_price_limit: number;
+                };
+            };
+        };
+        typeHash: string;
+        sessionId: string;
+        encodedMessage: string;
+        encodedLimits: string;
+        inputData: BatchMultiSigCallInputInterface;
+        mcall: {
+            encodedMessage: string;
+            encodedDetails: string;
+            typeHash: string;
+            functionSignature: string;
+            value: string;
+            from: string;
+            gasLimit: number;
+            flags: string;
+            to: string;
+            ensHash: string;
+            data: string;
+            types: any[];
+        }[];
+    }>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<{
         typedData: {
             types: {
