@@ -27,6 +27,11 @@ const defaultFlags = {
     payment: true,
     flow: false,
 };
+// replace(index, call) // returns the prev call
+// add(call)  /// adds at the end
+// remove(index) // remove a call from index and return the call
+// get(index) // gets the call at specific index
+// length // number of calls in index
 class BatchMultiSigCall {
     constructor(web3, contractAddress) {
         this.calls = [];
@@ -167,6 +172,7 @@ class BatchMultiSigCall {
     }
     getMultiSigCallData(batchCall) {
         return __awaiter(this, void 0, void 0, function* () {
+            const self = this;
             const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
             // Creates messages from multiCalls array for EIP712 sign
             const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
@@ -274,6 +280,15 @@ class BatchMultiSigCall {
                     encodedDetails,
                 };
             };
+            const mcall = batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
+                    ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
+                    ? item.validator.validatorAddress
+                    : this.web3.utils.isAddress(item.to)
+                        ? item.to
+                        : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
+                    ? this.web3.utils.sha3(item.toEnsHash)
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [] }, getEncodedMulticallData(index))));
             return {
                 typedData,
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
@@ -281,15 +296,68 @@ class BatchMultiSigCall {
                 encodedMessage,
                 encodedLimits,
                 inputData: batchCall,
-                mcall: batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
-                        ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
-                        ? item.validator.validatorAddress
-                        : this.web3.utils.isAddress(item.to)
-                            ? item.to
-                            : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
-                        ? this.web3.utils.sha3(item.toEnsHash)
-                        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [] }, getEncodedMulticallData(index)))),
+                mcall,
+                addCall: function (tx, index) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        if (index) {
+                            const length = this.inputData.calls.length;
+                            if (index > length) {
+                                throw new Error(`Index ${index} is out of bounds.`);
+                            }
+                            this.inputData.calls.splice(index, 0, tx);
+                        }
+                        else {
+                            this.inputData.calls.push(tx);
+                        }
+                        const data = yield self.getMultiSigCallData(this.inputData);
+                        this.typedData = data.typedData;
+                        this.typeHash = data.typeHash;
+                        this.sessionId = data.sessionId;
+                        this.encodedMessage = data.encodedMessage;
+                        this.encodedLimits = data.encodedLimits;
+                        this.mcall = data.mcall;
+                    });
+                },
+                replaceCall: function (tx, index) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        if (index >= this.inputData.calls.length) {
+                            throw new Error(`Index ${index} is out of bounds.`);
+                        }
+                        const prevCall = this.inputData.calls[index];
+                        this.inputData.calls[index] = tx;
+                        const data = yield self.getMultiSigCallData(this.inputData);
+                        this.typedData = data.typedData;
+                        this.typeHash = data.typeHash;
+                        this.sessionId = data.sessionId;
+                        this.encodedMessage = data.encodedMessage;
+                        this.encodedLimits = data.encodedLimits;
+                        this.mcall = data.mcall;
+                        return prevCall;
+                    });
+                },
+                removeCall: function (index) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        if (index >= this.inputData.calls.length) {
+                            throw new Error(`Index ${index} is out of bounds.`);
+                        }
+                        const prevCall = this.inputData.calls[index];
+                        this.inputData.calls.splice(index, 1);
+                        const data = yield self.getMultiSigCallData(this.inputData);
+                        this.typedData = data.typedData;
+                        this.typeHash = data.typeHash;
+                        this.sessionId = data.sessionId;
+                        this.encodedMessage = data.encodedMessage;
+                        this.encodedLimits = data.encodedLimits;
+                        this.mcall = data.mcall;
+                        return prevCall;
+                    });
+                },
+                getCall: function (index) {
+                    return this.mcall[index];
+                },
+                get length() {
+                    return this.mcall.length;
+                },
             };
         });
     }

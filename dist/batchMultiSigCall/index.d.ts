@@ -74,6 +74,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }>;
     addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<{
         typedData: {
@@ -132,6 +137,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }[]>;
     editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<{
         typedData: {
@@ -190,6 +200,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }>;
     removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
     addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface): Promise<{
@@ -249,6 +264,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }>;
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<{
         typedData: {
@@ -307,6 +327,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }>;
     removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<{
         typedData: {
@@ -365,6 +390,11 @@ export declare class BatchMultiSigCall {
             data: string;
             types: any[];
         }[];
+        addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
+        replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
+        removeCall: (index: number) => Promise<any>;
+        getCall: (index: number) => any;
+        readonly length: any;
     }>;
     private getMultiSigCallData;
     decodeLimits(encodedLimits: string): {

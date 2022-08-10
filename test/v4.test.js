@@ -381,26 +381,40 @@ describe("batchMultiSigCall", () => {
       };
 
       await batchMultiSigCall.addBatchCall(tx);
+    });
+
+    it("Should add a call to existing FCT", async () => {
+      const FCT = batchMultiSigCall.calls[0];
 
       const call = {
         value: 0,
-        to: multiplier.address,
-        method: "testCall",
+        to: kiro.address,
+        method: "transfer",
         params: [
-          { name: "to", type: "address", variable: "to" },
-          { name: "value", type: "uint256", variable: "amount" },
-          { name: "name1", type: "string", value: "Tal" },
-          { name: "name2", type: "string", value: "Ori" },
-          { name: "b", type: "bytes", value: 0x12345678 },
-          { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
-          { name: "b2", type: "bytes", value: 0x122 },
+          { name: "to", type: "address", value: accounts[12] },
+          { name: "token_amount", type: "uint256", value: "20" },
         ],
-        flow: Flow.OK_CONT_FAIL_JUMP,
-        jump: 1,
         from: vault10.address,
       };
 
-      await batchMultiSigCall.addMultiCallTx(0, call);
+      await FCT.addCall(call);
+    });
+
+    it("Should replace the call", async () => {
+      const FCT = batchMultiSigCall.calls[0];
+
+      const call = {
+        value: 0,
+        to: kiro.address,
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: accounts[10] },
+          { name: "token_amount", type: "uint256", value: "25" },
+        ],
+        from: vault10.address,
+      };
+
+      await FCT.replaceCall(call, 1);
     });
 
     it("Should execute batch", async () => {
@@ -440,7 +454,7 @@ describe("batchMultiSigCall", () => {
 
       try {
         const res = await activators.activate(callData, { from: user1 });
-        console.log(res);
+        // console.log(res);
       } catch (err) {
         console.log(err);
       }

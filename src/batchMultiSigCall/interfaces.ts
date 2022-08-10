@@ -17,7 +17,7 @@ export interface BatchMultiSigCallInputInterface extends BatchCallBase {
   calls: MultiSigCallInputInterface[];
 }
 
-export interface MultiSigCall {
+export interface MultiSigCallInterface {
   typeHash: string;
   functionSignature: string;
   value: string;
@@ -38,5 +38,5 @@ export interface BatchMultiSigCallInterface {
   encodedMessage: string;
   encodedLimits: string;
   inputData: BatchMultiSigCallInputInterface;
-  mcall: MultiSigCall[];
+  mcall: MultiSigCallInterface[];
 }
