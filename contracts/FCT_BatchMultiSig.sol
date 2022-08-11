@@ -393,8 +393,8 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         //console.logBytes(data);
         // uint256 j = offset;
         // uint256 t = typedHOffset;
-        //console.log("types.length", types.length);f
-        for (uint256 i = 0; i < types.length ; ++i) {
+        //console.log("types.length", types.length);
+        for (uint256 i = 0; i < types.length ; i++) {
             if (types[i] == TYPE_STRING) {
                 string memory str = _decodeString(data, offset.data);
                 console.log("string: %s, str: %s",i, str);
@@ -419,16 +419,16 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 // bytes calldata dataSubset = data[array.offset:];
                 bytes memory arrayData;
                 array.typesOffset = offset.types;
-                for (uint256 k=0; k < array.size; ++k) {
                     console.log("types[i+1]:", types[i+1]);                    
-                    uint256[] calldata typesSubset = (types[i+1] < TYPE_STRING) ? types[i+1:] : types[i + 1 : i + 2];
+                    uint256[] calldata typesSubset = (types[i+1] < TYPE_STRING) ? types[i+1:i+2+types[i+1]] : types[i + 1 : i + 2];
+                for (uint256 k=0; k < array.size; ++k) {
                     arrayData = bytes.concat(
                         arrayData,
                         abiToEIP712(data[array.offset:], typesSubset, typedHashes, Offset({ data: k, types:array.typesOffset })
                     ));
                   //console.logBytes(arrayData);
                 }
-                console.log("back from array loop");
+                //console.log("back from array loop");
                 res = bytes.concat(res, keccak256(arrayData));
                 offset.data = offset.data + 1;
                 offset.types = offset.types + 1;
@@ -459,11 +459,11 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         Offset({ data: s, types: typesOffset }))
                     );
                 }
-                console.log("back from structs loop");
+                //console.log("back from structs loop");
                 res = bytes.concat(res, keccak256(structData));
                 offset.data = offset.data + 1;
                 offset.types = offset.types + 1;
-                i = i + numOfElements + 1;
+                i = i + numOfElements ;
             } else {
                 console.log("basic:", i);
                 res = bytes.concat(res, data[offset.data * 32:(offset.data + 1) * 32]);
