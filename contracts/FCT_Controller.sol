@@ -42,36 +42,39 @@ contract FCT_Controller is FCT_Storage {
         );
     }
 
-    // function execute(bytes32 id, address dest, bytes calldata data) external returns (bool, bytes memory) {
-    //     // console.log('execute --------------------->');
-    //     // console.logBytes32(id);
-    //     require(s_targets[id] == msg.sender, "FCT: not a version");
-    //     // console.logBytes(data);
-    //     (bool success, bytes memory res) = dest.call(data);
-    //     // console.log("res", res.length);
-    //     // console.logBytes(res);
-    //     if (success && res.length >= 64) {
-    //         // console.logBytes(abi.decode(res, (bytes)));
-    //         return (success, abi.decode(res, (bytes)));
-    //     }
-    //     return (success, res);
-    //     // console.log('execute end --------------------->', success);
-    // }
+    // TODO: timestamp | chilltime | chillmode | amount
+    // TODO: in limits (amount, chilltime, chillmode)
+    // TODO: header/meta with: builder-address
+    // TODO: header/meta with: multisig array and number of signers
+    // TODO: check usage of sessionid
+    // TODO: events
 
-    function register(bytes32 id, bytes32 dataHash, bool eip712) external returns (bytes32 messageHash) {
-        // console.log("register ------------------->");
+    function register(bytes32 id, bytes32 dataHash, Meta calldata meta) external returns (bytes32 messageHash) {
         require(s_targets[id] == msg.sender, "FCT: not a version");
-        messageHash = _messageToRecover(dataHash, eip712);
-        // console.logBytes32(messageHash);
-        require(s_fcts[messageHash] == 0, "FCT: allready executed");
-        s_fcts[messageHash] = 1;
+        messageHash = _messageToRecover(dataHash, meta.eip712);
+        Meta storage curMeta = s_fcts[messageHash];
+        require(curMeta.amount != 1, "FCT: allready executed");
+        if (curMeta.amount == 0) {
+            s_fcts[messageHash] = Meta({
+                timestamp: uint40(block.timestamp),
+                chilltime: meta.chilltime,
+                amount: meta.amount,
+                eip712: meta.eip712,
+                chillmode: meta.chillmode 
+            });
+        } else {
+            require(block.timestamp - curMeta.timestamp > curMeta.chilltime, "FCT: too early");
+            curMeta.amount = curMeta.amount - 1;
+            if (curMeta.chillmode == 0) {
+                curMeta.timestamp = uint40(block.timestamp);
+            } else {
+                 curMeta.timestamp = curMeta.timestamp + curMeta.chillmode;               
+            }
+        }
     }
 
     fallback() external {
-        bytes32 id = abi.decode(msg.data, (bytes32));
         address target = s_targets[abi.decode(msg.data, (bytes32))];
-        // console.log('---------> target from fallback', target);
-        // console.logBytes32(id);
         require(target != address(0), "FCT: target not found");
         assembly {
             calldatacopy(0x00, 0x00, calldatasize())
@@ -95,8 +98,8 @@ contract FCT_Controller is FCT_Storage {
     function version(bytes32 id) external view returns (bytes4) {
         address target  = s_targets[id];
         require(target != address(0), "FCT: target not found");
-        console.log('target to version', target);
-        console.logBytes32(id);
+        //console.log('target to version', target);
+        //console.logBytes32(id);
         return IFCT_Engine(target).VERSION();
     }
 
@@ -106,8 +109,8 @@ contract FCT_Controller is FCT_Storage {
         uint256 i;
         for (i=0; i<ids.length; i++) {          
           require(s_targets[ids[i]] == address(0), "target exists");
-          console.log('target added', target);
-          console.logBytes32(ids[i]);
+          //console.log('target added', target);
+          //console.logBytes32(ids[i]);
           s_targets[ids[i]] = target;
         }
     }
@@ -130,6 +133,28 @@ contract FCT_Controller is FCT_Storage {
 
     function setLocalEns(string calldata ens, address dest) external onlyOwner {
         s_local_ens[keccak256(abi.encodePacked("@", ens))] = dest;
+    }
+
+    function ensToAddress(bytes32 ensHash, address expectedAddress)
+        external
+        view
+        returns (address result)
+    {
+        if (
+            ensHash ==
+            0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470 ||
+            ensHash == bytes32(0)
+        ) {
+            return expectedAddress;
+        }
+        result = s_local_ens[ensHash];
+        if (result == address(0)) {
+            result = _resolve(ensHash);
+        }
+        if (expectedAddress != address(0)) {
+            require(result == expectedAddress, "Factory: ens address mismatch");
+        }
+        require(result != address(0), "Factory: ens address not found");
     }
 
 }

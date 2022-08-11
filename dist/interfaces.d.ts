@@ -1,7 +1,8 @@
 export interface Params {
     name: string;
     type: string;
-    value?: string[] | string;
+    value?: string[] | object[] | string;
+    customType?: boolean;
     variable?: string;
 }
 export interface DecodeTx {

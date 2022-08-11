@@ -47,7 +47,7 @@ abstract contract FCT_Constants {
         "jump on success, continue on fail";
     bytes32 public constant OK_JUMP_FAIL_CONT_HASH =
         keccak256(abi.encodePacked(OK_JUMP_FAIL_CONT_MSG));
-
+}
     uint256 constant VAR_MIN = 0x00FC00000000000000000000000000000000000000;
     uint256 constant VAR_MAX = 0x00FC00000000000000000000000000000000000100;
     uint256 constant VARX_MIN =
@@ -62,4 +62,4 @@ abstract contract FCT_Constants {
         0xFD00000000000000000000000000000000000000000000000000000000010000;
     uint256 constant VAR_MASK = 0x0000000000000000000000000000000000000000ff;
     uint256 constant RET_MASK = 0x00000000000000000000000000000000000000ff00;
-}
+

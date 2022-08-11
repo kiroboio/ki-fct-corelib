@@ -22,13 +22,17 @@ struct MSCall {
     address to;
     bytes data;
     uint256[] types;
+    bytes32[] typedHashes;
 }
 
 struct MSCalls {
+    address builder;
     bytes32 typeHash;
     uint256 sessionId;
     MSCall[] mcall;
     Signature[] signatures;
+    bytes32[] variables;
+    address[] externalSigners;
 }
 
 struct MCall {
@@ -63,8 +67,8 @@ interface IFCT_Engine {
 
     function batchMultiSigCall_(
         bytes4 version,
-        MSCalls[] calldata tr,
-        bytes32[][] calldata variables
+        MSCalls[] calldata tr
+        // bytes32[][] calldata variables
     ) external returns (MReturn[][] memory);
 
 }

@@ -52,41 +52,42 @@ const getAfterTimestamp = (epochDate) => epochDate.toString(16).padStart(10, "0"
 const getBeforeTimestamp = (infinity, epochDate) => infinity ? "ffffffffff" : epochDate.toString(16).padStart(10, "0");
 const getMaxGas = (maxGas) => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice) => gasPrice.toString(16).padStart(16, "0");
-const typeValue = (type) => {
-    const TYPE_NATIVE = 0;
-    const TYPE_STRING = 1;
-    const TYPE_BYTES = 2;
-    const TYPE_ARRAY = 3;
-    const TYPE_STRUCT = 4;
+const typeValue = (param) => {
+    const TYPE_STRING = 1000;
+    const TYPE_BYTES = 2000;
+    const TYPE_ARRAY = 3000;
+    const TYPE_NATIVE = 4000;
+    // If param is custom struct
+    if (param.customType) {
+        const values = param.value;
+        return [
+            param.value.length,
+            ...values.reduce((acc, item) => {
+                return [...acc, ...typeValue(item)];
+            }, []),
+        ];
+    }
     // If type is a string
-    if (type === "string") {
+    if (param.type === "string") {
         return [TYPE_STRING];
     }
     // If type is bytes
-    if (type === "bytes") {
+    if (param.type === "bytes") {
         return [TYPE_BYTES];
     }
-    // If type is one of the native types
-    if (type === "address" ||
-        type === "uint8" ||
-        type === "uint16" ||
-        type === "uint32" ||
-        type === "uint64" ||
-        type === "uint128" ||
-        type === "uint256") {
-        return [TYPE_NATIVE];
-    }
-    if (type.lastIndexOf("[") > 0) {
-        const t = type.slice(0, type.lastIndexOf("["));
-        const insideType = typeValue(t);
+    // If type is an array
+    if (param.type.lastIndexOf("[") > 0) {
+        const parameter = Object.assign(Object.assign({}, param), { type: param.type.slice(0, param.type.lastIndexOf("[")) });
+        const insideType = typeValue(parameter);
         return [TYPE_ARRAY, ...insideType];
     }
-    return [TYPE_STRUCT];
+    // If all statements above are false, then type is a native type
+    return [TYPE_NATIVE];
 };
 // Get Types array
 const getTypesArray = (params) => {
     return params.reduce((acc, item) => {
-        const data = typeValue(item.type);
+        const data = typeValue(item);
         return [...acc, ...data];
     }, []);
 };
@@ -154,7 +155,15 @@ const manageCallFlagsV2 = (flow, jump) => {
 exports.manageCallFlagsV2 = manageCallFlagsV2;
 // From method and params create tuple
 const getMethodInterface = (call) => {
-    return `${call.method}(${call.params.map((item) => item.type).join(",")})`;
+    const params = call.params.map((item) => {
+        if (item.customType) {
+            const value = item.value;
+            return `(${value.map((val) => val.type).join(",")})`;
+        }
+        return item.type;
+    });
+    console.log(call.method, params);
+    return `${call.method}(${params})`;
 };
 exports.getMethodInterface = getMethodInterface;
 // Get typehash from typedData
@@ -212,13 +221,22 @@ const getEncodedMethodParams = (call, withFunction) => {
         }, call.params.map((param) => param.value));
     }
     const types = call.params.map((param) => {
-        // if (param.type === "bytes" || param.type === "string" || param.type.lastIndexOf("[") > 0) {
-        //   return "bytes32";
-        // }
+        if (param.customType) {
+            const values = param.value;
+            return `(${values.map((val) => val.type).join(",")})`;
+        }
         return param.type;
     });
     // const values = call.params.map((param) => handleValues(param.value, param.type));
-    const values = call.params.map((param) => param.value);
+    const values = call.params.map((param) => {
+        if (param.customType) {
+            const values = param.value;
+            return values.reduce((acc, val) => {
+                return [...acc, val.value];
+            }, []);
+        }
+        return param.value;
+    });
     return utils_1.defaultAbiCoder.encode(types, values);
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;

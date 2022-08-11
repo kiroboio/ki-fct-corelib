@@ -27,11 +27,6 @@ const defaultFlags = {
     payment: true,
     flow: false,
 };
-// replace(index, call) // returns the prev call
-// add(call)  /// adds at the end
-// remove(index) // remove a call from index and return the call
-// get(index) // gets the call at specific index
-// length // number of calls in index
 class BatchMultiSigCall {
     constructor(web3, contractAddress) {
         this.calls = [];
@@ -174,6 +169,8 @@ class BatchMultiSigCall {
         return __awaiter(this, void 0, void 0, function* () {
             const self = this;
             const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
+            let typedHashes = [];
+            let additionalTypes = {};
             // Creates messages from multiCalls array for EIP712 sign
             const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
                 const txData = () => {
@@ -193,6 +190,17 @@ class BatchMultiSigCall {
                                 }
                                 return;
                             }
+                            if (param.customType) {
+                                if (additionalTypes[param.type]) {
+                                    return;
+                                }
+                                param.customType = true;
+                                typedHashes.push(param.type);
+                                const arrayValue = param.value;
+                                additionalTypes[param.type] = arrayValue.reduce((acc, item) => {
+                                    return [...acc, { name: item.name, type: item.type }];
+                                }, []);
+                            }
                         });
                         // If mcall is a validation call
                         if (item.validator) {
@@ -205,7 +213,20 @@ class BatchMultiSigCall {
                             return (0, helpers_1.createValidatorTxData)(item);
                         }
                         return Object.assign({}, item.params.reduce((acc, param) => {
-                            return Object.assign(Object.assign({}, acc), { [param.name]: param.value });
+                            let value;
+                            if (param.customType) {
+                                const valueArray = param.value;
+                                value = valueArray.reduce((acc, item) => {
+                                    if (item.variable) {
+                                        item.value = this.getVariableFCValue(item.variable);
+                                    }
+                                    return Object.assign(Object.assign({}, acc), { [item.name]: item.value });
+                                }, {});
+                            }
+                            else {
+                                value = param.value;
+                            }
+                            return Object.assign(Object.assign({}, acc), { [param.name]: value });
                         }, {}));
                     }
                     return {};
@@ -231,7 +252,7 @@ class BatchMultiSigCall {
                         } }, txData()) });
             }, {});
             const typedData = {
-                types: Object.assign({ EIP712Domain: [
+                types: Object.assign(Object.assign({ EIP712Domain: [
                         { name: "name", type: "string" },
                         { name: "version", type: "string" },
                         { name: "chainId", type: "uint256" },
@@ -259,7 +280,7 @@ class BatchMultiSigCall {
                         { name: "flow_control", type: "string" },
                         { name: "jump_over", type: "uint8" },
                         { name: "method_interface", type: "string" },
-                    ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})),
+                    ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})), additionalTypes),
                 primaryType: "BatchMultiSigCall_",
                 domain: yield (0, helpers_1.getTypedDataDomain)(this.web3, this.FactoryProxy, this.factoryProxyAddress),
                 message: Object.assign({ limits: {
@@ -288,7 +309,7 @@ class BatchMultiSigCall {
                         ? item.to
                         : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
                     ? this.web3.utils.sha3(item.toEnsHash)
-                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [] }, getEncodedMulticallData(index))));
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [], typedHashes: typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash))) }, getEncodedMulticallData(index))));
             return {
                 typedData,
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),

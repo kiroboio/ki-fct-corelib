@@ -73,6 +73,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -136,6 +137,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -199,6 +201,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -263,6 +266,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -326,6 +330,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -389,6 +394,7 @@ export declare class BatchMultiSigCall {
             ensHash: string;
             data: string;
             types: any[];
+            typedHashes: string[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;

@@ -4,7 +4,7 @@ import { defaultAbiCoder } from "ethers/lib/utils";
 import Web3 from "web3";
 import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { DecodeTx } from "../interfaces";
+import { DecodeTx, Params } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 import {
   getSessionIdDetails,
@@ -30,12 +30,6 @@ const defaultFlags = {
   payment: true,
   flow: false,
 };
-
-// replace(index, call) // returns the prev call
-// add(call)  /// adds at the end
-// remove(index) // remove a call from index and return the call
-// get(index) // gets the call at specific index
-// length // number of calls in index
 
 export class BatchMultiSigCall {
   calls: Array<BatchMultiSigCallInterface> = [];
@@ -204,6 +198,9 @@ export class BatchMultiSigCall {
     const self = this;
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
+    let typedHashes = [];
+    let additionalTypes = {};
+
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
       const txData = () => {
@@ -227,6 +224,18 @@ export class BatchMultiSigCall {
               }
               return;
             }
+
+            if (param.customType) {
+              if (additionalTypes[param.type]) {
+                return;
+              }
+              param.customType = true;
+              typedHashes.push(param.type);
+              const arrayValue = param.value as Params[];
+              additionalTypes[param.type] = arrayValue.reduce((acc, item) => {
+                return [...acc, { name: item.name, type: item.type }];
+              }, []);
+            }
           });
 
           // If mcall is a validation call
@@ -243,9 +252,21 @@ export class BatchMultiSigCall {
 
           return {
             ...item.params.reduce((acc, param) => {
+              let value;
+              if (param.customType) {
+                const valueArray = param.value as Params[];
+                value = valueArray.reduce((acc, item) => {
+                  if (item.variable) {
+                    item.value = this.getVariableFCValue(item.variable);
+                  }
+                  return { ...acc, [item.name]: item.value };
+                }, {});
+              } else {
+                value = param.value;
+              }
               return {
                 ...acc,
-                [param.name]: param.value,
+                [param.name]: value,
               };
             }, {}),
           };
@@ -321,6 +342,7 @@ export class BatchMultiSigCall {
           }),
           {}
         ),
+        ...additionalTypes,
       },
       primaryType: "BatchMultiSigCall_",
       domain: await getTypedDataDomain(this.web3, this.FactoryProxy, this.factoryProxyAddress),
@@ -380,6 +402,7 @@ export class BatchMultiSigCall {
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
       types: item.params ? getTypesArray(item.params) : [],
+      typedHashes: typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, hash))),
       ...getEncodedMulticallData(index),
     }));
 
@@ -391,6 +414,7 @@ export class BatchMultiSigCall {
       encodedLimits,
       inputData: batchCall,
       mcall,
+
       addCall: async function (tx: BatchMultiSigCallInterface, index?: number) {
         if (index) {
           const length = this.inputData.calls.length;
@@ -423,6 +447,7 @@ export class BatchMultiSigCall {
         this.sessionId = data.sessionId;
         this.encodedMessage = data.encodedMessage;
         this.encodedLimits = data.encodedLimits;
+
         this.mcall = data.mcall;
 
         return prevCall;
@@ -442,6 +467,7 @@ export class BatchMultiSigCall {
         this.sessionId = data.sessionId;
         this.encodedMessage = data.encodedMessage;
         this.encodedLimits = data.encodedLimits;
+
         this.mcall = data.mcall;
 
         return prevCall;

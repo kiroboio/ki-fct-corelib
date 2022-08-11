@@ -10,6 +10,41 @@ import "./interfaces/IFCT_Runner.sol";
 import "./FCT_Helpers.sol";
 import "hardhat/console.sol";
 
+                                              // 1-7      8bit flags
+// uint256 constant GAS_PRICE_LIMIT_BIT = 8;  // 8-72     64bit gas price limit
+// uint256 constant BEFORE_TS_BIT = 72;       // 72-112   40bit before timestamp
+// uint256 constant AFTER_TS_BIT = 112;       // 112-152  40bit after timestamp
+// uint256 constant CHILL_TIME_BIT = 152;     // 152-184  32bit gas limit
+// uint256 constant RECURRENT_BIT = 184;      // 184-200  16bit nonce
+// uint256 constant VERSION_BIT = 200;        // 184-224  24bit nonce
+uint256 constant EXT_SIGNERS_BIT = 224;       // 224-232  8bit nonce
+// uint256 constant SALT_BIT = 232;           // 232-256  24bit nonce
+
+// Info
+// name
+// version
+// eip712
+// random_id 
+
+// Limits
+// gaspricelimit - 64 bits                               - gas_price_limit
+// before - 40 bits                                      - valid_from
+// after - 40 bits                                       - expires_at
+// flags (chillmode, cancelable, eip712) - 8 bits        - cancelable (bool)
+
+// Recurrency
+// recurrent - 16 bits                                   - max_repeats
+// chilltime - 32 bits                                   - chill_time
+// chilldmode (from flags())                             - accumetable (bool)
+
+// Multisig
+// addesses[]                                            - external_signers
+// m_of_n - 8 bits                                       - minumum_approvals
+
+// version - 24 bits                                     - version
+// salt - 24 bits                                        - random_id
+// array[]               
+
 // 1-15     16bit flags
 uint256 constant GAS_PRICE_LIMIT_BIT = 16; // 16-70    64bit gas price limit
 uint256 constant GAS_LIMIT_BIT = 80; // 80-111   32bit gas limit
@@ -26,22 +61,6 @@ uint256 constant FLAG_PAYMENT = 0xf000;
 
 uint256 constant FLAG_FLOW = 0x00f0;
 uint256 constant FLAG_JUMP = 0x000f;
-
-struct PackedMSCall {
-    uint256 value;
-    // address signer;
-    address from;
-    uint32 gasLimit;
-    uint16 flags;
-    address to;
-    bytes data;
-}
-
-struct PackedMSCalls {
-    uint256 sessionId;
-    PackedMSCall[] mcall;
-    Signature[] signatures;
-}
 
 struct MultiSigCallLocals {
     bytes32 messageHash;
@@ -64,7 +83,10 @@ struct MultiSigInternalCallLocals {
     bytes data;
 }
 
+
 contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
+    // using Variables for address;
+
     bytes4 public constant VERSION = bytes4(0x00010101);
 
 
@@ -75,7 +97,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
             bytes24(0x0)
         )
     );
-
 
     uint256 public constant OK_CONT_FAIL_REVERT = 0x0010;
     string public constant OK_CONT_FAIL_REVERT_MSG =
@@ -113,24 +134,40 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     bytes32 public constant OK_JUMP_FAIL_CONT_HASH =
         keccak256(abi.encodePacked(OK_JUMP_FAIL_CONT_MSG));
 
-    uint256 constant VAR_MIN = 0x00FC00000000000000000000000000000000000000;
-    uint256 constant VAR_MAX = 0x00FC00000000000000000000000000000000000100;
-    uint256 constant VARX_MIN =
-        0xFC00000000000000000000000000000000000000000000000000000000000000;
-    uint256 constant VARX_MAX =
-        0xFC00000000000000000000000000000000000000000000000000000000000100;
-    uint256 constant RET_MIN = 0x00FD00000000000000000000000000000000000000;
-    uint256 constant RET_MAX = 0x00FD00000000000000000000000000000000010000;
-    uint256 constant RETX_MIN =
-        0xFD00000000000000000000000000000000000000000000000000000000000000;
-    uint256 constant RETX_MAX =
-        0xFD00000000000000000000000000000000000000000000000000000000010000;
-    uint256 constant VAR_MASK = 0x0000000000000000000000000000000000000000ff;
-    uint256 constant RET_MASK = 0x00000000000000000000000000000000000000ff00;
-
    // Stubs: Taken from FactoryProxy
     uint8 public constant VERSION_NUMBER = 0x0;
     string public constant NAME = "";
+
+    function _replace(address addr, bytes32[] calldata variables, uint256 j, bytes[] memory returnedValues) private pure returns (address) {
+        uint256 value = uint256(uint160(addr));
+        if (value > VAR_MIN && value < VAR_MAX) {
+            require(value & VAR_MASK <= variables.length, "FCT: var out of bound");
+            return address(uint160(uint256(variables[(value & VAR_MASK) - 1])));
+        }
+        if (value > RET_MIN && value < RET_MAX) {
+            require((value & VAR_MASK) <= j, "FCT: tx out of bound");
+            bytes memory data = returnedValues[(value & VAR_MASK) - 1];
+            uint256 innerPos = ((value & RET_MASK) + 1) * 32;
+            require(innerPos < data.length, "FCT: inner out of bound");
+            assembly { mstore( addr, mload(add(data, innerPos))) }
+        }
+        return addr;
+    }
+
+    function _replace(uint256 value, bytes32[] calldata variables, uint256 j, bytes[] memory returnedValues) private pure returns (uint256) {
+        if ((value > VAR_MIN && value < VAR_MAX) || (value > VARX_MIN && value < VARX_MAX)) {
+            require(value & VAR_MASK <= variables.length, "FCT: var out of bound");
+            return uint256(variables[(value & VAR_MASK) - 1]);
+        }
+        if ((value > RET_MIN && value < RET_MAX) || (value > RETX_MIN && value < RETX_MAX)) {
+            require((value & VAR_MASK) <= j, "FCT: tx out of bound");
+            bytes memory data = returnedValues[(value & VAR_MASK) - 1];
+            uint256 innerPos = ((value & RET_MASK) + 1) * 32;
+            require(innerPos < data.length, "FCT: inner out of bound");
+            assembly { mstore( value, mload(add(data, innerPos))) }
+        }
+        return value;
+    }
 
     function uid() external pure returns (bytes32) {
         return 0x00;
@@ -176,63 +213,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
       res[0] = batchMultiSigCallID;
     }
 
-/*
-    function _executeCall2(
-        address wallet,
-        address to,
-        uint16 flags,
-        uint32 gasLimit,
-        bytes32 messageHash,
-        bytes32 functionSignature,
-        uint256 value,
-        bool packed,
-        bytes memory data
-    ) private returns (bool, bytes memory) {
-        if (flags & FLAG_CANCELABLE != 0) {
-            messageHash = bytes32(0);
-        }
-        return flags & FLAG_STATICCALL != 0
-                ? msg.sender.call{
-                    gas: gasLimit == 0 || gasLimit > gasleft()
-                        ? gasleft()
-                        : gasLimit
-                }(
-                    abi.encodeWithSignature("execute(bytes32,address,bytes)", batchMultiSigCallID, wallet, 
-                    abi.encodeWithSignature(
-                        "LocalStaticCall_(address,bytes,bytes32)",
-                        to,
-                        packed
-                            ? data
-                            : functionSignature ==
-                                0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
-                            ? bytes("")
-                            : abi.encodePacked(bytes4(functionSignature), data),
-                        messageHash
-                    ))
-                )
-                : msg.sender.call{
-                    gas: gasLimit == 0 || gasLimit > gasleft()
-                        ? gasleft()
-                        : gasLimit
-                }(
-                    abi.encodeWithSignature("execute(bytes32,address,bytes)", batchMultiSigCallID, wallet, 
-                    abi.encodeWithSignature(
-                        "LocalCall_(address,uint256,bytes,bytes32)",
-                        to,
-                        value,
-                        packed
-                            ? data
-                            : functionSignature ==
-                                0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
-                            ? bytes("")
-                            : packed
-                            ? data
-                            : abi.encodePacked(bytes4(functionSignature), data),
-                        messageHash
-                    ))
-                );
-    }
-*/
     function _executeCall(
         address wallet,
         address to,
@@ -248,6 +228,9 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
             messageHash = bytes32(0);
         }
 
+        // console.log('execute', wallet, to);
+        // console.logBytes32(functionSignature);
+        // console.logBytes(data);
         return flags & FLAG_STATICCALL != 0
                 ? wallet.call{
                     gas: gasLimit == 0 || gasLimit > gasleft()
@@ -287,7 +270,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             : abi.encodePacked(bytes4(functionSignature), data),
                         messageHash
                     )
-                );
+                );   
     }
 
     function _executeCall(
@@ -343,11 +326,10 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         string arg3;
     }
 
-    uint256 constant TYPE_NATIVE = 0;
-    uint256 constant TYPE_STRING = 1;
-    uint256 constant TYPE_BYTES = 2;
-    uint256 constant TYPE_ARRAY = 3;
-    uint256 constant TYPE_STRUCT = 4;
+    uint256 constant TYPE_STRING = 1000;
+    uint256 constant TYPE_BYTES = 2000;
+    uint256 constant TYPE_ARRAY = 3000;
+    uint256 constant TYPE_NATIVE = 4000;
 
 
      function _decodeString(bytes calldata data, uint256 index)
@@ -391,125 +373,110 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     //     return abi.decode(data[(pos) * 32:(pos +1)* 32], (uint256));
     // }
 
-    function abiToEIP712(bytes calldata data, uint256[] calldata types, uint256 offset)
+    struct Offset {
+        uint256 data;
+        uint256 types;
+    }
+
+    struct Array {
+        uint256 size;
+        uint256 offset;
+        uint256 typesOffset;
+    }
+
+    function abiToEIP712(bytes calldata data, uint256[] calldata types, bytes32[] calldata typedHashes, Offset memory offset)
+    // function abiToEIP712(Eip712Converter memory info)
         public
         view
         returns (bytes memory res)
     {
         //console.logBytes(data);
-        uint256 j = offset;
-        //console.log("types.length", types.length);
+        // uint256 j = offset;
+        // uint256 t = typedHOffset;
+        //console.log("types.length", types.length);f
         for (uint256 i = 0; i < types.length ; ++i) {
             if (types[i] == TYPE_STRING) {
-                string memory str = _decodeString(data, j);
+                string memory str = _decodeString(data, offset.data);
                 console.log("string: %s, str: %s",i, str);
                 bytes memory buff = abi.encodePacked(str);
                 res = bytes.concat(res, keccak256(buff));
-                j = j + 1;
+                offset.data = offset.data + 1;
             } else if (types[i] == TYPE_BYTES) {
                 console.log("bytes:", i);
                 //console.log("bytes i:%s, j:%s, numOfElements:%s", i, j, numOfElements);
-                bytes memory bytesData = _decodeBytes(data, j);
+                bytes memory bytesData = _decodeBytes(data, offset.data);
                 console.logBytes(bytesData);
                 res = bytes.concat(res, keccak256(bytesData));
-                j = j + 1;
+                offset.data = offset.data + 1;
             } else if ( types[i] == TYPE_ARRAY){
-                uint256 arrayOffset = abi.decode(data[j*32:(j+1)*32], (uint256));
+                console.log("array:", i);
+                Array memory array;
+                array.offset = abi.decode(data[offset.data*32:(offset.data+1)*32], (uint256));
                 //console.log("array offset", arrayOffset);
-                uint256 arraySize = abi.decode(data[arrayOffset:arrayOffset+32], (uint256));
+                array.size = abi.decode(data[array.offset:array.offset+32], (uint256));
                 //console.log("array size", arraySize);
-                arrayOffset = arrayOffset + 32;
+                array.offset = array.offset + 32;
+                // bytes calldata dataSubset = data[array.offset:];
                 bytes memory arrayData;
-                for (uint256 k=0; k < arraySize; ++k) {
-                  //console.log('array loop', k);
-                  arrayData = bytes.concat(arrayData, abiToEIP712(data[arrayOffset:], types[i + 1 : i + 2], k));
+                array.typesOffset = offset.types;
+                for (uint256 k=0; k < array.size; ++k) {
+                    console.log("types[i+1]:", types[i+1]);                    
+                    uint256[] calldata typesSubset = (types[i+1] < TYPE_STRING) ? types[i+1:] : types[i + 1 : i + 2];
+                    arrayData = bytes.concat(
+                        arrayData,
+                        abiToEIP712(data[array.offset:], typesSubset, typedHashes, Offset({ data: k, types:array.typesOffset })
+                    ));
                   //console.logBytes(arrayData);
                 }
+                console.log("back from array loop");
                 res = bytes.concat(res, keccak256(arrayData));
-                j = j + 1;
-                i = i + 1;
-            } else if(types[i] == TYPE_STRUCT){
+                offset.data = offset.data + 1;
+                offset.types = offset.types + 1;
+                types[i+1] < TYPE_STRING ? i = i + types[i+1] + 1 : i = i + 1;
+            } else if(types[i] < TYPE_STRING){
                 console.log("struct:", i);
-                uint256 numOfElements = types[i + 1];
+                uint256 numOfElements = types[i];
                 console.log("num of elements in struct: %s", numOfElements);
-                uint256 structOffset = abi.decode(data[j*32:(j+1)*32], (uint256));
+                //console.log(offset.data);
+                //console.logBytes(data);
+                uint256 structOffset = abi.decode(data[offset.data*32:(offset.data+1)*32], (uint256));
+                //console.log("structOffset", structOffset);
                 bytes memory structData;
+                //console.log("typedHashes[offset.types]");
+                //console.logBytes32(typedHashes[offset.types]);
+                structData = bytes.concat(structData, typedHashes[offset.types]);
+                console.logBytes(structData);
                 for (uint256 s=0; s < numOfElements; ++s) {
-                  structData = bytes.concat(structData, abiToEIP712(data[structOffset:], types[i + 2 + s : i + 3 + s], s));
+                    //console.log("in loop:", s);
+                    uint256 typesOffset = offset.types;
+                    //console.log("typesOffset:", typesOffset);
+                    //console.log("types[i + 1 + s]:", types[i + 1 + s]);
+                    structData = bytes.concat(
+                        structData,
+                        abiToEIP712(data[structOffset:],
+                        types[i + 1 + s : i + 2 + s],
+                        typedHashes,
+                        Offset({ data: s, types: typesOffset }))
+                    );
                 }
+                console.log("back from structs loop");
                 res = bytes.concat(res, keccak256(structData));
-                j = j + 1;
+                offset.data = offset.data + 1;
+                offset.types = offset.types + 1;
                 i = i + numOfElements + 1;
             } else {
                 console.log("basic:", i);
-                res = bytes.concat(res, data[j * 32:(j + 1) * 32]);
-                j = j + 1;
+                res = bytes.concat(res, data[offset.data * 32:(offset.data + 1) * 32]);
+                offset.data = offset.data + 1;
             }
         }
     }
 
-    //0,0,1,1,2,3,1,1,2
-    //address, address, uint256, string, string, bytes, array, string, string,bytes
-
-//    function _decodeString(bytes calldata data, uint256 pos)
-//         private
-//         pure
-//         returns (string memory)
-//     {
-//         //console.logBytes(data);
-//         bytes memory strData = bytes.concat(
-//             abi.encode(0x20),
-//             data[(pos + 3) * 32:(pos + 5)* 32]
-//         );
-//         //console.log("print");
-//         //console.logBytes(strData);
-//         return abi.decode(strData, (string));
-//     }//ori shalom
-
-//     function _decodeBytes(bytes calldata data, uint256 pos)
-//         private
-//         pure
-//         returns (bytes memory)
-//     {
-//         bytes memory strData = bytes.concat(
-//             abi.encode(0x20),
-//             data[(pos + 3) * 32:(pos + 5)* 32]
-//         );
-//         return abi.decode(strData, (bytes));
-//     }
-// //to,tokenAmount,
-//     function abiToEIP712(bytes calldata data, uint256[] memory types)
-//         public
-//         pure
-//         returns (bytes memory res)
-//     {
-//        uint256 j = 0;
-//         for (uint256 i = 0; i < types.length; ++i) {
-//             if (types[i] == TYPE_STRING) {
-//                 //console.log("string:", i);
-//                 string memory str = _decodeString(data, i +j);
-//                 //console.log(str);
-//                 bytes memory buff = abi.encodePacked(str);
-//                 res = bytes.concat(res, keccak256(buff));
-//                 j = j + 1;
-//             } else if (types[i] == TYPE_BYTES) {
-//                 //console.log("bytes:", i);
-//                 bytes memory bytesData = _decodeBytes(data, i +j);
-//                 //console.logBytes(bytesData);
-//                 res = bytes.concat(res, keccak256(bytesData));
-//                 j = j + 1;//+ bytesData.length;
-//             } else {
-//                 //console.log("basic:", i);
-//                 res = bytes.concat(res, data[i * 32:(i + 1) * 32]);
-//             }
-//         }
-//     }
-
     // Batch Call: Multi Signature, Multi External Contract Functions
     function batchMultiSigCall_(
         bytes4 version,
-        MSCalls[] calldata tr,
-        bytes32[][] calldata variables
+        MSCalls[] calldata tr
+        // bytes32[][] calldata variablesx
     ) external returns (MReturn[][] memory rt) {
         // uint256 startGas = gasleft();
         // require(msg.sender == s_activator, "Wallet: sender not allowed");
@@ -520,7 +487,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
             for (uint256 i = 0; i < trLength; ++i) {
-                bytes32[] calldata variables_ = variables[i];
+                // bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];
                 // console.log("proxy: i: ", i);
@@ -546,39 +513,17 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 uint256 length = mcalls.mcall.length;
                 for (uint256 j = 0; j < length; ++j) {
                     MSCall calldata call = mcalls.mcall[j];
-                    // console.log(
-                    //     "proxy start: call.to %s, call.value %s",
-                    //     call.to,
-                    //     call.value
-                    // );
-                    // console.log(
-                    //     "-------------------------- string -----------------------"
-                    // );
-                    // console.logBytes(call.data);
-                    
-                    // (, , string memory r, string memory b, bytes memory x) = abi.decode(
-                    //     call.data,
-                    //     (address, uint256, string, string, bytes)
-                    // );
-                    // (, , string memory r) = abi.decode(
-                    //     call.data,
-                    //     (address, uint256, string)
-                    // );
-                    // console.log(r);
-                    // console.logBytes32(keccak256(abi.encodePacked(r)));
-                    // console.log(b);
-                    // console.logBytes32(keccak256(abi.encodePacked(b)));
-                    // console.logBytes(x);
-                    // console.logBytes32(keccak256(abi.encodePacked(x)));
-                    // uint256[] memory types = new uint256[](5);
-                    // types[0] = TYPE_NATIVE;
-                    // types[1] = TYPE_NATIVE;
-                    // types[2] = TYPE_STRING;
-                    // types[3] = TYPE_STRING;
-                    // types[4] = TYPE_BYTES;
-                    // console.log("t1:%s, t2:%s", call.types[0], call.types[1]);
-                    console.logBytes(call.types.length > 0 ? abiToEIP712(call.data, call.types, 0) : call.data);
-                   
+                    //console.log("loop :", j);
+                   console.logBytes(call.types.length > 0 ? abiToEIP712(call.data, call.types, call.typedHashes, Offset({ data: 0, types: 0})) : call.data);
+                    // if(call.types.length > 0){
+                    //     bytes memory res;
+                    //     (res,) = abiToEIP712(call.data, call.types, call.typedHashs, 0, 0);
+                    //     console.logBytes(res);
+                    // }
+                    // else{
+                    //     console.logBytes(call.data);
+                    // }
+
                     msg2 = abi.encodePacked(
                         msg2,
                         // messageHash
@@ -590,7 +535,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                         call.typeHash,
                                         _calcMultiSigTransactionHash(call)
                                     ),
-                                    call.types.length > 0 ? abiToEIP712(call.data, call.types, 0) : call.data
+                                    call.types.length > 0 ? abiToEIP712(call.data, call.types, call.typedHashes, Offset({ data: 0, types: 0})) : call.data
                                 )
                             )
                             : call.to != address(0)
@@ -608,16 +553,18 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             )
                     );
                 }
-                // bytes32 messageHash = _messageToRecover(
-                //     domainSEPARATOR,
-                //     keccak256(msg2),
-                //     sessionId & FLAG_EIP712 != 0
-                // );
-                
-                bytes32 messageHash = IFCT_Controller(msg.sender).register(batchMultiSigCallID, keccak256(msg2), sessionId & FLAG_EIP712 != 0);
-                // console.log("after register");
-                // require(s_fcts[messageHash] == 0, "allready executed");
-                // s_fcts[messageHash] = 1;
+
+                bytes32 messageHash = IFCT_Controller(msg.sender).register(
+                    batchMultiSigCallID,
+                    keccak256(msg2),
+                    Meta({
+                        amount: 1,
+                        chillmode: 0,
+                        chilltime: 0,
+                        timestamp: 0, 
+                        eip712: (sessionId & FLAG_EIP712) != 0
+                    })
+                );
 
                 address[] memory signers = new address[](
                     mcalls.signatures.length
@@ -631,6 +578,24 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         signature.s
                     );
                 }
+
+                // TODO: multi-sig m of n - uncomment following lines
+                // if (uint8(sessionId >> EXT_SIGNERS_BIT) > 0) {
+                //     uint256 externalSigs = 0;
+                //     for (uint256 s = 0; s < signers.length; ++s) {
+                //         address signer = signers[s];
+                //         for (uint256 m = 0; m < mcalls.externalSigners.length; ++m) {
+                //             if (signer == mcalls.externalSigners[m]) {
+                //                 ++externalSigs;
+                //                 break;
+                //             }                        
+                //         }
+                //         if (externalSigs == uint8(sessionId >> EXT_SIGNERS_BIT)) {
+                //             break;
+                //         }
+                //     }
+                //     require(externalSigs ==uint8(sessionId >> EXT_SIGNERS_BIT), "FCT: missing ext singatues");
+                // }
 
                 MultiSigCallLocals memory locals;
                 {
@@ -656,82 +621,18 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     //console.log("test1");
                     uint256 gas = gasleft();
 
-                    // require(
-                    //     signers[j] != address(0),
-                    //     "Factory: signer missing"
-                    // );
                     MSCall calldata call = mcalls.mcall[j];
-                    //console.log("test2");
-                    // console.log(
-                    //     "proxy: call.to %s, call.value %s",
-                    //     call.to,
-                    //     call.value
-                    // );
+
                     if (call.to == address(0)) {
                         continue;
                     }
-                   // console.log("test3");
-                    // Wallet storage wallet = s_accounts_wallet[signers[j]];
-                    // require(wallet.owner, "Factory: signer is not owner");
                     MultiSigInternalCallLocals memory varLocals;
-                    {
-                        //console.log("test3.1, call.from:", call.from);
-                        varLocals.callFrom = call.from;
-                        if (
-                            uint256(uint160(varLocals.callFrom)) > VAR_MIN &&
-                            uint256(uint160(varLocals.callFrom)) < VAR_MAX
-                        ) {
-                            //console.log("test3.2");
-                            require(
-                                uint256(uint160(varLocals.callFrom)) &
-                                    VAR_MASK <=
-                                    variables_.length,
-                                "Factory: var out of bound"
-                            );
-                            //console.log("test3.3, index: ", (uint256(uint160(varLocals.callFrom)) & VAR_MASK) - 1);
-                            varLocals.callFrom = address(
-                                uint160(
-                                    uint256(
-                                        variables_[
-                                            (uint256(
-                                                uint160(varLocals.callFrom)
-                                            ) & VAR_MASK) - 1
-                                        ]
-                                    )
-                                )
-                            );
-                            //console.log("test3.4");
-                            for (uint256 l = 0; l < length; ++l) {
-                                require(
-                                    varLocals.callFrom != mcalls.mcall[l].from,
-                                    "FCT: from exists"
-                                );
-                            }
-                           // console.log("test3.5");
-                        } else if (
-                            uint256(uint160(varLocals.callFrom)) > RET_MIN &&
-                            uint256(uint160(varLocals.callFrom)) < RET_MAX
-                        ) {
-                            //console.log("test3.6");
-                            varLocals.callFrom = abi.decode(
-                                locals.returnedValues[
-                                    (uint256(uint160(varLocals.callFrom)) &
-                                        VAR_MASK) - 1
-                                ],
-                                (address)
-                            );
-                            //console.log("test3.7");
-                            for (uint256 l = 0; l < length; ++l) {
-                                require(
-                                    varLocals.callFrom != mcalls.mcall[l].from,
-                                    "FCT: from exists"
-                                );
-                            }
-                            //console.log("test3.8");
+                    varLocals.callFrom = _replace(call.from, mcalls.variables, j, locals.returnedValues);
+                    if (varLocals.callFrom != call.from) {
+                        for (uint256 l = 0; l < length; ++l) {
+                            require(varLocals.callFrom != mcalls.mcall[l].from, "FCT: from exists");
                         }
-                        //console.log("test3.9");
                     }
-                    //console.log("test3.10, varLocals.callFrom:", varLocals.callFrom);
                     require(
                         IFCT_Runner(varLocals.callFrom).allowedToExecute_(
                             signers,
@@ -739,132 +640,13 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         ) > 0,
                         "FCT: signers not allowed"
                     );
-                    //console.log("test4, call.to:", call.to);
-                    {
-                        varLocals.callTo = call.to;
-                        if (
-                            uint256(uint160(varLocals.callTo)) > VAR_MIN &&
-                            uint256(uint160(varLocals.callTo)) < VAR_MAX
-                        ) {
-                            require(
-                                uint256(uint160(varLocals.callTo)) & VAR_MASK <=
-                                    variables_.length,
-                                "FCT: var out of bound"
-                            );
-                            varLocals.callTo = address(
-                                uint160(
-                                    uint256(
-                                        variables_[
-                                            (uint256(
-                                                uint160(varLocals.callTo)
-                                            ) & VAR_MASK) - 1
-                                        ]
-                                    )
-                                )
-                            );
-                        } else if (
-                            uint256(uint160(varLocals.callTo)) > RET_MIN &&
-                            uint256(uint160(varLocals.callTo)) < RET_MAX
-                        ) {
-                            // varLocals.callTo = abi.decode(
-                            //     locals.returnedValues[
-                            //         (uint256(uint160(varLocals.callTo)) &
-                            //             VAR_MASK) - 1
-                            //     ],
-                            //     (address)
-                            // );
-
-                            require(
-                                (uint256(uint160(varLocals.callTo)) &
-                                    VAR_MASK) <= j,
-                                "FCT: tx out of bound"
-                            );
-                            bytes memory varData = varLocals.data;
-                            uint256 innerIndex = (uint256(
-                                uint160(varLocals.callTo)
-                            ) & RET_MASK) + 1;
-
-                            require(
-                                innerIndex * 32 < varData.length,
-                                "FCT: inner out of bound"
-                            );
-                            varLocals.callTo = abi.decode(
-                                locals.returnedValues[
-                                    (varLocals.value & VAR_MASK) - 1
-                                ],
-                                (address)
-                            );
-                            uint256 dataIndex = varLocals.dataIndex;
-                            address callTo = varLocals.callTo;
-                            assembly {
-                                mstore(
-                                    add(
-                                        varData,
-                                        add(dataIndex, mul(innerIndex, 0x20))
-                                    ),
-                                    callTo
-                                )
-                            }
-                        }
-                    }
-                    //console.log("test5, varLocals.callTo: ", varLocals.callTo);
-                    {
-                        varLocals.value = call.value;
-                        if (
-                            (varLocals.value > VAR_MIN &&
-                                varLocals.value < VAR_MAX) ||
-                            (varLocals.value > VARX_MIN &&
-                                varLocals.value < VARX_MAX)
-                        ) {
-                            require(
-                                (varLocals.value & VAR_MASK) <=
-                                    variables_.length,
-                                "FCT: var out of bound"
-                            );
-                            varLocals.value = uint256(
-                                variables_[(varLocals.value & VAR_MASK) - 1]
-                            );
-                        } else if (
-                            (varLocals.value > RET_MIN &&
-                                varLocals.value < RET_MAX) ||
-                            (varLocals.value > RETX_MIN &&
-                                varLocals.value < RETX_MAX)
-                        ) {
-                            require(
-                                (varLocals.value & VAR_MASK) <= j,
-                                "FCT: tx out of bound"
-                            );
-                            bytes memory varData = varLocals.data;
-                            uint256 innerIndex = (varLocals.value & RET_MASK) +
-                                1;
-
-                            require(
-                                innerIndex * 32 < varData.length,
-                                "FCT: inner out of bound"
-                            );
-                            varLocals.value = abi.decode(
-                                locals.returnedValues[
-                                    (varLocals.value & VAR_MASK) - 1
-                                ],
-                                (uint256)
-                            );
-                            uint256 dataIndex = varLocals.dataIndex;
-                            uint256 value = varLocals.value;
-                            assembly {
-                                mstore(
-                                    add(
-                                        varData,
-                                        add(dataIndex, mul(innerIndex, 0x20))
-                                    ),
-                                    value
-                                )
-                            }
-                        }
-                    }
-                    //console.log("test6");
+                    // call.to
+                    varLocals.callTo = _replace(call.to, mcalls.variables, j, locals.returnedValues);
+                    // call.value
+                    varLocals.value = _replace(call.value, mcalls.variables, j, locals.returnedValues);
+                    // call.data
                     varLocals.data = call.data;
                     if (call.data.length > 0) {
-                        //  console.log("varData Before");
                         //  console.logBytes(varLocals.data);
                         for (
                             varLocals.dataIndex = 0;
@@ -885,10 +667,10 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                 ) {
                                     require(
                                         (varLocals.varId & VAR_MASK) <=
-                                            variables_.length,
+                                            mcalls.variables.length,
                                         "FCT: var out of bound"
                                     );
-                                    varLocals.varValue = variables_[
+                                    varLocals.varValue = mcalls.variables[
                                         (varLocals.varId & VAR_MASK) - 1
                                     ];
                                 } else if (
@@ -955,11 +737,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             }
                         }
                     }
-                    // console.log("varLocals.callFrom", varLocals.callFrom);
-                    // console.log("call.flags", call.flags);
-                    // console.logBytes32(call.functionSignature);
-                    // console.log("varLocals.value", varLocals.value);
-                    // console.logBytes(varLocals.data);
                     (bool success, bytes memory res) = _executeCall(
                         varLocals.callFrom, // wallet.addr,
                         IFCT_Controller(msg.sender).ensToAddress(call.ensHash, varLocals.callTo),
@@ -970,20 +747,14 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         varLocals.value,
                         varLocals.data
                     );
-                    // console.log("after execute");
+                    //console.log('execute done', success);
+                    
                     if (success) {
-                        // console.log("ori 11", success);
-                        // console.logBytes(res);
                         if (res.length > 64) {
-                            // (,locals.returnedValues[j]) = abi.decode(res, (bool,bytes));
                             locals.returnedValues[j] = abi.decode(res, (bytes));
                         }
                     }
-                    // console.log("ori 1");
-                    uint256 additionalGasPerVault = (locals.gas / length) +
-                        (33000 / (locals.trxCounter * length));
                     if (!success) {
-                        // console.log("ori 2");
                         emit BatchMultiSigCallFailed_(
                             varLocals.callFrom, // wallet.addr,
                             0,
@@ -993,8 +764,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         if (call.flags & FLAG_FLOW >= OK_CONT_FAIL_JUMP) {
                             locals.rt[locals.index][j] = gasDiff(
                                 varLocals.callFrom, // wallet.addr,
-                                gas,
-                                additionalGasPerVault
+                                gas
                             );
                             if (call.flags & FLAG_FLOW >= OK_CONT_FAIL_JUMP) {
                                 j = j + (call.flags & FLAG_JUMP);
@@ -1005,34 +775,26 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         ) {
                             locals.rt[locals.index][j] = gasDiff(
                                 varLocals.callFrom, // wallet.addr,
-                                gas,
-                                additionalGasPerVault
+                                gas
                             );
                             break;
                         }
                         revert(_getRevertMsg(res));
                     } else if (call.flags & FLAG_FLOW == OK_STOP_FAIL_CONT) {
-                        //console.log("ori 3");
                         locals.rt[locals.index][j] = gasDiff(
                             varLocals.callFrom, // wallet.addr,
-                            gas,
-                            additionalGasPerVault
+                            gas
                         );
                         break;
                     } else if (call.flags & FLAG_FLOW == OK_REVERT_FAIL_CONT) {
-                        // console.log("ori 4");
                         revert("FCT: revert on success");
                     } else if (call.flags & FLAG_FLOW == OK_JUMP_FAIL_CONT) {
-                        // console.log("ori 5");
                         j = j + (call.flags & FLAG_JUMP);
                     }
-                    // console.log("ori 6");
                     locals.rt[locals.index][j] = gasDiff(
                         varLocals.callFrom, // wallet.addr,
-                        gas,
-                        additionalGasPerVault
-                    ); //MReturn(wallet.addr, refund);
-                    // console.log("ori 7");
+                        gas
+                    );
                 }
             }
             // s_nonce_group[ng] = _nextNonce(nonce, maxNonce);
@@ -1042,11 +804,11 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
 
     function gasDiff(
         address wallet,
-        uint256 gas,
-        uint256 additionalGas
+        uint256 gas
+        // uint256 additionalGas
     ) internal view returns (MReturn memory) {
         //console.log("gasDiff: wallet: %s, gas: %s, additionalGas: %s", wallet, gas - gasleft() + additionalGas, additionalGas);
-        return MReturn(wallet, uint88(gas - gasleft() + additionalGas));
+        return MReturn(wallet, uint88(gas - gasleft())); // + additionalGas));
     }
 
 

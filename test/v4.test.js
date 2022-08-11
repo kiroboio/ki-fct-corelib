@@ -356,10 +356,27 @@ describe("batchMultiSigCall", () => {
       batchMultiSigCall.createVariable("to", accounts[12]);
       batchMultiSigCall.createVariable("amount", 0);
 
+      const testValue = [
+        { name: "value", type: "uint256", variable: "to" },
+        { name: "from", type: "address", value: vault12.address },
+        { name: "name", type: "string", value: "Tal" },
+        { name: "number", type: "bytes", variable: 0x350 },
+      ];
+
       const tx = {
         groupId: 1,
         nonce: 1,
         calls: [
+          {
+            value: 0,
+            to: kiro.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "20" },
+            ],
+            from: vault10.address,
+          },
           {
             value: 0,
             to: multiplier.address,
@@ -377,10 +394,35 @@ describe("batchMultiSigCall", () => {
             jump: 1,
             from: vault10.address,
           },
+          {
+            value: 0,
+            to: multiplier.address,
+            method: "testCall3",
+            params: [
+              { name: "to", type: "bytes", value: 0x340 },
+              { name: "name1", type: "string", value: "Tal" },
+              { name: "value", type: "bytes", value: 0x123 },
+              {
+                name: "test",
+                type: "Test",
+                customType: true,
+                value: [
+                  { name: "value", type: "uint256", value: 125 },
+                  { name: "from", type: "address", value: vault12.address },
+                  { name: "name", type: "string", value: "Tal" },
+                  { name: "number", type: "bytes", value: 0x350 },
+                ],
+              },
+              { name: "from", type: "bytes", value: 0x355 },
+            ],
+            flow: Flow.OK_CONT_FAIL_REVERT,
+            from: vault10.address,
+          },
         ],
       };
 
-      await batchMultiSigCall.addBatchCall(tx);
+      const FCT = await batchMultiSigCall.addBatchCall(tx);
+      console.log(FCT.mcall);
     });
 
     it("Should add a call to existing FCT", async () => {
@@ -414,7 +456,7 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       };
 
-      await FCT.replaceCall(call, 1);
+      await FCT.replaceCall(call, 0);
     });
 
     it("Should execute batch", async () => {
@@ -429,20 +471,17 @@ describe("batchMultiSigCall", () => {
 
         return signature;
       };
+      const variables = batchMultiSigCall.getVariablesAsBytes32();
 
       const signedCalls = calls.map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
-        return { ...item, signatures };
+        return { ...item, signatures, variables, builder: ZERO_ADDRESS, externalSigners: [] };
       });
 
-      const variables = batchMultiSigCall.getVariablesAsBytes32();
-
       const callData = fctBatchMultiSig.contract.methods
-        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [
-          variables,
-        ])
+        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls)
         .encodeABI();
 
       // const data = activators.contract.methods.activate(callData).encodeABI();
