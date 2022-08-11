@@ -450,7 +450,8 @@ describe("batchMultiSigCall", () => {
       };
 
       const FCT = await batchMultiSigCall.create(tx);
-      console.log(FCT.mcall);
+
+      console.log(FCT);
     });
 
     it("Should add a call to existing FCT", async () => {
@@ -502,7 +503,6 @@ describe("batchMultiSigCall", () => {
       const variables = batchMultiSigCall.getVariablesAsBytes32();
 
       const signedCalls = calls.map((item) => {
-        console.log(item);
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
