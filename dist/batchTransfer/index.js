@@ -51,7 +51,9 @@ const defaultFlags = {
 };
 const getBatchTransferData = (web3, FactoryProxy, factoryProxyAddress, call) => __awaiter(void 0, void 0, void 0, function* () {
     const callDetails = (0, helpers_1.getSessionIdDetails)(call, defaultFlags, true);
-    const typedData = Object.assign(Object.assign({}, batchTransferTypedData), { domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress), message: {
+    const typedData = Object.assign(Object.assign({}, batchTransferTypedData), { 
+        // @ts-ignore
+        domain: yield (0, helpers_1.getTypedDataDomain)(web3, FactoryProxy, factoryProxyAddress), message: {
             token_address: call.token || ZERO_ADDRESS,
             token_ens: call.tokenEns || "",
             to: call.to,

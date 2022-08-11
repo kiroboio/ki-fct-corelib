@@ -1,14 +1,13 @@
-import Web3 from "web3";
-import Contract from "web3/eth/contract";
+import { ethers } from "ethers";
 import { DecodeTx } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
 export declare class BatchMultiSigCall {
     calls: Array<BatchMultiSigCallInterface>;
     variables: Array<Array<string>>;
-    web3: Web3;
-    FactoryProxy: Contract;
+    provider: ethers.providers.JsonRpcProvider;
+    FactoryProxy: ethers.Contract;
     factoryProxyAddress: string;
-    constructor(web3: Web3, contractAddress: string);
+    constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string);
     createVariable(variableId: string, value?: string): string[];
     addVariableValue(variableId: string, value: string): string[];
     removeVariable(variableId: string): Promise<string[]>;
@@ -17,7 +16,7 @@ export declare class BatchMultiSigCall {
     private getVariableFCValue;
     refTxValue(index: number, bytes?: boolean): string;
     addExistingBatchCall(batchCall: BatchMultiSigCallInterface): BatchMultiSigCallInterface[];
-    addBatchCall(tx: BatchMultiSigCallInputInterface): Promise<{
+    create(tx: BatchMultiSigCallInputInterface): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -72,8 +71,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -81,7 +80,7 @@ export declare class BatchMultiSigCall {
         getCall: (index: number) => any;
         readonly length: any;
     }>;
-    addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]): Promise<{
+    createMultiple(txs: BatchMultiSigCallInputInterface[]): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -136,8 +135,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -200,8 +199,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -265,8 +264,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -329,8 +328,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;
@@ -393,8 +392,8 @@ export declare class BatchMultiSigCall {
             to: string;
             ensHash: string;
             data: string;
-            types: any[];
-            typedHashes: string[];
+            types: any;
+            typedHashes: any[];
         }[];
         addCall: (tx: BatchMultiSigCallInterface, index?: number) => Promise<void>;
         replaceCall: (tx: BatchMultiSigCallInterface, index: number) => Promise<any>;

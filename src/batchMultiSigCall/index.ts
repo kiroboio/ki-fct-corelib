@@ -1,3 +1,4 @@
+import util from "util";
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
@@ -18,7 +19,10 @@ import {
   manageCallFlagsV2,
   flows,
   getTypesArray,
+  getTypedHashes,
 } from "../helpers";
+
+const web3 = new Web3();
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -34,15 +38,14 @@ const defaultFlags = {
 export class BatchMultiSigCall {
   calls: Array<BatchMultiSigCallInterface> = [];
   variables: Array<Array<string>> = [];
-  web3: Web3;
-  FactoryProxy: Contract;
+  provider: ethers.providers.JsonRpcProvider;
+  FactoryProxy: ethers.Contract;
   factoryProxyAddress: string;
 
-  constructor(web3: Web3, contractAddress: string) {
-    this.web3 = web3;
-    // @ts-ignore
-    this.FactoryProxy = new web3.eth.Contract(FactoryProxyABI, contractAddress);
-    this.factoryProxyAddress = contractAddress;
+  constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
+    // this.web3 = web3;
+    this.provider = provider;
+    this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
   }
 
   //
@@ -79,11 +82,11 @@ export class BatchMultiSigCall {
         throw new Error(`Variable ${item[0]} doesn't have a value`);
       }
 
-      if (isNaN(Number(value)) || this.web3.utils.isAddress(value)) {
-        return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+      if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
+        return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
       }
 
-      return `0x${this.web3.utils.padLeft(Number(value).toString(16), 64)}`;
+      return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
     });
   }
 
@@ -116,13 +119,13 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  public async addBatchCall(tx: BatchMultiSigCallInputInterface) {
+  public async create(tx: BatchMultiSigCallInputInterface) {
     const data = await this.getMultiSigCallData(tx);
     this.calls = [...this.calls, data];
     return data;
   }
 
-  public async addMultipleBatchCalls(txs: BatchMultiSigCallInputInterface[]) {
+  public async createMultiple(txs: BatchMultiSigCallInputInterface[]) {
     const data = await Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
     this.calls = [...this.calls, ...data];
     return data;
@@ -229,12 +232,26 @@ export class BatchMultiSigCall {
               if (additionalTypes[param.type]) {
                 return;
               }
-              param.customType = true;
-              typedHashes.push(param.type);
-              const arrayValue = param.value as Params[];
-              additionalTypes[param.type] = arrayValue.reduce((acc, item) => {
-                return [...acc, { name: item.name, type: item.type }];
-              }, []);
+
+              if (param.type.lastIndexOf("[") > 0) {
+                const type = param.type.slice(0, param.type.lastIndexOf("["));
+
+                typedHashes.push(type);
+
+                const arrayValue = param.value[0] as Params[];
+                additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                  return [...acc, { name: item.name, type: item.type }];
+                }, []);
+              } else {
+                const type = param.type;
+
+                typedHashes.push(type);
+
+                const arrayValue = param.value as Params[];
+                additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                  return [...acc, { name: item.name, type: item.type }];
+                }, []);
+              }
             }
           });
 
@@ -253,15 +270,32 @@ export class BatchMultiSigCall {
           return {
             ...item.params.reduce((acc, param) => {
               let value;
+
+              // If parameter is a custom type (struct)
               if (param.customType) {
-                const valueArray = param.value as Params[];
-                value = valueArray.reduce((acc, item) => {
-                  if (item.variable) {
-                    item.value = this.getVariableFCValue(item.variable);
-                  }
-                  return { ...acc, [item.name]: item.value };
-                }, {});
+                // If parameter is an array of custom types
+                if (param.type.lastIndexOf("[") > 0) {
+                  const valueArray = param.value as Params[][];
+                  value = valueArray.map((item) =>
+                    item.reduce((acc, item2) => {
+                      if (item2.variable) {
+                        item2.value = this.getVariableFCValue(item2.variable);
+                      }
+                      return { ...acc, [item2.name]: item2.value };
+                    }, {})
+                  );
+                } else {
+                  // If parameter is a custom type
+                  const valueArray = param.value as Params[];
+                  value = valueArray.reduce((acc, item) => {
+                    if (item.variable) {
+                      item.value = this.getVariableFCValue(item.variable);
+                    }
+                    return { ...acc, [item.name]: item.value };
+                  }, {});
+                }
               } else {
+                // If parameter isn't a struct/custom type
                 value = param.value;
               }
               return {
@@ -278,10 +312,10 @@ export class BatchMultiSigCall {
         ...acc,
         [`transaction_${index + 1}`]: {
           details: {
-            from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+            from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
             call_address: item.validator
               ? item.validator.validatorAddress
-              : this.web3.utils.isAddress(item.to)
+              : web3.utils.isAddress(item.to)
               ? item.to
               : this.getVariableFCValue(item.to),
             call_ens: item.toEnsHash || "",
@@ -345,7 +379,7 @@ export class BatchMultiSigCall {
         ...additionalTypes,
       },
       primaryType: "BatchMultiSigCall_",
-      domain: await getTypedDataDomain(this.web3, this.FactoryProxy, this.factoryProxyAddress),
+      domain: await getTypedDataDomain(this.FactoryProxy),
       message: {
         limits: {
           nonce: "0x" + callDetails.group + callDetails.nonce,
@@ -386,23 +420,23 @@ export class BatchMultiSigCall {
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)
       ),
       functionSignature: item.method
-        ? this.web3.utils.sha3(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
+        ? web3.utils.sha3(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       value: item.value,
-      from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+      from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
       gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
       flags: manageCallFlagsV2(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0),
       to: item.validator
         ? item.validator.validatorAddress
-        : this.web3.utils.isAddress(item.to)
+        : web3.utils.isAddress(item.to)
         ? item.to
         : this.getVariableFCValue(item.to),
       ensHash: item.toEnsHash
-        ? this.web3.utils.sha3(item.toEnsHash)
+        ? web3.utils.sha3(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
       types: item.params ? getTypesArray(item.params) : [],
-      typedHashes: typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, hash))),
+      typedHashes: item.params ? getTypedHashes(item.params, typedData) : [],
       ...getEncodedMulticallData(index),
     }));
 

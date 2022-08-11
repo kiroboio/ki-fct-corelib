@@ -16,8 +16,10 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
+const web3_1 = __importDefault(require("web3"));
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
+const web3 = new web3_1.default();
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -28,13 +30,12 @@ const defaultFlags = {
     flow: false,
 };
 class BatchMultiSigCall {
-    constructor(web3, contractAddress) {
+    constructor(provider, contractAddress) {
         this.calls = [];
         this.variables = [];
-        this.web3 = web3;
-        // @ts-ignore
-        this.FactoryProxy = new web3.eth.Contract(factoryProxy__abi_json_1.default, contractAddress);
-        this.factoryProxyAddress = contractAddress;
+        // this.web3 = web3;
+        this.provider = provider;
+        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
     }
     //
     // Everything for variables
@@ -65,10 +66,10 @@ class BatchMultiSigCall {
             if (value === undefined) {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
-            if (isNaN(Number(value)) || this.web3.utils.isAddress(value)) {
-                return `0x${this.web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+            if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
+                return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
             }
-            return `0x${this.web3.utils.padLeft(Number(value).toString(16), 64)}`;
+            return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
         });
     }
     getVariableIndex(variableId, throwError = true) {
@@ -95,14 +96,14 @@ class BatchMultiSigCall {
         this.calls = [...this.calls, batchCall];
         return this.calls;
     }
-    addBatchCall(tx) {
+    create(tx) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.getMultiSigCallData(tx);
             this.calls = [...this.calls, data];
             return data;
         });
     }
-    addMultipleBatchCalls(txs) {
+    createMultiple(txs) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
             this.calls = [...this.calls, ...data];
@@ -194,12 +195,22 @@ class BatchMultiSigCall {
                                 if (additionalTypes[param.type]) {
                                     return;
                                 }
-                                param.customType = true;
-                                typedHashes.push(param.type);
-                                const arrayValue = param.value;
-                                additionalTypes[param.type] = arrayValue.reduce((acc, item) => {
-                                    return [...acc, { name: item.name, type: item.type }];
-                                }, []);
+                                if (param.type.lastIndexOf("[") > 0) {
+                                    const type = param.type.slice(0, param.type.lastIndexOf("["));
+                                    typedHashes.push(type);
+                                    const arrayValue = param.value[0];
+                                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                                        return [...acc, { name: item.name, type: item.type }];
+                                    }, []);
+                                }
+                                else {
+                                    const type = param.type;
+                                    typedHashes.push(type);
+                                    const arrayValue = param.value;
+                                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                                        return [...acc, { name: item.name, type: item.type }];
+                                    }, []);
+                                }
                             }
                         });
                         // If mcall is a validation call
@@ -214,16 +225,31 @@ class BatchMultiSigCall {
                         }
                         return Object.assign({}, item.params.reduce((acc, param) => {
                             let value;
+                            // If parameter is a custom type (struct)
                             if (param.customType) {
-                                const valueArray = param.value;
-                                value = valueArray.reduce((acc, item) => {
-                                    if (item.variable) {
-                                        item.value = this.getVariableFCValue(item.variable);
-                                    }
-                                    return Object.assign(Object.assign({}, acc), { [item.name]: item.value });
-                                }, {});
+                                // If parameter is an array of custom types
+                                if (param.type.lastIndexOf("[") > 0) {
+                                    const valueArray = param.value;
+                                    value = valueArray.map((item) => item.reduce((acc, item2) => {
+                                        if (item2.variable) {
+                                            item2.value = this.getVariableFCValue(item2.variable);
+                                        }
+                                        return Object.assign(Object.assign({}, acc), { [item2.name]: item2.value });
+                                    }, {}));
+                                }
+                                else {
+                                    // If parameter is a custom type
+                                    const valueArray = param.value;
+                                    value = valueArray.reduce((acc, item) => {
+                                        if (item.variable) {
+                                            item.value = this.getVariableFCValue(item.variable);
+                                        }
+                                        return Object.assign(Object.assign({}, acc), { [item.name]: item.value });
+                                    }, {});
+                                }
                             }
                             else {
+                                // If parameter isn't a struct/custom type
                                 value = param.value;
                             }
                             return Object.assign(Object.assign({}, acc), { [param.name]: value });
@@ -232,10 +258,10 @@ class BatchMultiSigCall {
                     return {};
                 };
                 return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
-                            from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+                            from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
                             call_address: item.validator
                                 ? item.validator.validatorAddress
-                                : this.web3.utils.isAddress(item.to)
+                                : web3.utils.isAddress(item.to)
                                     ? item.to
                                     : this.getVariableFCValue(item.to),
                             call_ens: item.toEnsHash || "",
@@ -282,7 +308,7 @@ class BatchMultiSigCall {
                         { name: "method_interface", type: "string" },
                     ] }, batchCall.calls.reduce((acc, item, index) => (Object.assign(Object.assign({}, acc), { [`Transaction_${index + 1}`]: (0, helpers_1.generateTxType)(item) })), {})), additionalTypes),
                 primaryType: "BatchMultiSigCall_",
-                domain: yield (0, helpers_1.getTypedDataDomain)(this.web3, this.FactoryProxy, this.factoryProxyAddress),
+                domain: yield (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
                 message: Object.assign({ limits: {
                         nonce: "0x" + callDetails.group + callDetails.nonce,
                         refund: callDetails.pureFlags.payment,
@@ -302,14 +328,14 @@ class BatchMultiSigCall {
                 };
             };
             const mcall = batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
-                    ? this.web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: this.web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
+                    ? web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
                     ? item.validator.validatorAddress
-                    : this.web3.utils.isAddress(item.to)
+                    : web3.utils.isAddress(item.to)
                         ? item.to
                         : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
-                    ? this.web3.utils.sha3(item.toEnsHash)
-                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [], typedHashes: typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash))) }, getEncodedMulticallData(index))));
+                    ? web3.utils.sha3(item.toEnsHash)
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [], typedHashes: item.params ? (0, helpers_1.getTypedHashes)(item.params, typedData) : [] }, getEncodedMulticallData(index))));
             return {
                 typedData,
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),

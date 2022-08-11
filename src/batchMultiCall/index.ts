@@ -108,7 +108,7 @@ const getBatchMultiCallData = async (
         {}
       ),
     },
-    primaryType: "BatchMultiCall_",
+    primaryType: "BatchMultiCall_", // @ts-ignore
     domain: await getTypedDataDomain(web3, FactoryProxy, factoryProxyAddress),
     message: {
       limits: {

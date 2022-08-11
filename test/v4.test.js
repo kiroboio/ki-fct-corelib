@@ -347,73 +347,101 @@ describe("batchMultiSigCall", () => {
     });
   });
 
+  //  {
+  //           value: 0,
+  //           to: multiplier.address,
+  //           method: "testCall",
+  //           params: [
+  //             { name: "to", type: "address", variable: "to" },
+  //             { name: "value", type: "uint256", variable: "amount" },
+  //             { name: "name1", type: "string", value: "Tal" },
+  //             { name: "name2", type: "string", value: "Ori" },
+  //             { name: "b", type: "bytes", value: 0x12345678 },
+  //             { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
+  //             { name: "b2", type: "bytes", value: 0x122 },
+  //           ],
+  //           flow: Flow.OK_CONT_FAIL_JUMP,
+  //           jump: 1,
+  //           from: vault10.address,
+  //         },
+  //         {
+  //           value: 0,
+  //           to: multiplier.address,
+  //           method: "testCall3",
+  //           params: [
+  //             { name: "to", type: "bytes", value: 0x340 },
+  //             { name: "name1", type: "string", value: "Tal" },
+  //             { name: "value", type: "bytes", value: 0x123 },
+  //             {
+  //               name: "test",
+  //               type: "Test",
+  //               customType: true,
+  //               value: [
+  //                 { name: "value", type: "uint256", value: 125 },
+  //                 { name: "from", type: "address", value: vault12.address },
+  //                 { name: "name", type: "string", value: "Tal" },
+  //                 { name: "number", type: "bytes", value: 0x350 },
+  //               ],
+  //             },
+  //             { name: "from", type: "bytes", value: 0x355 },
+  //           ],
+  //           flow: Flow.OK_CONT_FAIL_REVERT,
+  //           from: vault10.address,
+  //         },
+
   describe("BatchMultiSigCall core lib", () => {
     let batchMultiSigCall;
 
     it("Should add call", async () => {
-      batchMultiSigCall = new BatchMultiSigCall(web3, fctController.address);
+      batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
       batchMultiSigCall.createVariable("to", accounts[12]);
       batchMultiSigCall.createVariable("amount", 0);
-
-      const testValue = [
-        { name: "value", type: "uint256", variable: "to" },
-        { name: "from", type: "address", value: vault12.address },
-        { name: "name", type: "string", value: "Tal" },
-        { name: "number", type: "bytes", variable: 0x350 },
-      ];
 
       const tx = {
         groupId: 1,
         nonce: 1,
         calls: [
-          {
-            value: 0,
-            to: kiro.address,
-            method: "transfer",
-            params: [
-              { name: "to", type: "address", value: accounts[12] },
-              { name: "token_amount", type: "uint256", value: "20" },
-            ],
-            from: vault10.address,
-          },
-          {
-            value: 0,
-            to: multiplier.address,
-            method: "testCall",
-            params: [
-              { name: "to", type: "address", variable: "to" },
-              { name: "value", type: "uint256", variable: "amount" },
-              { name: "name1", type: "string", value: "Tal" },
-              { name: "name2", type: "string", value: "Ori" },
-              { name: "b", type: "bytes", value: 0x12345678 },
-              { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
-              { name: "b2", type: "bytes", value: 0x122 },
-            ],
-            flow: Flow.OK_CONT_FAIL_JUMP,
-            jump: 1,
-            from: vault10.address,
-          },
+          // {
+          //   value: 0,
+          //   to: kiro.address,
+          //   method: "transfer",
+          //   params: [
+          //     { name: "to", type: "address", value: accounts[12] },
+          //     { name: "token_amount", type: "uint256", value: "20" },
+          //   ],
+          //   from: vault10.address,
+          // },
+
           {
             value: 0,
             to: multiplier.address,
-            method: "testCall3",
+            method: "testCall4",
             params: [
               { name: "to", type: "bytes", value: 0x340 },
-              { name: "name1", type: "string", value: "Tal" },
-              { name: "value", type: "bytes", value: 0x123 },
               {
-                name: "test",
-                type: "Test",
+                name: "struct2",
+                type: "Struct2[]",
                 customType: true,
                 value: [
-                  { name: "value", type: "uint256", value: 125 },
-                  { name: "from", type: "address", value: vault12.address },
-                  { name: "name", type: "string", value: "Tal" },
-                  { name: "number", type: "bytes", value: 0x350 },
+                  [
+                    { name: "name1", type: "string", value: "start1" },
+                    { name: "number1", type: "bytes", value: 0x123 },
+                    { name: "name2", type: "string", value: "end1" },
+                  ],
+                  [
+                    { name: "name1", type: "string", value: "start2" },
+                    { name: "number1", type: "bytes", value: 0x321 },
+                    { name: "name2", type: "string", value: "end3" },
+                  ],
+                  [
+                    { name: "name1", type: "string", value: "start3" },
+                    { name: "number1", type: "bytes", value: 0x130 },
+                    { name: "name2", type: "string", value: "end3" },
+                  ],
                 ],
               },
-              { name: "from", type: "bytes", value: 0x355 },
+              { name: "from", type: "string", value: "Ori" },
             ],
             flow: Flow.OK_CONT_FAIL_REVERT,
             from: vault10.address,
@@ -421,7 +449,7 @@ describe("batchMultiSigCall", () => {
         ],
       };
 
-      const FCT = await batchMultiSigCall.addBatchCall(tx);
+      const FCT = await batchMultiSigCall.create(tx);
       console.log(FCT.mcall);
     });
 
@@ -474,6 +502,7 @@ describe("batchMultiSigCall", () => {
       const variables = batchMultiSigCall.getVariablesAsBytes32();
 
       const signedCalls = calls.map((item) => {
+        console.log(item);
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));

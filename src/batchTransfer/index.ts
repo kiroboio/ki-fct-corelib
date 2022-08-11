@@ -50,6 +50,7 @@ const getBatchTransferData = async (
   const callDetails = getSessionIdDetails(call, defaultFlags, true);
   const typedData = {
     ...batchTransferTypedData,
+    // @ts-ignore
     domain: await getTypedDataDomain(web3, FactoryProxy, factoryProxyAddress),
     message: {
       token_address: call.token || ZERO_ADDRESS,

@@ -70,7 +70,7 @@ const getBatchCallData = async (
         { name: "method_interface", type: "string" },
       ],
     },
-    primaryType: "BatchCall_",
+    primaryType: "BatchCall_", // @ts-ignore
     domain: await getTypedDataDomain(web3, factoryProxy, factoryProxyAddress),
     message: {
       transaction: {

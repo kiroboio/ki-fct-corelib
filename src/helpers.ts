@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import Contract from "web3/eth/contract";
 import { AbiItem } from "web3-utils";
-import { TypedData, TypedDataUtils } from "ethers-eip712";
+import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
@@ -53,16 +53,20 @@ const typeValue = (param: Params) => {
   const TYPE_ARRAY = 3000;
   const TYPE_NATIVE = 4000;
 
-  // If param is custom struct
-  if (param.customType) {
-    const values = param.value as Params[];
+  // If type is an array
+  if (param.type.lastIndexOf("[") > 0) {
+    if (param.customType) {
+      console.log([TYPE_ARRAY, param.value.length, ...getTypesArray(param.value[0] as Params[])]);
 
-    return [
-      param.value.length,
-      ...values.reduce((acc, item) => {
-        return [...acc, ...typeValue(item)];
-      }, []),
-    ];
+      return [TYPE_ARRAY, param.value.length, ...getTypesArray(param.value[0] as Params[])];
+    }
+
+    const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
+
+    console.log(parameter);
+    const insideType = typeValue(parameter);
+
+    return [TYPE_ARRAY, ...insideType];
   }
 
   // If type is a string
@@ -75,12 +79,16 @@ const typeValue = (param: Params) => {
     return [TYPE_BYTES];
   }
 
-  // If type is an array
-  if (param.type.lastIndexOf("[") > 0) {
-    const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
-    const insideType = typeValue(parameter);
+  // If param is custom struct
+  if (param.customType) {
+    const values = param.value as Params[];
 
-    return [TYPE_ARRAY, ...insideType];
+    return [
+      param.value.length,
+      ...values.reduce((acc, item) => {
+        return [...acc, ...typeValue(item)];
+      }, []),
+    ];
   }
 
   // If all statements above are false, then type is a native type
@@ -92,6 +100,16 @@ export const getTypesArray = (params: Params[]) => {
   return params.reduce((acc, item) => {
     const data = typeValue(item);
     return [...acc, ...data];
+  }, []);
+};
+
+export const getTypedHashes = (params: Params[], typedData: { types: TypedDataTypes }) => {
+  return params.reduce((acc, item) => {
+    if (item.customType) {
+      const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
+      return [...acc, ethers.utils.hexlify(ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, type)))];
+    }
+    return acc;
   }, []);
 };
 
@@ -165,14 +183,21 @@ export const manageCallFlagsV2 = (flow: Flow | string, jump: number) => {
 // From method and params create tuple
 export const getMethodInterface = (call: Partial<MethodParamsInterface>) => {
   const params = call.params.map((item) => {
+    // If param is custom struct
     if (item.customType) {
-      const value = item.value as Params[];
-      return `(${value.map((val) => val.type).join(",")})`;
+      let value;
+      let isArray = false;
+      if (item.type.lastIndexOf("[") > 0) {
+        isArray = true;
+        value = item.value[0] as Params[];
+      } else {
+        value = item.value as Params[];
+      }
+      return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
     }
     return item.type;
   });
 
-  console.log(call.method, params);
   return `${call.method}(${params})`;
 };
 
@@ -183,14 +208,16 @@ export const getTypeHash = (typedData: TypedData) => {
 };
 
 // Get Typed Data domain for EIP712
-export const getTypedDataDomain = async (web3: Web3, factoryProxy: Contract, factoryProxyAddress: string) => {
-  const chainId = await factoryProxy.methods.CHAIN_ID().call();
+export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
+  const web3 = new Web3();
+
+  const chainId = await factoryProxy.CHAIN_ID();
   return {
-    name: await factoryProxy.methods.NAME().call(), // await factoryProxy.NAME(),
-    version: await factoryProxy.methods.VERSION().call(), // await factoryProxy.VERSION(),
-    chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")), // await web3.eth.getChainId(),
-    verifyingContract: factoryProxyAddress,
-    salt: await factoryProxy.methods.uid().call(),
+    name: await factoryProxy.NAME(),
+    version: await factoryProxy.VERSION(),
+    chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
+    verifyingContract: factoryProxy.address,
+    salt: await factoryProxy.uid(),
   };
 };
 

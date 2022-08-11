@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypesArray = exports.flows = void 0;
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypedHashes = exports.getTypesArray = exports.flows = void 0;
 const web3_1 = __importDefault(require("web3"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
@@ -57,15 +57,16 @@ const typeValue = (param) => {
     const TYPE_BYTES = 2000;
     const TYPE_ARRAY = 3000;
     const TYPE_NATIVE = 4000;
-    // If param is custom struct
-    if (param.customType) {
-        const values = param.value;
-        return [
-            param.value.length,
-            ...values.reduce((acc, item) => {
-                return [...acc, ...typeValue(item)];
-            }, []),
-        ];
+    // If type is an array
+    if (param.type.lastIndexOf("[") > 0) {
+        if (param.customType) {
+            console.log([TYPE_ARRAY, param.value.length, ...(0, exports.getTypesArray)(param.value[0])]);
+            return [TYPE_ARRAY, param.value.length, ...(0, exports.getTypesArray)(param.value[0])];
+        }
+        const parameter = Object.assign(Object.assign({}, param), { type: param.type.slice(0, param.type.lastIndexOf("[")) });
+        console.log(parameter);
+        const insideType = typeValue(parameter);
+        return [TYPE_ARRAY, ...insideType];
     }
     // If type is a string
     if (param.type === "string") {
@@ -75,11 +76,15 @@ const typeValue = (param) => {
     if (param.type === "bytes") {
         return [TYPE_BYTES];
     }
-    // If type is an array
-    if (param.type.lastIndexOf("[") > 0) {
-        const parameter = Object.assign(Object.assign({}, param), { type: param.type.slice(0, param.type.lastIndexOf("[")) });
-        const insideType = typeValue(parameter);
-        return [TYPE_ARRAY, ...insideType];
+    // If param is custom struct
+    if (param.customType) {
+        const values = param.value;
+        return [
+            param.value.length,
+            ...values.reduce((acc, item) => {
+                return [...acc, ...typeValue(item)];
+            }, []),
+        ];
     }
     // If all statements above are false, then type is a native type
     return [TYPE_NATIVE];
@@ -92,6 +97,16 @@ const getTypesArray = (params) => {
     }, []);
 };
 exports.getTypesArray = getTypesArray;
+const getTypedHashes = (params, typedData) => {
+    return params.reduce((acc, item) => {
+        if (item.customType) {
+            const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
+            return [...acc, ethers_1.ethers.utils.hexlify(ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, type)))];
+        }
+        return acc;
+    }, []);
+};
+exports.getTypedHashes = getTypedHashes;
 // Get session id with all the details
 const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
     const group = getGroupId(call.groupId);
@@ -156,13 +171,21 @@ exports.manageCallFlagsV2 = manageCallFlagsV2;
 // From method and params create tuple
 const getMethodInterface = (call) => {
     const params = call.params.map((item) => {
+        // If param is custom struct
         if (item.customType) {
-            const value = item.value;
-            return `(${value.map((val) => val.type).join(",")})`;
+            let value;
+            let isArray = false;
+            if (item.type.lastIndexOf("[") > 0) {
+                isArray = true;
+                value = item.value[0];
+            }
+            else {
+                value = item.value;
+            }
+            return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
         }
         return item.type;
     });
-    console.log(call.method, params);
     return `${call.method}(${params})`;
 };
 exports.getMethodInterface = getMethodInterface;
@@ -173,14 +196,15 @@ const getTypeHash = (typedData) => {
 };
 exports.getTypeHash = getTypeHash;
 // Get Typed Data domain for EIP712
-const getTypedDataDomain = (web3, factoryProxy, factoryProxyAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const chainId = yield factoryProxy.methods.CHAIN_ID().call();
+const getTypedDataDomain = (factoryProxy) => __awaiter(void 0, void 0, void 0, function* () {
+    const web3 = new web3_1.default();
+    const chainId = yield factoryProxy.CHAIN_ID();
     return {
-        name: yield factoryProxy.methods.NAME().call(),
-        version: yield factoryProxy.methods.VERSION().call(),
+        name: yield factoryProxy.NAME(),
+        version: yield factoryProxy.VERSION(),
         chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
-        verifyingContract: factoryProxyAddress,
-        salt: yield factoryProxy.methods.uid().call(),
+        verifyingContract: factoryProxy.address,
+        salt: yield factoryProxy.uid(),
     };
 });
 exports.getTypedDataDomain = getTypedDataDomain;

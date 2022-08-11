@@ -1,6 +1,7 @@
 import Web3 from "web3";
+import { ethers } from "ethers";
 import Contract from "web3/eth/contract";
-import { TypedData } from "ethers-eip712";
+import { TypedData, TypedDataTypes } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
@@ -30,7 +31,10 @@ export declare const flows: {
         value: string;
     };
 };
-export declare const getTypesArray: (params: Params[]) => any[];
+export declare const getTypesArray: (params: Params[]) => any;
+export declare const getTypedHashes: (params: Params[], typedData: {
+    types: TypedDataTypes;
+}) => any[];
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
@@ -53,7 +57,7 @@ export declare const manageCallFlags: (flags: Partial<MultiCallFlags>) => string
 export declare const manageCallFlagsV2: (flow: Flow | string, jump: number) => string;
 export declare const getMethodInterface: (call: Partial<MethodParamsInterface>) => string;
 export declare const getTypeHash: (typedData: TypedData) => string;
-export declare const getTypedDataDomain: (web3: Web3, factoryProxy: Contract, factoryProxyAddress: string) => Promise<{
+export declare const getTypedDataDomain: (factoryProxy: ethers.Contract) => Promise<{
     name: any;
     version: any;
     chainId: number;
