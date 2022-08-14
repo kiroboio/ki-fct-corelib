@@ -212,6 +212,7 @@ class BatchMultiSigCallNew {
                         this.typeHash = data.typeHash;
                         this.sessionId = data.sessionId;
                         this.mcall = data.mcall;
+                        return data;
                     });
                 },
                 replaceCall: function (tx, index) {
@@ -334,7 +335,7 @@ const verifyParams = (self, params, index, additionalTypes, typedHashes) => {
         }
     });
 };
-const getParams = (self, call, index) => {
+const getParams = (self, call) => {
     // If call has parameters
     if (call.params) {
         // If mcall is a validation call
@@ -390,7 +391,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes) => __awa
         let paramsData = {};
         if (call.params) {
             verifyParams(self, call.params, index, additionalTypes, typedHashes);
-            paramsData = { params: getParams(self, call, index) };
+            paramsData = { params: getParams(self, call) };
         }
         return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
                     from: web3.utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),

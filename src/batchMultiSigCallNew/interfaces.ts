@@ -50,4 +50,9 @@ export interface BatchMultiSigCallInterface {
   typedData: TypedData;
   inputData: BatchMultiSigCallInputInterface;
   mcall: MultiSigCallInterface[];
+  addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<BatchMultiSigCallInterface>;
+  replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<BatchMultiSigCallInterface>;
+  removeCall: (index: number) => Promise<BatchMultiSigCallInterface>;
+  getCall: (index: number) => BatchMultiSigCallInterface;
+  get length(): number;
 }

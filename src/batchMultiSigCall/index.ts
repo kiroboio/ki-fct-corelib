@@ -449,7 +449,7 @@ export class BatchMultiSigCall {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: BatchMultiSigCallInterface, index?: number) {
+      addCall: async function (tx: MultiSigCallInputInterface, index?: number) {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -469,7 +469,7 @@ export class BatchMultiSigCall {
 
         return data;
       },
-      replaceCall: async function (tx: BatchMultiSigCallInterface, index: number) {
+      replaceCall: async function (tx: MultiSigCallInputInterface, index: number) {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }

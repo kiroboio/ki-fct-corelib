@@ -202,7 +202,7 @@ export class BatchMultiSigCallNew {
     return data;
   }
 
-  private async getMultiSigCallData(batchCall: BatchMultiSigCallInputInterface) {
+  private async getMultiSigCallData(batchCall: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface> {
     const self = this;
     const sessionId = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
 
@@ -235,7 +235,7 @@ export class BatchMultiSigCallNew {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: BatchMultiSigCallInterface, index?: number) {
+      addCall: async function (tx: MultiSigCallInputInterface, index?: number) {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -250,8 +250,10 @@ export class BatchMultiSigCallNew {
         this.typeHash = data.typeHash;
         this.sessionId = data.sessionId;
         this.mcall = data.mcall;
+
+        return data;
       },
-      replaceCall: async function (tx: BatchMultiSigCallInterface, index: number) {
+      replaceCall: async function (tx: MultiSigCallInputInterface, index: number) {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
@@ -358,7 +360,13 @@ export class BatchMultiSigCallNew {
   }
 }
 
-const verifyParams = (self, params, index, additionalTypes, typedHashes) => {
+const verifyParams = (
+  self: BatchMultiSigCallNew,
+  params: Params[],
+  index: number,
+  additionalTypes: object,
+  typedHashes: string[]
+) => {
   params.forEach((param) => {
     if (param.variable) {
       param.value = self.getVariableFCValue(param.variable);
@@ -398,7 +406,7 @@ const verifyParams = (self, params, index, additionalTypes, typedHashes) => {
   });
 };
 
-const getParams = (self, call, index) => {
+const getParams = (self: BatchMultiSigCallNew, call: MultiSigCallInputInterface) => {
   // If call has parameters
   if (call.params) {
     // If mcall is a validation call
@@ -468,7 +476,7 @@ const createTypedData = async (
     let paramsData = {};
     if (call.params) {
       verifyParams(self, call.params, index, additionalTypes, typedHashes);
-      paramsData = { params: getParams(self, call, index) };
+      paramsData = { params: getParams(self, call) };
     }
 
     return {
