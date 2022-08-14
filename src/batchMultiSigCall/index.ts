@@ -3,7 +3,7 @@ import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
-import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 import {
   getSessionIdDetails,
   getTypedDataDomain,
@@ -31,7 +31,7 @@ const defaultFlags = {
 };
 
 export class BatchMultiSigCall {
-  calls: Array<BatchMultiSigCallInterface> = [];
+  calls: Array<BatchMSCall> = [];
   variables: Array<Array<string>> = [];
   provider: ethers.providers.JsonRpcProvider;
   FactoryProxy: ethers.Contract;
@@ -109,24 +109,24 @@ export class BatchMultiSigCall {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
-  addExistingBatchCall(batchCall: BatchMultiSigCallInterface) {
+  addExistingBatchCall(batchCall: BatchMSCall) {
     this.calls = [...this.calls, batchCall];
     return this.calls;
   }
 
-  public async create(tx: BatchMultiSigCallInputInterface) {
+  public async create(tx: BatchMSCallInput) {
     const data = await this.getMultiSigCallData(tx);
     this.calls = [...this.calls, data];
     return data;
   }
 
-  public async createMultiple(txs: BatchMultiSigCallInputInterface[]) {
+  public async createMultiple(txs: BatchMSCallInput[]) {
     const data = await Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
     this.calls = [...this.calls, ...data];
     return data;
   }
 
-  public async editBatchCall(index: number, tx: BatchMultiSigCallInputInterface) {
+  public async editBatchCall(index: number, tx: BatchMSCallInput) {
     const data = await this.getMultiSigCallData(tx);
 
     this.calls[index] = data;
@@ -150,7 +150,7 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  public async addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface) {
+  public async addMultiCallTx(indexOfBatch: number, tx: MSCallInput) {
     const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
@@ -162,7 +162,7 @@ export class BatchMultiSigCall {
     return data;
   }
 
-  public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {
+  public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput) {
     const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
@@ -192,7 +192,7 @@ export class BatchMultiSigCall {
     return data;
   }
 
-  private async getMultiSigCallData(batchCall: BatchMultiSigCallInputInterface) {
+  private async getMultiSigCallData(batchCall: BatchMSCallInput) {
     const self = this;
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
@@ -445,7 +445,7 @@ export class BatchMultiSigCall {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: MultiSigCallInputInterface, index?: number) {
+      addCall: async function (tx: MSCallInput, index?: number) {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -465,7 +465,7 @@ export class BatchMultiSigCall {
 
         return data;
       },
-      replaceCall: async function (tx: MultiSigCallInputInterface, index: number) {
+      replaceCall: async function (tx: MSCallInput, index: number) {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }

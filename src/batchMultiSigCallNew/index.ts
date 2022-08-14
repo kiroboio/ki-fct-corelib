@@ -209,7 +209,6 @@ export class BatchMultiSigCallNew {
       data: handleData(call),
       types: handleTypes(call),
       typedHashes: handleTypedHashes(call, typedData),
-      // ...getEncodedMulticallData(typedData, index),
     }));
 
     return {

@@ -184,7 +184,6 @@ class BatchMultiSigCallNew {
                     data: (0, helpers_2.handleData)(call),
                     types: (0, helpers_2.handleTypes)(call),
                     typedHashes: (0, helpers_2.handleTypedHashes)(call, typedData),
-                    // ...getEncodedMulticallData(typedData, index),
                 });
             });
             return {

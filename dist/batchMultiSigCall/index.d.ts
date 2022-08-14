@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { DecodeTx } from "../interfaces";
-import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 export declare class BatchMultiSigCall {
-    calls: Array<BatchMultiSigCallInterface>;
+    calls: Array<BatchMSCall>;
     variables: Array<Array<string>>;
     provider: ethers.providers.JsonRpcProvider;
     FactoryProxy: ethers.Contract;
@@ -15,8 +15,8 @@ export declare class BatchMultiSigCall {
     private getVariableIndex;
     private getVariableFCValue;
     refTxValue(index: number, bytes?: boolean): string;
-    addExistingBatchCall(batchCall: BatchMultiSigCallInterface): BatchMultiSigCallInterface[];
-    create(tx: BatchMultiSigCallInputInterface): Promise<{
+    addExistingBatchCall(batchCall: BatchMSCall): BatchMSCall[];
+    create(tx: BatchMSCallInput): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -58,7 +58,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -74,13 +74,13 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
     }>;
-    createMultiple(txs: BatchMultiSigCallInputInterface[]): Promise<{
+    createMultiple(txs: BatchMSCallInput[]): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -122,7 +122,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -138,13 +138,13 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
     }[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<{
+    editBatchCall(index: number, tx: BatchMSCallInput): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -186,7 +186,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -202,14 +202,14 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
     }>;
-    removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
-    addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface): Promise<{
+    removeBatchCall(index: number): Promise<BatchMSCall[]>;
+    addMultiCallTx(indexOfBatch: number, tx: MSCallInput): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -251,7 +251,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -267,13 +267,13 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
     }>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<{
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput): Promise<{
         typedData: {
             types: {
                 EIP712Domain: {
@@ -315,7 +315,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -331,8 +331,8 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
@@ -379,7 +379,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         encodedMessage: string;
         encodedLimits: string;
-        inputData: BatchMultiSigCallInputInterface;
+        inputData: BatchMSCallInput;
         mcall: {
             encodedMessage: string;
             encodedDetails: string;
@@ -395,8 +395,8 @@ export declare class BatchMultiSigCall {
             types: any;
             typedHashes: any[];
         }[];
-        addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<any>;
-        replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<any>;
+        addCall: (tx: MSCallInput, index?: number) => Promise<any>;
+        replaceCall: (tx: MSCallInput, index: number) => Promise<any>;
         removeCall: (index: number) => Promise<any>;
         getCall: (index: number) => any;
         readonly length: any;
