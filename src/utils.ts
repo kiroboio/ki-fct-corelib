@@ -1,6 +1,5 @@
-import Web3 from "web3";
+// import Web3 from "web3";
 import ganache from "ganache";
-import { getTransaction } from "./helpers";
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
@@ -28,12 +27,12 @@ interface transactionValidatorInterface {
   factoryProxyAddress: string;
 }
 
-const web3 = new Web3();
+// const web3 = new Web3();
 
-function verifyMessage(message: string, signature: string, address: string) {
-  const messageAddress = web3.eth.accounts.recover(message, signature);
-  return messageAddress.toLowerCase() === address.toLowerCase();
-}
+// function verifyMessage(message: string, signature: string, address: string) {
+//   const messageAddress = web3.eth.accounts.recover(message, signature);
+//   return messageAddress.toLowerCase() === address.toLowerCase();
+// }
 
 function decodeSessionId(sessionId: string) {
   sessionId = sessionId.replace("0x", "");
@@ -49,66 +48,68 @@ function decodeSessionId(sessionId: string) {
   };
 }
 
-const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
-  if (!transactionValidatorInterface.rpcUrl) {
-    throw new Error("rpcUrl is required");
-  }
+// Has to be implemented with ETHERS not WEB3
 
-  if (!transactionValidatorInterface.activatorPrivateKey) {
-    throw new Error("activatorPrivateKey is required");
-  }
+// const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
+//   if (!transactionValidatorInterface.rpcUrl) {
+//     throw new Error("rpcUrl is required");
+//   }
 
-  if (!transactionValidatorInterface.factoryProxyAddress) {
-    throw new Error("factoryProxyAddress is required");
-  }
+//   if (!transactionValidatorInterface.activatorPrivateKey) {
+//     throw new Error("activatorPrivateKey is required");
+//   }
 
-  const {
-    calls,
-    method,
-    groupId,
-    rpcUrl,
-    activatorPrivateKey: activator,
-    factoryProxyAddress,
-  } = transactionValidatorInterface;
+//   if (!transactionValidatorInterface.factoryProxyAddress) {
+//     throw new Error("factoryProxyAddress is required");
+//   }
 
-  // Creates a forked ganache instance from indicated chainId's rpcUrl
-  const web3 = new Web3(
-    ganache.provider({
-      fork: {
-        url: rpcUrl,
-      },
-    }) as any
-  );
+//   const {
+//     calls,
+//     method,
+//     groupId,
+//     rpcUrl,
+//     activatorPrivateKey: activator,
+//     factoryProxyAddress,
+//   } = transactionValidatorInterface;
 
-  const transaction = getTransaction(
-    web3,
-    factoryProxyAddress,
-    `${method}_`,
-    transactionValidatorInterface.silentRevert
-      ? [calls, groupId, transactionValidatorInterface.silentRevert]
-      : [calls, groupId]
-  );
+//   // Creates a forked ganache instance from indicated chainId's rpcUrl
+//   const web3 = new Web3(
+//     ganache.provider({
+//       fork: {
+//         url: rpcUrl,
+//       },
+//     }) as any
+//   );
 
-  // Create account from activator private key
-  const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;
+//   const transaction = getTransaction(
+//     web3,
+//     factoryProxyAddress,
+//     `${method}_`,
+//     transactionValidatorInterface.silentRevert
+//       ? [calls, groupId, transactionValidatorInterface.silentRevert]
+//       : [calls, groupId]
+//   );
 
-  const options = {
-    to: factoryProxyAddress,
-    data: transaction.encodeABI(),
-    gas: await transaction.estimateGas({ from: account }),
-  };
+//   // Create account from activator private key
+//   const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;
 
-  // Activator signs the transaction
-  const signed = await web3.eth.accounts.signTransaction(options, activator as string);
+//   const options = {
+//     to: factoryProxyAddress,
+//     data: transaction.encodeABI(),
+//     gas: await transaction.estimateGas({ from: account }),
+//   };
 
-  // Execute the transaction in forked ganache instance
-  const tx = await web3.eth.sendSignedTransaction(signed.rawTransaction as string);
+//   // Activator signs the transaction
+//   const signed = await web3.eth.accounts.signTransaction(options, activator as string);
 
-  return {
-    isValid: true,
-    gasUsed: tx.gasUsed,
-  };
-};
+//   // Execute the transaction in forked ganache instance
+//   const tx = await web3.eth.sendSignedTransaction(signed.rawTransaction as string);
+
+//   return {
+//     isValid: true,
+//     gasUsed: tx.gasUsed,
+//   };
+// };
 
 const getEncodedData = (types: string[], values: string[]) => {
   const typedData = {
@@ -142,4 +143,4 @@ const getEncodedData = (types: string[], values: string[]) => {
   };
 };
 
-export default { verifyMessage, decodeSessionId, transactionValidator, getEncodedData };
+export default { decodeSessionId, getEncodedData };

@@ -1,5 +1,6 @@
+import { BatchMultiSigCallNew } from ".";
 import { MultiSigCallInputInterface } from "./interfaces";
-export declare const handleTo: (self: any, call: MultiSigCallInputInterface) => any;
+export declare const handleTo: (self: BatchMultiSigCallNew, call: MultiSigCallInputInterface) => string;
 export declare const handleMethodInterface: (call: MultiSigCallInputInterface) => string;
 export declare const handleFunctionSignature: (call: MultiSigCallInputInterface) => string;
 export declare const handleEnsHash: (call: MultiSigCallInputInterface) => string;

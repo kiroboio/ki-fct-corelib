@@ -1,12 +1,10 @@
-import Web3 from "web3";
+// import Web3 from "web3";
 import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import Contract from "web3/eth/contract";
-import { AbiItem } from "web3-utils";
 import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
-import FactoryProxyContractABI from "./abi/factoryProxy_.abi.json";
 import ValidatorABI from "./abi/validator.abi.json";
 import { MultiSigCallInputInterface } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
@@ -209,13 +207,10 @@ export const getTypeHash = (typedData: TypedData) => {
 
 // Get Typed Data domain for EIP712
 export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
-  const web3 = new Web3();
-
-  const chainId = await factoryProxy.CHAIN_ID();
   return {
     name: await factoryProxy.NAME(),
     version: await factoryProxy.VERSION(),
-    chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
+    chainId: await factoryProxy.CHAIN_ID(),
     verifyingContract: factoryProxy.address,
     salt: await factoryProxy.uid(),
   };
@@ -258,17 +253,11 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
   if (!call.method) return "0x";
 
   if (withFunction) {
-    const web3 = new Web3();
-    return web3.eth.abi.encodeFunctionCall(
-      {
-        name: call.method,
-        type: "function",
-        inputs: call.params.map((param) => ({
-          type: param.type,
-          name: param.name,
-        })),
-      },
-      call.params.map((param) => param.value as string)
+    const ABI = [`function ${call.method}(${call.params.map((item) => item.type).join(",")})`];
+    const iface = new ethers.utils.Interface(ABI);
+    return iface.encodeFunctionData(
+      call.method,
+      call.params.map((item) => item.value)
     );
   }
 
@@ -324,17 +313,6 @@ export const getParamsOffset = () => {
 //
 //  END OF METHOD HELPERS FOR FCTs
 //
-
-export const getFactoryProxyContract = (web3: Web3, proxyContractAddress: string) => {
-  const proxyContract = new web3.eth.Contract(FactoryProxyContractABI as AbiItem[], proxyContractAddress);
-  return proxyContract;
-};
-
-// Returns web3 transaction object
-export const getTransaction = (web3: Web3, address: string, method: string, params: any[]) => {
-  const factoryProxyContract = getFactoryProxyContract(web3, address);
-  return factoryProxyContract.methods[method](...params);
-};
 
 //
 // VALIDATOR FUNCTION HELPERS

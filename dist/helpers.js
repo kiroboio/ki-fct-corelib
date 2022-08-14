@@ -12,12 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getTransaction = exports.getFactoryProxyContract = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypedHashes = exports.getTypesArray = exports.flows = void 0;
-const web3_1 = __importDefault(require("web3"));
+exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypedHashes = exports.getTypesArray = exports.flows = void 0;
+// import Web3 from "web3";
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const ethers_eip712_1 = require("ethers-eip712");
-const factoryProxy__abi_json_1 = __importDefault(require("./abi/factoryProxy_.abi.json"));
 const validator_abi_json_1 = __importDefault(require("./abi/validator.abi.json"));
 exports.flows = {
     OK_CONT_FAIL_REVERT: {
@@ -197,12 +196,10 @@ const getTypeHash = (typedData) => {
 exports.getTypeHash = getTypeHash;
 // Get Typed Data domain for EIP712
 const getTypedDataDomain = (factoryProxy) => __awaiter(void 0, void 0, void 0, function* () {
-    const web3 = new web3_1.default();
-    const chainId = yield factoryProxy.CHAIN_ID();
     return {
         name: yield factoryProxy.NAME(),
         version: yield factoryProxy.VERSION(),
-        chainId: Number("0x" + web3.utils.toBN(chainId).toString("hex")),
+        chainId: yield factoryProxy.CHAIN_ID(),
         verifyingContract: factoryProxy.address,
         salt: yield factoryProxy.uid(),
     };
@@ -234,15 +231,9 @@ const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";
     if (withFunction) {
-        const web3 = new web3_1.default();
-        return web3.eth.abi.encodeFunctionCall({
-            name: call.method,
-            type: "function",
-            inputs: call.params.map((param) => ({
-                type: param.type,
-                name: param.name,
-            })),
-        }, call.params.map((param) => param.value));
+        const ABI = [`function ${call.method}(${call.params.map((item) => item.type).join(",")})`];
+        const iface = new ethers_1.ethers.utils.Interface(ABI);
+        return iface.encodeFunctionData(call.method, call.params.map((item) => item.value));
     }
     const types = call.params.map((param) => {
         if (param.customType) {
@@ -290,17 +281,6 @@ exports.getParamsOffset = getParamsOffset;
 //
 //  END OF METHOD HELPERS FOR FCTs
 //
-const getFactoryProxyContract = (web3, proxyContractAddress) => {
-    const proxyContract = new web3.eth.Contract(factoryProxy__abi_json_1.default, proxyContractAddress);
-    return proxyContract;
-};
-exports.getFactoryProxyContract = getFactoryProxyContract;
-// Returns web3 transaction object
-const getTransaction = (web3, address, method, params) => {
-    const factoryProxyContract = (0, exports.getFactoryProxyContract)(web3, address);
-    return factoryProxyContract.methods[method](...params);
-};
-exports.getTransaction = getTransaction;
 //
 // VALIDATOR FUNCTION HELPERS
 //

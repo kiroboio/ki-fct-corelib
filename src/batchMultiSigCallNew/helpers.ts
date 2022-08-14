@@ -1,4 +1,4 @@
-import Web3 from "web3";
+import { BatchMultiSigCallNew } from ".";
 import {
   getEncodedMethodParams,
   getMethodInterface,
@@ -8,19 +8,18 @@ import {
   getValidatorMethodInterface,
 } from "../helpers";
 import { MultiSigCallInputInterface } from "./interfaces";
-
-const web3 = new Web3();
+import { utils } from "ethers";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
-export const handleTo = (self, call: MultiSigCallInputInterface) => {
+export const handleTo = (self: BatchMultiSigCallNew, call: MultiSigCallInputInterface) => {
   // If call is a validator method, return validator address as to address
   if (call.validator) {
-    return call.validator;
+    return call.validator.validatorAddress;
   }
 
   // Check if to is a valid address
-  if (web3.utils.isAddress(call.to)) {
+  if (utils.isAddress(call.to)) {
     return call.to;
   }
 
@@ -28,7 +27,7 @@ export const handleTo = (self, call: MultiSigCallInputInterface) => {
   return self.getVariableFCValue(call.to);
 };
 
-export const handleMethodInterface = (call: MultiSigCallInputInterface) => {
+export const handleMethodInterface = (call: MultiSigCallInputInterface): string => {
   // If call is not a ETH transfer
   if (call.method) {
     // If call is a validation call
@@ -47,14 +46,14 @@ export const handleMethodInterface = (call: MultiSigCallInputInterface) => {
 export const handleFunctionSignature = (call: MultiSigCallInputInterface) => {
   if (call.method) {
     const value = call.validator ? getValidatorMethodInterface(call.validator) : getMethodInterface(call);
-    return web3.utils.sha3(value);
+    return utils.id(value);
   }
   return nullValue;
 };
 
 export const handleEnsHash = (call: MultiSigCallInputInterface) => {
   if (call.toEnsHash) {
-    return web3.utils.sha3(call.toEnsHash);
+    return utils.id(call.toEnsHash);
   }
   return nullValue;
 };

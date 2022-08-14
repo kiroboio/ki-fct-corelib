@@ -40,7 +40,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };
@@ -104,7 +104,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };
@@ -168,7 +168,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };
@@ -233,7 +233,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };
@@ -297,7 +297,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };
@@ -361,7 +361,7 @@ export declare class BatchMultiSigCall {
             domain: {
                 name: any;
                 version: any;
-                chainId: number;
+                chainId: any;
                 verifyingContract: string;
                 salt: any;
             };

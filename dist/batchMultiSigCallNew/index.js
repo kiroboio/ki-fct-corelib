@@ -16,11 +16,9 @@ exports.BatchMultiSigCallNew = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
-const web3_1 = __importDefault(require("web3"));
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
-const web3 = new web3_1.default();
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -67,10 +65,10 @@ class BatchMultiSigCallNew {
             if (value === undefined) {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
-            if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
-                return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+            if (isNaN(Number(value)) || ethers_1.utils.isAddress(value)) {
+                return `0x${String(value).padStart(64, "0")}`;
             }
-            return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
+            return `0x${Number(value).toString(16).padStart(64, "0")}`;
         });
     }
     getVariableIndex(variableId, throwError = true) {
@@ -178,7 +176,7 @@ class BatchMultiSigCallNew {
                     typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
                     functionSignature: (0, helpers_2.handleFunctionSignature)(call),
                     value: call.value,
-                    from: web3.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+                    from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
                     gasLimit: (_a = call.gasLimit) !== null && _a !== void 0 ? _a : 0,
                     flags: (0, helpers_1.manageCallFlagsV2)(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
                     to: (0, helpers_2.handleTo)(self, call),
@@ -394,7 +392,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes) => __awa
             paramsData = { params: getParams(self, call) };
         }
         return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
-                    from: web3.utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
+                    from: ethers_1.utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
                     to: (0, helpers_2.handleTo)(self, call),
                     to_ens: call.toEnsHash || "",
                     eth_value: call.value,

@@ -16,10 +16,8 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
-const web3_1 = __importDefault(require("web3"));
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
-const web3 = new web3_1.default();
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -66,10 +64,10 @@ class BatchMultiSigCall {
             if (value === undefined) {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
-            if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
-                return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+            if (isNaN(Number(value)) || ethers_1.utils.isAddress(value)) {
+                return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
             }
-            return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
+            return `0x${Number(value).toString(16).padStart(64, "0")}`;
         });
     }
     getVariableIndex(variableId, throwError = true) {
@@ -258,10 +256,10 @@ class BatchMultiSigCall {
                     return {};
                 };
                 return Object.assign(Object.assign({}, acc), { [`transaction_${index + 1}`]: Object.assign({ details: {
-                            from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+                            from: ethers_1.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
                             call_address: item.validator
                                 ? item.validator.validatorAddress
-                                : web3.utils.isAddress(item.to)
+                                : ethers_1.utils.isAddress(item.to)
                                     ? item.to
                                     : this.getVariableFCValue(item.to),
                             call_ens: item.toEnsHash || "",
@@ -328,13 +326,13 @@ class BatchMultiSigCall {
                 };
             };
             const mcall = batchCall.calls.map((item, index) => (Object.assign({ typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)), functionSignature: item.method
-                    ? web3.utils.sha3(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
-                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
+                    ? ethers_1.utils.id(item.validator ? (0, helpers_1.getValidatorMethodInterface)(item.validator) : (0, helpers_1.getMethodInterface)(item))
+                    : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", value: item.value, from: ethers_1.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from), gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit), flags: (0, helpers_1.manageCallFlagsV2)(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0), to: item.validator
                     ? item.validator.validatorAddress
-                    : web3.utils.isAddress(item.to)
+                    : ethers_1.utils.isAddress(item.to)
                         ? item.to
                         : this.getVariableFCValue(item.to), ensHash: item.toEnsHash
-                    ? web3.utils.sha3(item.toEnsHash)
+                    ? ethers_1.utils.id(item.toEnsHash)
                     : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", data: item.validator ? (0, helpers_1.getValidatorData)(item, true) : (0, helpers_1.getEncodedMethodParams)(item), types: item.params ? (0, helpers_1.getTypesArray)(item.params) : [], typedHashes: item.params ? (0, helpers_1.getTypedHashes)(item.params, typedData) : [] }, getEncodedMulticallData(index))));
             return {
                 typedData,

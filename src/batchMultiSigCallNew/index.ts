@@ -1,24 +1,10 @@
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import Web3 from "web3";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
-import {
-  getSessionIdDetails,
-  getTypedDataDomain,
-  getEncodedMethodParams,
-  getMethodInterface,
-  generateTxType,
-  createValidatorTxData,
-  getValidatorMethodInterface,
-  getValidatorData,
-  manageCallFlagsV2,
-  flows,
-  getTypesArray,
-  getTypedHashes,
-} from "../helpers";
+import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
   handleData,
   handleEnsHash,
@@ -28,8 +14,6 @@ import {
   handleTypedHashes,
   handleTypes,
 } from "./helpers";
-
-const web3 = new Web3();
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -89,11 +73,11 @@ export class BatchMultiSigCallNew {
         throw new Error(`Variable ${item[0]} doesn't have a value`);
       }
 
-      if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
-        return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+      if (isNaN(Number(value)) || utils.isAddress(value)) {
+        return `0x${String(value).padStart(64, "0")}`;
       }
 
-      return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
+      return `0x${Number(value).toString(16).padStart(64, "0")}`;
     });
   }
 
@@ -217,7 +201,7 @@ export class BatchMultiSigCallNew {
       ),
       functionSignature: handleFunctionSignature(call),
       value: call.value,
-      from: web3.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+      from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
       gasLimit: call.gasLimit ?? 0,
       flags: manageCallFlagsV2(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
       to: handleTo(self, call),
@@ -483,7 +467,7 @@ const createTypedData = async (
       ...acc,
       [`transaction${index + 1}`]: {
         call: {
-          from: web3.utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
+          from: utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
           to: handleTo(self, call),
           to_ens: call.toEnsHash || "",
           eth_value: call.value,

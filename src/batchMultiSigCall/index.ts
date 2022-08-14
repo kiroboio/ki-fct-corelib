@@ -1,9 +1,6 @@
-import util from "util";
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import Web3 from "web3";
-import Contract from "web3/eth/contract";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
 import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
@@ -21,8 +18,6 @@ import {
   getTypesArray,
   getTypedHashes,
 } from "../helpers";
-
-const web3 = new Web3();
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -82,11 +77,11 @@ export class BatchMultiSigCall {
         throw new Error(`Variable ${item[0]} doesn't have a value`);
       }
 
-      if (isNaN(Number(value)) || web3.utils.isAddress(value)) {
-        return `0x${web3.utils.padLeft(String(value).replace("0x", ""), 64)}`;
+      if (isNaN(Number(value)) || utils.isAddress(value)) {
+        return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
       }
 
-      return `0x${web3.utils.padLeft(Number(value).toString(16), 64)}`;
+      return `0x${Number(value).toString(16).padStart(64, "0")}`;
     });
   }
 
@@ -312,10 +307,10 @@ export class BatchMultiSigCall {
         ...acc,
         [`transaction_${index + 1}`]: {
           details: {
-            from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+            from: utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
             call_address: item.validator
               ? item.validator.validatorAddress
-              : web3.utils.isAddress(item.to)
+              : utils.isAddress(item.to)
               ? item.to
               : this.getVariableFCValue(item.to),
             call_ens: item.toEnsHash || "",
@@ -419,20 +414,21 @@ export class BatchMultiSigCall {
       typeHash: ethers.utils.hexlify(
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)
       ),
+
       functionSignature: item.method
-        ? web3.utils.sha3(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
+        ? utils.id(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       value: item.value,
-      from: web3.utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
+      from: utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
       gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
       flags: manageCallFlagsV2(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0),
       to: item.validator
         ? item.validator.validatorAddress
-        : web3.utils.isAddress(item.to)
+        : utils.isAddress(item.to)
         ? item.to
         : this.getVariableFCValue(item.to),
       ensHash: item.toEnsHash
-        ? web3.utils.sha3(item.toEnsHash)
+        ? utils.id(item.toEnsHash)
         : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
       types: item.params ? getTypesArray(item.params) : [],
