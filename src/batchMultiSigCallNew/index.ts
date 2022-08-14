@@ -3,7 +3,7 @@ import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
-import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
   handleData,
@@ -27,7 +27,7 @@ const defaultFlags = {
 };
 
 export class BatchMultiSigCallNew {
-  calls: Array<BatchMultiSigCallInterface> = [];
+  calls: Array<BatchMSCall> = [];
   variables: Array<Array<string>> = [];
   provider: ethers.providers.JsonRpcProvider;
   FactoryProxy: ethers.Contract;
@@ -105,24 +105,24 @@ export class BatchMultiSigCallNew {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
-  addExistingBatchCall(batchCall: BatchMultiSigCallInterface) {
+  addExistingBatchCall(batchCall: BatchMSCall) {
     this.calls = [...this.calls, batchCall];
     return this.calls;
   }
 
-  public async create(tx: BatchMultiSigCallInputInterface) {
+  public async create(tx: BatchMSCallInput) {
     const data = await this.getMultiSigCallData(tx);
     this.calls = [...this.calls, data];
     return data;
   }
 
-  public async createMultiple(txs: BatchMultiSigCallInputInterface[]) {
+  public async createMultiple(txs: BatchMSCallInput[]) {
     const data = await Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
     this.calls = [...this.calls, ...data];
     return data;
   }
 
-  public async editBatchCall(index: number, tx: BatchMultiSigCallInputInterface) {
+  public async editBatchCall(index: number, tx: BatchMSCallInput) {
     const data = await this.getMultiSigCallData(tx);
 
     this.calls[index] = data;
@@ -144,7 +144,7 @@ export class BatchMultiSigCallNew {
     return this.calls;
   }
 
-  public async addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface) {
+  public async addMultiCallTx(indexOfBatch: number, tx: MSCallInput) {
     const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
@@ -156,7 +156,7 @@ export class BatchMultiSigCallNew {
     return data;
   }
 
-  public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface) {
+  public async editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput) {
     const batch = this.calls[indexOfBatch].inputData;
     if (!batch) {
       throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
@@ -186,7 +186,7 @@ export class BatchMultiSigCallNew {
     return data;
   }
 
-  private async getMultiSigCallData(batchCall: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface> {
+  private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
     const self = this;
     const sessionId = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
 
@@ -218,7 +218,7 @@ export class BatchMultiSigCallNew {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: MultiSigCallInputInterface, index?: number) {
+      addCall: async function (tx: MSCallInput, index?: number) {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -236,7 +236,7 @@ export class BatchMultiSigCallNew {
 
         return data;
       },
-      replaceCall: async function (tx: MultiSigCallInputInterface, index: number) {
+      replaceCall: async function (tx: MSCallInput, index: number) {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
@@ -389,7 +389,7 @@ const verifyParams = (
   });
 };
 
-const getParams = (self: BatchMultiSigCallNew, call: MultiSigCallInputInterface) => {
+const getParams = (self: BatchMultiSigCallNew, call: MSCallInput) => {
   // If call has parameters
   if (call.params) {
     // If mcall is a validation call
@@ -447,14 +447,14 @@ const getParams = (self: BatchMultiSigCallNew, call: MultiSigCallInputInterface)
 
 const createTypedData = async (
   self: BatchMultiSigCallNew,
-  batchCall: BatchMultiSigCallInputInterface,
+  batchCall: BatchMSCallInput,
   additionalTypes: object,
   typedHashes: string[]
 ) => {
   const callDetails = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
 
   // Creates messages from multiCalls array for EIP712 sign
-  const typedDataMessage = batchCall.calls.reduce((acc: object, call: MultiSigCallInputInterface, index: number) => {
+  const typedDataMessage = batchCall.calls.reduce((acc: object, call: MSCallInput, index: number) => {
     // Update params if variables (FC) or references (FD) are used
     let paramsData = {};
     if (call.params) {

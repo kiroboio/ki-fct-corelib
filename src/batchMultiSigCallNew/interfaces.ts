@@ -2,7 +2,7 @@ import { TypedData } from "ethers-eip712";
 import { Flow } from "../constants";
 import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
 
-export interface MultiSigCallInputInterface extends Omit<MultiCallBase, "flags"> {
+export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   value: string;
   to: string;
   toEnsHash?: string;
@@ -14,7 +14,7 @@ export interface MultiSigCallInputInterface extends Omit<MultiCallBase, "flags">
   viewOnly?: boolean;
 }
 
-export interface BatchMultiSigCallInputInterface {
+export interface BatchMSCallInput {
   name?: string;
   validFrom?: number;
   expiresAt?: number;
@@ -29,10 +29,10 @@ export interface BatchMultiSigCallInputInterface {
     externalSigners: string[];
     minimumApprovals: number;
   };
-  calls: MultiSigCallInputInterface[];
+  calls: MSCallInput[];
 }
 
-export interface MultiSigCallInterface {
+export interface MSCall {
   typeHash: string;
   functionSignature: string;
   value: string;
@@ -44,15 +44,15 @@ export interface MultiSigCallInterface {
   data: string;
 }
 
-export interface BatchMultiSigCallInterface {
+export interface BatchMSCall {
   typeHash: string;
   sessionId: string;
   typedData: TypedData;
-  inputData: BatchMultiSigCallInputInterface;
-  mcall: MultiSigCallInterface[];
-  addCall: (tx: MultiSigCallInputInterface, index?: number) => Promise<BatchMultiSigCallInterface>;
-  replaceCall: (tx: MultiSigCallInputInterface, index: number) => Promise<BatchMultiSigCallInterface>;
-  removeCall: (index: number) => Promise<BatchMultiSigCallInterface>;
-  getCall: (index: number) => BatchMultiSigCallInterface;
+  inputData: BatchMSCallInput;
+  mcall: MSCall[];
+  addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall>;
+  replaceCall: (tx: MSCallInput, index: number) => Promise<BatchMSCall>;
+  removeCall: (index: number) => Promise<BatchMSCall>;
+  getCall: (index: number) => BatchMSCall;
   get length(): number;
 }

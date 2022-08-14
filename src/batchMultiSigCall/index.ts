@@ -192,7 +192,7 @@ export class BatchMultiSigCall {
     return data;
   }
 
-  private async getMultiSigCallData(batchCall: BatchMSCallInput) {
+  private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
     const self = this;
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
