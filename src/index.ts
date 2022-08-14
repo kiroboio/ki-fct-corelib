@@ -6,6 +6,7 @@ import { BatchCall } from "./batchCall";
 import { BatchMultiCall } from "./batchMultiCall";
 import { BatchMultiSigCallPacked } from "./batchMultiSigCallPacked";
 import { BatchMultiSigCall } from "./batchMultiSigCall";
+import { BatchMultiSigCallNew } from "./batchMultiSigCallNew";
 import utils from "./utils";
 import constants from "./constants";
 
@@ -18,6 +19,7 @@ export {
   BatchCall,
   BatchMultiSigCallPacked,
   BatchMultiSigCall,
+  BatchMultiSigCallNew,
   utils,
   constants,
 };

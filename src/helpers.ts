@@ -419,3 +419,5 @@ export const createValidatorTxData = (call: Partial<MultiSigCallInputInterface>)
     ),
   };
 };
+
+///

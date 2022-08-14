@@ -360,3 +360,4 @@ const createValidatorTxData = (call) => {
     return Object.assign(Object.assign(Object.assign({}, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
 };
 exports.createValidatorTxData = createValidatorTxData;
+///
