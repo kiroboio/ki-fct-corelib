@@ -15,6 +15,11 @@ export interface MultiSigCallInputInterface extends Omit<MultiCallBase, "flags">
 
 export interface BatchMultiSigCallInputInterface extends BatchCallBase {
   calls: MultiSigCallInputInterface[];
+  addCall: (tx: BatchMultiSigCallInputInterface) => Promise<BatchMultiSigCallInputInterface>;
+  replaceCall: (tx: BatchMultiSigCallInputInterface, index: number) => Promise<BatchMultiSigCallInputInterface>;
+  removeCall: (index: number) => Promise<BatchMultiSigCallInputInterface>;
+  getCall: (index: number) => BatchMultiSigCallInputInterface;
+  get length(): number;
 }
 
 export interface MultiSigCallInterface {

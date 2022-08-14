@@ -1,6 +1,5 @@
 const util = require("util");
 const { assert } = require("chai");
-const { TypedDataUtils } = require("ethers-eip712");
 const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCallNew } = require("../dist");
 const { Flow } = require("../dist/constants");

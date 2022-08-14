@@ -466,6 +466,8 @@ export class BatchMultiSigCall {
         this.encodedMessage = data.encodedMessage;
         this.encodedLimits = data.encodedLimits;
         this.mcall = data.mcall;
+
+        return data;
       },
       replaceCall: async function (tx: BatchMultiSigCallInterface, index: number) {
         if (index >= this.inputData.calls.length) {

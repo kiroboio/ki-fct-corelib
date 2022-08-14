@@ -402,50 +402,50 @@ describe("batchMultiSigCall", () => {
         groupId: 1,
         nonce: 1,
         calls: [
-          // {
-          //   value: 0,
-          //   to: kiro.address,
-          //   method: "transfer",
-          //   params: [
-          //     { name: "to", type: "address", value: accounts[12] },
-          //     { name: "token_amount", type: "uint256", value: "20" },
-          //   ],
-          //   from: vault10.address,
-          // },
-
           {
             value: 0,
-            to: multiplier.address,
-            method: "testCall4",
+            to: kiro.address,
+            method: "transfer",
             params: [
-              { name: "to", type: "bytes", value: 0x340 },
-              {
-                name: "struct2",
-                type: "Struct2[]",
-                customType: true,
-                value: [
-                  [
-                    { name: "name1", type: "string", value: "start1" },
-                    { name: "number1", type: "bytes", value: 0x123 },
-                    { name: "name2", type: "string", value: "end1" },
-                  ],
-                  [
-                    { name: "name1", type: "string", value: "start2" },
-                    { name: "number1", type: "bytes", value: 0x321 },
-                    { name: "name2", type: "string", value: "end3" },
-                  ],
-                  [
-                    { name: "name1", type: "string", value: "start3" },
-                    { name: "number1", type: "bytes", value: 0x130 },
-                    { name: "name2", type: "string", value: "end3" },
-                  ],
-                ],
-              },
-              { name: "from", type: "string", value: "Ori" },
+              { name: "to", type: "address", value: accounts[12] },
+              { name: "token_amount", type: "uint256", value: "20" },
             ],
-            flow: Flow.OK_CONT_FAIL_REVERT,
             from: vault10.address,
           },
+
+          // {
+          //   value: 0,
+          //   to: multiplier.address,
+          //   method: "testCall4",
+          //   params: [
+          //     { name: "to", type: "bytes", value: 0x340 },
+          //     {
+          //       name: "struct2",
+          //       type: "Struct2[]",
+          //       customType: true,
+          //       value: [
+          //         [
+          //           { name: "name1", type: "string", value: "start1" },
+          //           { name: "number1", type: "bytes", value: 0x123 },
+          //           { name: "name2", type: "string", value: "end1" },
+          //         ],
+          //         [
+          //           { name: "name1", type: "string", value: "start2" },
+          //           { name: "number1", type: "bytes", value: 0x321 },
+          //           { name: "name2", type: "string", value: "end3" },
+          //         ],
+          //         [
+          //           { name: "name1", type: "string", value: "start3" },
+          //           { name: "number1", type: "bytes", value: 0x130 },
+          //           { name: "name2", type: "string", value: "end3" },
+          //         ],
+          //       ],
+          //     },
+          //     { name: "from", type: "string", value: "Ori" },
+          //   ],
+          //   flow: Flow.OK_CONT_FAIL_REVERT,
+          //   from: vault10.address,
+          // },
         ],
       };
 
