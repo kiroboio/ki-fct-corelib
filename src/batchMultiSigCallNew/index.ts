@@ -1,11 +1,12 @@
 import { ethers, utils } from "ethers";
-import { TypedDataUtils } from "ethers-eip712";
+import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
 import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
+  getSessionId,
   handleData,
   handleEnsHash,
   handleFunctionSignature,
@@ -188,12 +189,15 @@ export class BatchMultiSigCallNew {
 
   private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
     const self = this;
-    const sessionId = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
 
     let typedHashes = [];
     let additionalTypes = {};
 
-    const typedData = await createTypedData(self, batchCall, additionalTypes, typedHashes);
+    const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    const version = "0x010101";
+
+    const typedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
+    const sessionId = getSessionId(salt, batchCall);
 
     const mcall = batchCall.calls.map((call, index) => ({
       typeHash: ethers.utils.hexlify(
@@ -449,8 +453,10 @@ const createTypedData = async (
   self: BatchMultiSigCallNew,
   batchCall: BatchMSCallInput,
   additionalTypes: object,
-  typedHashes: string[]
-) => {
+  typedHashes: string[],
+  salt: string,
+  version: string
+): Promise<TypedData> => {
   const callDetails = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
 
   // Creates messages from multiCalls array for EIP712 sign
@@ -579,8 +585,8 @@ const createTypedData = async (
     message: {
       info: {
         name: batchCall.name || "BatchMultiSigCall transaction",
-        version: 0x010101,
-        random_id: 0x2395b1,
+        version,
+        random_id: `0x${salt}`,
         eip712: true,
       },
       limits: {

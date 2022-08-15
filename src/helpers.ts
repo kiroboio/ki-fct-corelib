@@ -207,10 +207,11 @@ export const getTypeHash = (typedData: TypedData) => {
 
 // Get Typed Data domain for EIP712
 export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
+  const chainId = await factoryProxy.CHAIN_ID();
   return {
     name: await factoryProxy.NAME(),
     version: await factoryProxy.VERSION(),
-    chainId: await factoryProxy.CHAIN_ID(),
+    chainId: chainId.toString(),
     verifyingContract: factoryProxy.address,
     salt: await factoryProxy.uid(),
   };

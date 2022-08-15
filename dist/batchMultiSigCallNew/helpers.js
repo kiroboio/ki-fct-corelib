@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.handleTo = void 0;
+exports.getSessionId = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.handleTo = void 0;
 const helpers_1 = require("../helpers");
 const ethers_1 = require("ethers");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
@@ -67,3 +67,24 @@ const handleTypedHashes = (call, typedData) => {
     return [];
 };
 exports.handleTypedHashes = handleTypedHashes;
+const getSessionId = (salt, batchCall) => {
+    // 6 - Salt
+    // 2 - External signers
+    // 6 - Version
+    // 4 - Recurrent
+    // 8 - Chill time
+    // 10 - After timestamp
+    // 10 - Before timestamp
+    // 16 - Gas price limit
+    const externalSigners = batchCall.multisig ? String(batchCall.multisig.externalSigners).padStart(2, "0") : "00";
+    const version = "010101";
+    const recurrent = batchCall.recurrency ? String(batchCall.recurrency.maxRepeats).padStart(4, "0") : "0000";
+    const chillTime = batchCall.recurrency ? String(batchCall.recurrency.chillTime).padStart(8, "0") : "00000000";
+    const afterTimestamp = batchCall.validFrom ? String(batchCall.validFrom).padStart(10, "0") : "0000000000";
+    const beforeTimestamp = batchCall.expiresAt ? String(batchCall.expiresAt).padStart(10, "0") : "ffffffffff";
+    const gasPriceLimit = batchCall.gasPriceLimit
+        ? String(batchCall.gasPriceLimit).padStart(16, "0")
+        : "0000000000000000";
+    return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}`;
+};
+exports.getSessionId = getSessionId;

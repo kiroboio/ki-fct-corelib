@@ -196,10 +196,11 @@ const getTypeHash = (typedData) => {
 exports.getTypeHash = getTypeHash;
 // Get Typed Data domain for EIP712
 const getTypedDataDomain = (factoryProxy) => __awaiter(void 0, void 0, void 0, function* () {
+    const chainId = yield factoryProxy.CHAIN_ID();
     return {
         name: yield factoryProxy.NAME(),
         version: yield factoryProxy.VERSION(),
-        chainId: yield factoryProxy.CHAIN_ID(),
+        chainId: chainId.toString(),
         verifyingContract: factoryProxy.address,
         salt: yield factoryProxy.uid(),
     };

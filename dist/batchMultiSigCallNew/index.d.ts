@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { DecodeTx } from "../interfaces";
-import { BatchMultiSigCallInputInterface, BatchMultiSigCallInterface, MultiSigCallInputInterface } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 export declare class BatchMultiSigCallNew {
-    calls: Array<BatchMultiSigCallInterface>;
+    calls: Array<BatchMSCall>;
     variables: Array<Array<string>>;
     provider: ethers.providers.JsonRpcProvider;
     FactoryProxy: ethers.Contract;
@@ -15,14 +15,14 @@ export declare class BatchMultiSigCallNew {
     getVariableIndex(variableId: string, throwError?: boolean): number;
     getVariableFCValue(variableId: string): string;
     refTxValue(index: number, bytes?: boolean): string;
-    addExistingBatchCall(batchCall: BatchMultiSigCallInterface): BatchMultiSigCallInterface[];
-    create(tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface>;
-    createMultiple(txs: BatchMultiSigCallInputInterface[]): Promise<BatchMultiSigCallInterface[]>;
-    editBatchCall(index: number, tx: BatchMultiSigCallInputInterface): Promise<BatchMultiSigCallInterface>;
-    removeBatchCall(index: number): Promise<BatchMultiSigCallInterface[]>;
-    addMultiCallTx(indexOfBatch: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MultiSigCallInputInterface): Promise<BatchMultiSigCallInterface>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMultiSigCallInterface>;
+    addExistingBatchCall(batchCall: BatchMSCall): BatchMSCall[];
+    create(tx: BatchMSCallInput): Promise<BatchMSCall>;
+    createMultiple(txs: BatchMSCallInput[]): Promise<BatchMSCall[]>;
+    editBatchCall(index: number, tx: BatchMSCallInput): Promise<BatchMSCall>;
+    removeBatchCall(index: number): Promise<BatchMSCall[]>;
+    addMultiCallTx(indexOfBatch: number, tx: MSCallInput): Promise<BatchMSCall>;
+    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput): Promise<BatchMSCall>;
+    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMSCall>;
     private getMultiSigCallData;
     decodeLimits(encodedLimits: string): {
         nonce: any;

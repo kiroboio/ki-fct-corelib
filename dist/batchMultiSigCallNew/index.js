@@ -166,10 +166,12 @@ class BatchMultiSigCallNew {
     getMultiSigCallData(batchCall) {
         return __awaiter(this, void 0, void 0, function* () {
             const self = this;
-            const sessionId = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
             let typedHashes = [];
             let additionalTypes = {};
-            const typedData = yield createTypedData(self, batchCall, additionalTypes, typedHashes);
+            const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+            const version = "0x010101";
+            const typedData = yield createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
+            const sessionId = (0, helpers_2.getSessionId)(salt, batchCall);
             const mcall = batchCall.calls.map((call, index) => {
                 var _a;
                 return ({
@@ -379,7 +381,7 @@ const getParams = (self, call) => {
     }
     return {};
 };
-const createTypedData = (self, batchCall, additionalTypes, typedHashes) => __awaiter(void 0, void 0, void 0, function* () {
+const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, version) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     const callDetails = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
     // Creates messages from multiCalls array for EIP712 sign
@@ -474,8 +476,8 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes) => __awa
         domain: yield (0, helpers_1.getTypedDataDomain)(self.FactoryProxy),
         message: Object.assign(Object.assign({ info: {
                 name: batchCall.name || "BatchMultiSigCall transaction",
-                version: 0x010101,
-                random_id: 0x2395b1,
+                version,
+                random_id: `0x${salt}`,
                 eip712: true,
             }, limits: {
                 valid_from: (_a = batchCall.validFrom) !== null && _a !== void 0 ? _a : 0,
