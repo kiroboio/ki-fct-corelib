@@ -91,16 +91,29 @@ export const getSessionId = (salt: string, batchCall: BatchMSCallInput) => {
   // 10 - After timestamp
   // 10 - Before timestamp
   // 16 - Gas price limit
+  // 2 - Flags
 
-  const externalSigners = batchCall.multisig ? String(batchCall.multisig.externalSigners).padStart(2, "0") : "00";
+  const externalSigners = batchCall.multisig
+    ? batchCall.multisig.externalSigners.length.toString(16).padStart(2, "0")
+    : "00";
   const version = "010101";
-  const recurrent = batchCall.recurrency ? String(batchCall.recurrency.maxRepeats).padStart(4, "0") : "0000";
-  const chillTime = batchCall.recurrency ? String(batchCall.recurrency.chillTime).padStart(8, "0") : "00000000";
-  const afterTimestamp = batchCall.validFrom ? String(batchCall.validFrom).padStart(10, "0") : "0000000000";
-  const beforeTimestamp = batchCall.expiresAt ? String(batchCall.expiresAt).padStart(10, "0") : "ffffffffff";
+  const recurrent = batchCall.recurrency
+    ? Number(batchCall.recurrency.maxRepeats).toString(16).padStart(4, "0")
+    : "0000";
+  const chillTime = batchCall.recurrency
+    ? Number(batchCall.recurrency.chillTime).toString(16).padStart(8, "0")
+    : "00000000";
+  const afterTimestamp = batchCall.validFrom
+    ? Number(batchCall.validFrom).toString(16).padStart(10, "0")
+    : "0000000000";
+  const beforeTimestamp = batchCall.expiresAt
+    ? Number(batchCall.expiresAt).toString(16).padStart(10, "0")
+    : "ffffffffff";
   const gasPriceLimit = batchCall.gasPriceLimit
-    ? String(batchCall.gasPriceLimit).padStart(16, "0")
+    ? Number(batchCall.gasPriceLimit).toString(16).padStart(16, "0")
     : "0000000000000000";
+
+  // Flags needs to be updated - currently only support for one flag (payment/repay)
   const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;
 
   return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
