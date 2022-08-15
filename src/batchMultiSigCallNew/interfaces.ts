@@ -1,6 +1,6 @@
 import { TypedData } from "ethers-eip712";
 import { Flow } from "../constants";
-import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
+import { BatchCallBase, BatchFlags, MultiCallBase, Validator } from "../interfaces";
 
 export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   value: string;
@@ -28,6 +28,9 @@ export interface BatchMSCallInput {
   multisig?: {
     externalSigners: string[];
     minimumApprovals: number;
+  };
+  flags?: {
+    payment: boolean;
   };
   calls: MSCallInput[];
 }
