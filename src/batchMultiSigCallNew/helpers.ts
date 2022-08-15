@@ -101,7 +101,7 @@ export const getSessionId = (salt: string, batchCall: BatchMSCallInput) => {
   const gasPriceLimit = batchCall.gasPriceLimit
     ? String(batchCall.gasPriceLimit).padStart(16, "0")
     : "0000000000000000";
-  const flags = `1${batchCall.flags.payment ? "1" : "0"}`;
+  const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;
 
   return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
 };

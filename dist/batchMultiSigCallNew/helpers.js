@@ -85,6 +85,7 @@ const getSessionId = (salt, batchCall) => {
     const gasPriceLimit = batchCall.gasPriceLimit
         ? String(batchCall.gasPriceLimit).padStart(16, "0")
         : "0000000000000000";
-    return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}`;
+    const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;
+    return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
 };
 exports.getSessionId = getSessionId;

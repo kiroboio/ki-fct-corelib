@@ -27,6 +27,9 @@ export interface BatchMSCallInput {
         externalSigners: string[];
         minimumApprovals: number;
     };
+    flags?: {
+        payment: boolean;
+    };
     calls: MSCallInput[];
 }
 export interface MSCall {
