@@ -3,7 +3,7 @@ import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
-import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput, MSCall } from "./interfaces";
 import {
   getSessionIdDetails,
   getTypedDataDomain,
@@ -445,7 +445,7 @@ export class BatchMultiSigCall {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: MSCallInput, index?: number) {
+      addCall: async function (tx: MSCallInput, index?: number): Promise<BatchMSCall | Error> {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -465,11 +465,11 @@ export class BatchMultiSigCall {
 
         return data;
       },
-      replaceCall: async function (tx: MSCallInput, index: number) {
+      replaceCall: async function (tx: MSCallInput, index: number): Promise<MSCall | Error> {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
-        const prevCall = this.inputData.calls[index];
+        const prevCall: MSCall = this.inputData.calls[index];
 
         this.inputData.calls[index] = tx;
         const data = await self.getMultiSigCallData(this.inputData);
@@ -484,12 +484,12 @@ export class BatchMultiSigCall {
 
         return prevCall;
       },
-      removeCall: async function (index: number) {
+      removeCall: async function (index: number): Promise<MSCall | Error> {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
 
-        const prevCall = this.inputData.calls[index];
+        const prevCall: MSCall = this.inputData.calls[index];
 
         this.inputData.calls.splice(index, 1);
         const data = await self.getMultiSigCallData(this.inputData);
@@ -504,10 +504,10 @@ export class BatchMultiSigCall {
 
         return prevCall;
       },
-      getCall: function (index: number) {
+      getCall: function (index: number): MSCall {
         return this.mcall[index];
       },
-      get length() {
+      get length(): number {
         return this.mcall.length;
       },
     };

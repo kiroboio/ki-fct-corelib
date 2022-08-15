@@ -39,9 +39,9 @@ export interface BatchMSCall {
   encodedLimits: string;
   inputData: BatchMSCallInput;
   mcall: MSCall[];
-  addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall>;
-  replaceCall: (tx: MSCallInput, index: number) => Promise<BatchMSCall>;
-  removeCall: (index: number) => Promise<BatchMSCall>;
-  getCall: (index: number) => BatchMSCall;
+  addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall | Error>;
+  replaceCall: (tx: MSCallInput, index: number) => Promise<MSCall | Error>;
+  removeCall: (index: number) => Promise<MSCall | Error>;
+  getCall: (index: number) => MSCall;
   get length(): number;
 }

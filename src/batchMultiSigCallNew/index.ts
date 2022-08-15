@@ -3,7 +3,7 @@ import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { DecodeTx, Params } from "../interfaces";
-import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
+import { BatchMSCallInput, BatchMSCall, MSCallInput, MSCall } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
   getSessionId,
@@ -188,18 +188,18 @@ export class BatchMultiSigCallNew {
   }
 
   private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
-    const self = this;
+    const self: BatchMultiSigCallNew = this;
 
-    let typedHashes = [];
+    let typedHashes: string[] = [];
     let additionalTypes = {};
 
-    const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    const version = "0x010101";
+    const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    const version: string = "0x010101";
 
-    const typedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
-    const sessionId = getSessionId(salt, batchCall);
+    const typedData: TypedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
+    const sessionId: string = getSessionId(salt, batchCall);
 
-    const mcall = batchCall.calls.map((call, index) => ({
+    const mcall: MSCall[] = batchCall.calls.map((call, index) => ({
       typeHash: ethers.utils.hexlify(
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
       ),
@@ -222,7 +222,7 @@ export class BatchMultiSigCallNew {
       inputData: batchCall,
       mcall,
 
-      addCall: async function (tx: MSCallInput, index?: number) {
+      addCall: async function (tx: MSCallInput, index?: number): Promise<BatchMSCall | Error> {
         if (index) {
           const length = this.inputData.calls.length;
           if (index > length) {
@@ -240,7 +240,7 @@ export class BatchMultiSigCallNew {
 
         return data;
       },
-      replaceCall: async function (tx: MSCallInput, index: number) {
+      replaceCall: async function (tx: MSCallInput, index: number): Promise<MSCall | Error> {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
@@ -256,7 +256,7 @@ export class BatchMultiSigCallNew {
 
         return prevCall;
       },
-      removeCall: async function (index: number) {
+      removeCall: async function (index: number): Promise<MSCall | Error> {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
@@ -273,10 +273,10 @@ export class BatchMultiSigCallNew {
 
         return prevCall;
       },
-      getCall: function (index: number) {
+      getCall: function (index: number): MSCall {
         return this.mcall[index];
       },
-      get length() {
+      get length(): number {
         return this.mcall.length;
       },
     };
