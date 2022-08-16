@@ -37,14 +37,16 @@ export interface BatchMSCallInput {
 
 export interface MSCall {
   typeHash: string;
+  ensHash?: string;
   functionSignature: string;
   value: string;
   from: string;
   gasLimit: number;
   flags: string;
   to: string;
-  ensHash?: string;
   data: string;
+  types: string[];
+  typedHashes: string[];
 }
 
 export interface BatchMSCall {
@@ -53,6 +55,7 @@ export interface BatchMSCall {
   typedData: TypedData;
   inputData: BatchMSCallInput;
   mcall: MSCall[];
+
   addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall | Error>;
   replaceCall: (tx: MSCallInput, index: number) => Promise<MSCall | Error>;
   removeCall: (index: number) => Promise<MSCall | Error>;
