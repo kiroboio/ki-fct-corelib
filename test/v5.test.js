@@ -1,7 +1,7 @@
 const util = require("util");
 const { assert } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCallNew } = require("../dist");
+const { BatchMultiSigCall } = require("../dist");
 const { Flow } = require("../dist/constants");
 const { TypedDataUtils } = require("ethers-eip712");
 
@@ -353,7 +353,7 @@ describe("batchMultiSigCall", () => {
     let batchMultiSigCall;
 
     it("Should add call", async () => {
-      batchMultiSigCall = new BatchMultiSigCallNew(ethers.provider, fctController.address);
+      batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
       batchMultiSigCall.createVariable("to", accounts[12]);
       batchMultiSigCall.createVariable("amount", 0);
@@ -443,8 +443,6 @@ describe("batchMultiSigCall", () => {
         return signature;
       };
       const variables = batchMultiSigCall.getVariablesAsBytes32();
-
-      console.log(variables);
 
       const signedCalls = calls.map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);

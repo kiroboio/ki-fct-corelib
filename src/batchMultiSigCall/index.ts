@@ -1,23 +1,19 @@
 import { ethers, utils } from "ethers";
-import { TypedDataUtils } from "ethers-eip712";
-import { defaultAbiCoder } from "ethers/lib/utils";
+import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { DecodeTx, Params } from "../interfaces";
+import { Params } from "../interfaces";
 import { BatchMSCallInput, BatchMSCall, MSCallInput, MSCall } from "./interfaces";
+import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
-  getSessionIdDetails,
-  getTypedDataDomain,
-  getEncodedMethodParams,
-  getMethodInterface,
-  generateTxType,
-  createValidatorTxData,
-  getValidatorMethodInterface,
-  getValidatorData,
-  manageCallFlagsV2,
-  flows,
-  getTypesArray,
-  getTypedHashes,
-} from "../helpers";
+  getSessionId,
+  handleData,
+  handleEnsHash,
+  handleFunctionSignature,
+  handleMethodInterface,
+  handleTo,
+  handleTypedHashes,
+  handleTypes,
+} from "./helpers";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -85,7 +81,7 @@ export class BatchMultiSigCall {
     });
   }
 
-  private getVariableIndex(variableId: string, throwError: boolean = true) {
+  public getVariableIndex(variableId: string, throwError: boolean = true) {
     const index = this.variables.findIndex((item) => item[0] === variableId);
     if (index === -1 && throwError) {
       throw new Error(`Variable ${variableId} doesn't exist`);
@@ -93,7 +89,7 @@ export class BatchMultiSigCall {
     return index;
   }
 
-  private getVariableFCValue(variableId: string) {
+  public getVariableFCValue(variableId: string) {
     const index = this.getVariableIndex(variableId);
     return String(index + 1).padStart(variableBase.length, variableBase);
   }
@@ -135,9 +131,7 @@ export class BatchMultiSigCall {
   }
 
   public async removeBatchCall(index: number) {
-    const restOfCalls = this.calls
-      .slice(index + 1)
-      .map((call) => ({ ...call.inputData, nonce: call.inputData.nonce - 1 }));
+    const restOfCalls = this.calls.slice(index + 1).map((call) => ({ ...call.inputData }));
 
     // Remove from calls
     this.calls.splice(index, 1);
@@ -193,256 +187,39 @@ export class BatchMultiSigCall {
   }
 
   private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
-    const self = this;
-    const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
+    const self: BatchMultiSigCall = this;
 
-    let typedHashes = [];
+    let typedHashes: string[] = [];
     let additionalTypes = {};
 
-    // Creates messages from multiCalls array for EIP712 sign
-    const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
-      const txData = () => {
-        // If mcall has parameters
-        if (item.params) {
-          item.params.forEach((param) => {
-            if (param.variable) {
-              param.value = this.getVariableFCValue(param.variable);
-              return;
-            }
+    const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    const version: string = "0x010101";
 
-            // If parameter value is FD (reference value to previous tx)
-            if (typeof param.value === "string" && param.value.includes("0xFD")) {
-              const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
+    const typedData: TypedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
+    const sessionId: string = getSessionId(salt, batchCall);
 
-              // Checks if current transaction doesn't reference current or future transaction
-              if (refIndex >= index) {
-                throw new Error(
-                  `Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`
-                );
-              }
-              return;
-            }
-
-            if (param.customType) {
-              if (additionalTypes[param.type]) {
-                return;
-              }
-
-              if (param.type.lastIndexOf("[") > 0) {
-                const type = param.type.slice(0, param.type.lastIndexOf("["));
-
-                typedHashes.push(type);
-
-                const arrayValue = param.value[0] as Params[];
-                additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                  return [...acc, { name: item.name, type: item.type }];
-                }, []);
-              } else {
-                const type = param.type;
-
-                typedHashes.push(type);
-
-                const arrayValue = param.value as Params[];
-                additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                  return [...acc, { name: item.name, type: item.type }];
-                }, []);
-              }
-            }
-          });
-
-          // If mcall is a validation call
-          if (item.validator) {
-            Object.entries(item.validator.params).forEach(([key, value]) => {
-              const index = this.getVariableIndex(value, false);
-              if (index !== -1) {
-                item.validator.params[key] = this.getVariableFCValue(this.variables[index][0]);
-              }
-            });
-
-            return createValidatorTxData(item);
-          }
-
-          return {
-            ...item.params.reduce((acc, param) => {
-              let value;
-
-              // If parameter is a custom type (struct)
-              if (param.customType) {
-                // If parameter is an array of custom types
-                if (param.type.lastIndexOf("[") > 0) {
-                  const valueArray = param.value as Params[][];
-                  value = valueArray.map((item) =>
-                    item.reduce((acc, item2) => {
-                      if (item2.variable) {
-                        item2.value = this.getVariableFCValue(item2.variable);
-                      }
-                      return { ...acc, [item2.name]: item2.value };
-                    }, {})
-                  );
-                } else {
-                  // If parameter is a custom type
-                  const valueArray = param.value as Params[];
-                  value = valueArray.reduce((acc, item) => {
-                    if (item.variable) {
-                      item.value = this.getVariableFCValue(item.variable);
-                    }
-                    return { ...acc, [item.name]: item.value };
-                  }, {});
-                }
-              } else {
-                // If parameter isn't a struct/custom type
-                value = param.value;
-              }
-              return {
-                ...acc,
-                [param.name]: value,
-              };
-            }, {}),
-          };
-        }
-        return {};
-      };
-
-      return {
-        ...acc,
-        [`transaction_${index + 1}`]: {
-          details: {
-            from: utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
-            call_address: item.validator
-              ? item.validator.validatorAddress
-              : utils.isAddress(item.to)
-              ? item.to
-              : this.getVariableFCValue(item.to),
-            call_ens: item.toEnsHash || "",
-            eth_value: item.value,
-            gas_limit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-            view_only: item.viewOnly || false,
-            flow_control: item.flow ? flows[item.flow].text : "continue on success, revert on fail",
-            jump_over: item.jump || 0,
-            method_interface: item.method
-              ? item.validator
-                ? getValidatorMethodInterface(item.validator)
-                : getMethodInterface(item)
-              : "",
-          },
-          ...txData(),
-        },
-      };
-    }, {});
-
-    const typedData = {
-      types: {
-        EIP712Domain: [
-          { name: "name", type: "string" },
-          { name: "version", type: "string" },
-          { name: "chainId", type: "uint256" },
-          { name: "verifyingContract", type: "address" },
-          { name: "salt", type: "bytes32" },
-        ],
-        BatchMultiSigCall_: [
-          { name: "limits", type: "Limits_" },
-          ...batchCall.calls.map((_, index) => ({
-            name: `transaction_${index + 1}`,
-            type: `Transaction_${index + 1}`,
-          })),
-        ],
-        Limits_: [
-          { name: "nonce", type: "uint64" },
-          { name: "refund", type: "bool" },
-          { name: "valid_from", type: "uint40" },
-          { name: "expires_at", type: "uint40" },
-          { name: "gas_price_limit", type: "uint64" },
-        ],
-        Transaction_: [
-          { name: "from", type: "address" },
-          { name: "call_address", type: "address" },
-          { name: "call_ens", type: "string" },
-          { name: "eth_value", type: "uint256" },
-          { name: "gas_limit", type: "uint32" },
-          { name: "view_only", type: "bool" },
-          { name: "flow_control", type: "string" },
-          { name: "jump_over", type: "uint8" },
-          { name: "method_interface", type: "string" },
-        ],
-        ...batchCall.calls.reduce(
-          (acc, item, index) => ({
-            ...acc,
-            [`Transaction_${index + 1}`]: generateTxType(item),
-          }),
-          {}
-        ),
-        ...additionalTypes,
-      },
-      primaryType: "BatchMultiSigCall_",
-      domain: await getTypedDataDomain(this.FactoryProxy),
-      message: {
-        limits: {
-          nonce: "0x" + callDetails.group + callDetails.nonce,
-          refund: callDetails.pureFlags.payment,
-          valid_from: Number.parseInt("0x" + callDetails.after),
-          expires_at: Number.parseInt("0x" + callDetails.before),
-          gas_price_limit: Number.parseInt("0x" + callDetails.maxGasPrice),
-        },
-        ...typedDataMessage,
-      },
-    };
-
-    const encodedMessage = ethers.utils.hexlify(
-      TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)
-    );
-
-    const encodedLimits = ethers.utils.hexlify(
-      TypedDataUtils.encodeData(typedData, "Limits_", typedData.message.limits)
-    );
-
-    const getEncodedMulticallData = (index: number) => {
-      const encodedMessage = ethers.utils.hexlify(
-        TypedDataUtils.encodeData(typedData, `Transaction_${index + 1}`, typedData.message[`transaction_${index + 1}`])
-      );
-
-      const encodedDetails = ethers.utils.hexlify(
-        TypedDataUtils.encodeData(typedData, `Transaction_`, typedData.message[`transaction_${index + 1}`].details)
-      );
-
-      return {
-        encodedMessage,
-        encodedDetails,
-      };
-    };
-
-    const mcall = batchCall.calls.map((item, index) => ({
+    const mcall: MSCall[] = batchCall.calls.map((call, index) => ({
       typeHash: ethers.utils.hexlify(
-        TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall_[index + 1].type)
+        TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
       ),
-
-      functionSignature: item.method
-        ? utils.id(item.validator ? getValidatorMethodInterface(item.validator) : getMethodInterface(item))
-        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      value: item.value,
-      from: utils.isAddress(item.from) ? item.from : this.getVariableFCValue(item.from),
-      gasLimit: item.gasLimit || Number.parseInt("0x" + callDetails.gasLimit),
-      flags: manageCallFlagsV2(item.flow || "OK_CONT_FAIL_REVERT", item.jump || 0),
-      to: item.validator
-        ? item.validator.validatorAddress
-        : utils.isAddress(item.to)
-        ? item.to
-        : this.getVariableFCValue(item.to),
-      ensHash: item.toEnsHash
-        ? utils.id(item.toEnsHash)
-        : "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      data: item.validator ? getValidatorData(item, true) : getEncodedMethodParams(item),
-      types: item.params ? getTypesArray(item.params) : [],
-      typedHashes: item.params ? getTypedHashes(item.params, typedData) : [],
-      ...getEncodedMulticallData(index),
+      functionSignature: handleFunctionSignature(call),
+      value: call.value,
+      from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+      gasLimit: call.gasLimit ?? 0,
+      flags: manageCallFlagsV2(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
+      to: handleTo(self, call),
+      ensHash: handleEnsHash(call),
+      data: handleData(call),
+      types: handleTypes(call),
+      typedHashes: handleTypedHashes(call, typedData),
     }));
 
     return {
       typedData,
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
-      sessionId: callDetails.sessionId,
-      encodedMessage,
-      encodedLimits,
+      sessionId,
       inputData: batchCall,
+      name: batchCall.name || "BatchMultiSigCall transaction",
       mcall,
 
       addCall: async function (tx: MSCallInput, index?: number): Promise<BatchMSCall | Error> {
@@ -459,8 +236,6 @@ export class BatchMultiSigCall {
         this.typedData = data.typedData;
         this.typeHash = data.typeHash;
         this.sessionId = data.sessionId;
-        this.encodedMessage = data.encodedMessage;
-        this.encodedLimits = data.encodedLimits;
         this.mcall = data.mcall;
 
         return data;
@@ -469,7 +244,7 @@ export class BatchMultiSigCall {
         if (index >= this.inputData.calls.length) {
           throw new Error(`Index ${index} is out of bounds.`);
         }
-        const prevCall: MSCall = this.inputData.calls[index];
+        const prevCall = this.inputData.calls[index];
 
         this.inputData.calls[index] = tx;
         const data = await self.getMultiSigCallData(this.inputData);
@@ -477,9 +252,6 @@ export class BatchMultiSigCall {
         this.typedData = data.typedData;
         this.typeHash = data.typeHash;
         this.sessionId = data.sessionId;
-        this.encodedMessage = data.encodedMessage;
-        this.encodedLimits = data.encodedLimits;
-
         this.mcall = data.mcall;
 
         return prevCall;
@@ -489,7 +261,7 @@ export class BatchMultiSigCall {
           throw new Error(`Index ${index} is out of bounds.`);
         }
 
-        const prevCall: MSCall = this.inputData.calls[index];
+        const prevCall = this.inputData.calls[index];
 
         this.inputData.calls.splice(index, 1);
         const data = await self.getMultiSigCallData(this.inputData);
@@ -497,9 +269,6 @@ export class BatchMultiSigCall {
         this.typedData = data.typedData;
         this.typeHash = data.typeHash;
         this.sessionId = data.sessionId;
-        this.encodedMessage = data.encodedMessage;
-        this.encodedLimits = data.encodedLimits;
-
         this.mcall = data.mcall;
 
         return prevCall;
@@ -513,67 +282,321 @@ export class BatchMultiSigCall {
     };
   }
 
-  public decodeLimits(encodedLimits: string) {
-    const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+  // public decodeLimits(encodedLimits: string) {
+  //   const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+
+  //   return {
+  //     nonce: lim[1].toHexString(),
+  //     payment: lim[2],
+  //     afterTimestamp: lim[3],
+  //     beforeTimestamp: lim[4],
+  //     maxGasPrice: lim[5].toString(),
+  //   };
+  // }
+
+  // public decodeTransactions(txs: DecodeTx[]) {
+  //   return txs.map((tx) => {
+  //     const data =
+  //       tx.params && tx.params.length !== 0
+  //         ? defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
+  //         : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+
+  //     const details = defaultAbiCoder.decode(
+  //       ["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"],
+  //       tx.encodedDetails
+  //     );
+
+  //     const defaultReturn = {
+  //       typeHash: data[0],
+  //       txHash: data[1],
+  //       transaction: {
+  //         signer: details[1],
+  //         to: details[2],
+  //         toEnsHash:
+  //           details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+  //             ? details[3]
+  //             : undefined,
+  //         value: details[4].toString(),
+  //         gasLimit: details[5],
+  //         staticCall: details[6],
+  //         flow: details[7],
+  //         jump: details[8],
+  //         methodHash:
+  //           details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+  //             ? details[9]
+  //             : undefined,
+  //       },
+  //     };
+
+  //     const extraData =
+  //       tx.params && tx.params.length !== 0
+  //         ? tx.params.reduce(
+  //             (acc, item, i) => ({
+  //               ...acc,
+  //               [item.name]: ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i],
+  //             }),
+  //             {}
+  //           )
+  //         : {};
+
+  //     return {
+  //       ...defaultReturn,
+  //       ...extraData,
+  //     };
+  //   });
+  // }
+}
+
+const verifyParams = (
+  self: BatchMultiSigCall,
+  params: Params[],
+  index: number,
+  additionalTypes: object,
+  typedHashes: string[]
+) => {
+  params.forEach((param) => {
+    if (param.variable) {
+      param.value = self.getVariableFCValue(param.variable);
+      return;
+    }
+    // If parameter value is FD (reference value to previous tx)
+    if (typeof param.value === "string" && param.value.includes("0xFD")) {
+      const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
+      // Checks if current transaction doesn't reference current or future transaction
+      if (refIndex >= index) {
+        throw new Error(
+          `Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`
+        );
+      }
+      return;
+    }
+    if (param.customType) {
+      if (additionalTypes[param.type]) {
+        return;
+      }
+      if (param.type.lastIndexOf("[") > 0) {
+        const type = param.type.slice(0, param.type.lastIndexOf("["));
+        typedHashes.push(type);
+        const arrayValue = param.value[0] as Params[];
+        additionalTypes[type] = arrayValue.reduce((acc, item) => {
+          return [...acc, { name: item.name, type: item.type }];
+        }, []);
+      } else {
+        const type = param.type;
+        typedHashes.push(type);
+        const arrayValue = param.value as Params[];
+        additionalTypes[type] = arrayValue.reduce((acc, item) => {
+          return [...acc, { name: item.name, type: item.type }];
+        }, []);
+      }
+    }
+  });
+};
+
+const getParams = (self: BatchMultiSigCall, call: MSCallInput) => {
+  // If call has parameters
+  if (call.params) {
+    // If mcall is a validation call
+    if (call.validator) {
+      Object.entries(call.validator.params).forEach(([key, value]) => {
+        const index = self.getVariableIndex(value, false);
+        if (index !== -1) {
+          call.validator.params[key] = self.getVariableFCValue(self.variables[index][0]);
+        }
+      });
+
+      return createValidatorTxData(call);
+    }
 
     return {
-      nonce: lim[1].toHexString(),
-      payment: lim[2],
-      afterTimestamp: lim[3],
-      beforeTimestamp: lim[4],
-      maxGasPrice: lim[5].toString(),
+      ...call.params.reduce((acc, param) => {
+        let value;
+
+        // If parameter is a custom type (struct)
+        if (param.customType) {
+          // If parameter is an array of custom types
+          if (param.type.lastIndexOf("[") > 0) {
+            const valueArray = param.value as Params[][];
+            value = valueArray.map((item) =>
+              item.reduce((acc, item2) => {
+                if (item2.variable) {
+                  item2.value = self.getVariableFCValue(item2.variable);
+                }
+                return { ...acc, [item2.name]: item2.value };
+              }, {})
+            );
+          } else {
+            // If parameter is a custom type
+            const valueArray = param.value as Params[];
+            value = valueArray.reduce((acc, item) => {
+              if (item.variable) {
+                item.value = self.getVariableFCValue(item.variable);
+              }
+              return { ...acc, [item.name]: item.value };
+            }, {});
+          }
+        } else {
+          // If parameter isn't a struct/custom type
+          value = param.value;
+        }
+        return {
+          ...acc,
+          [param.name]: value,
+        };
+      }, {}),
     };
   }
+  return {};
+};
 
-  public decodeTransactions(txs: DecodeTx[]) {
-    return txs.map((tx) => {
-      const data =
-        tx.params && tx.params.length !== 0
-          ? defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
-          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+const createTypedData = async (
+  self: BatchMultiSigCall,
+  batchCall: BatchMSCallInput,
+  additionalTypes: object,
+  typedHashes: string[],
+  salt: string,
+  version: string
+): Promise<TypedData> => {
+  // Creates messages from multiCalls array for EIP712 sign
+  const typedDataMessage = batchCall.calls.reduce((acc: object, call: MSCallInput, index: number) => {
+    // Update params if variables (FC) or references (FD) are used
+    let paramsData = {};
+    if (call.params) {
+      verifyParams(self, call.params, index, additionalTypes, typedHashes);
+      paramsData = { params: getParams(self, call) };
+    }
 
-      const details = defaultAbiCoder.decode(
-        ["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"],
-        tx.encodedDetails
-      );
-
-      const defaultReturn = {
-        typeHash: data[0],
-        txHash: data[1],
-        transaction: {
-          signer: details[1],
-          to: details[2],
-          toEnsHash:
-            details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[3]
-              : undefined,
-          value: details[4].toString(),
-          gasLimit: details[5],
-          staticCall: details[6],
-          flow: details[7],
-          jump: details[8],
-          methodHash:
-            details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[9]
-              : undefined,
+    return {
+      ...acc,
+      [`transaction${index + 1}`]: {
+        call: {
+          from: utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
+          to: handleTo(self, call),
+          to_ens: call.toEnsHash || "",
+          eth_value: call.value,
+          gas_limit: call.gasLimit || 0,
+          view_only: call.viewOnly || false,
+          flow_control: call.flow ? flows[call.flow].text : "continue on success, revert on fail",
+          jump_over: call.jump || 0,
+          method_interface: handleMethodInterface(call),
         },
-      };
+        ...paramsData,
+      },
+    };
+  }, {});
 
-      const extraData =
-        tx.params && tx.params.length !== 0
-          ? tx.params.reduce(
-              (acc, item, i) => ({
-                ...acc,
-                [item.name]: ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i],
-              }),
-              {}
-            )
-          : {};
+  let optionalMessage = {};
+  let optionalTypes = {};
+  let primaryType = [];
 
-      return {
-        ...defaultReturn,
-        ...extraData,
-      };
-    });
+  if (batchCall.recurrency) {
+    optionalMessage = {
+      recurrency: {
+        max_repeats: batchCall.recurrency.maxRepeats,
+        chill_time: batchCall.recurrency.chillTime,
+        accumetable: batchCall.recurrency.accumetable,
+      },
+    };
+    optionalTypes = {
+      Recurrency: [
+        { name: "max_repeats", type: "uint16" },
+        { name: "chill_time", type: "uint32" },
+        { name: "accumetable", type: "bool" },
+      ],
+    };
+    primaryType = [{ name: "recurrency", type: "Recurrency" }];
   }
-}
+
+  if (batchCall.multisig) {
+    optionalMessage = {
+      ...optionalMessage,
+      multisig: {
+        external_signers: batchCall.multisig.externalSigners,
+        minimum_approvals: batchCall.multisig.minimumApprovals,
+      },
+    };
+    optionalTypes = {
+      ...optionalTypes,
+      Multisig: [
+        { name: "external_signers", type: "address[]" },
+        { name: "minimum_approvals", type: "uint8" },
+      ],
+    };
+    primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
+  }
+
+  const typedData = {
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+        { name: "verifyingContract", type: "address" },
+        { name: "salt", type: "bytes32" },
+      ],
+      BatchMultiSigCall: [
+        { name: "info", type: "Info" },
+        { name: "limits", type: "Limits" },
+        ...batchCall.calls.map((_, index) => ({
+          name: `transaction${index + 1}`,
+          type: `Transaction${index + 1}`,
+        })),
+      ],
+      Info: [
+        { name: "name", type: "string" },
+        { name: "version", type: "bytes3" },
+        { name: "eip712", type: "bool" },
+        { name: "random_id", type: "bytes3" },
+      ],
+      Limits: [
+        { name: "valid_from", type: "uint40" },
+        { name: "expires_at", type: "uint40" },
+        { name: "gas_price_limit", type: "uint64" },
+        { name: "cancelable", type: "bool" },
+      ],
+      ...optionalTypes,
+      Transaction: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "to_ens", type: "string" },
+        { name: "eth_value", type: "uint256" },
+        { name: "gas_limit", type: "uint32" },
+        { name: "view_only", type: "bool" },
+        { name: "flow_control", type: "string" },
+        { name: "jump_over", type: "uint8" },
+        { name: "method_interface", type: "string" },
+      ],
+      ...batchCall.calls.reduce(
+        (acc: object, call, index: number) => ({
+          ...acc,
+          [`Transaction${index + 1}`]: [
+            { name: "call", type: "Transaction" },
+            { name: "params", type: `Transaction${index + 1}_Params` },
+          ],
+          [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })),
+        }),
+        {}
+      ),
+      ...additionalTypes,
+    },
+    primaryType: "BatchMultiSigCall",
+    domain: await getTypedDataDomain(self.FactoryProxy),
+    message: {
+      info: {
+        name: batchCall.name || "BatchMultiSigCall transaction",
+        version,
+        random_id: `0x${salt}`,
+        eip712: true,
+      },
+      limits: {
+        valid_from: batchCall.validFrom ?? 0,
+        expires_at: batchCall.expiresAt ?? 0,
+        gas_price_limit: batchCall.gasPriceLimit ?? "25000000000", // 25 Gwei
+        cancelable: batchCall.cancelable || true,
+      },
+      ...optionalMessage,
+      ...typedDataMessage,
+    },
+  };
+  return typedData;
+};

@@ -1,4 +1,4 @@
-import { BatchMultiSigCallNew } from ".";
+import { BatchMultiSigCall } from ".";
 import {
   getEncodedMethodParams,
   getFlags,
@@ -14,7 +14,7 @@ import { TypedData } from "ethers-eip712";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
-export const handleTo = (self: BatchMultiSigCallNew, call: MSCallInput) => {
+export const handleTo = (self: BatchMultiSigCall, call: MSCallInput) => {
   // If call is a validator method, return validator address as to address
   if (call.validator) {
     return call.validator.validatorAddress;

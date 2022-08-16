@@ -1,6 +1,5 @@
-import { TypedData } from "ethers-eip712";
 import { Flow } from "../constants";
-import { BatchCallBase, BatchFlags, MultiCallBase, Validator } from "../interfaces";
+import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
 
 export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   value: string;
@@ -14,49 +13,32 @@ export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   viewOnly?: boolean;
 }
 
-export interface BatchMSCallInput {
-  name?: string;
-  validFrom?: number;
-  expiresAt?: number;
-  gasPriceLimit?: number;
-  cancelable?: boolean;
-  recurrency?: {
-    maxRepeats: number;
-    chillTime: number;
-    accumetable: boolean;
-  };
-  multisig?: {
-    externalSigners: string[];
-    minimumApprovals: number;
-  };
-  flags?: {
-    payment: boolean;
-  };
+export interface BatchMSCallInput extends BatchCallBase {
   calls: MSCallInput[];
 }
 
 export interface MSCall {
   typeHash: string;
-  ensHash?: string;
   functionSignature: string;
   value: string;
   from: string;
   gasLimit: number;
   flags: string;
   to: string;
+  ensHash?: string;
   data: string;
-  types: string[];
-  typedHashes: string[];
+  encodedMessage: string;
+  encodedDetails: string;
 }
 
 export interface BatchMSCall {
   typeHash: string;
   sessionId: string;
-  typedData: TypedData;
+  typedData: object;
+  encodedMessage: string;
+  encodedLimits: string;
   inputData: BatchMSCallInput;
-  name: string;
   mcall: MSCall[];
-
   addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall | Error>;
   replaceCall: (tx: MSCallInput, index: number) => Promise<MSCall | Error>;
   removeCall: (index: number) => Promise<MSCall | Error>;
