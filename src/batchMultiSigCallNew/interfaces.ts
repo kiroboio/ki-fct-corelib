@@ -54,6 +54,7 @@ export interface BatchMSCall {
   sessionId: string;
   typedData: TypedData;
   inputData: BatchMSCallInput;
+  name: string;
   mcall: MSCall[];
 
   addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall | Error>;

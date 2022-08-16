@@ -184,6 +184,8 @@ contract RecoveryWallet is
         view
         returns (uint256)
     {
+        console.log("signers.length",signers.length);
+        console.log("fctVersion",fctVersion);
         for (uint256 i = 0; i < signers.length; i++) {
             if (
                 fctVersion == 0 &&

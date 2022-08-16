@@ -95,7 +95,7 @@ contract FCT_Controller is FCT_Storage {
         }
     }
 
-    function version(bytes32 id) external view returns (bytes4) {
+    function version(bytes32 id) external view returns (bytes3) {
         address target  = s_targets[id];
         require(target != address(0), "FCT: target not found");
         //console.log('target to version', target);

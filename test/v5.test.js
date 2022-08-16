@@ -3,6 +3,7 @@ const { assert } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCallNew } = require("../dist");
 const { Flow } = require("../dist/constants");
+const { TypedDataUtils } = require("ethers-eip712");
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -272,6 +273,7 @@ describe("batchMultiSigCall", () => {
 
   it("check kiro for eth ", async () => {
     const totalGasUsed = await activators.getAmountOfKiroForGivenEth(1909173750113105);
+    console.log(`Total Gas used:`, totalGasUsed);
   });
 
   //user1 -> vault1 -> activator
@@ -347,48 +349,6 @@ describe("batchMultiSigCall", () => {
     });
   });
 
-  //  {
-  //           value: 0,
-  //           to: multiplier.address,
-  //           method: "testCall",
-  //           params: [
-  //             { name: "to", type: "address", variable: "to" },
-  //             { name: "value", type: "uint256", variable: "amount" },
-  //             { name: "name1", type: "string", value: "Tal" },
-  //             { name: "name2", type: "string", value: "Ori" },
-  //             { name: "b", type: "bytes", value: 0x12345678 },
-  //             { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
-  //             { name: "b2", type: "bytes", value: 0x122 },
-  //           ],
-  //           flow: Flow.OK_CONT_FAIL_JUMP,
-  //           jump: 1,
-  //           from: vault10.address,
-  //         },
-  //         {
-  //           value: 0,
-  //           to: multiplier.address,
-  //           method: "testCall3",
-  //           params: [
-  //             { name: "to", type: "bytes", value: 0x340 },
-  //             { name: "name1", type: "string", value: "Tal" },
-  //             { name: "value", type: "bytes", value: 0x123 },
-  //             {
-  //               name: "test",
-  //               type: "Test",
-  //               customType: true,
-  //               value: [
-  //                 { name: "value", type: "uint256", value: 125 },
-  //                 { name: "from", type: "address", value: vault12.address },
-  //                 { name: "name", type: "string", value: "Tal" },
-  //                 { name: "number", type: "bytes", value: 0x350 },
-  //               ],
-  //             },
-  //             { name: "from", type: "bytes", value: 0x355 },
-  //           ],
-  //           flow: Flow.OK_CONT_FAIL_REVERT,
-  //           from: vault10.address,
-  //         },
-
   describe("BatchMultiSigCall core lib", () => {
     let batchMultiSigCall;
 
@@ -408,12 +368,60 @@ describe("batchMultiSigCall", () => {
             ],
             from: vault10.address,
           },
+          {
+            value: 0,
+            to: kiro.address,
+            method: "transfer",
+            params: [
+              { name: "to", type: "address", value: accounts[13] },
+              { name: "token_amount", type: "uint256", value: "300" },
+            ],
+            from: vault11.address,
+          },
         ],
       };
 
       const FCT = await batchMultiSigCall.create(tx);
 
       console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
+    });
+
+    it("Should execute batch", async () => {
+      const calls = batchMultiSigCall.calls;
+      const signer = getSigner(10);
+      const signer2 = getSigner(11);
+
+      const getSignature = (messageDigest, signer) => {
+        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+        let signature = signingKey.signDigest(messageDigest);
+        signature.v = "0x" + signature.v.toString(16);
+
+        return signature;
+      };
+      const variables = batchMultiSigCall.getVariablesAsBytes32();
+
+      const signedCalls = calls.map((item) => {
+        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+
+        const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
+        return { ...item, signatures, variables, builder: ZERO_ADDRESS, externalSigners: [] };
+      });
+
+      const callData = fctBatchMultiSig.contract.methods
+        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls)
+        .encodeABI();
+
+      await activators.addActivator(user1, {
+        from: owner,
+        nonce: await web3.eth.getTransactionCount(owner),
+      });
+
+      try {
+        const res = await activators.activate(callData, { from: user1 });
+        // console.log(res);
+      } catch (err) {
+        console.log(err);
+      }
     });
   });
 });

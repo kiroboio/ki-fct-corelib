@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCallNew = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
-const utils_1 = require("ethers/lib/utils");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
@@ -193,6 +192,7 @@ class BatchMultiSigCallNew {
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
                 sessionId,
                 inputData: batchCall,
+                name: batchCall.name || "BatchMultiSigCall transaction",
                 mcall,
                 addCall: function (tx, index) {
                     return __awaiter(this, void 0, void 0, function* () {
@@ -251,47 +251,6 @@ class BatchMultiSigCallNew {
                     return this.mcall.length;
                 },
             };
-        });
-    }
-    decodeLimits(encodedLimits) {
-        const lim = utils_1.defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
-        return {
-            nonce: lim[1].toHexString(),
-            payment: lim[2],
-            afterTimestamp: lim[3],
-            beforeTimestamp: lim[4],
-            maxGasPrice: lim[5].toString(),
-        };
-    }
-    decodeTransactions(txs) {
-        return txs.map((tx) => {
-            const data = tx.params && tx.params.length !== 0
-                ? utils_1.defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
-                : utils_1.defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
-            const details = utils_1.defaultAbiCoder.decode(["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"], tx.encodedDetails);
-            const defaultReturn = {
-                typeHash: data[0],
-                txHash: data[1],
-                transaction: {
-                    signer: details[1],
-                    to: details[2],
-                    toEnsHash: details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-                        ? details[3]
-                        : undefined,
-                    value: details[4].toString(),
-                    gasLimit: details[5],
-                    staticCall: details[6],
-                    flow: details[7],
-                    jump: details[8],
-                    methodHash: details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-                        ? details[9]
-                        : undefined,
-                },
-            };
-            const extraData = tx.params && tx.params.length !== 0
-                ? tx.params.reduce((acc, item, i) => (Object.assign(Object.assign({}, acc), { [item.name]: ethers_1.ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i] })), {})
-                : {};
-            return Object.assign(Object.assign({}, defaultReturn), extraData);
         });
     }
 }
@@ -383,7 +342,6 @@ const getParams = (self, call) => {
 };
 const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, version) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
-    const callDetails = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = batchCall.calls.reduce((acc, call, index) => {
         // Update params if variables (FC) or references (FD) are used
@@ -406,6 +364,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
     }, {});
     let optionalMessage = {};
     let optionalTypes = {};
+    let primaryType = [];
     if (batchCall.recurrency) {
         optionalMessage = {
             recurrency: {
@@ -421,6 +380,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
                 { name: "accumetable", type: "bool" },
             ],
         };
+        primaryType = [{ name: "recurrency", type: "Recurrency" }];
     }
     if (batchCall.multisig) {
         optionalMessage = Object.assign(Object.assign({}, optionalMessage), { multisig: {
@@ -431,6 +391,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
                 { name: "external_signers", type: "address[]" },
                 { name: "minimum_approvals", type: "uint8" },
             ] });
+        primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
     }
     const typedData = {
         types: Object.assign(Object.assign(Object.assign(Object.assign({ EIP712Domain: [
@@ -442,8 +403,6 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
             ], BatchMultiSigCall: [
                 { name: "info", type: "Info" },
                 { name: "limits", type: "Limits" },
-                { name: "recurrency", type: "Recurrency" },
-                { name: "multisig", type: "Multisig" },
                 ...batchCall.calls.map((_, index) => ({
                     name: `transaction${index + 1}`,
                     type: `Transaction${index + 1}`,
@@ -482,7 +441,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
             }, limits: {
                 valid_from: (_a = batchCall.validFrom) !== null && _a !== void 0 ? _a : 0,
                 expires_at: (_b = batchCall.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                gas_price_limit: (_c = batchCall.gasPriceLimit) !== null && _c !== void 0 ? _c : 0,
+                gas_price_limit: (_c = batchCall.gasPriceLimit) !== null && _c !== void 0 ? _c : "0x00000005D21DBA00",
                 cancelable: batchCall.cancelable || true,
             } }, optionalMessage), typedDataMessage),
     };

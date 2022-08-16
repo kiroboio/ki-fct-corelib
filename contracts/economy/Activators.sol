@@ -46,6 +46,7 @@ contract Activators is AccessControl {
     uint8 private constant BACKUP_STATE_ACTIVATED = 3;
 
     modifier onlyActivator() {
+        console.log("onlyActivator");
         require(s_activators[msg.sender] == 1, "not an activator");
         _;
     }
@@ -89,7 +90,7 @@ contract Activators is AccessControl {
     }
 
     function addActivator(address activator) external onlyAdmin {
-        //require()
+        console.log("addActivator");
         s_activators[activator] = 1;
     }
 
@@ -140,10 +141,10 @@ contract Activators is AccessControl {
     }
 
     function activate(bytes calldata data) external onlyActivator {
-        // console.log("---------------------> activating ", data.length);
+        console.log("---------------------> activating ", data.length);
         uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
         (bool success_, bytes memory data_) = s_fctController.call(data);
-        // console.log('success', success_);
+        console.log('success', success_);
         if (!success_) {
             revert(_getRevertMsg(data_));
         }

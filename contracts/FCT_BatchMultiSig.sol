@@ -11,14 +11,18 @@ import "./FCT_Helpers.sol";
 import "hardhat/console.sol";
 
                                               // 1-7      8bit flags
-// uint256 constant GAS_PRICE_LIMIT_BIT = 8;  // 8-72     64bit gas price limit
-// uint256 constant BEFORE_TS_BIT = 72;       // 72-112   40bit before timestamp
-// uint256 constant AFTER_TS_BIT = 112;       // 112-152  40bit after timestamp
-// uint256 constant CHILL_TIME_BIT = 152;     // 152-184  32bit gas limit
-// uint256 constant RECURRENT_BIT = 184;      // 184-200  16bit nonce
-// uint256 constant VERSION_BIT = 200;        // 184-224  24bit nonce
+uint256 constant GAS_PRICE_LIMIT_BIT = 8;  // 8-72     64bit gas price limit
+uint256 constant BEFORE_TS_BIT = 72;       // 72-112   40bit before timestamp
+uint256 constant AFTER_TS_BIT = 112;       // 112-152  40bit after timestamp
+uint256 constant CHILL_TIME_BIT = 152;     // 152-184  32bit gas limit
+uint256 constant RECURRENT_BIT = 184;      // 184-200  16bit nonce
+uint256 constant VERSION_BIT = 200;        // 184-224  24bit nonce
 uint256 constant EXT_SIGNERS_BIT = 224;       // 224-232  8bit nonce
-// uint256 constant SALT_BIT = 232;           // 232-256  24bit nonce
+uint256 constant SALT_BIT = 232;           // 232-256  24bit nonce
+
+uint256 constant FLAG_CHILLMODE = 0x01;
+uint256 constant FLAG_CANCELABLE = 0x02;
+uint256 constant FLAG_EIP712 = 0x04;
 
 // Info
 // name
@@ -46,21 +50,21 @@ uint256 constant EXT_SIGNERS_BIT = 224;       // 224-232  8bit nonce
 // array[]               
 
 // 1-15     16bit flags
-uint256 constant GAS_PRICE_LIMIT_BIT = 16; // 16-70    64bit gas price limit
-uint256 constant GAS_LIMIT_BIT = 80; // 80-111   32bit gas limit
-uint256 constant BEFORE_TS_BIT = 112; // 112-151  40bit before timestamp
-uint256 constant AFTER_TS_BIT = 152; // 152-191  40bit after timestamp
-uint256 constant NONCE_BIT = 192; // 192-231  40bit nonce
-uint256 constant MAX_NONCE_JUMP_BIT = 216; // 216      24bit of nonce
-uint256 constant GROUP_BIT = 232; // 232-255  24bit group
+// uint256 constant GAS_PRICE_LIMIT_BIT = 16; // 16-70    64bit gas price limit
+// uint256 constant GAS_LIMIT_BIT = 80; // 80-111   32bit gas limit
+// uint256 constant BEFORE_TS_BIT = 112; // 112-151  40bit before timestamp
+// uint256 constant AFTER_TS_BIT = 152; // 152-191  40bit after timestamp
+// uint256 constant NONCE_BIT = 192; // 192-231  40bit nonce
+// uint256 constant MAX_NONCE_JUMP_BIT = 216; // 216      24bit of nonce
+// uint256 constant GROUP_BIT = 232; // 232-255  24bit group
 
-uint256 constant FLAG_EIP712 = 0x0100;
-uint256 constant FLAG_STATICCALL = 0x0400;
-uint256 constant FLAG_CANCELABLE = 0x0800;
-uint256 constant FLAG_PAYMENT = 0xf000;
+// uint256 constant FLAG_EIP712 = 0x0100;
+// uint256 constant FLAG_CANCELABLE = 0x0800;
+// uint256 constant FLAG_PAYMENT = 0xf000;
 
-uint256 constant FLAG_FLOW = 0x00f0;
-uint256 constant FLAG_JUMP = 0x000f;
+uint256 constant FLAG_STATICCALL = 0x08;
+uint256 constant FLAG_FLOW = 0x10;
+uint256 constant FLAG_JUMP = 0x20;
 
 struct MultiSigCallLocals {
     bytes32 messageHash;
@@ -87,7 +91,7 @@ struct MultiSigInternalCallLocals {
 contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     // using Variables for address;
 
-    bytes4 public constant VERSION = bytes4(0x00010101);
+    bytes3 public constant VERSION = bytes3(0x010101);
 
 
     bytes32 public constant batchMultiSigCallID = bytes32(
@@ -178,15 +182,39 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     }
 
     // Stubs ends
+    bytes32 public constant BATCH_MULTI_SIG_CALL_INFO_TYPEHASH_ =
+        keccak256(
+            "Info(string name,bytes3 version,bool eip712,bytes3 random_id)"
+        );
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_ =
         keccak256(
-            "Limits_(uint64 nonce,bool refund,uint40 valid_from,uint40 expires_at,uint64 gas_price_limit)"
+            "Limits(uint40 valid_from,uint40 expires_at,uint64 gas_price_limit,bool cancelable)"
+        );
+
+    bytes32 public constant BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH_ =
+        keccak256(
+            "Recurrency(uint16 max_repeats,uint32 chill_time,bool accumetable)"
+        );
+
+    bytes32 public constant BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH_ =
+        keccak256(
+            "Multisig(address[] external_signers,uint8 minimum_approvals)"
+        );
+
+    bytes32 public constant BATCH_MULTI_SIG_CALL_TOKENTRANSFER_TYPEHASH_ =
+        keccak256(
+            "TokenTransfer(Transaction call,TokenTransferParams methodParams)"
+        );
+
+    bytes32 public constant BATCH_MULTI_SIG_CALL_TOKENTRANSFERPARAMS_TYPEHASH_ =
+        keccak256(
+            "TokenTransferParams(address to,uint256 token_amount)"
         );
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_ =
         keccak256(
-            "Transaction_(address from,address call_address,string call_ens,uint256 eth_value,uint32 gas_limit,bool view_only,string flow_control,uint8 jump_over,string method_interface)"
+            "Transaction(address from,address to,string to_ens,uint256 eth_value,uint32 gas_limit,bool view_only,string flow_control,uint8 jump_over,string method_interface)"
         );
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_APPROVAL_TYPEHASH_ =
@@ -216,7 +244,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     function _executeCall(
         address wallet,
         address to,
-        uint16 flags,
+        uint8 flags,
         uint32 gasLimit,
         bytes32 messageHash,
         bytes32 functionSignature,
@@ -276,7 +304,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     function _executeCall(
         address wallet,
         address to,
-        uint16 flags,
+        uint8 flags,
         uint32 gasLimit,
         bytes32 messageHash,
         bytes32 functionSignature,
@@ -300,7 +328,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
     function _executePackedCall(
         address wallet,
         address to,
-        uint16 flags,
+        uint8 flags,
         uint32 gasLimit,
         bytes32 messageHash,
         uint256 value,
@@ -474,18 +502,21 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
 
     // Batch Call: Multi Signature, Multi External Contract Functions
     function batchMultiSigCall_(
-        bytes4 version,
+        bytes3 version,
         MSCalls[] calldata tr
         // bytes32[][] calldata variablesx
     ) external returns (MReturn[][] memory rt) {
+        console.log("in batchMultiSigCall_");
         // uint256 startGas = gasleft();
         // require(msg.sender == s_activator, "Wallet: sender not allowed");
         require(version == VERSION, "fct: wrong version");
         rt = new MReturn[][](tr.length);
+        console.log("in batchMultiSigCall_ 2");
         unchecked {
             uint256 trLength = tr.length;
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
+            console.log("in batchMultiSigCall_ 3");
             for (uint256 i = 0; i < trLength; ++i) {
                 // bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
@@ -496,22 +527,61 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     mcalls.typeHash,
                     keccak256(
                         abi.encode(
+                            BATCH_MULTI_SIG_CALL_INFO_TYPEHASH_,
+                            mcalls.name,
+                            uint24(sessionId >> VERSION_BIT),
+                            sessionId & FLAG_EIP712 != 0,
+                            uint24(sessionId >> SALT_BIT) //random_id
+                        )
+                    ));
+                console.log("in batchMultiSigCall_ 4");
+                msg2 = bytes.concat(msg2, abi.encode(
+                    mcalls.typeHash,
+                    keccak256(
+                        abi.encode(
                             BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_,
-                            uint64(sessionId >> NONCE_BIT), // group + nonce
-                            sessionId & FLAG_PAYMENT != 0,
+                            uint40(sessionId >> BEFORE_TS_BIT), // valid_from
                             uint40(sessionId >> AFTER_TS_BIT),
-                            uint40(sessionId >> BEFORE_TS_BIT),
-                            uint64(sessionId >> GAS_PRICE_LIMIT_BIT)
+                            uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
+                            sessionId & FLAG_CANCELABLE != 0
                         )
                     )
-                );
-
+                ));
+                console.log("in batchMultiSigCall_ 5");
+                if(uint16(sessionId >> RECURRENT_BIT) > 1 ){
+                msg2 = bytes.concat(msg2, abi.encode(
+                    mcalls.typeHash,
+                    keccak256(
+                        abi.encode(
+                            BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH_,
+                            uint16(sessionId >> RECURRENT_BIT),
+                            uint32(sessionId >> CHILL_TIME_BIT),
+                            sessionId & FLAG_CHILLMODE != 0
+                        )
+                    )
+                ));
+                }
+                console.log("in batchMultiSigCall_ 6");
+                if(uint8(sessionId >> EXT_SIGNERS_BIT) > 0 ){
+                msg2 = bytes.concat(msg2, abi.encode(
+                    mcalls.typeHash,
+                    keccak256(
+                        abi.encode(
+                            BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH_,
+                            mcalls.signatures,
+                            uint8(sessionId >> EXT_SIGNERS_BIT)
+                        )
+                    )
+                ));
+                }
+                console.log("in batchMultiSigCall_ 7");
                 // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
                 _checkSessionIdLimits(sessionId);
                 // maxNonce = sessionId;
-
+                console.log("in batchMultiSigCall_ 8");
                 uint256 length = mcalls.mcall.length;
                 for (uint256 j = 0; j < length; ++j) {
+                    console.log("in batchMultiSigCall_ 9");
                     MSCall calldata call = mcalls.mcall[j];
                     //console.log("loop :", j);
                    console.logBytes(call.types.length > 0 ? abiToEIP712(call.data, call.types, call.typedHashes, Offset({ data: 0, types: 0})) : call.data);
@@ -523,7 +593,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     // else{
                     //     console.logBytes(call.data);
                     // }
-
+                    console.log("in batchMultiSigCall_ 10");
                     msg2 = abi.encodePacked(
                         msg2,
                         // messageHash
@@ -552,6 +622,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                 )
                             )
                     );
+                    console.log("in batchMultiSigCall_ 11");
                 }
 
                 bytes32 messageHash = IFCT_Controller(msg.sender).register(
@@ -565,7 +636,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         eip712: (sessionId & FLAG_EIP712) != 0
                     })
                 );
-
+                console.log("in batchMultiSigCall_ 12");
                 address[] memory signers = new address[](
                     mcalls.signatures.length
                 );
@@ -578,25 +649,25 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         signature.s
                     );
                 }
-
-                // TODO: multi-sig m of n - uncomment following lines
-                // if (uint8(sessionId >> EXT_SIGNERS_BIT) > 0) {
-                //     uint256 externalSigs = 0;
-                //     for (uint256 s = 0; s < signers.length; ++s) {
-                //         address signer = signers[s];
-                //         for (uint256 m = 0; m < mcalls.externalSigners.length; ++m) {
-                //             if (signer == mcalls.externalSigners[m]) {
-                //                 ++externalSigs;
-                //                 break;
-                //             }                        
-                //         }
-                //         if (externalSigs == uint8(sessionId >> EXT_SIGNERS_BIT)) {
-                //             break;
-                //         }
-                //     }
-                //     require(externalSigs ==uint8(sessionId >> EXT_SIGNERS_BIT), "FCT: missing ext singatues");
-                // }
-
+                console.log("in batchMultiSigCall_ 13");
+                //TODO: multi-sig m of n - uncomment following lines
+                if (uint8(sessionId >> EXT_SIGNERS_BIT) > 0) {
+                    uint256 externalSigs = 0;
+                    for (uint256 s = 0; s < signers.length; ++s) {
+                        address signer = signers[s];
+                        for (uint256 m = 0; m < mcalls.externalSigners.length; ++m) {
+                            if (signer == mcalls.externalSigners[m]) {
+                                ++externalSigs;
+                                break;
+                            }                        
+                        }
+                        if (externalSigs == uint8(sessionId >> EXT_SIGNERS_BIT)) {
+                            break;
+                        }
+                    }
+                    //require(externalSigs ==uint8(sessionId >> EXT_SIGNERS_BIT), "FCT: missing ext singatues");
+                }
+                console.log("in batchMultiSigCall_ 14");
                 MultiSigCallLocals memory locals;
                 {
                     locals.sessionId = sessionId;
@@ -610,14 +681,14 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     locals.rt[locals.index] = new MReturn[](length);
                     locals.gas = IGas - gasleft();
                 }
-
+                console.log("in batchMultiSigCall_ 15");
                 locals.returnedValues = new bytes[](length);
                 //console.log("gas until j:", locals.gas);
                 for (uint256 j = 0; j < length; ++j) {
-                    // console.log(
-                    //     "------------------ FTC %s ------------------",
-                    //     j + 1
-                    // );
+                    console.log(
+                        "------------------ FTC %s ------------------",
+                        j + 1
+                    );
                     //console.log("test1");
                     uint256 gas = gasleft();
 
@@ -633,19 +704,22 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             require(varLocals.callFrom != mcalls.mcall[l].from, "FCT: from exists");
                         }
                     }
-                    require(
-                        IFCT_Runner(varLocals.callFrom).allowedToExecute_(
-                            signers,
-                            0
-                        ) > 0,
-                        "FCT: signers not allowed"
-                    );
+                    console.log("in batchMultiSigCall_ 15.1");
+                    // require(
+                    //     IFCT_Runner(varLocals.callFrom).allowedToExecute_(
+                    //         signers,
+                    //         uint256(uint24(sessionId >> VERSION_BIT))
+                    //     ) > 0,
+                    //     "FCT: signers not allowed"
+                    // );
+                    console.log("in batchMultiSigCall_ 15.2");
                     // call.to
                     varLocals.callTo = _replace(call.to, mcalls.variables, j, locals.returnedValues);
                     // call.value
                     varLocals.value = _replace(call.value, mcalls.variables, j, locals.returnedValues);
                     // call.data
                     varLocals.data = call.data;
+                    console.log("in batchMultiSigCall_ 16");
                     if (call.data.length > 0) {
                         //  console.logBytes(varLocals.data);
                         for (
@@ -737,6 +811,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             }
                         }
                     }
+                    console.log("in batchMultiSigCall_ 17");
                     (bool success, bytes memory res) = _executeCall(
                         varLocals.callFrom, // wallet.addr,
                         IFCT_Controller(msg.sender).ensToAddress(call.ensHash, varLocals.callTo),
@@ -747,7 +822,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         varLocals.value,
                         varLocals.data
                     );
-                    //console.log('execute done', success);
+                    console.log('execute done', success);
                     
                     if (success) {
                         if (res.length > 64) {
@@ -879,7 +954,7 @@ function _calcMultiSigTransactionHash(
     }
 
     function _checkSessionIdLimits(uint256 sessionId) private view {
-        require(
+         require(
             tx.gasprice <= uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
             "FCT: gas price too high"
         );

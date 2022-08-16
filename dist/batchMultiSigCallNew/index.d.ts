@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { DecodeTx } from "../interfaces";
 import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
 export declare class BatchMultiSigCallNew {
     calls: Array<BatchMSCall>;
@@ -24,26 +23,4 @@ export declare class BatchMultiSigCallNew {
     editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput): Promise<BatchMSCall>;
     removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMSCall>;
     private getMultiSigCallData;
-    decodeLimits(encodedLimits: string): {
-        nonce: any;
-        payment: any;
-        afterTimestamp: any;
-        beforeTimestamp: any;
-        maxGasPrice: any;
-    };
-    decodeTransactions(txs: DecodeTx[]): {
-        typeHash: any;
-        txHash: any;
-        transaction: {
-            signer: any;
-            to: any;
-            toEnsHash: any;
-            value: any;
-            gasLimit: any;
-            staticCall: any;
-            flow: any;
-            jump: any;
-            methodHash: any;
-        };
-    }[];
 }

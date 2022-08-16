@@ -220,6 +220,7 @@ export class BatchMultiSigCallNew {
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
       sessionId,
       inputData: batchCall,
+      name: batchCall.name || "BatchMultiSigCall transaction",
       mcall,
 
       addCall: async function (tx: MSCallInput, index?: number): Promise<BatchMSCall | Error> {
@@ -282,69 +283,69 @@ export class BatchMultiSigCallNew {
     };
   }
 
-  public decodeLimits(encodedLimits: string) {
-    const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
+  // public decodeLimits(encodedLimits: string) {
+  //   const lim = defaultAbiCoder.decode(["bytes32", "uint64", "bool", "uint40", "uint40", "uint64"], encodedLimits);
 
-    return {
-      nonce: lim[1].toHexString(),
-      payment: lim[2],
-      afterTimestamp: lim[3],
-      beforeTimestamp: lim[4],
-      maxGasPrice: lim[5].toString(),
-    };
-  }
+  //   return {
+  //     nonce: lim[1].toHexString(),
+  //     payment: lim[2],
+  //     afterTimestamp: lim[3],
+  //     beforeTimestamp: lim[4],
+  //     maxGasPrice: lim[5].toString(),
+  //   };
+  // }
 
-  public decodeTransactions(txs: DecodeTx[]) {
-    return txs.map((tx) => {
-      const data =
-        tx.params && tx.params.length !== 0
-          ? defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
-          : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
+  // public decodeTransactions(txs: DecodeTx[]) {
+  //   return txs.map((tx) => {
+  //     const data =
+  //       tx.params && tx.params.length !== 0
+  //         ? defaultAbiCoder.decode(["bytes32", "bytes32", ...tx.params.map((item) => item.type)], tx.encodedMessage)
+  //         : defaultAbiCoder.decode(["bytes32", "bytes32"], tx.encodedMessage);
 
-      const details = defaultAbiCoder.decode(
-        ["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"],
-        tx.encodedDetails
-      );
+  //     const details = defaultAbiCoder.decode(
+  //       ["bytes32", "address", "address", "bytes32", "uint256", "uint32", "bool", "bytes32", "uint8", "bytes32"],
+  //       tx.encodedDetails
+  //     );
 
-      const defaultReturn = {
-        typeHash: data[0],
-        txHash: data[1],
-        transaction: {
-          signer: details[1],
-          to: details[2],
-          toEnsHash:
-            details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[3]
-              : undefined,
-          value: details[4].toString(),
-          gasLimit: details[5],
-          staticCall: details[6],
-          flow: details[7],
-          jump: details[8],
-          methodHash:
-            details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-              ? details[9]
-              : undefined,
-        },
-      };
+  //     const defaultReturn = {
+  //       typeHash: data[0],
+  //       txHash: data[1],
+  //       transaction: {
+  //         signer: details[1],
+  //         to: details[2],
+  //         toEnsHash:
+  //           details[3] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+  //             ? details[3]
+  //             : undefined,
+  //         value: details[4].toString(),
+  //         gasLimit: details[5],
+  //         staticCall: details[6],
+  //         flow: details[7],
+  //         jump: details[8],
+  //         methodHash:
+  //           details[9] !== "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+  //             ? details[9]
+  //             : undefined,
+  //       },
+  //     };
 
-      const extraData =
-        tx.params && tx.params.length !== 0
-          ? tx.params.reduce(
-              (acc, item, i) => ({
-                ...acc,
-                [item.name]: ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i],
-              }),
-              {}
-            )
-          : {};
+  //     const extraData =
+  //       tx.params && tx.params.length !== 0
+  //         ? tx.params.reduce(
+  //             (acc, item, i) => ({
+  //               ...acc,
+  //               [item.name]: ethers.BigNumber.isBigNumber(data[2 + i]) ? data[2 + i].toString() : data[2 + i],
+  //             }),
+  //             {}
+  //           )
+  //         : {};
 
-      return {
-        ...defaultReturn,
-        ...extraData,
-      };
-    });
-  }
+  //     return {
+  //       ...defaultReturn,
+  //       ...extraData,
+  //     };
+  //   });
+  // }
 }
 
 const verifyParams = (
@@ -457,8 +458,6 @@ const createTypedData = async (
   salt: string,
   version: string
 ): Promise<TypedData> => {
-  const callDetails = "0x00000100000000010000000000ffffffffff0000000000000005D21DBA00f100";
-
   // Creates messages from multiCalls array for EIP712 sign
   const typedDataMessage = batchCall.calls.reduce((acc: object, call: MSCallInput, index: number) => {
     // Update params if variables (FC) or references (FD) are used
@@ -489,6 +488,7 @@ const createTypedData = async (
 
   let optionalMessage = {};
   let optionalTypes = {};
+  let primaryType = [];
 
   if (batchCall.recurrency) {
     optionalMessage = {
@@ -505,6 +505,7 @@ const createTypedData = async (
         { name: "accumetable", type: "bool" },
       ],
     };
+    primaryType = [{ name: "recurrency", type: "Recurrency" }];
   }
 
   if (batchCall.multisig) {
@@ -522,6 +523,7 @@ const createTypedData = async (
         { name: "minimum_approvals", type: "uint8" },
       ],
     };
+    primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
   }
 
   const typedData = {
@@ -536,8 +538,6 @@ const createTypedData = async (
       BatchMultiSigCall: [
         { name: "info", type: "Info" },
         { name: "limits", type: "Limits" },
-        { name: "recurrency", type: "Recurrency" },
-        { name: "multisig", type: "Multisig" },
         ...batchCall.calls.map((_, index) => ({
           name: `transaction${index + 1}`,
           type: `Transaction${index + 1}`,
@@ -592,7 +592,7 @@ const createTypedData = async (
       limits: {
         valid_from: batchCall.validFrom ?? 0,
         expires_at: batchCall.expiresAt ?? 0,
-        gas_price_limit: batchCall.gasPriceLimit ?? 0,
+        gas_price_limit: batchCall.gasPriceLimit ?? "0x00000005D21DBA00", // 25 Gwei
         cancelable: batchCall.cancelable || true,
       },
       ...optionalMessage,

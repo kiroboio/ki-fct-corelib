@@ -111,7 +111,7 @@ export const getSessionId = (salt: string, batchCall: BatchMSCallInput) => {
     : "ffffffffff";
   const gasPriceLimit = batchCall.gasPriceLimit
     ? Number(batchCall.gasPriceLimit).toString(16).padStart(16, "0")
-    : "0000000000000000";
+    : "00000005D21DBA00"; // 25 Gwei
 
   // Flags needs to be updated - currently only support for one flag (payment/repay)
   const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;
