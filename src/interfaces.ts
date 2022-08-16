@@ -53,7 +53,6 @@ export interface BatchCallBase {
 }
 
 export interface MultiCallBase {
-  data?: string;
   method?: string;
   params?: Params[];
 

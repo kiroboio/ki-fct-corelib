@@ -469,3 +469,55 @@ describe("batchMultiSigCall", () => {
     });
   });
 });
+
+// const FCT = {
+//   calls: [
+//     {
+//       value: 0,
+//       to: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137", // KIRO
+//       from: "0x9e05248da886200362af7e0e42c30451cf434da1",
+//       method: "balanceOf",
+//       params: [{ name: "account", type: "address", value: "0x0388aedc924a373b28562884458f51dec5dbacbd" }],
+//       validator: {
+//         method: "greaterEqual",
+//         params: {
+//           valueToCompare: "5000000000000000000",
+//         },
+//         validatorAddress: "0x...", // Validator address
+//       },
+//       flow: Flow.OK_CONT_FAIL_STOP,
+//     },
+//     {
+//       value: 0,
+//       to: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137", // KIRO
+//       from: "0x9e05248da886200362af7e0e42c30451cf434da1",
+//       method: "transfer",
+//       params: [
+//         { name: "to", type: "address", value: "0xd19125f79c6d8c19a4491fd00bd0e8627891f48b" },
+//         { name: "token_amount", type: "uint256", value: "5000000000000000000" }, // 5 KIRO
+//       ],
+//       flow: Flow.OK_CONT_FAIL_JUMP,
+//       jump: 1,
+//     },
+//     {
+//       value: 0,
+//       to: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137", // KIRO
+//       from: "0x9e05248da886200362af7e0e42c30451cf434da1",
+//       method: "transfer",
+//       params: [
+//         { name: "to", type: "address", value: "0xd19125f79c6d8c19a4491fd00bd0e8627891f48b" },
+//         { name: "token_amount", type: "uint256", value: "15000000000000000000" }, // 15 KIRO
+//       ],
+//       gasLimit: 49000,
+//     },
+//     {
+//       value: 5000000000000000000, // 5 ETH
+//       from: "0x9e05248da886200362af7e0e42c30451cf434da1",
+//       to: "0x58f56615180a8eea4c462235d9e215f72484b4a3",
+//     },
+//   ],
+//   afterTimestamp: 1655197200, // June 14th, 2022
+//   beforeTimestamp: 1658048400, // July 17th, 2022
+//   gasLimit: 120000,
+//   maxGasPrice: 35000000000, // 35 GWei
+// };

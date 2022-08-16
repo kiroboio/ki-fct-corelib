@@ -5,9 +5,8 @@ import { BatchCallBase, BatchFlags, MultiCallBase, Validator } from "../interfac
 export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   value: string;
   to: string;
-  toEnsHash?: string;
   from: string;
-  fromVariableId?: string;
+  toEnsHash?: string;
   validator?: Validator;
   flow?: Flow;
   jump?: number;
@@ -15,10 +14,11 @@ export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
 }
 
 export interface BatchMSCallInput {
+  calls: MSCallInput[];
   name?: string;
   validFrom?: number;
   expiresAt?: number;
-  gasPriceLimit?: number;
+  maxGasPrice?: number;
   cancelable?: boolean;
   recurrency?: {
     maxRepeats: number;
@@ -32,12 +32,11 @@ export interface BatchMSCallInput {
   flags?: {
     payment: boolean;
   };
-  calls: MSCallInput[];
 }
 
 export interface MSCall {
   typeHash: string;
-  ensHash?: string;
+  ensHash: string;
   functionSignature: string;
   value: string;
   from: string;

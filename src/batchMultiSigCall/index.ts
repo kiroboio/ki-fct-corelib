@@ -591,7 +591,7 @@ const createTypedData = async (
       limits: {
         valid_from: batchCall.validFrom ?? 0,
         expires_at: batchCall.expiresAt ?? 0,
-        gas_price_limit: batchCall.gasPriceLimit ?? "25000000000", // 25 Gwei
+        gas_price_limit: batchCall.maxGasPrice ?? "25000000000", // 25 Gwei
         cancelable: batchCall.cancelable || true,
       },
       ...optionalMessage,
