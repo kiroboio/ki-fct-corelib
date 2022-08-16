@@ -355,6 +355,9 @@ describe("batchMultiSigCall", () => {
     it("Should add call", async () => {
       batchMultiSigCall = new BatchMultiSigCallNew(ethers.provider, fctController.address);
 
+      batchMultiSigCall.createVariable("to", accounts[12]);
+      batchMultiSigCall.createVariable("amount", 0);
+
       const tx = {
         name: "testCall",
         calls: [
@@ -378,6 +381,47 @@ describe("batchMultiSigCall", () => {
             ],
             from: vault11.address,
           },
+          {
+            value: 0,
+            to: multiplier.address,
+            method: "testCall",
+            params: [
+              { name: "to", type: "address", variable: "to" },
+              { name: "value", type: "uint256", variable: "amount" },
+              { name: "name1", type: "string", value: "Tal" },
+              { name: "name2", type: "string", value: "Ori" },
+              { name: "b", type: "bytes", value: 0x12345678 },
+              { name: "strArr", type: "string[]", value: ["Tal", "Ori"] },
+              { name: "b2", type: "bytes", value: 0x122 },
+            ],
+            flow: Flow.OK_CONT_FAIL_JUMP,
+            jump: 1,
+            from: vault10.address,
+          },
+          {
+            value: 0,
+            to: multiplier.address,
+            method: "testCall3",
+            params: [
+              { name: "to", type: "bytes", value: 0x340 },
+              { name: "name1", type: "string", value: "Tal" },
+              { name: "value", type: "bytes", value: 0x123 },
+              {
+                name: "test",
+                type: "Test",
+                customType: true,
+                value: [
+                  { name: "value", type: "uint256", value: 125 },
+                  { name: "from", type: "address", value: vault12.address },
+                  { name: "name", type: "string", value: "Tal" },
+                  { name: "number", type: "bytes", value: 0x350 },
+                ],
+              },
+              { name: "from", type: "bytes", value: 0x355 },
+            ],
+            flow: Flow.OK_CONT_FAIL_REVERT,
+            from: vault10.address,
+          },
         ],
       };
 
@@ -399,6 +443,8 @@ describe("batchMultiSigCall", () => {
         return signature;
       };
       const variables = batchMultiSigCall.getVariablesAsBytes32();
+
+      console.log(variables);
 
       const signedCalls = calls.map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);

@@ -75,7 +75,7 @@ export class BatchMultiSigCallNew {
       }
 
       if (isNaN(Number(value)) || utils.isAddress(value)) {
-        return `0x${String(value).padStart(64, "0")}`;
+        return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
       }
 
       return `0x${Number(value).toString(16).padStart(64, "0")}`;
@@ -592,7 +592,7 @@ const createTypedData = async (
       limits: {
         valid_from: batchCall.validFrom ?? 0,
         expires_at: batchCall.expiresAt ?? 0,
-        gas_price_limit: batchCall.gasPriceLimit ?? "0x00000005D21DBA00", // 25 Gwei
+        gas_price_limit: batchCall.gasPriceLimit ?? "25000000000", // 25 Gwei
         cancelable: batchCall.cancelable || true,
       },
       ...optionalMessage,

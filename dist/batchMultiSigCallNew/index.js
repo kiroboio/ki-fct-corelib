@@ -65,7 +65,7 @@ class BatchMultiSigCallNew {
                 throw new Error(`Variable ${item[0]} doesn't have a value`);
             }
             if (isNaN(Number(value)) || ethers_1.utils.isAddress(value)) {
-                return `0x${String(value).padStart(64, "0")}`;
+                return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
             }
             return `0x${Number(value).toString(16).padStart(64, "0")}`;
         });
@@ -441,7 +441,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
             }, limits: {
                 valid_from: (_a = batchCall.validFrom) !== null && _a !== void 0 ? _a : 0,
                 expires_at: (_b = batchCall.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                gas_price_limit: (_c = batchCall.gasPriceLimit) !== null && _c !== void 0 ? _c : "0x00000005D21DBA00",
+                gas_price_limit: (_c = batchCall.gasPriceLimit) !== null && _c !== void 0 ? _c : "25000000000",
                 cancelable: batchCall.cancelable || true,
             } }, optionalMessage), typedDataMessage),
     };
