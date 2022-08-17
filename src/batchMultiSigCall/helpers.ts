@@ -1,7 +1,8 @@
+import { utils } from "ethers";
+import { TypedData } from "ethers-eip712";
 import { BatchMultiSigCall } from ".";
 import {
   getEncodedMethodParams,
-  getFlags,
   getMethodInterface,
   getTypedHashes,
   getTypesArray,
@@ -9,8 +10,6 @@ import {
   getValidatorMethodInterface,
 } from "../helpers";
 import { BatchMSCallInput, MSCallInput } from "./interfaces";
-import { utils } from "ethers";
-import { TypedData } from "ethers-eip712";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 

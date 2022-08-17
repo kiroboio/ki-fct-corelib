@@ -36,6 +36,14 @@ export const flows = {
   },
 };
 
+function instanceOfParams(objectOrArray: any): objectOrArray is Params | Params[] {
+  if (Array.isArray(objectOrArray)) {
+    return instanceOfParams(objectOrArray[0]);
+  }
+
+  return typeof objectOrArray === "object" && "type" in objectOrArray;
+}
+
 // Everything for sessionId
 const getGroupId = (group: number): string => group.toString(16).padStart(6, "0");
 const getNonce = (nonce: number): string => nonce.toString(16).padStart(10, "0");
@@ -45,7 +53,7 @@ const getBeforeTimestamp = (infinity: boolean, epochDate?: number): string =>
 const getMaxGas = (maxGas: number): string => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice: number): string => gasPrice.toString(16).padStart(16, "0");
 
-const typeValue = (param: Params) => {
+const typeValue = (param: Params): number[] => {
   const TYPE_STRING = 1000;
   const TYPE_BYTES = 2000;
   const TYPE_ARRAY = 3000;
@@ -90,14 +98,14 @@ const typeValue = (param: Params) => {
 };
 
 // Get Types array
-export const getTypesArray = (params: Params[]) => {
+export const getTypesArray = (params: Params[]): number[] => {
   return params.reduce((acc, item) => {
     const data = typeValue(item);
     return [...acc, ...data];
   }, []);
 };
 
-export const getTypedHashes = (params: Params[], typedData: { types: TypedDataTypes }) => {
+export const getTypedHashes = (params: Params[], typedData: { types: TypedDataTypes }): string[] => {
   return params.reduce((acc, item) => {
     if (item.customType) {
       const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
@@ -148,7 +156,7 @@ export const getFlags = (flags: Partial<BatchFlags>, small: boolean) => {
 };
 
 // Get flags for single call in multicalls
-export const manageCallFlags = (flags: Partial<MultiCallFlags>) => {
+export const manageCallFlags = (flags: Partial<MultiCallFlags>): string => {
   const array = ["0", "x", "0", "0"];
   if (flags.onFailContinue && flags.onFailStop) {
     throw new Error("Both flags onFailContinue and onFailStop can't be enabled at once");
@@ -162,7 +170,7 @@ export const manageCallFlags = (flags: Partial<MultiCallFlags>) => {
   return array.join("");
 };
 
-export const manageCallFlagsV2 = (flow: Flow | string, jump: number) => {
+export const manageCallFlagsV2 = (flow: Flow | string, jump: number): string => {
   if (jump > 15) {
     throw new Error("Jump value cannot exceed 15");
   }
@@ -175,20 +183,18 @@ export const manageCallFlagsV2 = (flow: Flow | string, jump: number) => {
 };
 
 // From method and params create tuple
-export const getMethodInterface = (call: Partial<MethodParamsInterface>) => {
+export const getMethodInterface = (call: Partial<MethodParamsInterface>): string => {
   const params = call.params.map((item) => {
-    // If param is custom struct
-    if (item.customType) {
-      let value;
-      let isArray = false;
-      if (item.type.lastIndexOf("[") > 0) {
-        isArray = true;
-        value = item.value[0] as Params[];
+    if (instanceOfParams(item.value)) {
+      if (Array.isArray(item.value[0])) {
+        const value = item.value[0] as Params[];
+        return `(${value.map((val) => val.type).join(",")})[]`;
       } else {
-        value = item.value as Params[];
+        const value = item.value as Params[];
+        return `(${value.map((val) => val.type).join(",")})`;
       }
-      return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
     }
+
     return item.type;
   });
 
@@ -196,18 +202,26 @@ export const getMethodInterface = (call: Partial<MethodParamsInterface>) => {
 };
 
 // Get typehash from typedData
-export const getTypeHash = (typedData: TypedData) => {
+export const getTypeHash = (typedData: TypedData): string => {
   const m2 = TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
   return ethers.utils.hexZeroPad(ethers.utils.hexlify(m2), 32);
 };
 
 // Get Typed Data domain for EIP712
-export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
+export const getTypedDataDomain = async (
+  factoryProxy: ethers.Contract
+): Promise<{
+  name: string;
+  version: string;
+  chainId: number;
+  verifyingContract: string;
+  salt: string;
+}> => {
   const chainId = await factoryProxy.CHAIN_ID();
   return {
     name: await factoryProxy.NAME(),
     version: await factoryProxy.VERSION(),
-    chainId: chainId.toString(),
+    chainId: chainId.toNumber(),
     verifyingContract: factoryProxy.address,
     salt: await factoryProxy.uid(),
   };
@@ -246,7 +260,7 @@ export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
 //   return value;
 // };
 
-export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean) => {
+export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean): string => {
   if (!call.method) return "0x";
 
   if (withFunction) {
@@ -298,7 +312,7 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
   return defaultAbiCoder.encode(types, values);
 };
 
-export const generateTxType = (item: Partial<MethodParamsInterface>) => {
+export const generateTxType = (item: Partial<MethodParamsInterface>): { name: string; type: string }[] => {
   const defaults = [{ name: "details", type: "Transaction_" }];
 
   if (item.params) {
@@ -315,7 +329,7 @@ export const generateTxType = (item: Partial<MethodParamsInterface>) => {
   return [{ name: "details", type: "Transaction_" }];
 };
 
-export const getParamsLength = (encodedParams: string) => {
+export const getParamsLength = (encodedParams: string): string => {
   const paramsLength = defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
   return `0x${paramsLength}`;
 };
@@ -331,7 +345,7 @@ export const getParamsOffset = () => {
 // VALIDATOR FUNCTION HELPERS
 //
 
-export const getValidatorFunctionData = (validator: Validator, params: any[]) => {
+export const getValidatorFunctionData = (validator: Validator, params: any[]): { name: string; type: string }[] => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(validator.method);
 
@@ -348,7 +362,7 @@ export const getValidatorFunctionData = (validator: Validator, params: any[]) =>
   }, []);
 };
 
-export const getValidatorMethodInterface = (validator: Validator) => {
+export const getValidatorMethodInterface = (validator: Validator): string => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(validator.method);
 
@@ -359,7 +373,7 @@ export const getValidatorMethodInterface = (validator: Validator) => {
   return `${validator.method}(${validatorFunction.inputs.map((item) => item.type).join(",")})`;
 };
 
-export const getValidatorData = (call: Partial<MSCallInput>, noFunctionSignature: boolean) => {
+export const getValidatorData = (call: Partial<MSCallInput>, noFunctionSignature: boolean): string => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const data = iface.encodeFunctionData(call.validator.method, [
     ...Object.values(call.validator.params),
@@ -371,13 +385,13 @@ export const getValidatorData = (call: Partial<MSCallInput>, noFunctionSignature
   return noFunctionSignature ? `0x${data.slice(10)}` : data;
 };
 
-const getValidatorDataOffset = (types: string[], data: string) => {
+const getValidatorDataOffset = (types: string[], data: string): string => {
   return `0x${defaultAbiCoder
     .encode(types, [...types.slice(0, -1).map((item) => "0x" + "0".repeat(64)), data])
     .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
 };
 
-export const createValidatorTxData = (call: Partial<MSCallInput>) => {
+export const createValidatorTxData = (call: Partial<MSCallInput>): object | Error => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(call.validator.method);
   let validator = call.validator;

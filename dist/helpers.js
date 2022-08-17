@@ -44,6 +44,12 @@ exports.flows = {
         value: "6",
     },
 };
+function instanceOfParams(objectOrArray) {
+    if (Array.isArray(objectOrArray)) {
+        return instanceOfParams(objectOrArray[0]);
+    }
+    return typeof objectOrArray === "object" && "type" in objectOrArray;
+}
 // Everything for sessionId
 const getGroupId = (group) => group.toString(16).padStart(6, "0");
 const getNonce = (nonce) => nonce.toString(16).padStart(10, "0");
@@ -168,18 +174,15 @@ exports.manageCallFlagsV2 = manageCallFlagsV2;
 // From method and params create tuple
 const getMethodInterface = (call) => {
     const params = call.params.map((item) => {
-        // If param is custom struct
-        if (item.customType) {
-            let value;
-            let isArray = false;
-            if (item.type.lastIndexOf("[") > 0) {
-                isArray = true;
-                value = item.value[0];
+        if (instanceOfParams(item.value)) {
+            if (Array.isArray(item.value[0])) {
+                const value = item.value[0];
+                return `(${value.map((val) => val.type).join(",")})[]`;
             }
             else {
-                value = item.value;
+                const value = item.value;
+                return `(${value.map((val) => val.type).join(",")})`;
             }
-            return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
         }
         return item.type;
     });
@@ -198,7 +201,7 @@ const getTypedDataDomain = (factoryProxy) => __awaiter(void 0, void 0, void 0, f
     return {
         name: yield factoryProxy.NAME(),
         version: yield factoryProxy.VERSION(),
-        chainId: chainId.toString(),
+        chainId: chainId.toNumber(),
         verifyingContract: factoryProxy.address,
         salt: yield factoryProxy.uid(),
     };

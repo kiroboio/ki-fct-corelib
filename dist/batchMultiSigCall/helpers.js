@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSessionId = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.handleTo = void 0;
-const helpers_1 = require("../helpers");
 const ethers_1 = require("ethers");
+const helpers_1 = require("../helpers");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 const handleTo = (self, call) => {
     // If call is a validator method, return validator address as to address

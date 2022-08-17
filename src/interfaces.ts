@@ -1,7 +1,7 @@
 export interface Params {
   name: string;
   type: string;
-  value?: string[] | object[] | string;
+  value?: string[] | string | Params[] | Params[][];
   customType?: boolean;
   variable?: string;
 }

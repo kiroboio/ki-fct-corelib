@@ -41,7 +41,7 @@ export interface MSCall {
     flags: string;
     to: string;
     data: string;
-    types: string[];
+    types: number[];
     typedHashes: string[];
 }
 export interface BatchMSCall {

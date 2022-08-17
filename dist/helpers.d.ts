@@ -30,10 +30,10 @@ export declare const flows: {
         value: string;
     };
 };
-export declare const getTypesArray: (params: Params[]) => any;
+export declare const getTypesArray: (params: Params[]) => number[];
 export declare const getTypedHashes: (params: Params[], typedData: {
     types: TypedDataTypes;
-}) => any[];
+}) => string[];
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
@@ -57,22 +57,23 @@ export declare const manageCallFlagsV2: (flow: Flow | string, jump: number) => s
 export declare const getMethodInterface: (call: Partial<MethodParamsInterface>) => string;
 export declare const getTypeHash: (typedData: TypedData) => string;
 export declare const getTypedDataDomain: (factoryProxy: ethers.Contract) => Promise<{
-    name: any;
-    version: any;
-    chainId: any;
+    name: string;
+    version: string;
+    chainId: number;
     verifyingContract: string;
-    salt: any;
+    salt: string;
 }>;
 export declare const getEncodedMethodParams: (call: Partial<MethodParamsInterface>, withFunction?: boolean) => string;
-export declare const generateTxType: (item: Partial<MethodParamsInterface>) => any[];
+export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {
+    name: string;
+    type: string;
+}[];
 export declare const getParamsLength: (encodedParams: string) => string;
 export declare const getParamsOffset: () => string;
-export declare const getValidatorFunctionData: (validator: Validator, params: any[]) => any[];
+export declare const getValidatorFunctionData: (validator: Validator, params: any[]) => {
+    name: string;
+    type: string;
+}[];
 export declare const getValidatorMethodInterface: (validator: Validator) => string;
 export declare const getValidatorData: (call: Partial<MSCallInput>, noFunctionSignature: boolean) => string;
-export declare const createValidatorTxData: (call: Partial<MSCallInput>) => {
-    contractAddress: string;
-    functionSignature: string;
-    method_data_offset: string;
-    method_data_length: string;
-};
+export declare const createValidatorTxData: (call: Partial<MSCallInput>) => object | Error;
