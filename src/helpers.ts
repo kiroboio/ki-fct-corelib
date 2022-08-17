@@ -54,14 +54,10 @@ const typeValue = (param: Params) => {
   // If type is an array
   if (param.type.lastIndexOf("[") > 0) {
     if (param.customType) {
-      console.log([TYPE_ARRAY, param.value.length, ...getTypesArray(param.value[0] as Params[])]);
-
       return [TYPE_ARRAY, param.value.length, ...getTypesArray(param.value[0] as Params[])];
     }
 
     const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
-
-    console.log(parameter);
     const insideType = typeValue(parameter);
 
     return [TYPE_ARRAY, ...insideType];
@@ -221,40 +217,41 @@ export const getTypedDataDomain = async (factoryProxy: ethers.Contract) => {
 // METHOD HELPERS FOR FCTs
 //
 
-const handleValues = (value: string | string[], type: string) => {
-  if (type === "bytes" || type === "string") {
-    let v: Uint8Array;
-    if (type === "string") {
-      v = ethers.utils.toUtf8Bytes(value as string);
-    } else {
-      v = ethers.utils.arrayify(value as string);
-    }
+// const handleValues = (value: string | string[], type: string) => {
+//   if (type === "bytes" || type === "string") {
+//     let v: Uint8Array;
+//     if (type === "string") {
+//       v = ethers.utils.toUtf8Bytes(value as string);
+//     } else {
+//       v = ethers.utils.arrayify(value as string);
+//     }
 
-    return ethers.utils.arrayify(ethers.utils.hexZeroPad(ethers.utils.keccak256(v), 32));
-  }
-  if (type.lastIndexOf("[") > 0) {
-    const values = value as string[];
-    const t = type.slice(0, type.lastIndexOf("["));
-    const v = values.map((item) => handleValues(item, t));
-    return ethers.utils.arrayify(
-      ethers.utils.keccak256(
-        ethers.utils.arrayify(
-          defaultAbiCoder.encode(
-            v.map(() => t),
-            v.map((value) => value)
-          )
-        )
-      )
-    );
-  }
-  return value;
-};
+//     return ethers.utils.arrayify(ethers.utils.hexZeroPad(ethers.utils.keccak256(v), 32));
+//   }
+//   if (type.lastIndexOf("[") > 0) {
+//     const values = value as string[];
+//     const t = type.slice(0, type.lastIndexOf("["));
+//     const v = values.map((item) => handleValues(item, t));
+//     return ethers.utils.arrayify(
+//       ethers.utils.keccak256(
+//         ethers.utils.arrayify(
+//           defaultAbiCoder.encode(
+//             v.map(() => t),
+//             v.map((value) => value)
+//           )
+//         )
+//       )
+//     );
+//   }
+//   return value;
+// };
 
 export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean) => {
   if (!call.method) return "0x";
 
   if (withFunction) {
     const ABI = [`function ${call.method}(${call.params.map((item) => item.type).join(",")})`];
+
     const iface = new ethers.utils.Interface(ABI);
     return iface.encodeFunctionData(
       call.method,
@@ -264,24 +261,39 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
 
   const types = call.params.map((param) => {
     if (param.customType) {
-      const values = param.value as Params[];
-      return `(${values.map((val) => val.type).join(",")})`;
+      let value;
+      let isArray = false;
+      if (param.type.lastIndexOf("[") > 0) {
+        isArray = true;
+        value = param.value[0] as Params[];
+      } else {
+        value = param.value as Params[];
+      }
+      return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
     }
-
     return param.type;
   });
 
-  // const values = call.params.map((param) => handleValues(param.value, param.type));
   const values = call.params.map((param) => {
     if (param.customType) {
-      const values = param.value as Params[];
-      return values.reduce((acc, val) => {
-        return [...acc, val.value];
-      }, []);
+      let value;
+      if (param.type.lastIndexOf("[") > 0) {
+        value = param.value as Params[][];
+        return value.reduce((acc, val) => {
+          return [...acc, val.map((item) => item.value)];
+        }, []);
+      } else {
+        value = param.value as Params[];
+        return value.reduce((acc, val) => {
+          return [...acc, val.value];
+        }, []);
+      }
     }
 
     return param.value;
   });
+
+  console.log(types, values);
 
   return defaultAbiCoder.encode(types, values);
 };
@@ -382,8 +394,6 @@ export const createValidatorTxData = (call: Partial<MSCallInput>) => {
   ];
 
   return {
-    // validation_data_offset: getValidatorDataOffset(["bytes32", "bytes32", "bytes"], encodedData), // 0x60
-    // validation_data_length: getParamsLength(encodedData),
     ...validator.params,
     contractAddress: call.to,
     functionSignature: getMethodInterface(call),
@@ -398,5 +408,3 @@ export const createValidatorTxData = (call: Partial<MSCallInput>) => {
     ),
   };
 };
-
-///

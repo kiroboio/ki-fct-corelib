@@ -184,7 +184,9 @@ class BatchMultiSigCall {
                     ensHash: (0, helpers_2.handleEnsHash)(call),
                     data: (0, helpers_2.handleData)(call),
                     types: (0, helpers_2.handleTypes)(call),
-                    typedHashes: (0, helpers_2.handleTypedHashes)(call, typedData),
+                    typedHashes: typedHashes
+                        ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
+                        : [],
                 });
             });
             return {
@@ -441,7 +443,7 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
             }, limits: {
                 valid_from: (_a = batchCall.validFrom) !== null && _a !== void 0 ? _a : 0,
                 expires_at: (_b = batchCall.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                gas_price_limit: (_c = batchCall.gasPriceLimit) !== null && _c !== void 0 ? _c : "25000000000",
+                gas_price_limit: (_c = batchCall.maxGasPrice) !== null && _c !== void 0 ? _c : "25000000000",
                 cancelable: batchCall.cancelable || true,
             } }, optionalMessage), typedDataMessage),
     };

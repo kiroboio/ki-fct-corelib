@@ -506,17 +506,14 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         MSCalls[] calldata tr
         // bytes32[][] calldata variablesx
     ) external returns (MReturn[][] memory rt) {
-        console.log("in batchMultiSigCall_");
         // uint256 startGas = gasleft();
         // require(msg.sender == s_activator, "Wallet: sender not allowed");
         require(version == VERSION, "fct: wrong version");
         rt = new MReturn[][](tr.length);
-        console.log("in batchMultiSigCall_ 2");
         unchecked {
             uint256 trLength = tr.length;
             uint256 constGas = (21000 + msg.data.length * 8) / trLength;
             //console.log("gas until i:",startGas- gasleft() );
-            console.log("in batchMultiSigCall_ 3");
             for (uint256 i = 0; i < trLength; ++i) {
                 // bytes32[] calldata variables_ = variables[i];
                 uint256 IGas = gasleft();
@@ -534,7 +531,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             uint24(sessionId >> SALT_BIT) //random_id
                         )
                     ));
-                console.log("in batchMultiSigCall_ 4");
                 msg2 = bytes.concat(msg2, abi.encode(
                     mcalls.typeHash,
                     keccak256(
@@ -547,7 +543,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         )
                     )
                 ));
-                console.log("in batchMultiSigCall_ 5");
                 if(uint16(sessionId >> RECURRENT_BIT) > 1 ){
                 msg2 = bytes.concat(msg2, abi.encode(
                     mcalls.typeHash,
@@ -561,7 +556,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     )
                 ));
                 }
-                console.log("in batchMultiSigCall_ 6");
                 if(uint8(sessionId >> EXT_SIGNERS_BIT) > 0 ){
                 msg2 = bytes.concat(msg2, abi.encode(
                     mcalls.typeHash,
@@ -574,14 +568,11 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     )
                 ));
                 }
-                console.log("in batchMultiSigCall_ 7");
                 // _checkSessionIdLimits(i, sessionId, nonce, maxNonce);
                 _checkSessionIdLimits(sessionId);
                 // maxNonce = sessionId;
-                console.log("in batchMultiSigCall_ 8");
                 uint256 length = mcalls.mcall.length;
                 for (uint256 j = 0; j < length; ++j) {
-                    console.log("in batchMultiSigCall_ 9");
                     MSCall calldata call = mcalls.mcall[j];
                     //console.log("loop :", j);
                    console.logBytes(call.types.length > 0 ? abiToEIP712(call.data, call.types, call.typedHashes, Offset({ data: 0, types: 0})) : call.data);
@@ -593,7 +584,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     // else{
                     //     console.logBytes(call.data);
                     // }
-                    console.log("in batchMultiSigCall_ 10");
                     msg2 = abi.encodePacked(
                         msg2,
                         // messageHash
@@ -622,7 +612,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                 )
                             )
                     );
-                    console.log("in batchMultiSigCall_ 11");
                 }
 
                 bytes32 messageHash = IFCT_Controller(msg.sender).register(
@@ -636,7 +625,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         eip712: (sessionId & FLAG_EIP712) != 0
                     })
                 );
-                console.log("in batchMultiSigCall_ 12");
                 address[] memory signers = new address[](
                     mcalls.signatures.length
                 );
@@ -649,7 +637,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         signature.s
                     );
                 }
-                console.log("in batchMultiSigCall_ 13");
                 //TODO: multi-sig m of n - uncomment following lines
                 if (uint8(sessionId >> EXT_SIGNERS_BIT) > 0) {
                     uint256 externalSigs = 0;
@@ -667,7 +654,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     }
                     //require(externalSigs ==uint8(sessionId >> EXT_SIGNERS_BIT), "FCT: missing ext singatues");
                 }
-                console.log("in batchMultiSigCall_ 14");
                 MultiSigCallLocals memory locals;
                 {
                     locals.sessionId = sessionId;
@@ -681,14 +667,13 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     locals.rt[locals.index] = new MReturn[](length);
                     locals.gas = IGas - gasleft();
                 }
-                console.log("in batchMultiSigCall_ 15");
                 locals.returnedValues = new bytes[](length);
                 //console.log("gas until j:", locals.gas);
                 for (uint256 j = 0; j < length; ++j) {
-                    console.log(
-                        "------------------ FTC %s ------------------",
-                        j + 1
-                    );
+                    // console.log(
+                    //     "------------------ FTC %s ------------------",
+                    //     j + 1
+                    // );
                     //console.log("test1");
                     uint256 gas = gasleft();
 
@@ -704,7 +689,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             require(varLocals.callFrom != mcalls.mcall[l].from, "FCT: from exists");
                         }
                     }
-                    console.log("in batchMultiSigCall_ 15.1");
                     // require(
                     //     IFCT_Runner(varLocals.callFrom).allowedToExecute_(
                     //         signers,
@@ -712,14 +696,12 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     //     ) > 0,
                     //     "FCT: signers not allowed"
                     // );
-                    console.log("in batchMultiSigCall_ 15.2");
                     // call.to
                     varLocals.callTo = _replace(call.to, mcalls.variables, j, locals.returnedValues);
                     // call.value
                     varLocals.value = _replace(call.value, mcalls.variables, j, locals.returnedValues);
                     // call.data
                     varLocals.data = call.data;
-                    console.log("in batchMultiSigCall_ 16");
                     if (call.data.length > 0) {
                         //  console.logBytes(varLocals.data);
                         for (
@@ -811,7 +793,6 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             }
                         }
                     }
-                    console.log("in batchMultiSigCall_ 17");
                     (bool success, bytes memory res) = _executeCall(
                         varLocals.callFrom, // wallet.addr,
                         IFCT_Controller(msg.sender).ensToAddress(call.ensHash, varLocals.callTo),
@@ -822,7 +803,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         varLocals.value,
                         varLocals.data
                     );
-                    console.log('execute done', success);
+                    //console.log('execute done', success);
                     
                     if (success) {
                         if (res.length > 64) {

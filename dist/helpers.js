@@ -59,11 +59,9 @@ const typeValue = (param) => {
     // If type is an array
     if (param.type.lastIndexOf("[") > 0) {
         if (param.customType) {
-            console.log([TYPE_ARRAY, param.value.length, ...(0, exports.getTypesArray)(param.value[0])]);
             return [TYPE_ARRAY, param.value.length, ...(0, exports.getTypesArray)(param.value[0])];
         }
         const parameter = Object.assign(Object.assign({}, param), { type: param.type.slice(0, param.type.lastIndexOf("[")) });
-        console.log(parameter);
         const insideType = typeValue(parameter);
         return [TYPE_ARRAY, ...insideType];
     }
@@ -209,25 +207,33 @@ exports.getTypedDataDomain = getTypedDataDomain;
 //
 // METHOD HELPERS FOR FCTs
 //
-const handleValues = (value, type) => {
-    if (type === "bytes" || type === "string") {
-        let v;
-        if (type === "string") {
-            v = ethers_1.ethers.utils.toUtf8Bytes(value);
-        }
-        else {
-            v = ethers_1.ethers.utils.arrayify(value);
-        }
-        return ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.hexZeroPad(ethers_1.ethers.utils.keccak256(v), 32));
-    }
-    if (type.lastIndexOf("[") > 0) {
-        const values = value;
-        const t = type.slice(0, type.lastIndexOf("["));
-        const v = values.map((item) => handleValues(item, t));
-        return ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.arrayify(utils_1.defaultAbiCoder.encode(v.map(() => t), v.map((value) => value)))));
-    }
-    return value;
-};
+// const handleValues = (value: string | string[], type: string) => {
+//   if (type === "bytes" || type === "string") {
+//     let v: Uint8Array;
+//     if (type === "string") {
+//       v = ethers.utils.toUtf8Bytes(value as string);
+//     } else {
+//       v = ethers.utils.arrayify(value as string);
+//     }
+//     return ethers.utils.arrayify(ethers.utils.hexZeroPad(ethers.utils.keccak256(v), 32));
+//   }
+//   if (type.lastIndexOf("[") > 0) {
+//     const values = value as string[];
+//     const t = type.slice(0, type.lastIndexOf("["));
+//     const v = values.map((item) => handleValues(item, t));
+//     return ethers.utils.arrayify(
+//       ethers.utils.keccak256(
+//         ethers.utils.arrayify(
+//           defaultAbiCoder.encode(
+//             v.map(() => t),
+//             v.map((value) => value)
+//           )
+//         )
+//       )
+//     );
+//   }
+//   return value;
+// };
 const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";
@@ -238,21 +244,38 @@ const getEncodedMethodParams = (call, withFunction) => {
     }
     const types = call.params.map((param) => {
         if (param.customType) {
-            const values = param.value;
-            return `(${values.map((val) => val.type).join(",")})`;
+            let value;
+            let isArray = false;
+            if (param.type.lastIndexOf("[") > 0) {
+                isArray = true;
+                value = param.value[0];
+            }
+            else {
+                value = param.value;
+            }
+            return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
         }
         return param.type;
     });
-    // const values = call.params.map((param) => handleValues(param.value, param.type));
     const values = call.params.map((param) => {
         if (param.customType) {
-            const values = param.value;
-            return values.reduce((acc, val) => {
-                return [...acc, val.value];
-            }, []);
+            let value;
+            if (param.type.lastIndexOf("[") > 0) {
+                value = param.value;
+                return value.reduce((acc, val) => {
+                    return [...acc, val.map((item) => item.value)];
+                }, []);
+            }
+            else {
+                value = param.value;
+                return value.reduce((acc, val) => {
+                    return [...acc, val.value];
+                }, []);
+            }
         }
         return param.value;
     });
+    console.log(types, values);
     return utils_1.defaultAbiCoder.encode(types, values);
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
@@ -341,4 +364,3 @@ const createValidatorTxData = (call) => {
     return Object.assign(Object.assign(Object.assign({}, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
 };
 exports.createValidatorTxData = createValidatorTxData;
-///

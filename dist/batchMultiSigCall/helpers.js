@@ -93,8 +93,8 @@ const getSessionId = (salt, batchCall) => {
     const beforeTimestamp = batchCall.expiresAt
         ? Number(batchCall.expiresAt).toString(16).padStart(10, "0")
         : "ffffffffff";
-    const gasPriceLimit = batchCall.gasPriceLimit
-        ? Number(batchCall.gasPriceLimit).toString(16).padStart(16, "0")
+    const gasPriceLimit = batchCall.maxGasPrice
+        ? Number(batchCall.maxGasPrice).toString(16).padStart(16, "0")
         : "00000005D21DBA00"; // 25 Gwei
     // Flags needs to be updated - currently only support for one flag (payment/repay)
     const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;

@@ -44,7 +44,6 @@ export interface BatchCallBase {
     flags?: Partial<BatchFlags>;
 }
 export interface MultiCallBase {
-    data?: string;
     method?: string;
     params?: Params[];
     gasLimit?: number;

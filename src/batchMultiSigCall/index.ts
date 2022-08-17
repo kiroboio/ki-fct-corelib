@@ -211,7 +211,9 @@ export class BatchMultiSigCall {
       ensHash: handleEnsHash(call),
       data: handleData(call),
       types: handleTypes(call),
-      typedHashes: handleTypedHashes(call, typedData),
+      typedHashes: typedHashes
+        ? typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, hash)))
+        : [],
     }));
 
     return {

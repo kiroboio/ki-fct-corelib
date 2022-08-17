@@ -364,6 +364,20 @@ describe("batchMultiSigCall", () => {
           {
             value: 0,
             to: kiro.address,
+            method: "balanceOf",
+            params: [{ name: "account", type: "address", value: vault11.address }],
+            validator: {
+              method: "greaterThan",
+              params: {
+                valueToCompare: "230",
+              },
+              validatorAddress: validator.address,
+            },
+            from: vault11.address,
+          },
+          {
+            value: 0,
+            to: kiro.address,
             method: "transfer",
             params: [
               { name: "to", type: "address", value: accounts[12] },
@@ -381,6 +395,7 @@ describe("batchMultiSigCall", () => {
             ],
             from: vault11.address,
           },
+
           {
             value: 0,
             to: multiplier.address,
@@ -418,6 +433,39 @@ describe("batchMultiSigCall", () => {
                 ],
               },
               { name: "from", type: "bytes", value: 0x355 },
+            ],
+            flow: Flow.OK_CONT_FAIL_REVERT,
+            from: vault10.address,
+          },
+          {
+            value: 0,
+            to: multiplier.address,
+            method: "testCall4",
+            params: [
+              { name: "to", type: "bytes", value: 0x540 },
+              {
+                name: "struct2",
+                type: "Struct2[]",
+                customType: true,
+                value: [
+                  [
+                    { name: "name1", type: "string", value: "start1" },
+                    { name: "number1", type: "bytes", value: 0x555 },
+                    { name: "name2", type: "string", value: "end1" },
+                  ],
+                  [
+                    { name: "name1", type: "string", value: "start2" },
+                    { name: "number1", type: "bytes", value: 0x560 },
+                    { name: "name2", type: "string", value: "end3" },
+                  ],
+                  [
+                    { name: "name1", type: "string", value: "start3" },
+                    { name: "number1", type: "bytes", value: 0x565 },
+                    { name: "name2", type: "string", value: "end3" },
+                  ],
+                ],
+              },
+              { name: "from", type: "string", value: "end of trx" },
             ],
             flow: Flow.OK_CONT_FAIL_REVERT,
             from: vault10.address,
