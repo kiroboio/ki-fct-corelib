@@ -2,7 +2,7 @@ import { ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
-import { MSCallInput, MSCall } from "./interfaces";
+import { MSCallInput, MSCall, MSCallOptions } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
   getSessionId,
@@ -23,24 +23,6 @@ import {
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
-
-export interface MSCallOptions {
-  name?: string;
-  validFrom?: number;
-  expiresAt?: number;
-  maxGasPrice?: number;
-  cancelable?: boolean;
-  recurrency?: {
-    maxRepeats: number;
-    chillTime: number;
-    accumetable: boolean;
-  };
-  multisig?: {
-    externalSigners: string[];
-    minimumApprovals: number;
-  };
-  flags?: { chillMode?: boolean };
-}
 
 export class BatchMultiSigCallNew {
   private FactoryProxy: ethers.Contract;
@@ -72,6 +54,10 @@ export class BatchMultiSigCallNew {
   private getVariableFCValue(variableId: string): string {
     const index = this.getVariableIndex(variableId);
     return String(index + 1).padStart(variableBase.length, variableBase);
+  }
+
+  public refTxValue(index: number, bytes: boolean = false) {
+    return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
   // End of variables

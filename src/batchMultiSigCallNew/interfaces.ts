@@ -26,3 +26,21 @@ export interface MSCall {
   types: number[];
   typedHashes: string[];
 }
+
+export interface MSCallOptions {
+  name?: string;
+  validFrom?: number;
+  expiresAt?: number;
+  maxGasPrice?: number;
+  cancelable?: boolean;
+  recurrency?: {
+    maxRepeats: number;
+    chillTime: number;
+    accumetable: boolean;
+  };
+  multisig?: {
+    externalSigners: string[];
+    minimumApprovals: number;
+  };
+  flags?: { chillMode?: boolean };
+}

@@ -372,7 +372,6 @@ describe("batchMultiSigCall", () => {
 
       const data = await batchMultiSigCall.addCall(call);
 
-      console.log(data);
       expect(data).to.be.lengthOf(1);
     });
     it("Should add additional call", async () => {
