@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { MSCallOptions } from ".";
+import { MSCallOptions } from "./interfaces";
 import {
   getEncodedMethodParams,
   getMethodInterface,

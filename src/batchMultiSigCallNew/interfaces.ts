@@ -1,6 +1,5 @@
-import { TypedData } from "ethers-eip712";
 import { Flow } from "../constants";
-import { BatchCallBase, BatchFlags, MultiCallBase, Validator } from "../interfaces";
+import { MultiCallBase, Validator } from "../interfaces";
 
 export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
   value: string;

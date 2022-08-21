@@ -273,7 +273,7 @@ describe("batchMultiSigCall", () => {
 
   it("check kiro for eth ", async () => {
     const totalGasUsed = await activators.getAmountOfKiroForGivenEth(1909173750113105);
-    console.log(`Total Gas used:`, totalGasUsed);
+    console.log(`Total Gas used:`, totalGasUsed.toString());
   });
 
   //user1 -> vault1 -> activator
@@ -386,9 +386,44 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       };
 
-      const data = await batchMultiSigCall.addCall(call);
+      const calls = batchMultiSigCall.addCall(call);
 
-      expect(data).to.be.lengthOf(2);
+      expect(calls).to.be.lengthOf(2);
+    });
+
+    it("Should replace call", async () => {
+      const call = {
+        value: 0,
+        to: kiro.address,
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: accounts[12] },
+          { name: "token_amount", type: "uint256", value: "30" },
+        ],
+        from: vault10.address,
+      };
+
+      const calls = batchMultiSigCall.replaceCall(call, 1);
+
+      expect(calls).to.be.lengthOf(2) && expect(calls[1].params[1].value).to.eq("30");
+    });
+
+    it("Should remove a call", async () => {
+      const calls = batchMultiSigCall.removeCall(1);
+
+      expect(calls).to.be.lengthOf(1);
+    });
+
+    it("Should return a call", async () => {
+      const call = batchMultiSigCall.getCall(0);
+
+      expect(call.to).to.be.equal(kiro.address);
+    });
+
+    it("Should return length", async () => {
+      const length = batchMultiSigCall.length;
+
+      expect(length).to.be.equal(1);
     });
 
     it("Should execute batch", async () => {

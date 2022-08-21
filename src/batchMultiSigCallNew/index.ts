@@ -90,11 +90,17 @@ export class BatchMultiSigCallNew {
   }
 
   public replaceCall(tx: MSCallInput, index: number): MSCallInput[] {
+    if (index >= this.inputCalls.length) {
+      throw new Error(`Index ${index} is out of bounds.`);
+    }
     this.inputCalls[index] = tx;
     return this.inputCalls;
   }
 
   public removeCall(index: number): MSCallInput[] {
+    if (index >= this.inputCalls.length) {
+      throw new Error(`Index ${index} is out of bounds.`);
+    }
     this.inputCalls.splice(index, 1);
     return this.inputCalls;
   }

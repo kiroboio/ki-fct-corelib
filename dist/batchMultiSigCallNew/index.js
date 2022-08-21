@@ -62,6 +62,9 @@ class BatchMultiSigCallNew {
         const index = this.getVariableIndex(variableId);
         return String(index + 1).padStart(variableBase.length, variableBase);
     }
+    getCallValue(index, bytes = false) {
+        return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
+    }
     // End of variables
     //
     //
@@ -88,10 +91,16 @@ class BatchMultiSigCallNew {
         return this.inputCalls;
     }
     replaceCall(tx, index) {
+        if (index >= this.inputCalls.length) {
+            throw new Error(`Index ${index} is out of bounds.`);
+        }
         this.inputCalls[index] = tx;
         return this.inputCalls;
     }
     removeCall(index) {
+        if (index >= this.inputCalls.length) {
+            throw new Error(`Index ${index} is out of bounds.`);
+        }
         this.inputCalls.splice(index, 1);
         return this.inputCalls;
     }

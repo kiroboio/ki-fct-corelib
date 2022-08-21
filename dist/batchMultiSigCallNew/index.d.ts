@@ -1,25 +1,6 @@
 import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { MSCallInput, MSCall } from "./interfaces";
-export interface MSCallOptions {
-    name?: string;
-    validFrom?: number;
-    expiresAt?: number;
-    maxGasPrice?: number;
-    cancelable?: boolean;
-    recurrency?: {
-        maxRepeats: number;
-        chillTime: number;
-        accumetable: boolean;
-    };
-    multisig?: {
-        externalSigners: string[];
-        minimumApprovals: number;
-    };
-    flags?: {
-        chillMode?: boolean;
-    };
-}
+import { MSCallInput, MSCall, MSCallOptions } from "./interfaces";
 export declare class BatchMultiSigCallNew {
     private FactoryProxy;
     options: MSCallOptions;
@@ -29,6 +10,7 @@ export declare class BatchMultiSigCallNew {
     createVariable(variableId: string, value?: string): string[];
     private getVariableIndex;
     private getVariableFCValue;
+    getCallValue(index: number, bytes?: boolean): string;
     setOptions(options: MSCallOptions): MSCallOptions;
     addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];

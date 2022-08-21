@@ -1,5 +1,5 @@
 import { TypedData } from "ethers-eip712";
-import { MSCallOptions } from ".";
+import { MSCallOptions } from "./interfaces";
 import { MSCallInput } from "./interfaces";
 export declare const handleMethodInterface: (call: MSCallInput) => string;
 export declare const handleFunctionSignature: (call: MSCallInput) => string;
