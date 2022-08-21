@@ -1,11 +1,10 @@
-import { BatchMultiSigCallNew } from ".";
-import { BatchMSCallInput, MSCallInput } from "./interfaces";
 import { TypedData } from "ethers-eip712";
-export declare const handleTo: (self: BatchMultiSigCallNew, call: MSCallInput) => string;
+import { MSCallOptions } from ".";
+import { MSCallInput } from "./interfaces";
 export declare const handleMethodInterface: (call: MSCallInput) => string;
 export declare const handleFunctionSignature: (call: MSCallInput) => string;
 export declare const handleEnsHash: (call: MSCallInput) => string;
 export declare const handleData: (call: MSCallInput) => string;
-export declare const handleTypes: (call: MSCallInput) => any;
-export declare const handleTypedHashes: (call: MSCallInput, typedData: TypedData) => any[];
-export declare const getSessionId: (salt: string, batchCall: BatchMSCallInput) => string;
+export declare const handleTypes: (call: MSCallInput) => number[];
+export declare const handleTypedHashes: (call: MSCallInput, typedData: TypedData) => string[];
+export declare const getSessionId: (salt: string, options: MSCallOptions) => string;

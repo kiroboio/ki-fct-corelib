@@ -6,10 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "hardhat test test/v4.test.js",
-    "eiptest": "hardhat test test/eip.test.js",
-    "prenewtest": "tsc",
-    "newtest": "hardhat test test/v5.test.js",
+    "test": "hardhat test test/v6.test.js",
     "build": "tsc"
   },
   "repository": {

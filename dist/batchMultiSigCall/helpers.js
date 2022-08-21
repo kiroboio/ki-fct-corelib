@@ -97,7 +97,10 @@ const getSessionId = (salt, batchCall) => {
         ? Number(batchCall.maxGasPrice).toString(16).padStart(16, "0")
         : "00000005D21DBA00"; // 25 Gwei
     // Flags needs to be updated - currently only support for one flag (payment/repay)
-    const flags = `1${batchCall.flags && batchCall.flags.payment ? "1" : "0"}`;
+    // const getFlags = () => {
+    //   if (batchCall.payment) {
+    // }
+    const flags = `10`; // Have to implement getFlags function
     return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
 };
 exports.getSessionId = getSessionId;

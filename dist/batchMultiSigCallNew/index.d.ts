@@ -1,26 +1,49 @@
 import { ethers } from "ethers";
-import { BatchMSCallInput, BatchMSCall, MSCallInput } from "./interfaces";
+import { TypedData } from "ethers-eip712";
+import { MSCallInput, MSCall } from "./interfaces";
+export interface MSCallOptions {
+    name?: string;
+    validFrom?: number;
+    expiresAt?: number;
+    maxGasPrice?: number;
+    cancelable?: boolean;
+    recurrency?: {
+        maxRepeats: number;
+        chillTime: number;
+        accumetable: boolean;
+    };
+    multisig?: {
+        externalSigners: string[];
+        minimumApprovals: number;
+    };
+    flags?: {
+        chillMode?: boolean;
+    };
+}
 export declare class BatchMultiSigCallNew {
-    calls: Array<BatchMSCall>;
-    variables: Array<Array<string>>;
-    provider: ethers.providers.JsonRpcProvider;
-    FactoryProxy: ethers.Contract;
-    factoryProxyAddress: string;
+    private FactoryProxy;
+    options: MSCallOptions;
+    variables: string[][];
+    inputCalls: MSCallInput[];
     constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string);
     createVariable(variableId: string, value?: string): string[];
-    addVariableValue(variableId: string, value: string): string[];
-    removeVariable(variableId: string): Promise<string[]>;
-    getVariablesAsBytes32(): string[];
-    getVariableIndex(variableId: string, throwError?: boolean): number;
-    getVariableFCValue(variableId: string): string;
-    refTxValue(index: number, bytes?: boolean): string;
-    addExistingBatchCall(batchCall: BatchMSCall): BatchMSCall[];
-    create(tx: BatchMSCallInput): Promise<BatchMSCall>;
-    createMultiple(txs: BatchMSCallInput[]): Promise<BatchMSCall[]>;
-    editBatchCall(index: number, tx: BatchMSCallInput): Promise<BatchMSCall>;
-    removeBatchCall(index: number): Promise<BatchMSCall[]>;
-    addMultiCallTx(indexOfBatch: number, tx: MSCallInput): Promise<BatchMSCall>;
-    editMultiCallTx(indexOfBatch: number, indexOfMulticall: number, tx: MSCallInput): Promise<BatchMSCall>;
-    removeMultiCallTx(indexOfBatch: number, indexOfMulticall: number): Promise<BatchMSCall>;
-    private getMultiSigCallData;
+    private getVariableIndex;
+    private getVariableFCValue;
+    setOptions(options: MSCallOptions): MSCallOptions;
+    addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;
+    replaceCall(tx: MSCallInput, index: number): MSCallInput[];
+    removeCall(index: number): MSCallInput[];
+    getCall(index: number): MSCallInput;
+    get length(): number;
+    getFCT(): Promise<{
+        typedData: TypedData;
+        typeHash: string;
+        sessionId: string;
+        name: string;
+        mcall: MSCall[];
+    }>;
+    private createTypedData;
+    private getParams;
+    private verifyParams;
+    private handleTo;
 }

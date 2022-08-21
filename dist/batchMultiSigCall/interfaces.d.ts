@@ -28,7 +28,7 @@ export interface BatchMSCallInput {
         minimumApprovals: number;
     };
     flags?: {
-        payment: boolean;
+        chillMode?: boolean;
     };
 }
 export interface MSCall {
