@@ -56,7 +56,7 @@ export class BatchMultiSigCallNew {
     return String(index + 1).padStart(variableBase.length, variableBase);
   }
 
-  public refTxValue(index: number, bytes: boolean = false) {
+  public getCallValue(index: number, bytes: boolean = false) {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
