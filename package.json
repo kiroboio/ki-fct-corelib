@@ -1,7 +1,7 @@
 {
-  "name": "ki-future-transactions",
+  "name": "ki-fct-corelib",
   "version": "1.0.0",
-  "description": "Kirobo.io Future Transactions",
+  "description": "Kirobo.io FCT Core library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiroboio/ki-future-transactions.git"
+    "url": "git+ttps://github.com/kiroboio/ki-fct-corelib.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kiroboio/ki-future-transactions/issues"
+    "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
   },
-  "homepage": "https://github.com/kiroboio/ki-future-transactions#readme",
+  "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
