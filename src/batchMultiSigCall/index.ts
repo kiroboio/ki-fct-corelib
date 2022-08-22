@@ -30,7 +30,7 @@ export class BatchMultiSigCall {
   options: MSCallOptions = {};
 
   variables: string[][] = [];
-  inputCalls: MSCallInput[] = [];
+  calls: MSCallInput[] = [];
 
   constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
     this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
@@ -77,40 +77,40 @@ export class BatchMultiSigCall {
 
   public addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error {
     if (index) {
-      const length = this.inputCalls.length;
+      const length = this.calls.length;
       if (index > length) {
         throw new Error(`Index ${index} is out of bounds.`);
       }
-      this.inputCalls.splice(index, 0, tx);
+      this.calls.splice(index, 0, tx);
     } else {
-      this.inputCalls.push(tx);
+      this.calls.push(tx);
     }
 
-    return this.inputCalls;
+    return this.calls;
   }
 
   public replaceCall(tx: MSCallInput, index: number): MSCallInput[] {
-    if (index >= this.inputCalls.length) {
+    if (index >= this.calls.length) {
       throw new Error(`Index ${index} is out of bounds.`);
     }
-    this.inputCalls[index] = tx;
-    return this.inputCalls;
+    this.calls[index] = tx;
+    return this.calls;
   }
 
   public removeCall(index: number): MSCallInput[] {
-    if (index >= this.inputCalls.length) {
+    if (index >= this.calls.length) {
       throw new Error(`Index ${index} is out of bounds.`);
     }
-    this.inputCalls.splice(index, 1);
-    return this.inputCalls;
+    this.calls.splice(index, 1);
+    return this.calls;
   }
 
   public getCall(index: number): MSCallInput {
-    return this.inputCalls[index];
+    return this.calls[index];
   }
 
   get length(): number {
-    return this.inputCalls.length;
+    return this.calls.length;
   }
 
   public async getFCT(): Promise<{
@@ -120,7 +120,7 @@ export class BatchMultiSigCall {
     name: string;
     mcall: MSCall[];
   }> {
-    if (this.inputCalls.length === 0) {
+    if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
     let typedHashes: string[] = [];
@@ -132,7 +132,7 @@ export class BatchMultiSigCall {
     const typedData: TypedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
     const sessionId: string = getSessionId(salt, this.options);
 
-    const mcall: MSCall[] = this.inputCalls.map((call, index) => ({
+    const mcall: MSCall[] = this.calls.map((call, index) => ({
       typeHash: ethers.utils.hexlify(
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
       ),
@@ -171,7 +171,7 @@ export class BatchMultiSigCall {
     version: string
   ): Promise<TypedData> {
     // Creates messages from multiCalls array for EIP712 sign
-    const typedDataMessage = this.inputCalls.reduce((acc: object, call: MSCallInput, index: number) => {
+    const typedDataMessage = this.calls.reduce((acc: object, call: MSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
       let paramsData = {};
       if (call.params) {
@@ -250,7 +250,7 @@ export class BatchMultiSigCall {
         BatchMultiSigCall: [
           { name: "info", type: "Info" },
           { name: "limits", type: "Limits" },
-          ...this.inputCalls.map((_, index) => ({
+          ...this.calls.map((_, index) => ({
             name: `transaction${index + 1}`,
             type: `Transaction${index + 1}`,
           })),
@@ -279,7 +279,7 @@ export class BatchMultiSigCall {
           { name: "jump_over", type: "uint8" },
           { name: "method_interface", type: "string" },
         ],
-        ...this.inputCalls.reduce(
+        ...this.calls.reduce(
           (acc: object, call, index: number) => ({
             ...acc,
             [`Transaction${index + 1}`]: [
