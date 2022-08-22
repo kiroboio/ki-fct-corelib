@@ -1,7 +1,7 @@
 const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCallNew } = require("../dist");
+const { BatchMultiSigCall } = require("../dist");
 const { Flow } = require("../dist/constants");
 const { TypedDataUtils } = require("ethers-eip712");
 
@@ -353,7 +353,7 @@ describe("batchMultiSigCall", () => {
     let batchMultiSigCall;
 
     it("Should add call", async () => {
-      batchMultiSigCall = new BatchMultiSigCallNew(ethers.provider, fctController.address);
+      batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
       const call = {
         value: 0,
@@ -370,7 +370,7 @@ describe("batchMultiSigCall", () => {
         from: vault11.address,
       };
 
-      const data = await batchMultiSigCall.addCall(call);
+      const data = batchMultiSigCall.addCall(call);
 
       expect(data).to.be.lengthOf(1);
     });

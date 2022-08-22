@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { MSCallOptions } from "./interfaces";
+import { BatchMultiSigCall } from ".";
 import {
   getEncodedMethodParams,
   getMethodInterface,
@@ -9,9 +9,24 @@ import {
   getValidatorData,
   getValidatorMethodInterface,
 } from "../helpers";
-import { MSCallInput } from "./interfaces";
+import { BatchMSCallInput, MSCallInput } from "./interfaces";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
+
+export const handleTo = (self: BatchMultiSigCall, call: MSCallInput) => {
+  // If call is a validator method, return validator address as to address
+  if (call.validator) {
+    return call.validator.validatorAddress;
+  }
+
+  // Check if to is a valid address
+  if (utils.isAddress(call.to)) {
+    return call.to;
+  }
+
+  // Else it is a variable
+  return self.getVariableFCValue(call.to);
+};
 
 export const handleMethodInterface = (call: MSCallInput): string => {
   // If call is not a ETH transfer
@@ -66,7 +81,7 @@ export const handleTypedHashes = (call: MSCallInput, typedData: TypedData) => {
   return [];
 };
 
-export const getSessionId = (salt: string, options: MSCallOptions) => {
+export const getSessionId = (salt: string, batchCall: BatchMSCallInput) => {
   // 6 - Salt
   // 2 - External signers
   // 6 - Version
@@ -77,19 +92,31 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
   // 16 - Gas price limit
   // 2 - Flags
 
-  const externalSigners = options.multisig
-    ? options.multisig.externalSigners.length.toString(16).padStart(2, "0")
+  const externalSigners = batchCall.multisig
+    ? batchCall.multisig.externalSigners.length.toString(16).padStart(2, "0")
     : "00";
   const version = "010101";
-  const recurrent = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
-  const chillTime = options.recurrency
-    ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
+  const recurrent = batchCall.recurrency
+    ? Number(batchCall.recurrency.maxRepeats).toString(16).padStart(4, "0")
+    : "0000";
+  const chillTime = batchCall.recurrency
+    ? Number(batchCall.recurrency.chillTime).toString(16).padStart(8, "0")
     : "00000000";
-  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000";
-  const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff";
-  const gasPriceLimit = options.maxGasPrice
-    ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
+  const afterTimestamp = batchCall.validFrom
+    ? Number(batchCall.validFrom).toString(16).padStart(10, "0")
+    : "0000000000";
+  const beforeTimestamp = batchCall.expiresAt
+    ? Number(batchCall.expiresAt).toString(16).padStart(10, "0")
+    : "ffffffffff";
+  const gasPriceLimit = batchCall.maxGasPrice
+    ? Number(batchCall.maxGasPrice).toString(16).padStart(16, "0")
     : "00000005D21DBA00"; // 25 Gwei
+
+  // Flags needs to be updated - currently only support for one flag (payment/repay)
+
+  // const getFlags = () => {
+  //   if (batchCall.payment) {
+  // }
 
   const flags = `10`; // Have to implement getFlags function
 

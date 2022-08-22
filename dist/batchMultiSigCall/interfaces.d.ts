@@ -1,4 +1,3 @@
-import { TypedData } from "ethers-eip712";
 import { Flow } from "../constants";
 import { MultiCallBase, Validator } from "../interfaces";
 export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
@@ -11,8 +10,20 @@ export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
     jump?: number;
     viewOnly?: boolean;
 }
-export interface BatchMSCallInput {
-    calls: MSCallInput[];
+export interface MSCall {
+    typeHash: string;
+    ensHash: string;
+    functionSignature: string;
+    value: string;
+    from: string;
+    gasLimit: number;
+    flags: string;
+    to: string;
+    data: string;
+    types: number[];
+    typedHashes: string[];
+}
+export interface MSCallOptions {
     name?: string;
     validFrom?: number;
     expiresAt?: number;
@@ -30,30 +41,4 @@ export interface BatchMSCallInput {
     flags?: {
         chillMode?: boolean;
     };
-}
-export interface MSCall {
-    typeHash: string;
-    ensHash: string;
-    functionSignature: string;
-    value: string;
-    from: string;
-    gasLimit: number;
-    flags: string;
-    to: string;
-    data: string;
-    types: number[];
-    typedHashes: string[];
-}
-export interface BatchMSCall {
-    typeHash: string;
-    sessionId: string;
-    typedData: TypedData;
-    inputData: BatchMSCallInput;
-    name: string;
-    mcall: MSCall[];
-    addCall: (tx: MSCallInput, index?: number) => Promise<BatchMSCall | Error>;
-    replaceCall: (tx: MSCallInput, index: number) => Promise<MSCall | Error>;
-    removeCall: (index: number) => Promise<MSCall | Error>;
-    getCall: (index: number) => MSCall;
-    get length(): number;
 }
