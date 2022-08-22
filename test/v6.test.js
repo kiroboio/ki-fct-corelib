@@ -428,6 +428,8 @@ describe("batchMultiSigCall", () => {
 
     it("Should execute batch", async () => {
       const FCT = await batchMultiSigCall.getFCT();
+      // Here I get object with typedData, typeHash, sessionId, name and mcall array (MSCall[])
+
       const signer = getSigner(10);
       const signer2 = getSigner(11);
 
@@ -439,6 +441,7 @@ describe("batchMultiSigCall", () => {
         return signature;
       };
 
+      // Signing the FCT
       const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
