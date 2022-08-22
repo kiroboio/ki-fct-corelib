@@ -112,6 +112,9 @@ class BatchMultiSigCall {
     }
     getFCT() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.inputCalls.length === 0) {
+                throw new Error("No calls added");
+            }
             let typedHashes = [];
             let additionalTypes = {};
             const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -141,7 +144,7 @@ class BatchMultiSigCall {
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
                 sessionId,
                 name: this.options.name || "BatchMultiSigCall transaction",
-                mcall,
+                mcall, // This is where are the MSCall[] are returned
             };
         });
     }

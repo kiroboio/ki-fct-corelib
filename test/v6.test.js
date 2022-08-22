@@ -427,8 +427,7 @@ describe("batchMultiSigCall", () => {
     });
 
     it("Should execute batch", async () => {
-      const FCTToBeSigned = await batchMultiSigCall.getFCT();
-      //   const calls = batchMultiSigCall.calls;
+      const FCT = await batchMultiSigCall.getFCT();
       const signer = getSigner(10);
       const signer2 = getSigner(11);
 
@@ -440,7 +439,7 @@ describe("batchMultiSigCall", () => {
         return signature;
       };
 
-      const signedCalls = [FCTToBeSigned].map((item) => {
+      const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));

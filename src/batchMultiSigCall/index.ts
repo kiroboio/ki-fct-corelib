@@ -120,6 +120,9 @@ export class BatchMultiSigCall {
     name: string;
     mcall: MSCall[];
   }> {
+    if (this.inputCalls.length === 0) {
+      throw new Error("No calls added");
+    }
     let typedHashes: string[] = [];
     let additionalTypes = {};
 
@@ -152,7 +155,7 @@ export class BatchMultiSigCall {
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
       sessionId,
       name: this.options.name || "BatchMultiSigCall transaction",
-      mcall,
+      mcall, // This is where are the MSCall[] are returned
     };
   }
 
