@@ -1,4 +1,4 @@
-import { ethers, utils } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
@@ -34,6 +34,21 @@ export class BatchMultiSigCall {
 
   constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
     this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+  }
+
+  // Validate
+
+  public validate(call: MSCallInput) {
+    if (!utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
+      throw new Error("From value is not an address");
+    }
+    if (call.jump > 15) {
+      throw new Error("Jump value cannot be higher than 15");
+    }
+    if (BigNumber.from(call.value).lt(0)) {
+      throw new Error("Value cannot be negative");
+    }
+    return true;
   }
 
   // Variables
