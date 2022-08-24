@@ -5,8 +5,9 @@ export declare class BatchMultiSigCall {
     private FactoryProxy;
     options: MSCallOptions;
     variables: string[][];
-    inputCalls: MSCallInput[];
+    calls: MSCallInput[];
     constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string);
+    validate(call: MSCallInput): boolean;
     createVariable(variableId: string, value?: string): string[];
     private getVariableIndex;
     private getVariableFCValue;

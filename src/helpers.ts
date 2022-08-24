@@ -62,7 +62,8 @@ const typeValue = (param: Params): number[] => {
   // If type is an array
   if (param.type.lastIndexOf("[") > 0) {
     if (param.customType) {
-      return [TYPE_ARRAY, param.value.length, ...getTypesArray(param.value[0] as Params[])];
+      const value = param.value as Params[][];
+      return [TYPE_ARRAY, value.length, ...getTypesArray(param.value[0] as Params[])];
     }
 
     const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
@@ -86,7 +87,7 @@ const typeValue = (param: Params): number[] => {
     const values = param.value as Params[];
 
     return [
-      param.value.length,
+      values.length,
       ...values.reduce((acc, item) => {
         return [...acc, ...typeValue(item)];
       }, []),

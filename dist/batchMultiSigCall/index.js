@@ -31,7 +31,7 @@ class BatchMultiSigCall {
     constructor(provider, contractAddress) {
         this.options = {};
         this.variables = [];
-        this.inputCalls = [];
+        this.calls = [];
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
             if (call.validator) {
@@ -45,6 +45,19 @@ class BatchMultiSigCall {
             return this.getVariableFCValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
+    }
+    // Validate
+    validate(call) {
+        if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
+            throw new Error("From value is not an address");
+        }
+        if (call.jump > 15) {
+            throw new Error("Jump value cannot be higher than 15");
+        }
+        if (ethers_1.BigNumber.from(call.value).lt(0)) {
+            throw new Error("Value cannot be negative");
+        }
+        return true;
     }
     // Variables
     createVariable(variableId, value) {
@@ -79,40 +92,40 @@ class BatchMultiSigCall {
     // FCT functions
     addCall(tx, index) {
         if (index) {
-            const length = this.inputCalls.length;
+            const length = this.calls.length;
             if (index > length) {
                 throw new Error(`Index ${index} is out of bounds.`);
             }
-            this.inputCalls.splice(index, 0, tx);
+            this.calls.splice(index, 0, tx);
         }
         else {
-            this.inputCalls.push(tx);
+            this.calls.push(tx);
         }
-        return this.inputCalls;
+        return this.calls;
     }
     replaceCall(tx, index) {
-        if (index >= this.inputCalls.length) {
+        if (index >= this.calls.length) {
             throw new Error(`Index ${index} is out of bounds.`);
         }
-        this.inputCalls[index] = tx;
-        return this.inputCalls;
+        this.calls[index] = tx;
+        return this.calls;
     }
     removeCall(index) {
-        if (index >= this.inputCalls.length) {
+        if (index >= this.calls.length) {
             throw new Error(`Index ${index} is out of bounds.`);
         }
-        this.inputCalls.splice(index, 1);
-        return this.inputCalls;
+        this.calls.splice(index, 1);
+        return this.calls;
     }
     getCall(index) {
-        return this.inputCalls[index];
+        return this.calls[index];
     }
     get length() {
-        return this.inputCalls.length;
+        return this.calls.length;
     }
     getFCT() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.inputCalls.length === 0) {
+            if (this.calls.length === 0) {
                 throw new Error("No calls added");
             }
             let typedHashes = [];
@@ -121,7 +134,7 @@ class BatchMultiSigCall {
             const version = "0x010101";
             const typedData = yield this.createTypedData(additionalTypes, typedHashes, salt, version);
             const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
-            const mcall = this.inputCalls.map((call, index) => {
+            const mcall = this.calls.map((call, index) => {
                 var _a;
                 return ({
                     typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
@@ -156,7 +169,7 @@ class BatchMultiSigCall {
         var _a, _b, _c;
         return __awaiter(this, void 0, void 0, function* () {
             // Creates messages from multiCalls array for EIP712 sign
-            const typedDataMessage = this.inputCalls.reduce((acc, call, index) => {
+            const typedDataMessage = this.calls.reduce((acc, call, index) => {
                 // Update params if variables (FC) or references (FD) are used
                 let paramsData = {};
                 if (call.params) {
@@ -216,7 +229,7 @@ class BatchMultiSigCall {
                     ], BatchMultiSigCall: [
                         { name: "info", type: "Info" },
                         { name: "limits", type: "Limits" },
-                        ...this.inputCalls.map((_, index) => ({
+                        ...this.calls.map((_, index) => ({
                             name: `transaction${index + 1}`,
                             type: `Transaction${index + 1}`,
                         })),
@@ -240,7 +253,7 @@ class BatchMultiSigCall {
                         { name: "flow_control", type: "string" },
                         { name: "jump_over", type: "uint8" },
                         { name: "method_interface", type: "string" },
-                    ] }), this.inputCalls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
+                    ] }), this.calls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
                         { name: "call", type: "Transaction" },
                         { name: "params", type: `Transaction${index + 1}_Params` },
                     ], [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })) })), {})), additionalTypes),
