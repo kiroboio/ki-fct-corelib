@@ -2,6 +2,7 @@ import { utils } from "ethers";
 import { TypedData } from "ethers-eip712";
 import { MSCallOptions } from "./interfaces";
 import {
+  flows,
   getEncodedMethodParams,
   getMethodInterface,
   getTypedHashes,
@@ -64,6 +65,21 @@ export const handleTypedHashes = (call: MSCallInput, typedData: TypedData) => {
     return getTypedHashes(call.params, typedData);
   }
   return [];
+};
+
+export const manageFlow = (call: MSCallInput) => {
+  const jump = (call.options && call.options.jump) || 0;
+  const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
+
+  if (jump > 15) {
+    throw new Error("Jump value cannot exceed 15");
+  }
+
+  if (!flows[flow]) {
+    throw new Error("Flow not found");
+  }
+
+  return `0x${flows[flow].value}${jump.toString(16)}`;
 };
 
 export const getSessionId = (salt: string, options: MSCallOptions) => {

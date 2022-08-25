@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSessionId = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
+exports.getSessionId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
 const ethers_1 = require("ethers");
 const helpers_1 = require("../helpers");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
@@ -54,6 +54,18 @@ const handleTypedHashes = (call, typedData) => {
     return [];
 };
 exports.handleTypedHashes = handleTypedHashes;
+const manageFlow = (call) => {
+    const jump = (call.options && call.options.jump) || 0;
+    const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
+    if (jump > 15) {
+        throw new Error("Jump value cannot exceed 15");
+    }
+    if (!helpers_1.flows[flow]) {
+        throw new Error("Flow not found");
+    }
+    return `0x${helpers_1.flows[flow].value}${jump.toString(16)}`;
+};
+exports.manageFlow = manageFlow;
 const getSessionId = (salt, options) => {
     // 6 - Salt
     // 2 - External signers

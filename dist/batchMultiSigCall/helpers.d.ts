@@ -7,4 +7,5 @@ export declare const handleEnsHash: (call: MSCallInput) => string;
 export declare const handleData: (call: MSCallInput) => string;
 export declare const handleTypes: (call: MSCallInput) => number[];
 export declare const handleTypedHashes: (call: MSCallInput, typedData: TypedData) => string[];
+export declare const manageFlow: (call: MSCallInput) => string;
 export declare const getSessionId: (salt: string, options: MSCallOptions) => string;

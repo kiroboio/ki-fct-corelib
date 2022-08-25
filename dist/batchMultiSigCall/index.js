@@ -51,7 +51,7 @@ class BatchMultiSigCall {
         if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
             throw new Error("From value is not an address");
         }
-        if (call.jump > 15) {
+        if (call.options && call.options.jump > 15) {
             throw new Error("Jump value cannot be higher than 15");
         }
         if (ethers_1.BigNumber.from(call.value).lt(0)) {
@@ -134,24 +134,21 @@ class BatchMultiSigCall {
             const version = "0x010101";
             const typedData = yield this.createTypedData(additionalTypes, typedHashes, salt, version);
             const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
-            const mcall = this.calls.map((call, index) => {
-                var _a;
-                return ({
-                    typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
-                    functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-                    value: call.value,
-                    from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-                    gasLimit: (_a = call.gasLimit) !== null && _a !== void 0 ? _a : 0,
-                    flags: (0, helpers_1.manageCallFlagsV2)(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
-                    to: this.handleTo(call),
-                    ensHash: (0, helpers_2.handleEnsHash)(call),
-                    data: (0, helpers_2.handleData)(call),
-                    types: (0, helpers_2.handleTypes)(call),
-                    typedHashes: typedHashes
-                        ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
-                        : [],
-                });
-            });
+            const mcall = this.calls.map((call, index) => ({
+                typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
+                functionSignature: (0, helpers_2.handleFunctionSignature)(call),
+                value: call.value,
+                from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+                gasLimit: (call.options && call.options.gasLimit) || 0,
+                flags: (0, helpers_2.manageFlow)(call),
+                to: this.handleTo(call),
+                ensHash: (0, helpers_2.handleEnsHash)(call),
+                data: (0, helpers_2.handleData)(call),
+                types: (0, helpers_2.handleTypes)(call),
+                typedHashes: typedHashes
+                    ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
+                    : [],
+            }));
             return {
                 typedData,
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
@@ -170,21 +167,26 @@ class BatchMultiSigCall {
         return __awaiter(this, void 0, void 0, function* () {
             // Creates messages from multiCalls array for EIP712 sign
             const typedDataMessage = this.calls.reduce((acc, call, index) => {
+                var _a, _b;
                 // Update params if variables (FC) or references (FD) are used
                 let paramsData = {};
                 if (call.params) {
                     this.verifyParams(call.params, index, additionalTypes, typedHashes);
                     paramsData = { params: this.getParams(call) };
                 }
+                const options = call.options || {};
+                const gasLimit = (_a = options.gasLimit) !== null && _a !== void 0 ? _a : 0;
+                const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
+                const jump = (_b = options.jump) !== null && _b !== void 0 ? _b : 0;
                 return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
                             from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
                             to: this.handleTo(call),
                             to_ens: call.toEnsHash || "",
                             eth_value: call.value,
-                            gas_limit: call.gasLimit || 0,
+                            gas_limit: gasLimit,
                             view_only: call.viewOnly || false,
-                            flow_control: call.flow ? helpers_1.flows[call.flow].text : "continue on success, revert on fail",
-                            jump_over: call.jump || 0,
+                            flow_control: flow,
+                            jump_over: jump,
                             method_interface: (0, helpers_2.handleMethodInterface)(call),
                         } }, paramsData) });
             }, {});

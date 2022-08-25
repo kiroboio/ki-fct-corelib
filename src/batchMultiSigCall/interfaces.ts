@@ -1,15 +1,18 @@
 import { Flow } from "../constants";
-import { MultiCallBase, Validator } from "../interfaces";
+import { CallOptions, Params, Validator } from "../interfaces";
 
-export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
+export interface MSCallInput {
   value: string;
   to: string;
   from: string;
   toEnsHash?: string;
   validator?: Validator;
-  flow?: Flow;
-  jump?: number;
   viewOnly?: boolean;
+  method?: string;
+  params?: Params[];
+
+  options?: CallOptions;
+  // flags?: Partial<MultiCallFlags>;
 }
 
 export interface MSCall {

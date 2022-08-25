@@ -11,6 +11,7 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
   handleTypes,
+  manageFlow,
 } from "./helpers";
 
 // DefaultFlag - "f100" // payment + eip712
@@ -42,7 +43,7 @@ export class BatchMultiSigCall {
     if (!utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
       throw new Error("From value is not an address");
     }
-    if (call.jump > 15) {
+    if (call.options && call.options.jump > 15) {
       throw new Error("Jump value cannot be higher than 15");
     }
     if (BigNumber.from(call.value).lt(0)) {
@@ -154,8 +155,8 @@ export class BatchMultiSigCall {
       functionSignature: handleFunctionSignature(call),
       value: call.value,
       from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-      gasLimit: call.gasLimit ?? 0,
-      flags: manageCallFlagsV2(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
+      gasLimit: (call.options && call.options.gasLimit) || 0,
+      flags: manageFlow(call),
       to: this.handleTo(call),
       ensHash: handleEnsHash(call),
       data: handleData(call),
@@ -194,6 +195,11 @@ export class BatchMultiSigCall {
         paramsData = { params: this.getParams(call) };
       }
 
+      const options = call.options || {};
+      const gasLimit = options.gasLimit ?? 0;
+      const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
+      const jump = options.jump ?? 0;
+
       return {
         ...acc,
         [`transaction${index + 1}`]: {
@@ -202,10 +208,10 @@ export class BatchMultiSigCall {
             to: this.handleTo(call),
             to_ens: call.toEnsHash || "",
             eth_value: call.value,
-            gas_limit: call.gasLimit || 0,
+            gas_limit: gasLimit,
             view_only: call.viewOnly || false,
-            flow_control: call.flow ? flows[call.flow].text : "continue on success, revert on fail",
-            jump_over: call.jump || 0,
+            flow_control: flow,
+            jump_over: jump,
             method_interface: handleMethodInterface(call),
           },
           ...paramsData,

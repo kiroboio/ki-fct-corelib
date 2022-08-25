@@ -1,3 +1,4 @@
+import { Flow } from "./constants";
 export interface Params {
     name: string;
     type: string;
@@ -42,6 +43,12 @@ export interface BatchCallBase {
     gasLimit?: number;
     maxGasPrice?: number;
     flags?: Partial<BatchFlags>;
+}
+export interface CallOptions {
+    gasLimit?: number;
+    flags?: Partial<MultiCallFlags>;
+    flow?: Flow;
+    jump?: number;
 }
 export interface MultiCallBase {
     method?: string;
