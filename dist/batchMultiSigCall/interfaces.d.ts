@@ -1,4 +1,8 @@
-import { CallOptions, Params, Validator } from "../interfaces";
+import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
+export interface Plugin {
+    ref: IPlugin;
+    params: Record<string, any>;
+}
 export interface MSCallInput {
     value: string;
     to: string;
@@ -9,6 +13,13 @@ export interface MSCallInput {
     method?: string;
     params?: Params[];
     options?: CallOptions;
+}
+export interface MSPlugin {
+    value: string;
+    to: string;
+    method: string;
+    params: Params[];
+    viewOnly?: boolean;
 }
 export interface MSCall {
     typeHash: string;
