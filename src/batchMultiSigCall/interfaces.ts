@@ -1,8 +1,8 @@
 import { Flow } from "../constants";
-import { CallOptions, Params, Validator } from "../interfaces";
+import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
 
 export interface Plugin {
-  ref: () => void;
+  ref: IPlugin;
   params: Record<string, any>;
 }
 
@@ -25,6 +25,7 @@ export interface MSPlugin {
   to: string;
   method: string;
   params: Params[];
+  viewOnly?: boolean;
 }
 
 export interface MSCall {
