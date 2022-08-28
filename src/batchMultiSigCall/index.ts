@@ -1,8 +1,8 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { Params } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions } from "./interfaces";
+import { CallOptions, Params } from "../interfaces";
+import { MSCallInput, MSCall, MSCallOptions, Plugin } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
 import {
   getSessionId,
@@ -90,6 +90,42 @@ export class BatchMultiSigCall {
   //
   //
   // FCT functions
+
+  public create({
+    plugin,
+    index,
+    ...tx
+  }: {
+    plugin?: Plugin;
+    index?: number;
+    from: string;
+    value?: string;
+    to?: string;
+    viewOnly?: boolean;
+    method?: string;
+    params?: Params[];
+    options?: CallOptions;
+  }) {
+    let call: MSCallInput;
+    if (plugin) {
+      const pluginCall = plugin.ref.create(plugin.params);
+
+      call = { ...pluginCall, ...tx } as MSCallInput;
+    } else {
+      call = { ...tx } as MSCallInput;
+    }
+    if (index) {
+      const length = this.calls.length;
+      if (index > length) {
+        throw new Error(`Index ${index} is out of bounds.`);
+      }
+      this.calls.splice(index, 0, call);
+    } else {
+      this.calls.push(call);
+    }
+
+    return this.calls;
+  }
 
   public addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error {
     if (index) {

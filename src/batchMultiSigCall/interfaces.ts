@@ -1,6 +1,11 @@
 import { Flow } from "../constants";
 import { CallOptions, Params, Validator } from "../interfaces";
 
+export interface Plugin {
+  ref: () => void;
+  params: Record<string, any>;
+}
+
 export interface MSCallInput {
   value: string;
   to: string;
@@ -13,6 +18,13 @@ export interface MSCallInput {
 
   options?: CallOptions;
   // flags?: Partial<MultiCallFlags>;
+}
+
+export interface MSPlugin {
+  value: string;
+  to: string;
+  method: string;
+  params: Params[];
 }
 
 export interface MSCall {
