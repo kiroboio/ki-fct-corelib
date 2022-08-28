@@ -101,9 +101,9 @@ export class BatchMultiSigCall {
     from: string;
     value?: string;
     to?: string;
-    viewOnly?: boolean;
     method?: string;
     params?: Params[];
+    viewOnly?: boolean;
     options?: CallOptions;
   }) {
     let call: MSCallInput;
