@@ -109,6 +109,9 @@ class BatchMultiSigCall {
             call = Object.assign(Object.assign({}, pluginCall), tx);
         }
         else {
+            if (!tx.to) {
+                throw new Error("To address is required");
+            }
             call = Object.assign({}, tx);
         }
         if (index) {

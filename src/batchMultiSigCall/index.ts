@@ -112,6 +112,9 @@ export class BatchMultiSigCall {
 
       call = { ...pluginCall, ...tx } as MSCallInput;
     } else {
+      if (!tx.to) {
+        throw new Error("To address is required");
+      }
       call = { ...tx } as MSCallInput;
     }
     if (index) {

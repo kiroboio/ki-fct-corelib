@@ -20,9 +20,9 @@ export declare class BatchMultiSigCall {
         from: string;
         value?: string;
         to?: string;
-        viewOnly?: boolean;
         method?: string;
         params?: Params[];
+        viewOnly?: boolean;
         options?: CallOptions;
     }): MSCallInput[];
     addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;

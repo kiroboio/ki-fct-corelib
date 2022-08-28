@@ -360,17 +360,10 @@ describe("batchMultiSigCall", () => {
         to: kiro.address,
         method: "balanceOf",
         params: [{ name: "account", type: "address", value: vault11.address }],
-        validator: {
-          method: "greaterThan",
-          params: {
-            valueToCompare: "230",
-          },
-          validatorAddress: validator.address,
-        },
         from: vault11.address,
       };
 
-      const data = batchMultiSigCall.addCall(call);
+      const data = batchMultiSigCall.create(call);
 
       expect(data).to.be.lengthOf(1);
     });
@@ -386,7 +379,7 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       };
 
-      const calls = batchMultiSigCall.addCall(call);
+      const calls = batchMultiSigCall.create(call);
 
       expect(calls).to.be.lengthOf(2);
     });
