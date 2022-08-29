@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { CallOptions, Params } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions, Plugin } from "./interfaces";
+import { MSCallInput, MSCall, MSCallOptions, MSCallWithPlugin } from "./interfaces";
 export declare class BatchMultiSigCall {
     private FactoryProxy;
     options: MSCallOptions;
@@ -14,17 +13,7 @@ export declare class BatchMultiSigCall {
     private getVariableFCValue;
     getCallValue(index: number, bytes?: boolean): string;
     setOptions(options: MSCallOptions): MSCallOptions;
-    create({ plugin, index, ...tx }: {
-        plugin?: Plugin;
-        index?: number;
-        from: string;
-        value?: string;
-        to?: string;
-        method?: string;
-        params?: Params[];
-        viewOnly?: boolean;
-        options?: CallOptions;
-    }): MSCallInput[];
+    create(callInput: MSCallInput | MSCallWithPlugin, index: number): Promise<MSCallInput[]>;
     addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];
     removeCall(index: number): MSCallInput[];
