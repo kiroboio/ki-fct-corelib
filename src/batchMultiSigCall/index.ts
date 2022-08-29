@@ -108,7 +108,8 @@ export class BatchMultiSigCall {
   }) {
     let call: MSCallInput;
     if (plugin) {
-      const pluginCall = plugin.ref.create(plugin.params);
+      plugin.ref.input.set(plugin.params);
+      const pluginCall = plugin.ref.create();
 
       call = { ...pluginCall, ...tx } as MSCallInput;
     } else {

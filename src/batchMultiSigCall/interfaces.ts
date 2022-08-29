@@ -1,11 +1,6 @@
 import { Flow } from "../constants";
 import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
 
-export interface Plugin {
-  ref: IPlugin;
-  params: Record<string, any>;
-}
-
 export interface MSCallInput {
   value: string;
   to: string;
@@ -58,4 +53,24 @@ export interface MSCallOptions {
     minimumApprovals: number;
   };
   flags?: { chillMode?: boolean };
+}
+
+export interface Plugin {
+  ref: IAction;
+  params: Record<string, any>;
+}
+
+export interface IAction extends IPlugin {
+  create: () => Promise<MSPlugin | undefined>;
+  input: IInput;
+  output: IOutput;
+}
+
+export interface IInput {
+  get(): unknown;
+  set(params: Record<string, any>): boolean;
+}
+
+export interface IOutput {
+  get(): unknown;
 }
