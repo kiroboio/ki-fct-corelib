@@ -1,9 +1,9 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
-import { CallOptions, Params } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions, Plugin } from "./interfaces";
-import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
+import { Params } from "../interfaces";
+import { MSCallInput, MSCall, MSCallOptions, MSCallWithPlugin } from "./interfaces";
+import { getTypedDataDomain, createValidatorTxData, flows } from "../helpers";
 import {
   getSessionId,
   handleData,
@@ -91,32 +91,16 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  public create({
-    plugin,
-    index,
-    ...tx
-  }: {
-    plugin?: Plugin;
-    index?: number;
-    from: string;
-    value?: string;
-    to?: string;
-    method?: string;
-    params?: Params[];
-    viewOnly?: boolean;
-    options?: CallOptions;
-  }) {
+  public async create(callInput: MSCallInput | MSCallWithPlugin, index: number) {
     let call: MSCallInput;
-    if (plugin) {
-      plugin.ref.input.set(plugin.params);
-      const pluginCall = plugin.ref.create();
-
-      call = { ...pluginCall, ...tx } as MSCallInput;
+    if ("plugin" in callInput) {
+      const pluginCall = await callInput.plugin.create();
+      call = { ...pluginCall, from: callInput.from, options: call.options } as MSCallInput;
     } else {
-      if (!tx.to) {
+      if (!callInput.to) {
         throw new Error("To address is required");
       }
-      call = { ...tx } as MSCallInput;
+      call = { ...callInput } as MSCallInput;
     }
     if (index) {
       const length = this.calls.length;

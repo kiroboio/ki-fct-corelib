@@ -55,9 +55,10 @@ export interface MSCallOptions {
   flags?: { chillMode?: boolean };
 }
 
-export interface Plugin {
-  ref: IAction;
-  params: Record<string, any>;
+export interface MSCallWithPlugin {
+  plugin: IAction;
+  from: string;
+  options?: CallOptions;
 }
 
 export interface IAction extends IPlugin {
