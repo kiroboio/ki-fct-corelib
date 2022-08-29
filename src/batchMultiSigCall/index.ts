@@ -91,7 +91,7 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  public async create(callInput: MSCallInput | MSCallWithPlugin, index: number) {
+  public async create(callInput: MSCallInput | MSCallWithPlugin, index?: number) {
     let call: MSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();

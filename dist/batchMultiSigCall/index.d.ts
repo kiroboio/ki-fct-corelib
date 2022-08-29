@@ -13,7 +13,7 @@ export declare class BatchMultiSigCall {
     private getVariableFCValue;
     getCallValue(index: number, bytes?: boolean): string;
     setOptions(options: MSCallOptions): MSCallOptions;
-    create(callInput: MSCallInput | MSCallWithPlugin, index: number): Promise<MSCallInput[]>;
+    create(callInput: MSCallInput | MSCallWithPlugin, index?: number): Promise<MSCallInput[]>;
     addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];
     removeCall(index: number): MSCallInput[];
