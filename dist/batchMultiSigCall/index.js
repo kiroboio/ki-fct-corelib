@@ -95,7 +95,7 @@ class BatchMultiSigCall {
             let call;
             if ("plugin" in callInput) {
                 const pluginCall = yield callInput.plugin.create();
-                call = Object.assign(Object.assign({}, pluginCall), { from: callInput.from, options: call.options });
+                call = Object.assign(Object.assign({}, pluginCall), { from: callInput.from, options: callInput.options });
             }
             else {
                 if (!callInput.to) {

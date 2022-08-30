@@ -95,7 +95,7 @@ export class BatchMultiSigCall {
     let call: MSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();
-      call = { ...pluginCall, from: callInput.from, options: call.options } as MSCallInput;
+      call = { ...pluginCall, from: callInput.from, options: callInput.options } as MSCallInput;
     } else {
       if (!callInput.to) {
         throw new Error("To address is required");
