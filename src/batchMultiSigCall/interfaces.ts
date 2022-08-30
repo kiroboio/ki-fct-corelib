@@ -55,16 +55,10 @@ export interface MSCallOptions {
   flags?: { chillMode?: boolean };
 }
 
-export interface MSCallWithPlugin {
-  plugin: IAction;
+export interface IWithPlugin {
+  plugin: IPlugin;
   from: string;
   options?: CallOptions;
-}
-
-export interface IAction extends IPlugin {
-  create: () => Promise<MSPlugin | undefined>;
-  input: IInput;
-  output: IOutput;
 }
 
 export interface IInput {

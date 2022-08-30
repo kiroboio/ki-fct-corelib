@@ -4,6 +4,7 @@ const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCall } = require("../dist");
 const { Flow } = require("../dist/constants");
 const { TypedDataUtils } = require("ethers-eip712");
+const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -355,19 +356,26 @@ describe("batchMultiSigCall", () => {
     it("Should add call", async () => {
       batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
-      const call = {
-        value: 0,
-        to: kiro.address,
-        method: "balanceOf",
-        params: [{ name: "account", type: "address", value: vault11.address }],
-        from: vault11.address,
-      };
+      const transfer = new ERC20.actions.transfer();
 
-      const data = await batchMultiSigCall.create(call);
+      transfer.input.set({
+        to: "0xf08fD75cCed9Eb65cff7451291Bf41e91c8457eD",
+        amount: "250",
+        token: kiro.address,
+      });
+
+      const data = await batchMultiSigCall.create({ plugin: transfer, from: vault11.address });
 
       expect(data).to.be.lengthOf(1);
     });
     it("Should add additional call", async () => {
+      //   const call = {
+      //     value: 0,
+      //     to: kiro.address,
+      //     method: "balanceOf",
+      //     params: [{ name: "account", type: "address", value: vault11.address }],
+      //     from: vault11.address,
+      //   };
       const call = {
         value: 0,
         to: kiro.address,

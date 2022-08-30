@@ -1,3 +1,4 @@
+import { MSPlugin } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 export interface Params {
     name: string;
@@ -64,11 +65,5 @@ export interface Validator {
     validatorAddress: string;
 }
 export interface IPlugin {
-    create: (params: Record<string, any>) => Promise<{
-        value: string;
-        to: string;
-        method: string;
-        params: Params[];
-        viewOnly?: boolean;
-    }>;
+    create: () => Promise<MSPlugin>;
 }

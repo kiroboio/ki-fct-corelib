@@ -2,7 +2,7 @@ import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions, MSCallWithPlugin } from "./interfaces";
+import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, flows } from "../helpers";
 import {
   getSessionId,
@@ -91,7 +91,7 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  public async create(callInput: MSCallInput | MSCallWithPlugin, index?: number) {
+  public async create(callInput: MSCallInput | IWithPlugin, index?: number) {
     let call: MSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();
