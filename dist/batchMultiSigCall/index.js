@@ -163,7 +163,7 @@ class BatchMultiSigCall {
             const mcall = this.calls.map((call, index) => ({
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
                 functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-                value: call.value,
+                value: call.value || "0",
                 from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
                 gasLimit: (call.options && call.options.gasLimit) || 0,
                 flags: (0, helpers_2.manageFlow)(call),

@@ -177,7 +177,7 @@ export class BatchMultiSigCall {
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
       ),
       functionSignature: handleFunctionSignature(call),
-      value: call.value,
+      value: call.value || "0",
       from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
       gasLimit: (call.options && call.options.gasLimit) || 0,
       flags: manageFlow(call),

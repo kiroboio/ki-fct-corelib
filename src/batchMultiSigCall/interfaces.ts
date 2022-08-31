@@ -2,7 +2,7 @@ import { Flow } from "../constants";
 import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
 
 export interface MSCallInput {
-  value: string;
+  value?: string;
   to: string;
   from: string;
   toEnsHash?: string;
@@ -13,14 +13,6 @@ export interface MSCallInput {
 
   options?: CallOptions;
   // flags?: Partial<MultiCallFlags>;
-}
-
-export interface MSPlugin {
-  value: string;
-  to: string;
-  method: string;
-  params: Params[];
-  viewOnly?: boolean;
 }
 
 export interface MSCall {
