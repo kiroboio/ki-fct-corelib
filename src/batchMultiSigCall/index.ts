@@ -21,6 +21,8 @@ import {
 //   flow: false,
 // };
 
+const batchMultiSigSelector = 0x40aa0f39;
+
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -43,9 +45,7 @@ export class BatchMultiSigCall {
     if (!utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
       throw new Error("From value is not an address");
     }
-    if (call.options && call.options.jump > 15) {
-      throw new Error("Jump value cannot be higher than 15");
-    }
+
     if (BigNumber.from(call.value).lt(0)) {
       throw new Error("Value cannot be negative");
     }
@@ -222,20 +222,25 @@ export class BatchMultiSigCall {
       const options = call.options || {};
       const gasLimit = options.gasLimit ?? 0;
       const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-      const jump = options.jump ?? 0;
+      const jumpOnSuccess = options.jumpOnSuccess ?? 0;
+      const jumpOnFail = options.jumpOnFail ?? 0;
 
       return {
         ...acc,
         [`transaction${index + 1}`]: {
           call: {
+            call_index: index + 1,
+            payer_index: index + 1,
             from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
             to: this.handleTo(call),
             to_ens: call.toEnsHash || "",
             eth_value: call.value,
             gas_limit: gasLimit,
             view_only: call.viewOnly || false,
+            permissions: 0,
             flow_control: flow,
-            jump_over: jump,
+            jump_on_success: jumpOnSuccess,
+            jump_on_fail: jumpOnFail,
             method_interface: handleMethodInterface(call),
           },
           ...paramsData,
@@ -250,9 +255,9 @@ export class BatchMultiSigCall {
     if ("recurrency" in this.options) {
       optionalMessage = {
         recurrency: {
-          max_repeats: this.options.recurrency.maxRepeats,
-          chill_time: this.options.recurrency.chillTime,
-          accumetable: this.options.recurrency.accumetable,
+          max_repeats: this.options.recurrency.maxRepeats || "1",
+          chill_time: this.options.recurrency.chillTime || "0",
+          accumetable: this.options.recurrency.accumetable || false,
         },
       };
       optionalTypes = {
@@ -262,7 +267,7 @@ export class BatchMultiSigCall {
           { name: "accumetable", type: "bool" },
         ],
       };
-      primaryType = [{ name: "recurrency", type: "Recurrency" }];
+      primaryType.push({ name: "recurrency", type: "Recurrency" });
     }
 
     if ("multisig" in this.options) {
@@ -270,7 +275,7 @@ export class BatchMultiSigCall {
         ...optionalMessage,
         multisig: {
           external_signers: this.options.multisig.externalSigners,
-          minimum_approvals: this.options.multisig.minimumApprovals,
+          minimum_approvals: this.options.multisig.minimumApprovals || 2,
         },
       };
       optionalTypes = {
@@ -280,7 +285,7 @@ export class BatchMultiSigCall {
           { name: "minimum_approvals", type: "uint8" },
         ],
       };
-      primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
+      primaryType.push({ name: "multisig", type: "Multisig" });
     }
 
     const typedData = {
@@ -293,15 +298,16 @@ export class BatchMultiSigCall {
           { name: "salt", type: "bytes32" },
         ],
         BatchMultiSigCall: [
-          { name: "info", type: "Info" },
+          { name: "fct", type: "FCT" },
           { name: "limits", type: "Limits" },
           ...this.calls.map((_, index) => ({
             name: `transaction${index + 1}`,
             type: `Transaction${index + 1}`,
           })),
         ],
-        Info: [
+        FCT: [
           { name: "name", type: "string" },
+          { name: "selector", type: "bytes4" },
           { name: "version", type: "bytes3" },
           { name: "eip712", type: "bool" },
           { name: "random_id", type: "bytes3" },
@@ -310,18 +316,23 @@ export class BatchMultiSigCall {
           { name: "valid_from", type: "uint40" },
           { name: "expires_at", type: "uint40" },
           { name: "gas_price_limit", type: "uint64" },
+          { name: "purgeable", type: "bool" },
           { name: "cancelable", type: "bool" },
         ],
         ...optionalTypes,
         Transaction: [
+          { name: "call_index", type: "uint16" },
+          { name: "payer_index", type: "uint16" },
           { name: "from", type: "address" },
           { name: "to", type: "address" },
           { name: "to_ens", type: "string" },
           { name: "eth_value", type: "uint256" },
           { name: "gas_limit", type: "uint32" },
           { name: "view_only", type: "bool" },
+          { name: "permissions", type: "uint16" },
           { name: "flow_control", type: "string" },
-          { name: "jump_over", type: "uint8" },
+          { name: "jump_on_success", type: "uint16" },
+          { name: "jump_on_fail", type: "uint16" },
           { name: "method_interface", type: "string" },
         ],
         ...this.calls.reduce(
@@ -340,16 +351,18 @@ export class BatchMultiSigCall {
       primaryType: "BatchMultiSigCall",
       domain: await getTypedDataDomain(this.FactoryProxy),
       message: {
-        info: {
-          name: this.options.name || "BatchMultiSigCall transaction",
+        FCT: {
+          name: this.options.name || "",
+          selector: batchMultiSigSelector,
           version,
-          random_id: `0x${salt}`,
           eip712: true,
+          random_id: `0x${salt}`,
         },
         limits: {
-          valid_from: this.options.validFrom ?? 0,
-          expires_at: this.options.expiresAt ?? 0,
-          gas_price_limit: this.options.maxGasPrice ?? "25000000000", // 25 Gwei
+          valid_from: this.options.validFrom ?? 0, // TODO: Valid from the moment of creating FCT as default value
+          expires_at: this.options.expiresAt ?? 0, // TODO: Expires after 30 days as default
+          gas_price_limit: this.options.maxGasPrice ?? "20000000000", // 20 GWei as default
+          purgeable: this.options.purgeable ?? true,
           cancelable: this.options.cancelable || true,
         },
         ...optionalMessage,

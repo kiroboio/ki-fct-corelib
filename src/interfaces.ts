@@ -59,7 +59,8 @@ export interface CallOptions {
   gasLimit?: number;
   flags?: Partial<MultiCallFlags>;
   flow?: Flow;
-  jump?: number;
+  jumpOnSuccess?: number;
+  jumpOnFail?: number;
 }
 
 export interface MultiCallBase {

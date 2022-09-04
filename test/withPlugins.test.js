@@ -356,13 +356,19 @@ describe("batchMultiSigCall", () => {
     it("Should add call", async () => {
       batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
-      const transfer = new ERC20.actions.transfer();
-
-      transfer.input.set({
-        to: "0xf08fD75cCed9Eb65cff7451291Bf41e91c8457eD",
-        amount: "250",
-        token: kiro.address,
+      const transfer = new ERC20.actions.Transfer({
+        initParams: {
+          token: kiro.address,
+          to: user1,
+          amount: "1000000000000000000",
+        },
       });
+
+      // transfer.input.set({
+      //   to: "0xf08fD75cCed9Eb65cff7451291Bf41e91c8457eD",
+      //   amount: "250",
+      //   token: kiro.address,
+      // });
 
       const data = await batchMultiSigCall.create({ plugin: transfer, from: vault11.address });
 
