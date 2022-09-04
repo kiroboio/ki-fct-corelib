@@ -12,7 +12,6 @@ import {
   handleMethodInterface,
   handleTypes,
   manageCallId,
-  manageFlow,
 } from "./helpers";
 
 // DefaultFlag - "f100" // payment + eip712
@@ -36,9 +35,23 @@ export class BatchMultiSigCall {
   variables: string[][] = [];
   calls: MSCallInput[] = [];
 
-  constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
+  constructor({
+    provider,
+    contractAddress,
+    options,
+  }: {
+    provider: ethers.providers.JsonRpcProvider;
+    contractAddress: string;
+    options?: MSCallOptions;
+  }) {
     this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+
+    this.options = options ?? {};
   }
+
+  // constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
+  //   this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+  // }
 
   // Validate
 
@@ -111,20 +124,6 @@ export class BatchMultiSigCall {
       this.calls.splice(index, 0, call);
     } else {
       this.calls.push(call);
-    }
-
-    return this.calls;
-  }
-
-  public addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error {
-    if (index) {
-      const length = this.calls.length;
-      if (index > length) {
-        throw new Error(`Index ${index} is out of bounds.`);
-      }
-      this.calls.splice(index, 0, tx);
-    } else {
-      this.calls.push(tx);
     }
 
     return this.calls;
