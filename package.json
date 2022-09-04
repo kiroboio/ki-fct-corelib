@@ -22,6 +22,7 @@
   "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
+    "@kirobo/ki-eth-fct-provider-ts": "github:kiroboio/ki-eth-fct-provider-ts",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-truffle5": "^2.0.6",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
