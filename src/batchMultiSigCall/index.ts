@@ -22,7 +22,7 @@ import {
 //   flow: false,
 // };
 
-const batchMultiSigSelector = 0x40aa0f39;
+const batchMultiSigSelector = "0x40aa0f39";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -180,7 +180,7 @@ export class BatchMultiSigCall {
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: call.value || "0",
-      callId: manageCallId(call, index),
+      callId: manageCallId(call, index + 1),
       from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
       to: this.handleTo(call),
       data: handleData(call),
@@ -216,7 +216,7 @@ export class BatchMultiSigCall {
       let paramsData = {};
       if (call.params) {
         this.verifyParams(call.params, index, additionalTypes, typedHashes);
-        paramsData = { params: this.getParams(call) };
+        paramsData = this.getParams(call);
       }
 
       const options = call.options || {};
@@ -234,7 +234,7 @@ export class BatchMultiSigCall {
             from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
             to: this.handleTo(call),
             to_ens: call.toEnsHash || "",
-            eth_value: call.value,
+            eth_value: call.value || "0",
             gas_limit: gasLimit,
             view_only: call.viewOnly || false,
             permissions: 0,
@@ -336,13 +336,15 @@ export class BatchMultiSigCall {
           { name: "method_interface", type: "string" },
         ],
         ...this.calls.reduce(
-          (acc: object, call, index: number) => ({
+          (acc: object, call: MSCallInput, index: number) => ({
             ...acc,
             [`Transaction${index + 1}`]: [
               { name: "call", type: "Transaction" },
-              { name: "params", type: `Transaction${index + 1}_Params` },
+              ...(call.params || []).map((param: Params) => ({
+                name: param.name,
+                type: param.type,
+              })),
             ],
-            [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })),
           }),
           {}
         ),

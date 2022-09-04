@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSessionId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
+exports.getSessionId = exports.manageCallId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
 const ethers_1 = require("ethers");
 const helpers_1 = require("../helpers");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
@@ -55,7 +55,8 @@ const handleTypedHashes = (call, typedData) => {
 };
 exports.handleTypedHashes = handleTypedHashes;
 const manageFlow = (call) => {
-    const jump = (call.options && call.options.jump) || 0;
+    // const jump = (call.options && call.options.jump) || 0;
+    const jump = 0;
     const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
     if (jump > 15) {
         throw new Error("Jump value cannot exceed 15");
@@ -66,6 +67,29 @@ const manageFlow = (call) => {
     return `0x${helpers_1.flows[flow].value}${jump.toString(16)}`;
 };
 exports.manageFlow = manageFlow;
+const manageCallId = (call, index) => {
+    // 4 - Permissions
+    // 2 - Flow
+    // 4 - Fail Jump
+    // 4 - Ok Jump
+    // 4 - Payer index
+    // 4 - Call index
+    // 8 - Gas limit
+    // 2 - Flags
+    var _a, _b, _c, _d, _e;
+    const permissions = "0000";
+    const flow = ((_a = call === null || call === void 0 ? void 0 : call.options) === null || _a === void 0 ? void 0 : _a.flow) ? Number(helpers_1.flows[call.options.flow].value).toString(16).padStart(2, "0") : "00";
+    const failJump = ((_b = call === null || call === void 0 ? void 0 : call.options) === null || _b === void 0 ? void 0 : _b.jumpOnFail) ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "00";
+    const successJump = ((_c = call === null || call === void 0 ? void 0 : call.options) === null || _c === void 0 ? void 0 : _c.jumpOnSuccess)
+        ? Number(call.options.jumpOnSuccess).toString(16).padStart(4, "0")
+        : "0000";
+    const payerIndex = Number(index).toString(16).padStart(4, "0");
+    const callIndex = Number(index).toString(16).padStart(4, "0");
+    const gasLimit = ((_d = call === null || call === void 0 ? void 0 : call.options) === null || _d === void 0 ? void 0 : _d.gasLimit) ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+    const flags = ((_e = call === null || call === void 0 ? void 0 : call.options) === null || _e === void 0 ? void 0 : _e.flags) ? Number(call.options.flags).toString(16).padStart(2, "0") : "00";
+    return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
+};
+exports.manageCallId = manageCallId;
 const getSessionId = (salt, options) => {
     // 6 - Salt
     // 2 - External signers
@@ -89,7 +113,7 @@ const getSessionId = (salt, options) => {
     const gasPriceLimit = options.maxGasPrice
         ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
         : "00000005D21DBA00"; // 25 Gwei
-    const flags = `10`; // Have to implement getFlags function
+    const flags = `08`; // Have to implement getFlags function
     return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
 };
 exports.getSessionId = getSessionId;

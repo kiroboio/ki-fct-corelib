@@ -26,32 +26,5 @@ const Activators = artifacts.require("Activators");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 describe("FactoryProxy contract library", function () {
-  describe("Inital for factoryProxy", function () {
-    it("Util", () => {
-      const types = ["uint256", "string"];
-      const values = ["20", "hello world hehe web3"];
-      const data = utils.getEncodedData(types, values);
-      console.log(ethers.utils.formatBytes32String("hello world hehe web3"));
-
-      console.log(
-        ethers.utils.hexlify(
-          ethers.utils.arrayify(
-            ethers.utils.hexZeroPad(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("hello world hehe web3")), 32)
-          )
-        )
-      );
-
-      console.log(data);
-    });
-    it("Params ERC20 Transfer", async () => {
-      const accounts = await web3.eth.getAccounts();
-
-      const types = ["address", "uint256"];
-      const values = [accounts[12], "20"];
-
-      const data = utils.getEncodedData(types, values);
-
-      console.log(data);
-    });
-  });
+  describe("Test BatchMultiSigCall", function () {});
 });

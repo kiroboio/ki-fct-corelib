@@ -2,8 +2,8 @@ const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCall } = require("../dist");
-const { Flow } = require("../dist/constants");
 const { TypedDataUtils } = require("ethers-eip712");
+const { Flow } = require("../dist/constants");
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -356,11 +356,15 @@ describe("batchMultiSigCall", () => {
       batchMultiSigCall = new BatchMultiSigCall(ethers.provider, fctController.address);
 
       const call = {
-        value: 0,
         to: kiro.address,
         method: "balanceOf",
         params: [{ name: "account", type: "address", value: vault11.address }],
         from: vault11.address,
+        options: {
+          flow: Flow.OK_CONT_FAIL_STOP,
+          jumpOnSuccess: 1,
+          gasLimit: 10000000,
+        },
       };
 
       const data = await batchMultiSigCall.create(call);
@@ -369,7 +373,6 @@ describe("batchMultiSigCall", () => {
     });
     it("Should add additional call", async () => {
       const call = {
-        value: 0,
         to: kiro.address,
         method: "transfer",
         params: [
@@ -383,10 +386,24 @@ describe("batchMultiSigCall", () => {
 
       expect(calls).to.be.lengthOf(2);
     });
+    it("Should add another call", async () => {
+      const call = {
+        to: kiro.address,
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: accounts[12] },
+          { name: "token_amount", type: "uint256", value: "20" },
+        ],
+        from: vault10.address,
+      };
+
+      const calls = await batchMultiSigCall.create(call);
+
+      expect(calls).to.be.lengthOf(3);
+    });
 
     it("Should replace call", async () => {
       const call = {
-        value: 0,
         to: kiro.address,
         method: "transfer",
         params: [
@@ -398,14 +415,14 @@ describe("batchMultiSigCall", () => {
 
       const calls = batchMultiSigCall.replaceCall(call, 1);
 
-      expect(calls).to.be.lengthOf(2) && expect(calls[1].params[1].value).to.eq("30");
+      expect(calls).to.be.lengthOf(3) && expect(calls[1].params[1].value).to.eq("30");
     });
 
-    it("Should remove a call", async () => {
-      const calls = batchMultiSigCall.removeCall(1);
+    // it("Should remove a call", async () => {
+    //   const calls = batchMultiSigCall.removeCall(1);
 
-      expect(calls).to.be.lengthOf(1);
-    });
+    //   expect(calls).to.be.lengthOf(1);
+    // });
 
     it("Should return a call", async () => {
       const call = batchMultiSigCall.getCall(0);
@@ -416,7 +433,13 @@ describe("batchMultiSigCall", () => {
     it("Should return length", async () => {
       const length = batchMultiSigCall.length;
 
-      expect(length).to.be.equal(1);
+      expect(length).to.be.equal(3);
+    });
+
+    it("Should create a FCT", async () => {
+      const FCT = await batchMultiSigCall.getFCT();
+
+      console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
     });
 
     // it("Should execute batch", async () => {

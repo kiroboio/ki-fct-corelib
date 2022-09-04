@@ -24,7 +24,7 @@ const helpers_2 = require("./helpers");
 //   payment: true,
 //   flow: false,
 // };
-const batchMultiSigSelector = 0x40aa0f39;
+const batchMultiSigSelector = "0x40aa0f39";
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -160,13 +160,12 @@ class BatchMultiSigCall {
             const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
             const mcall = this.calls.map((call, index) => ({
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
+                ensHash: (0, helpers_2.handleEnsHash)(call),
                 functionSignature: (0, helpers_2.handleFunctionSignature)(call),
                 value: call.value || "0",
+                callId: (0, helpers_2.manageCallId)(call, index + 1),
                 from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-                gasLimit: (call.options && call.options.gasLimit) || 0,
-                flags: (0, helpers_2.manageFlow)(call),
                 to: this.handleTo(call),
-                ensHash: (0, helpers_2.handleEnsHash)(call),
                 data: (0, helpers_2.handleData)(call),
                 types: (0, helpers_2.handleTypes)(call),
                 typedHashes: typedHashes
@@ -177,7 +176,7 @@ class BatchMultiSigCall {
                 typedData,
                 typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
                 sessionId,
-                name: this.options.name || "BatchMultiSigCall transaction",
+                name: this.options.name || "",
                 mcall, // This is where are the MSCall[] are returned
             };
         });
@@ -196,7 +195,7 @@ class BatchMultiSigCall {
                 let paramsData = {};
                 if (call.params) {
                     this.verifyParams(call.params, index, additionalTypes, typedHashes);
-                    paramsData = { params: this.getParams(call) };
+                    paramsData = this.getParams(call);
                 }
                 const options = call.options || {};
                 const gasLimit = (_a = options.gasLimit) !== null && _a !== void 0 ? _a : 0;
@@ -209,7 +208,7 @@ class BatchMultiSigCall {
                             from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
                             to: this.handleTo(call),
                             to_ens: call.toEnsHash || "",
-                            eth_value: call.value,
+                            eth_value: call.value || "0",
                             gas_limit: gasLimit,
                             view_only: call.viewOnly || false,
                             permissions: 0,
@@ -292,8 +291,11 @@ class BatchMultiSigCall {
                         { name: "method_interface", type: "string" },
                     ] }), this.calls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
                         { name: "call", type: "Transaction" },
-                        { name: "params", type: `Transaction${index + 1}_Params` },
-                    ], [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })) })), {})), additionalTypes),
+                        ...(call.params || []).map((param) => ({
+                            name: param.name,
+                            type: param.type,
+                        })),
+                    ] })), {})), additionalTypes),
                 primaryType: "BatchMultiSigCall",
                 domain: yield (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
                 message: Object.assign(Object.assign({ FCT: {
