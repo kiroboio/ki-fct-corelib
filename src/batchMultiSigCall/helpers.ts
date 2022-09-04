@@ -132,7 +132,7 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
     ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
     : "00000005D21DBA00"; // 25 Gwei
 
-  const flags = `10`; // Have to implement getFlags function
+  const flags = `08`; // Have to implement getFlags function
 
   return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
 };
