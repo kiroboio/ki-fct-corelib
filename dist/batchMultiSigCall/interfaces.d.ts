@@ -29,6 +29,7 @@ export interface MSCallOptions {
     expiresAt?: number;
     maxGasPrice?: number;
     cancelable?: boolean;
+    purgeable?: boolean;
     recurrency?: {
         maxRepeats: number;
         chillTime: number;

@@ -419,44 +419,44 @@ describe("batchMultiSigCall", () => {
       expect(length).to.be.equal(1);
     });
 
-    it("Should execute batch", async () => {
-      const FCT = await batchMultiSigCall.getFCT();
-      // Here I get object with typedData, typeHash, sessionId, name and mcall array (MSCall[])
+    // it("Should execute batch", async () => {
+    //   const FCT = await batchMultiSigCall.getFCT();
+    //   // Here I get object with typedData, typeHash, sessionId, name and mcall array (MSCall[])
 
-      const signer = getSigner(10);
-      const signer2 = getSigner(11);
+    //   const signer = getSigner(10);
+    //   const signer2 = getSigner(11);
 
-      const getSignature = (messageDigest, signer) => {
-        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
-        let signature = signingKey.signDigest(messageDigest);
-        signature.v = "0x" + signature.v.toString(16);
+    //   const getSignature = (messageDigest, signer) => {
+    //     const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+    //     let signature = signingKey.signDigest(messageDigest);
+    //     signature.v = "0x" + signature.v.toString(16);
 
-        return signature;
-      };
+    //     return signature;
+    //   };
 
-      // Signing the FCT
-      const signedCalls = [FCT].map((item) => {
-        const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
+    //   // Signing the FCT
+    //   const signedCalls = [FCT].map((item) => {
+    //     const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
-        const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
-        return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
-      });
+    //     const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
+    //     return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
+    //   });
 
-      const callData = fctBatchMultiSig.contract.methods
-        .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls)
-        .encodeABI();
+    //   const callData = fctBatchMultiSig.contract.methods
+    //     .batchMultiSigCall_(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls)
+    //     .encodeABI();
 
-      await activators.addActivator(user1, {
-        from: owner,
-        nonce: await web3.eth.getTransactionCount(owner),
-      });
+    //   await activators.addActivator(user1, {
+    //     from: owner,
+    //     nonce: await web3.eth.getTransactionCount(owner),
+    //   });
 
-      try {
-        const res = await activators.activate(callData, { from: user1 });
-        console.log(res);
-      } catch (err) {
-        console.log(err);
-      }
-    });
+    //   try {
+    //     const res = await activators.activate(callData, { from: user1 });
+    //     console.log(res);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
   });
 });

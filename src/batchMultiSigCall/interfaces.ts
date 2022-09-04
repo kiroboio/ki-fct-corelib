@@ -21,8 +21,6 @@ export interface MSCall {
   functionSignature: string;
   value: string;
   from: string;
-  gasLimit: number;
-  flags: string;
   to: string;
   data: string;
   types: number[];

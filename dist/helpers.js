@@ -21,26 +21,30 @@ const validator_abi_json_1 = __importDefault(require("./abi/validator.abi.json")
 exports.flows = {
     OK_CONT_FAIL_REVERT: {
         text: "continue on success, revert on fail",
-        value: "1",
+        value: "0",
     },
     OK_CONT_FAIL_STOP: {
         text: "continue on success, stop on fail",
-        value: "2",
+        value: "1",
     },
-    OK_CONT_FAIL_JUMP: {
-        text: "continue on success, jump on fail",
-        value: "3",
+    OK_CONT_FAIL_CONT: {
+        text: "continue on success, continue on fail",
+        value: "2",
     },
     OK_REVERT_FAIL_CONT: {
         text: "revert on success, continue on fail",
+        value: "3",
+    },
+    OK_REVERT_FAIL_STOP: {
+        text: "revert on success, stop on fail",
         value: "4",
     },
     OK_STOP_FAIL_CONT: {
         text: "stop on success, continue on fail",
         value: "5",
     },
-    OK_JUMP_FAIL_CONT: {
-        text: "jump on success, continue on fail",
+    OK_STOP_FAIL_REVERT: {
+        text: "stop on success, revert on fail",
         value: "6",
     },
 };

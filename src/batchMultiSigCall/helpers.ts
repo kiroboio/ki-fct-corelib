@@ -68,7 +68,8 @@ export const handleTypedHashes = (call: MSCallInput, typedData: TypedData) => {
 };
 
 export const manageFlow = (call: MSCallInput) => {
-  const jump = (call.options && call.options.jump) || 0;
+  // const jump = (call.options && call.options.jump) || 0;
+  const jump = 0;
   const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
 
   if (jump > 15) {
@@ -80,6 +81,30 @@ export const manageFlow = (call: MSCallInput) => {
   }
 
   return `0x${flows[flow].value}${jump.toString(16)}`;
+};
+
+export const manageCallId = (call: MSCallInput, index: number) => {
+  // 4 - Permissions
+  // 2 - Flow
+  // 4 - Fail Jump
+  // 4 - Ok Jump
+  // 4 - Payer index
+  // 4 - Call index
+  // 8 - Gas limit
+  // 2 - Flags
+
+  const permissions = "0000";
+  const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(2, "0") : "00";
+  const failJump = call?.options?.jumpOnFail ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "00";
+  const successJump = call?.options?.jumpOnSuccess
+    ? Number(call.options.jumpOnSuccess).toString(16).padStart(4, "0")
+    : "0000";
+  const payerIndex = Number(index).toString(16).padStart(4, "0");
+  const callIndex = Number(index).toString(16).padStart(4, "0");
+  const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+  const flags = call?.options?.flags ? Number(call.options.flags).toString(16).padStart(2, "0") : "00";
+
+  return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
 };
 
 export const getSessionId = (salt: string, options: MSCallOptions) => {

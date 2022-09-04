@@ -13,7 +13,7 @@ export declare const flows: {
         text: string;
         value: string;
     };
-    OK_CONT_FAIL_JUMP: {
+    OK_CONT_FAIL_CONT: {
         text: string;
         value: string;
     };
@@ -21,11 +21,15 @@ export declare const flows: {
         text: string;
         value: string;
     };
+    OK_REVERT_FAIL_STOP: {
+        text: string;
+        value: string;
+    };
     OK_STOP_FAIL_CONT: {
         text: string;
         value: string;
     };
-    OK_JUMP_FAIL_CONT: {
+    OK_STOP_FAIL_REVERT: {
         text: string;
         value: string;
     };

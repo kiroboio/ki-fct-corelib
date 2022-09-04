@@ -24,6 +24,7 @@ const helpers_2 = require("./helpers");
 //   payment: true,
 //   flow: false,
 // };
+const batchMultiSigSelector = 0x40aa0f39;
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -50,9 +51,6 @@ class BatchMultiSigCall {
     validate(call) {
         if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
             throw new Error("From value is not an address");
-        }
-        if (call.options && call.options.jump > 15) {
-            throw new Error("Jump value cannot be higher than 15");
         }
         if (ethers_1.BigNumber.from(call.value).lt(0)) {
             throw new Error("Value cannot be negative");
@@ -189,11 +187,11 @@ class BatchMultiSigCall {
     //
     // Helpers functions
     createTypedData(additionalTypes, typedHashes, salt, version) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         return __awaiter(this, void 0, void 0, function* () {
             // Creates messages from multiCalls array for EIP712 sign
             const typedDataMessage = this.calls.reduce((acc, call, index) => {
-                var _a, _b;
+                var _a, _b, _c;
                 // Update params if variables (FC) or references (FD) are used
                 let paramsData = {};
                 if (call.params) {
@@ -203,16 +201,21 @@ class BatchMultiSigCall {
                 const options = call.options || {};
                 const gasLimit = (_a = options.gasLimit) !== null && _a !== void 0 ? _a : 0;
                 const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
-                const jump = (_b = options.jump) !== null && _b !== void 0 ? _b : 0;
+                const jumpOnSuccess = (_b = options.jumpOnSuccess) !== null && _b !== void 0 ? _b : 0;
+                const jumpOnFail = (_c = options.jumpOnFail) !== null && _c !== void 0 ? _c : 0;
                 return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
+                            call_index: index + 1,
+                            payer_index: index + 1,
                             from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
                             to: this.handleTo(call),
                             to_ens: call.toEnsHash || "",
                             eth_value: call.value,
                             gas_limit: gasLimit,
                             view_only: call.viewOnly || false,
+                            permissions: 0,
                             flow_control: flow,
-                            jump_over: jump,
+                            jump_on_success: jumpOnSuccess,
+                            jump_on_fail: jumpOnFail,
                             method_interface: (0, helpers_2.handleMethodInterface)(call),
                         } }, paramsData) });
             }, {});
@@ -222,9 +225,9 @@ class BatchMultiSigCall {
             if ("recurrency" in this.options) {
                 optionalMessage = {
                     recurrency: {
-                        max_repeats: this.options.recurrency.maxRepeats,
-                        chill_time: this.options.recurrency.chillTime,
-                        accumetable: this.options.recurrency.accumetable,
+                        max_repeats: this.options.recurrency.maxRepeats || "1",
+                        chill_time: this.options.recurrency.chillTime || "0",
+                        accumetable: this.options.recurrency.accumetable || false,
                     },
                 };
                 optionalTypes = {
@@ -234,18 +237,18 @@ class BatchMultiSigCall {
                         { name: "accumetable", type: "bool" },
                     ],
                 };
-                primaryType = [{ name: "recurrency", type: "Recurrency" }];
+                primaryType.push({ name: "recurrency", type: "Recurrency" });
             }
             if ("multisig" in this.options) {
                 optionalMessage = Object.assign(Object.assign({}, optionalMessage), { multisig: {
                         external_signers: this.options.multisig.externalSigners,
-                        minimum_approvals: this.options.multisig.minimumApprovals,
+                        minimum_approvals: this.options.multisig.minimumApprovals || 2,
                     } });
                 optionalTypes = Object.assign(Object.assign({}, optionalTypes), { Multisig: [
                         { name: "external_signers", type: "address[]" },
                         { name: "minimum_approvals", type: "uint8" },
                     ] });
-                primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
+                primaryType.push({ name: "multisig", type: "Multisig" });
             }
             const typedData = {
                 types: Object.assign(Object.assign(Object.assign(Object.assign({ EIP712Domain: [
@@ -255,14 +258,15 @@ class BatchMultiSigCall {
                         { name: "verifyingContract", type: "address" },
                         { name: "salt", type: "bytes32" },
                     ], BatchMultiSigCall: [
-                        { name: "info", type: "Info" },
+                        { name: "fct", type: "FCT" },
                         { name: "limits", type: "Limits" },
                         ...this.calls.map((_, index) => ({
                             name: `transaction${index + 1}`,
                             type: `Transaction${index + 1}`,
                         })),
-                    ], Info: [
+                    ], FCT: [
                         { name: "name", type: "string" },
+                        { name: "selector", type: "bytes4" },
                         { name: "version", type: "bytes3" },
                         { name: "eip712", type: "bool" },
                         { name: "random_id", type: "bytes3" },
@@ -270,16 +274,21 @@ class BatchMultiSigCall {
                         { name: "valid_from", type: "uint40" },
                         { name: "expires_at", type: "uint40" },
                         { name: "gas_price_limit", type: "uint64" },
+                        { name: "purgeable", type: "bool" },
                         { name: "cancelable", type: "bool" },
                     ] }, optionalTypes), { Transaction: [
+                        { name: "call_index", type: "uint16" },
+                        { name: "payer_index", type: "uint16" },
                         { name: "from", type: "address" },
                         { name: "to", type: "address" },
                         { name: "to_ens", type: "string" },
                         { name: "eth_value", type: "uint256" },
                         { name: "gas_limit", type: "uint32" },
                         { name: "view_only", type: "bool" },
+                        { name: "permissions", type: "uint16" },
                         { name: "flow_control", type: "string" },
-                        { name: "jump_over", type: "uint8" },
+                        { name: "jump_on_success", type: "uint16" },
+                        { name: "jump_on_fail", type: "uint16" },
                         { name: "method_interface", type: "string" },
                     ] }), this.calls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
                         { name: "call", type: "Transaction" },
@@ -287,15 +296,17 @@ class BatchMultiSigCall {
                     ], [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })) })), {})), additionalTypes),
                 primaryType: "BatchMultiSigCall",
                 domain: yield (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
-                message: Object.assign(Object.assign({ info: {
-                        name: this.options.name || "BatchMultiSigCall transaction",
+                message: Object.assign(Object.assign({ FCT: {
+                        name: this.options.name || "",
+                        selector: batchMultiSigSelector,
                         version,
-                        random_id: `0x${salt}`,
                         eip712: true,
+                        random_id: `0x${salt}`,
                     }, limits: {
                         valid_from: (_a = this.options.validFrom) !== null && _a !== void 0 ? _a : 0,
                         expires_at: (_b = this.options.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                        gas_price_limit: (_c = this.options.maxGasPrice) !== null && _c !== void 0 ? _c : "25000000000",
+                        gas_price_limit: (_c = this.options.maxGasPrice) !== null && _c !== void 0 ? _c : "20000000000",
+                        purgeable: (_d = this.options.purgeable) !== null && _d !== void 0 ? _d : true,
                         cancelable: this.options.cancelable || true,
                     } }, optionalMessage), typedDataMessage),
             };

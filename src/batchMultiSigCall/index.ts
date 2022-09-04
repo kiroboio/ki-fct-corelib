@@ -11,6 +11,7 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
   handleTypes,
+  manageCallId,
   manageFlow,
 } from "./helpers";
 
@@ -176,13 +177,12 @@ export class BatchMultiSigCall {
       typeHash: ethers.utils.hexlify(
         TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
       ),
+      ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: call.value || "0",
+      callId: manageCallId(call, index),
       from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-      gasLimit: (call.options && call.options.gasLimit) || 0,
-      flags: manageFlow(call),
       to: this.handleTo(call),
-      ensHash: handleEnsHash(call),
       data: handleData(call),
       types: handleTypes(call),
       typedHashes: typedHashes
@@ -194,7 +194,7 @@ export class BatchMultiSigCall {
       typedData,
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
       sessionId,
-      name: this.options.name || "BatchMultiSigCall transaction",
+      name: this.options.name || "",
       mcall, // This is where are the MSCall[] are returned
     };
   }
