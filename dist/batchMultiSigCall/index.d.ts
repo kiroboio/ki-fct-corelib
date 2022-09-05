@@ -6,7 +6,11 @@ export declare class BatchMultiSigCall {
     options: MSCallOptions;
     variables: string[][];
     calls: MSCallInput[];
-    constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string);
+    constructor({ provider, contractAddress, options, }: {
+        provider: ethers.providers.JsonRpcProvider;
+        contractAddress: string;
+        options?: MSCallOptions;
+    });
     validate(call: MSCallInput): boolean;
     createVariable(variableId: string, value?: string): string[];
     private getVariableIndex;
@@ -14,7 +18,6 @@ export declare class BatchMultiSigCall {
     getCallValue(index: number, bytes?: boolean): string;
     setOptions(options: MSCallOptions): MSCallOptions;
     create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]>;
-    addCall(tx: MSCallInput, index?: number): MSCallInput[] | Error;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];
     removeCall(index: number): MSCallInput[];
     getCall(index: number): MSCallInput;

@@ -37,9 +37,6 @@ export interface MSCallOptions {
         externalSigners: string[];
         minimumApprovals: number;
     };
-    flags?: {
-        chillMode?: boolean;
-    };
 }
 export interface IWithPlugin {
     plugin: IPlugin;

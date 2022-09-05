@@ -29,7 +29,7 @@ const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
-    constructor(provider, contractAddress) {
+    constructor({ provider, contractAddress, options, }) {
         this.options = {};
         this.variables = [];
         this.calls = [];
@@ -46,7 +46,11 @@ class BatchMultiSigCall {
             return this.getVariableFCValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
+        this.options = options !== null && options !== void 0 ? options : {};
     }
+    // constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
+    //   this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    // }
     // Validate
     validate(call) {
         if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
@@ -113,19 +117,6 @@ class BatchMultiSigCall {
             }
             return this.calls;
         });
-    }
-    addCall(tx, index) {
-        if (index) {
-            const length = this.calls.length;
-            if (index > length) {
-                throw new Error(`Index ${index} is out of bounds.`);
-            }
-            this.calls.splice(index, 0, tx);
-        }
-        else {
-            this.calls.push(tx);
-        }
-        return this.calls;
     }
     replaceCall(tx, index) {
         if (index >= this.calls.length) {
