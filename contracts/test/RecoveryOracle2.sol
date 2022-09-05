@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import "../interfaces/IOracle.sol";
-import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract RecoveryOracle2 is IOracle, AccessControl {
   string public constant VERSION = "RC07-2.1";

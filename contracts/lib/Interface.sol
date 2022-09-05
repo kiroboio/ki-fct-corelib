@@ -3,8 +3,8 @@
 pragma solidity ^0.8.0;
 pragma abicoder v1;
 
-import "openzeppelin-solidity/contracts/utils/introspection/IERC165.sol";
-import "openzeppelin-solidity/contracts/interfaces/IERC1271.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
 abstract contract Interface is IERC165, IERC1271 {
     bytes4 internal constant SELECTOR_IS_VALID_SIGNATURE =

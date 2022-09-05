@@ -3,11 +3,11 @@
 pragma solidity ^0.8.0;
 pragma abicoder v1;
 
-import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
-import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155.sol";
-import "openzeppelin-solidity/contracts/utils/cryptography/SignatureChecker.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../contracts/lib/Interface.sol";
 import "../../contracts/lib/Storage.sol";
 import "../../contracts/interfaces/IOracle.sol";

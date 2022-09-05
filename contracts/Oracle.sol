@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import "./interfaces/IOracle.sol";
-import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract Oracle is IOracle, AccessControl {
   mapping(address => bool) private s_tokens_20;
