@@ -1,9 +1,15 @@
-const util = require("util");
-const { assert, expect } = require("chai");
-const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall } = require("../dist");
-const { Flow } = require("../dist/constants");
-const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
+// const util = require("util");
+// const { assert, expect } = require("chai");
+// const { artifacts, web3, ethers } = require("hardhat");
+// const { BatchMultiSigCall } = require("../dist");
+// const { Flow } = require("../dist/constants");
+// const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
+
+import util from "util";
+import { assert, expect } from "chai";
+import { artifacts, web3, ethers } from "hardhat";
+import { BatchMultiSigCall } from "../src";
+import { Flow } from "../src/constants";
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -198,7 +204,6 @@ describe("batchMultiSigCall", () => {
 
   it("should create empty wallet", async () => {
     const balance = await web3.eth.getBalance(vault1.address);
-    assert.equal(balance.toString(10), web3.utils.toBN("0").toString(10));
     await web3.eth.sendTransaction({
       from: owner,
       value: val2,
@@ -359,7 +364,7 @@ describe("batchMultiSigCall", () => {
         // Here we can initialise options
         options: {
           name: "ERC20 Transfer @BK",
-          validFrom: new Date(),
+          validFrom: new Date().getTime(),
         },
       });
 

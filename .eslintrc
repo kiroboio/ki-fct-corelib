@@ -7,16 +7,16 @@
     "mocha": true,
     "browser": true
   },
-  "extends": ["prettier", "eslint:recommended"],
-  "plugins": ["prettier"],
+  "extends": ["plugin:prettier/recommended", "prettier/@typescript-eslint", "plugin:@typescript-eslint/recommended"],
+  "plugins": ["prettier", "simple-import-sort", "unused-imports"],
+  "ignorePatterns": ["test"],
   "rules": {
-    "prettier/prettier": ["error"]
+    "prettier/prettier": "error",
+    "unused-imports/no-unused-imports": "error",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
   },
   "parserOptions": {
     "requireConfigFile": false
-    // "ecmaVersion": 6,
-    // "ecmaFeatures": {
-    //   "experimentalObjectRestSpread": true
-    // }
   }
 }
