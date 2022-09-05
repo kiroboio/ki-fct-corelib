@@ -39,9 +39,6 @@ class BatchMultiSigCall {
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
         this.options = options ?? {};
     }
-    // constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
-    //   this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
-    // }
     // Validate
     validate(call) {
         if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {

@@ -3,7 +3,7 @@ import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
-import { getTypedDataDomain, createValidatorTxData, flows } from "../helpers";
+import { getTypedDataDomain, createValidatorTxData, flows, getMethodInterface } from "../helpers";
 import {
   getSessionId,
   handleData,
@@ -48,10 +48,6 @@ export class BatchMultiSigCall {
 
     this.options = options ?? {};
   }
-
-  // constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
-  //   this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
-  // }
 
   // Validate
 
@@ -105,6 +101,16 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
+  // public async getPlugin(dataOrIndex: MSCall | number) {
+  //   if (typeof dataOrIndex === "number") {
+  //     if (!this.calls[dataOrIndex].method) {
+  //       throw new Error("Method is required to get plugin");
+  //     }
+  //     return getPluginHelper({ signature: getMethodInterface(this.calls[dataOrIndex]) });
+  //   }
+  //   return;
+  // }
+
   public async create(callInput: MSCallInput | IWithPlugin, index?: number) {
     let call: MSCallInput;
     if ("plugin" in callInput) {
@@ -153,7 +159,7 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async getFCT(): Promise<{
+  public async exportFCT(): Promise<{
     typedData: TypedData;
     typeHash: string;
     sessionId: string;

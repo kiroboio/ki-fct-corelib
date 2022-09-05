@@ -6,8 +6,9 @@
 // import { BatchMultiCall } from "./batchMultiCall";
 // import { BatchMultiSigCallPacked } from "./batchMultiSigCallPacked";
 // import { BatchMultiSigCall } from "./batchMultiSigCall_OldV2";
-import { BatchMultiSigCall } from "./batchMultiSigCall";
+export { BatchMultiSigCall } from "./batchMultiSigCall";
+export { getPlugin, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
 import utils from "./utils";
 import constants from "./constants";
 
-export { BatchMultiSigCall, utils, constants };
+export { utils, constants };

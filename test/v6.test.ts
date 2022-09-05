@@ -8,8 +8,9 @@
 import util from "util";
 import { assert, expect } from "chai";
 import { artifacts, web3, ethers } from "hardhat";
-import { BatchMultiSigCall } from "../src";
+import { BatchMultiSigCall, getPlugin, getPlugins } from "../src";
 import { Flow } from "../src/constants";
+import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -357,6 +358,24 @@ describe("batchMultiSigCall", () => {
   describe("BatchMultiSigCall core lib", () => {
     let batchMultiSigCall;
 
+    it("Should get transfer plugin", () => {
+      const TransferPlugin = getPlugin({ signature: "transfer(address,uint256)" });
+
+      const transfer = new TransferPlugin();
+
+      expect(transfer.method).to.eq("transfer");
+    });
+
+    it("Should get plugins", () => {
+      const plugins = getPlugins({
+        by: {
+          protocol: "ERC20",
+        },
+      });
+
+      expect(plugins.length).to.eq(2);
+    });
+
     it("Should add call", async () => {
       batchMultiSigCall = new BatchMultiSigCall({
         provider: ethers.provider,
@@ -417,7 +436,7 @@ describe("batchMultiSigCall", () => {
     it("Should create a FCT", async () => {
       const FCT = await batchMultiSigCall.getFCT();
 
-      console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
+      // console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
     });
 
     // it("Should add additional call", async () => {
