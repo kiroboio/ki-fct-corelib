@@ -436,8 +436,12 @@ describe("batchMultiSigCall", () => {
 
     it("Should getPlugin from batchMultiSigCall", async () => {
       const plugin = batchMultiSigCall.getPlugin(0);
-      console.log(plugin);
       expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
+    });
+
+    it("Should getAllPlugins", async () => {
+      const plugins = batchMultiSigCall.getAllPlugins();
+      expect(plugins).to.be.instanceOf(Array);
     });
 
     it("Should create a FCT", async () => {

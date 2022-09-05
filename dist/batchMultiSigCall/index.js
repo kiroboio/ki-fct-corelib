@@ -38,7 +38,13 @@ class BatchMultiSigCall {
                 const initPlugin = new Plugin();
                 return initPlugin;
             }
-            return undefined;
+            else {
+                // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
+                return undefined;
+            }
+        };
+        this.getAllPlugins = () => {
+            return (0, ki_eth_fct_provider_ts_1.getPlugins)({});
         };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address

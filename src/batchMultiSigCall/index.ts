@@ -13,7 +13,7 @@ import {
   handleTypes,
   manageCallId,
 } from "./helpers";
-import { getPlugin, Plugin, PluginInstance, PluginType } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 
 // DefaultFlag - "f100" // payment + eip712
 // const defaultFlags = {
@@ -115,6 +115,10 @@ export class BatchMultiSigCall {
       // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
       return undefined;
     }
+  };
+
+  public getAllPlugins = (): Plugin[] => {
+    return getPlugins({});
   };
 
   public async create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]> {
