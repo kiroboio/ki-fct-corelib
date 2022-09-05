@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -39,7 +30,7 @@ class BatchMultiSigCall {
     // Everything for variables
     //
     createVariable(variableId, value) {
-        this.variables = [...this.variables, [variableId, value !== null && value !== void 0 ? value : undefined]];
+        this.variables = [...this.variables, [variableId, value ?? undefined]];
         return this.variables.map((item) => item[0]);
     }
     addVariableValue(variableId, value) {
@@ -47,16 +38,14 @@ class BatchMultiSigCall {
         this.variables[index][1] = value;
         return this.variables.map((item) => item[0]);
     }
-    removeVariable(variableId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Remove from variables
-            this.variables = this.variables.filter((item) => item[0] !== variableId);
-            // Adjust all calls to account for removed variable
-            const allCalls = this.calls.map((call) => call.inputData);
-            const data = yield Promise.all(allCalls.map((tx) => this.getMultiSigCallData(tx)));
-            this.calls = data;
-            return this.variables.map((item) => item[0]);
-        });
+    async removeVariable(variableId) {
+        // Remove from variables
+        this.variables = this.variables.filter((item) => item[0] !== variableId);
+        // Adjust all calls to account for removed variable
+        const allCalls = this.calls.map((call) => call.inputData);
+        const data = await Promise.all(allCalls.map((tx) => this.getMultiSigCallData(tx)));
+        this.calls = data;
+        return this.variables.map((item) => item[0]);
     }
     getVariablesAsBytes32() {
         return this.variables.map((item) => {
@@ -94,166 +83,141 @@ class BatchMultiSigCall {
         this.calls = [...this.calls, batchCall];
         return this.calls;
     }
-    create(tx) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = yield this.getMultiSigCallData(tx);
-            this.calls = [...this.calls, data];
-            return data;
-        });
+    async create(tx) {
+        const data = await this.getMultiSigCallData(tx);
+        this.calls = [...this.calls, data];
+        return data;
     }
-    createMultiple(txs) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = yield Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
-            this.calls = [...this.calls, ...data];
-            return data;
-        });
+    async createMultiple(txs) {
+        const data = await Promise.all(txs.map((tx) => this.getMultiSigCallData(tx)));
+        this.calls = [...this.calls, ...data];
+        return data;
     }
-    editBatchCall(index, tx) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = yield this.getMultiSigCallData(tx);
-            this.calls[index] = data;
-            return data;
-        });
+    async editBatchCall(index, tx) {
+        const data = await this.getMultiSigCallData(tx);
+        this.calls[index] = data;
+        return data;
     }
-    removeBatchCall(index) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const restOfCalls = this.calls.slice(index + 1).map((call) => (Object.assign({}, call.inputData)));
-            // Remove from calls
-            this.calls.splice(index, 1);
-            // Adjust nonce number for the rest of the calls
-            const data = yield Promise.all(restOfCalls.map((tx) => this.getMultiSigCallData(tx)));
-            this.calls.splice(-Math.abs(data.length), data.length, ...data);
-            return this.calls;
-        });
+    async removeBatchCall(index) {
+        const restOfCalls = this.calls.slice(index + 1).map((call) => ({ ...call.inputData }));
+        // Remove from calls
+        this.calls.splice(index, 1);
+        // Adjust nonce number for the rest of the calls
+        const data = await Promise.all(restOfCalls.map((tx) => this.getMultiSigCallData(tx)));
+        this.calls.splice(-Math.abs(data.length), data.length, ...data);
+        return this.calls;
     }
-    addMultiCallTx(indexOfBatch, tx) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].inputData;
-            if (!batch) {
-                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
-            }
-            batch.calls.push(tx);
-            const data = yield this.getMultiSigCallData(batch);
-            this.calls[indexOfBatch] = data;
-            return data;
-        });
+    async addMultiCallTx(indexOfBatch, tx) {
+        const batch = this.calls[indexOfBatch].inputData;
+        if (!batch) {
+            throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+        }
+        batch.calls.push(tx);
+        const data = await this.getMultiSigCallData(batch);
+        this.calls[indexOfBatch] = data;
+        return data;
     }
-    editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].inputData;
-            if (!batch) {
-                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
-            }
-            batch.calls[indexOfMulticall] = tx;
-            const data = yield this.getMultiSigCallData(batch);
-            this.calls[indexOfBatch] = data;
-            return data;
-        });
+    async editMultiCallTx(indexOfBatch, indexOfMulticall, tx) {
+        const batch = this.calls[indexOfBatch].inputData;
+        if (!batch) {
+            throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+        }
+        batch.calls[indexOfMulticall] = tx;
+        const data = await this.getMultiSigCallData(batch);
+        this.calls[indexOfBatch] = data;
+        return data;
     }
-    removeMultiCallTx(indexOfBatch, indexOfMulticall) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const batch = this.calls[indexOfBatch].inputData;
-            if (!batch) {
-                throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
-            }
-            batch.calls.splice(indexOfMulticall, 1);
-            const data = yield this.getMultiSigCallData(batch);
-            this.calls[indexOfBatch] = data;
-            return data;
-        });
+    async removeMultiCallTx(indexOfBatch, indexOfMulticall) {
+        const batch = this.calls[indexOfBatch].inputData;
+        if (!batch) {
+            throw new Error(`Batch doesn't exist on index ${indexOfBatch}`);
+        }
+        batch.calls.splice(indexOfMulticall, 1);
+        const data = await this.getMultiSigCallData(batch);
+        this.calls[indexOfBatch] = data;
+        return data;
     }
-    getMultiSigCallData(batchCall) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const self = this;
-            let typedHashes = [];
-            let additionalTypes = {};
-            const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-            const version = "0x010101";
-            const typedData = yield createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
-            const sessionId = (0, helpers_2.getSessionId)(salt, batchCall);
-            const mcall = batchCall.calls.map((call, index) => {
-                var _a;
-                return ({
-                    typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
-                    functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-                    value: call.value,
-                    from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-                    gasLimit: (_a = call.gasLimit) !== null && _a !== void 0 ? _a : 0,
-                    flags: (0, helpers_1.manageCallFlagsV2)(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
-                    to: (0, helpers_2.handleTo)(self, call),
-                    ensHash: (0, helpers_2.handleEnsHash)(call),
-                    data: (0, helpers_2.handleData)(call),
-                    types: (0, helpers_2.handleTypes)(call),
-                    typedHashes: typedHashes
-                        ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
-                        : [],
-                });
-            });
-            return {
-                typedData,
-                typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
-                sessionId,
-                inputData: batchCall,
-                name: batchCall.name || "BatchMultiSigCall transaction",
-                mcall,
-                addCall: function (tx, index) {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        if (index) {
-                            const length = this.inputData.calls.length;
-                            if (index > length) {
-                                throw new Error(`Index ${index} is out of bounds.`);
-                            }
-                            this.inputData.calls.splice(index, 0, tx);
-                        }
-                        else {
-                            this.inputData.calls.push(tx);
-                        }
-                        const data = yield self.getMultiSigCallData(this.inputData);
-                        this.typedData = data.typedData;
-                        this.typeHash = data.typeHash;
-                        this.sessionId = data.sessionId;
-                        this.mcall = data.mcall;
-                        return data;
-                    });
-                },
-                replaceCall: function (tx, index) {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        if (index >= this.inputData.calls.length) {
-                            throw new Error(`Index ${index} is out of bounds.`);
-                        }
-                        const prevCall = this.inputData.calls[index];
-                        this.inputData.calls[index] = tx;
-                        const data = yield self.getMultiSigCallData(this.inputData);
-                        this.typedData = data.typedData;
-                        this.typeHash = data.typeHash;
-                        this.sessionId = data.sessionId;
-                        this.mcall = data.mcall;
-                        return prevCall;
-                    });
-                },
-                removeCall: function (index) {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        if (index >= this.inputData.calls.length) {
-                            throw new Error(`Index ${index} is out of bounds.`);
-                        }
-                        const prevCall = this.inputData.calls[index];
-                        this.inputData.calls.splice(index, 1);
-                        const data = yield self.getMultiSigCallData(this.inputData);
-                        this.typedData = data.typedData;
-                        this.typeHash = data.typeHash;
-                        this.sessionId = data.sessionId;
-                        this.mcall = data.mcall;
-                        return prevCall;
-                    });
-                },
-                getCall: function (index) {
-                    return this.mcall[index];
-                },
-                get length() {
-                    return this.mcall.length;
-                },
-            };
-        });
+    async getMultiSigCallData(batchCall) {
+        const self = this;
+        let typedHashes = [];
+        let additionalTypes = {};
+        const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        const version = "0x010101";
+        const typedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);
+        const sessionId = (0, helpers_2.getSessionId)(salt, batchCall);
+        const mcall = batchCall.calls.map((call, index) => ({
+            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
+            functionSignature: (0, helpers_2.handleFunctionSignature)(call),
+            value: call.value,
+            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+            gasLimit: call.gasLimit ?? 0,
+            flags: (0, helpers_1.manageCallFlagsV2)(call.flow || "OK_CONT_FAIL_REVERT", call.jump || 0),
+            to: (0, helpers_2.handleTo)(self, call),
+            ensHash: (0, helpers_2.handleEnsHash)(call),
+            data: (0, helpers_2.handleData)(call),
+            types: (0, helpers_2.handleTypes)(call),
+            typedHashes: typedHashes
+                ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
+                : [],
+        }));
+        return {
+            typedData,
+            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
+            sessionId,
+            inputData: batchCall,
+            name: batchCall.name || "BatchMultiSigCall transaction",
+            mcall,
+            addCall: async function (tx, index) {
+                if (index) {
+                    const length = this.inputData.calls.length;
+                    if (index > length) {
+                        throw new Error(`Index ${index} is out of bounds.`);
+                    }
+                    this.inputData.calls.splice(index, 0, tx);
+                }
+                else {
+                    this.inputData.calls.push(tx);
+                }
+                const data = await self.getMultiSigCallData(this.inputData);
+                this.typedData = data.typedData;
+                this.typeHash = data.typeHash;
+                this.sessionId = data.sessionId;
+                this.mcall = data.mcall;
+                return data;
+            },
+            replaceCall: async function (tx, index) {
+                if (index >= this.inputData.calls.length) {
+                    throw new Error(`Index ${index} is out of bounds.`);
+                }
+                const prevCall = this.inputData.calls[index];
+                this.inputData.calls[index] = tx;
+                const data = await self.getMultiSigCallData(this.inputData);
+                this.typedData = data.typedData;
+                this.typeHash = data.typeHash;
+                this.sessionId = data.sessionId;
+                this.mcall = data.mcall;
+                return prevCall;
+            },
+            removeCall: async function (index) {
+                if (index >= this.inputData.calls.length) {
+                    throw new Error(`Index ${index} is out of bounds.`);
+                }
+                const prevCall = this.inputData.calls[index];
+                this.inputData.calls.splice(index, 1);
+                const data = await self.getMultiSigCallData(this.inputData);
+                this.typedData = data.typedData;
+                this.typeHash = data.typeHash;
+                this.sessionId = data.sessionId;
+                this.mcall = data.mcall;
+                return prevCall;
+            },
+            getCall: function (index) {
+                return this.mcall[index];
+            },
+            get length() {
+                return this.mcall.length;
+            },
+        };
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;
@@ -308,42 +272,46 @@ const getParams = (self, call) => {
             });
             return (0, helpers_1.createValidatorTxData)(call);
         }
-        return Object.assign({}, call.params.reduce((acc, param) => {
-            let value;
-            // If parameter is a custom type (struct)
-            if (param.customType) {
-                // If parameter is an array of custom types
-                if (param.type.lastIndexOf("[") > 0) {
-                    const valueArray = param.value;
-                    value = valueArray.map((item) => item.reduce((acc, item2) => {
-                        if (item2.variable) {
-                            item2.value = self.getVariableFCValue(item2.variable);
-                        }
-                        return Object.assign(Object.assign({}, acc), { [item2.name]: item2.value });
-                    }, {}));
+        return {
+            ...call.params.reduce((acc, param) => {
+                let value;
+                // If parameter is a custom type (struct)
+                if (param.customType) {
+                    // If parameter is an array of custom types
+                    if (param.type.lastIndexOf("[") > 0) {
+                        const valueArray = param.value;
+                        value = valueArray.map((item) => item.reduce((acc, item2) => {
+                            if (item2.variable) {
+                                item2.value = self.getVariableFCValue(item2.variable);
+                            }
+                            return { ...acc, [item2.name]: item2.value };
+                        }, {}));
+                    }
+                    else {
+                        // If parameter is a custom type
+                        const valueArray = param.value;
+                        value = valueArray.reduce((acc, item) => {
+                            if (item.variable) {
+                                item.value = self.getVariableFCValue(item.variable);
+                            }
+                            return { ...acc, [item.name]: item.value };
+                        }, {});
+                    }
                 }
                 else {
-                    // If parameter is a custom type
-                    const valueArray = param.value;
-                    value = valueArray.reduce((acc, item) => {
-                        if (item.variable) {
-                            item.value = self.getVariableFCValue(item.variable);
-                        }
-                        return Object.assign(Object.assign({}, acc), { [item.name]: item.value });
-                    }, {});
+                    // If parameter isn't a struct/custom type
+                    value = param.value;
                 }
-            }
-            else {
-                // If parameter isn't a struct/custom type
-                value = param.value;
-            }
-            return Object.assign(Object.assign({}, acc), { [param.name]: value });
-        }, {}));
+                return {
+                    ...acc,
+                    [param.name]: value,
+                };
+            }, {}),
+        };
     }
     return {};
 };
-const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, version) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const createTypedData = async (self, batchCall, additionalTypes, typedHashes, salt, version) => {
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = batchCall.calls.reduce((acc, call, index) => {
         // Update params if variables (FC) or references (FD) are used
@@ -352,7 +320,10 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
             verifyParams(self, call.params, index, additionalTypes, typedHashes);
             paramsData = { params: getParams(self, call) };
         }
-        return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
+        return {
+            ...acc,
+            [`transaction${index + 1}`]: {
+                call: {
                     from: ethers_1.utils.isAddress(call.from) ? call.from : self.getVariableFCValue(call.from),
                     to: (0, helpers_2.handleTo)(self, call),
                     to_ens: call.toEnsHash || "",
@@ -362,7 +333,10 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
                     flow_control: call.flow ? helpers_1.flows[call.flow].text : "continue on success, revert on fail",
                     jump_over: call.jump || 0,
                     method_interface: (0, helpers_2.handleMethodInterface)(call),
-                } }, paramsData) });
+                },
+                ...paramsData,
+            },
+        };
     }, {});
     let optionalMessage = {};
     let optionalTypes = {};
@@ -385,41 +359,53 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
         primaryType = [{ name: "recurrency", type: "Recurrency" }];
     }
     if (batchCall.multisig) {
-        optionalMessage = Object.assign(Object.assign({}, optionalMessage), { multisig: {
+        optionalMessage = {
+            ...optionalMessage,
+            multisig: {
                 external_signers: batchCall.multisig.externalSigners,
                 minimum_approvals: batchCall.multisig.minimumApprovals,
-            } });
-        optionalTypes = Object.assign(Object.assign({}, optionalTypes), { Multisig: [
+            },
+        };
+        optionalTypes = {
+            ...optionalTypes,
+            Multisig: [
                 { name: "external_signers", type: "address[]" },
                 { name: "minimum_approvals", type: "uint8" },
-            ] });
+            ],
+        };
         primaryType = [...primaryType, { name: "multisig", type: "Multisig" }];
     }
     const typedData = {
-        types: Object.assign(Object.assign(Object.assign(Object.assign({ EIP712Domain: [
+        types: {
+            EIP712Domain: [
                 { name: "name", type: "string" },
                 { name: "version", type: "string" },
                 { name: "chainId", type: "uint256" },
                 { name: "verifyingContract", type: "address" },
                 { name: "salt", type: "bytes32" },
-            ], BatchMultiSigCall: [
+            ],
+            BatchMultiSigCall: [
                 { name: "info", type: "Info" },
                 { name: "limits", type: "Limits" },
                 ...batchCall.calls.map((_, index) => ({
                     name: `transaction${index + 1}`,
                     type: `Transaction${index + 1}`,
                 })),
-            ], Info: [
+            ],
+            Info: [
                 { name: "name", type: "string" },
                 { name: "version", type: "bytes3" },
                 { name: "eip712", type: "bool" },
                 { name: "random_id", type: "bytes3" },
-            ], Limits: [
+            ],
+            Limits: [
                 { name: "valid_from", type: "uint40" },
                 { name: "expires_at", type: "uint40" },
                 { name: "gas_price_limit", type: "uint64" },
                 { name: "cancelable", type: "bool" },
-            ] }, optionalTypes), { Transaction: [
+            ],
+            ...optionalTypes,
+            Transaction: [
                 { name: "from", type: "address" },
                 { name: "to", type: "address" },
                 { name: "to_ens", type: "string" },
@@ -429,23 +415,35 @@ const createTypedData = (self, batchCall, additionalTypes, typedHashes, salt, ve
                 { name: "flow_control", type: "string" },
                 { name: "jump_over", type: "uint8" },
                 { name: "method_interface", type: "string" },
-            ] }), batchCall.calls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
-                { name: "call", type: "Transaction" },
-                { name: "params", type: `Transaction${index + 1}_Params` },
-            ], [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })) })), {})), additionalTypes),
+            ],
+            ...batchCall.calls.reduce((acc, call, index) => ({
+                ...acc,
+                [`Transaction${index + 1}`]: [
+                    { name: "call", type: "Transaction" },
+                    { name: "params", type: `Transaction${index + 1}_Params` },
+                ],
+                [`Transaction${index + 1}_Params`]: call.params.map((param) => ({ name: param.name, type: param.type })),
+            }), {}),
+            ...additionalTypes,
+        },
         primaryType: "BatchMultiSigCall",
-        domain: yield (0, helpers_1.getTypedDataDomain)(self.FactoryProxy),
-        message: Object.assign(Object.assign({ info: {
+        domain: await (0, helpers_1.getTypedDataDomain)(self.FactoryProxy),
+        message: {
+            info: {
                 name: batchCall.name || "BatchMultiSigCall transaction",
                 version,
                 random_id: `0x${salt}`,
                 eip712: true,
-            }, limits: {
-                valid_from: (_a = batchCall.validFrom) !== null && _a !== void 0 ? _a : 0,
-                expires_at: (_b = batchCall.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                gas_price_limit: (_c = batchCall.maxGasPrice) !== null && _c !== void 0 ? _c : "25000000000",
+            },
+            limits: {
+                valid_from: batchCall.validFrom ?? 0,
+                expires_at: batchCall.expiresAt ?? 0,
+                gas_price_limit: batchCall.maxGasPrice ?? "25000000000",
                 cancelable: batchCall.cancelable || true,
-            } }, optionalMessage), typedDataMessage),
+            },
+            ...optionalMessage,
+            ...typedDataMessage,
+        },
     };
     return typedData;
-});
+};

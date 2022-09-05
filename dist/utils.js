@@ -101,7 +101,7 @@ const getEncodedData = (types, values) => {
             verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
         },
         message: values.reduce((acc, value, i) => {
-            return Object.assign(Object.assign({}, acc), { [`param${i}`]: value });
+            return { ...acc, [`param${i}`]: value };
         }, {}),
     };
     const abiEncodedMessage = utils_1.defaultAbiCoder.encode(types, values);

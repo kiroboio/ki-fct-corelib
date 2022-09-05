@@ -1,12 +1,12 @@
-import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-truffle5";
+import { HardhatUserConfig } from "hardhat/types";
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-export default {
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.13",
     settings: {
@@ -31,3 +31,5 @@ export default {
     },
   },
 };
+
+export default config;

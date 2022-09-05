@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -46,7 +37,7 @@ class BatchMultiSigCall {
             return this.getVariableFCValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
-        this.options = options !== null && options !== void 0 ? options : {};
+        this.options = options ?? {};
     }
     // constructor(provider: ethers.providers.JsonRpcProvider, contractAddress: string) {
     //   this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
@@ -63,7 +54,7 @@ class BatchMultiSigCall {
     }
     // Variables
     createVariable(variableId, value) {
-        this.variables = [...this.variables, [variableId, value !== null && value !== void 0 ? value : undefined]];
+        this.variables = [...this.variables, [variableId, value ?? undefined]];
         return this.variables.map((item) => item[0]);
     }
     getVariableIndex(variableId, throwError = true) {
@@ -92,31 +83,29 @@ class BatchMultiSigCall {
     //
     //
     // FCT functions
-    create(callInput, index) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let call;
-            if ("plugin" in callInput) {
-                const pluginCall = yield callInput.plugin.create();
-                call = Object.assign(Object.assign({}, pluginCall), { from: callInput.from, options: callInput.options });
+    async create(callInput, index) {
+        let call;
+        if ("plugin" in callInput) {
+            const pluginCall = await callInput.plugin.create();
+            call = { ...pluginCall, from: callInput.from, options: callInput.options };
+        }
+        else {
+            if (!callInput.to) {
+                throw new Error("To address is required");
             }
-            else {
-                if (!callInput.to) {
-                    throw new Error("To address is required");
-                }
-                call = Object.assign({}, callInput);
+            call = { ...callInput };
+        }
+        if (index) {
+            const length = this.calls.length;
+            if (index > length) {
+                throw new Error(`Index ${index} is out of bounds.`);
             }
-            if (index) {
-                const length = this.calls.length;
-                if (index > length) {
-                    throw new Error(`Index ${index} is out of bounds.`);
-                }
-                this.calls.splice(index, 0, call);
-            }
-            else {
-                this.calls.push(call);
-            }
-            return this.calls;
-        });
+            this.calls.splice(index, 0, call);
+        }
+        else {
+            this.calls.push(call);
+        }
+        return this.calls;
     }
     replaceCall(tx, index) {
         if (index >= this.calls.length) {
@@ -138,173 +127,196 @@ class BatchMultiSigCall {
     get length() {
         return this.calls.length;
     }
-    getFCT() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.calls.length === 0) {
-                throw new Error("No calls added");
-            }
-            let typedHashes = [];
-            let additionalTypes = {};
-            const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-            const version = "0x010101";
-            const typedData = yield this.createTypedData(additionalTypes, typedHashes, salt, version);
-            const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
-            const mcall = this.calls.map((call, index) => ({
-                typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
-                ensHash: (0, helpers_2.handleEnsHash)(call),
-                functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-                value: call.value || "0",
-                callId: (0, helpers_2.manageCallId)(call, index + 1),
-                from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-                to: this.handleTo(call),
-                data: (0, helpers_2.handleData)(call),
-                types: (0, helpers_2.handleTypes)(call),
-                typedHashes: typedHashes
-                    ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
-                    : [],
-            }));
-            return {
-                typedData,
-                typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
-                sessionId,
-                name: this.options.name || "",
-                mcall, // This is where are the MSCall[] are returned
-            };
-        });
+    async getFCT() {
+        if (this.calls.length === 0) {
+            throw new Error("No calls added");
+        }
+        let typedHashes = [];
+        let additionalTypes = {};
+        const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        const version = "0x010101";
+        const typedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
+        const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
+        const mcall = this.calls.map((call, index) => ({
+            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
+            ensHash: (0, helpers_2.handleEnsHash)(call),
+            functionSignature: (0, helpers_2.handleFunctionSignature)(call),
+            value: call.value || "0",
+            callId: (0, helpers_2.manageCallId)(call, index + 1),
+            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+            to: this.handleTo(call),
+            data: (0, helpers_2.handleData)(call),
+            types: (0, helpers_2.handleTypes)(call),
+            typedHashes: typedHashes
+                ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
+                : [],
+        }));
+        return {
+            typedData,
+            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
+            sessionId,
+            name: this.options.name || "",
+            mcall, // This is where are the MSCall[] are returned
+        };
     }
     // End of main FCT functions
     //
     //
     // Helpers functions
-    createTypedData(additionalTypes, typedHashes, salt, version) {
-        var _a, _b, _c, _d;
-        return __awaiter(this, void 0, void 0, function* () {
-            // Creates messages from multiCalls array for EIP712 sign
-            const typedDataMessage = this.calls.reduce((acc, call, index) => {
-                var _a, _b, _c;
-                // Update params if variables (FC) or references (FD) are used
-                let paramsData = {};
-                if (call.params) {
-                    this.verifyParams(call.params, index, additionalTypes, typedHashes);
-                    paramsData = this.getParams(call);
-                }
-                const options = call.options || {};
-                const gasLimit = (_a = options.gasLimit) !== null && _a !== void 0 ? _a : 0;
-                const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
-                const jumpOnSuccess = (_b = options.jumpOnSuccess) !== null && _b !== void 0 ? _b : 0;
-                const jumpOnFail = (_c = options.jumpOnFail) !== null && _c !== void 0 ? _c : 0;
-                return Object.assign(Object.assign({}, acc), { [`transaction${index + 1}`]: Object.assign({ call: {
-                            call_index: index + 1,
-                            payer_index: index + 1,
-                            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
-                            to: this.handleTo(call),
-                            to_ens: call.toEnsHash || "",
-                            eth_value: call.value || "0",
-                            gas_limit: gasLimit,
-                            view_only: call.viewOnly || false,
-                            permissions: 0,
-                            flow_control: flow,
-                            jump_on_success: jumpOnSuccess,
-                            jump_on_fail: jumpOnFail,
-                            method_interface: (0, helpers_2.handleMethodInterface)(call),
-                        } }, paramsData) });
-            }, {});
-            let optionalMessage = {};
-            let optionalTypes = {};
-            let primaryType = [];
-            if ("recurrency" in this.options) {
-                optionalMessage = {
-                    recurrency: {
-                        max_repeats: this.options.recurrency.maxRepeats || "1",
-                        chill_time: this.options.recurrency.chillTime || "0",
-                        accumetable: this.options.recurrency.accumetable || false,
+    async createTypedData(additionalTypes, typedHashes, salt, version) {
+        // Creates messages from multiCalls array for EIP712 sign
+        const typedDataMessage = this.calls.reduce((acc, call, index) => {
+            // Update params if variables (FC) or references (FD) are used
+            let paramsData = {};
+            if (call.params) {
+                this.verifyParams(call.params, index, additionalTypes, typedHashes);
+                paramsData = this.getParams(call);
+            }
+            const options = call.options || {};
+            const gasLimit = options.gasLimit ?? 0;
+            const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
+            const jumpOnSuccess = options.jumpOnSuccess ?? 0;
+            const jumpOnFail = options.jumpOnFail ?? 0;
+            return {
+                ...acc,
+                [`transaction${index + 1}`]: {
+                    call: {
+                        call_index: index + 1,
+                        payer_index: index + 1,
+                        from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+                        to: this.handleTo(call),
+                        to_ens: call.toEnsHash || "",
+                        eth_value: call.value || "0",
+                        gas_limit: gasLimit,
+                        view_only: call.viewOnly || false,
+                        permissions: 0,
+                        flow_control: flow,
+                        jump_on_success: jumpOnSuccess,
+                        jump_on_fail: jumpOnFail,
+                        method_interface: (0, helpers_2.handleMethodInterface)(call),
                     },
-                };
-                optionalTypes = {
-                    Recurrency: [
-                        { name: "max_repeats", type: "uint16" },
-                        { name: "chill_time", type: "uint32" },
-                        { name: "accumetable", type: "bool" },
-                    ],
-                };
-                primaryType.push({ name: "recurrency", type: "Recurrency" });
-            }
-            if ("multisig" in this.options) {
-                optionalMessage = Object.assign(Object.assign({}, optionalMessage), { multisig: {
-                        external_signers: this.options.multisig.externalSigners,
-                        minimum_approvals: this.options.multisig.minimumApprovals || 2,
-                    } });
-                optionalTypes = Object.assign(Object.assign({}, optionalTypes), { Multisig: [
-                        { name: "external_signers", type: "address[]" },
-                        { name: "minimum_approvals", type: "uint8" },
-                    ] });
-                primaryType.push({ name: "multisig", type: "Multisig" });
-            }
-            const typedData = {
-                types: Object.assign(Object.assign(Object.assign(Object.assign({ EIP712Domain: [
-                        { name: "name", type: "string" },
-                        { name: "version", type: "string" },
-                        { name: "chainId", type: "uint256" },
-                        { name: "verifyingContract", type: "address" },
-                        { name: "salt", type: "bytes32" },
-                    ], BatchMultiSigCall: [
-                        { name: "fct", type: "FCT" },
-                        { name: "limits", type: "Limits" },
-                        ...this.calls.map((_, index) => ({
-                            name: `transaction${index + 1}`,
-                            type: `Transaction${index + 1}`,
-                        })),
-                    ], FCT: [
-                        { name: "name", type: "string" },
-                        { name: "selector", type: "bytes4" },
-                        { name: "version", type: "bytes3" },
-                        { name: "eip712", type: "bool" },
-                        { name: "random_id", type: "bytes3" },
-                    ], Limits: [
-                        { name: "valid_from", type: "uint40" },
-                        { name: "expires_at", type: "uint40" },
-                        { name: "gas_price_limit", type: "uint64" },
-                        { name: "purgeable", type: "bool" },
-                        { name: "cancelable", type: "bool" },
-                    ] }, optionalTypes), { Transaction: [
-                        { name: "call_index", type: "uint16" },
-                        { name: "payer_index", type: "uint16" },
-                        { name: "from", type: "address" },
-                        { name: "to", type: "address" },
-                        { name: "to_ens", type: "string" },
-                        { name: "eth_value", type: "uint256" },
-                        { name: "gas_limit", type: "uint32" },
-                        { name: "view_only", type: "bool" },
-                        { name: "permissions", type: "uint16" },
-                        { name: "flow_control", type: "string" },
-                        { name: "jump_on_success", type: "uint16" },
-                        { name: "jump_on_fail", type: "uint16" },
-                        { name: "method_interface", type: "string" },
-                    ] }), this.calls.reduce((acc, call, index) => (Object.assign(Object.assign({}, acc), { [`Transaction${index + 1}`]: [
+                    ...paramsData,
+                },
+            };
+        }, {});
+        let optionalMessage = {};
+        let optionalTypes = {};
+        let primaryType = [];
+        if ("recurrency" in this.options) {
+            optionalMessage = {
+                recurrency: {
+                    max_repeats: this.options.recurrency.maxRepeats || "1",
+                    chill_time: this.options.recurrency.chillTime || "0",
+                    accumetable: this.options.recurrency.accumetable || false,
+                },
+            };
+            optionalTypes = {
+                Recurrency: [
+                    { name: "max_repeats", type: "uint16" },
+                    { name: "chill_time", type: "uint32" },
+                    { name: "accumetable", type: "bool" },
+                ],
+            };
+            primaryType.push({ name: "recurrency", type: "Recurrency" });
+        }
+        if ("multisig" in this.options) {
+            optionalMessage = {
+                ...optionalMessage,
+                multisig: {
+                    external_signers: this.options.multisig.externalSigners,
+                    minimum_approvals: this.options.multisig.minimumApprovals || 2,
+                },
+            };
+            optionalTypes = {
+                ...optionalTypes,
+                Multisig: [
+                    { name: "external_signers", type: "address[]" },
+                    { name: "minimum_approvals", type: "uint8" },
+                ],
+            };
+            primaryType.push({ name: "multisig", type: "Multisig" });
+        }
+        const typedData = {
+            types: {
+                EIP712Domain: [
+                    { name: "name", type: "string" },
+                    { name: "version", type: "string" },
+                    { name: "chainId", type: "uint256" },
+                    { name: "verifyingContract", type: "address" },
+                    { name: "salt", type: "bytes32" },
+                ],
+                BatchMultiSigCall: [
+                    { name: "fct", type: "FCT" },
+                    { name: "limits", type: "Limits" },
+                    ...this.calls.map((_, index) => ({
+                        name: `transaction${index + 1}`,
+                        type: `Transaction${index + 1}`,
+                    })),
+                ],
+                FCT: [
+                    { name: "name", type: "string" },
+                    { name: "selector", type: "bytes4" },
+                    { name: "version", type: "bytes3" },
+                    { name: "eip712", type: "bool" },
+                    { name: "random_id", type: "bytes3" },
+                ],
+                Limits: [
+                    { name: "valid_from", type: "uint40" },
+                    { name: "expires_at", type: "uint40" },
+                    { name: "gas_price_limit", type: "uint64" },
+                    { name: "purgeable", type: "bool" },
+                    { name: "cancelable", type: "bool" },
+                ],
+                ...optionalTypes,
+                Transaction: [
+                    { name: "call_index", type: "uint16" },
+                    { name: "payer_index", type: "uint16" },
+                    { name: "from", type: "address" },
+                    { name: "to", type: "address" },
+                    { name: "to_ens", type: "string" },
+                    { name: "eth_value", type: "uint256" },
+                    { name: "gas_limit", type: "uint32" },
+                    { name: "view_only", type: "bool" },
+                    { name: "permissions", type: "uint16" },
+                    { name: "flow_control", type: "string" },
+                    { name: "jump_on_success", type: "uint16" },
+                    { name: "jump_on_fail", type: "uint16" },
+                    { name: "method_interface", type: "string" },
+                ],
+                ...this.calls.reduce((acc, call, index) => ({
+                    ...acc,
+                    [`Transaction${index + 1}`]: [
                         { name: "call", type: "Transaction" },
                         ...(call.params || []).map((param) => ({
                             name: param.name,
                             type: param.type,
                         })),
-                    ] })), {})), additionalTypes),
-                primaryType: "BatchMultiSigCall",
-                domain: yield (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
-                message: Object.assign(Object.assign({ FCT: {
-                        name: this.options.name || "",
-                        selector: batchMultiSigSelector,
-                        version,
-                        eip712: true,
-                        random_id: `0x${salt}`,
-                    }, limits: {
-                        valid_from: (_a = this.options.validFrom) !== null && _a !== void 0 ? _a : 0,
-                        expires_at: (_b = this.options.expiresAt) !== null && _b !== void 0 ? _b : 0,
-                        gas_price_limit: (_c = this.options.maxGasPrice) !== null && _c !== void 0 ? _c : "20000000000",
-                        purgeable: (_d = this.options.purgeable) !== null && _d !== void 0 ? _d : true,
-                        cancelable: this.options.cancelable || true,
-                    } }, optionalMessage), typedDataMessage),
-            };
-            return typedData;
-        });
+                    ],
+                }), {}),
+                ...additionalTypes,
+            },
+            primaryType: "BatchMultiSigCall",
+            domain: await (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
+            message: {
+                FCT: {
+                    name: this.options.name || "",
+                    selector: batchMultiSigSelector,
+                    version,
+                    eip712: true,
+                    random_id: `0x${salt}`,
+                },
+                limits: {
+                    valid_from: this.options.validFrom ?? 0,
+                    expires_at: this.options.expiresAt ?? 0,
+                    gas_price_limit: this.options.maxGasPrice ?? "20000000000",
+                    purgeable: this.options.purgeable ?? true,
+                    cancelable: this.options.cancelable || true,
+                },
+                ...optionalMessage,
+                ...typedDataMessage,
+            },
+        };
+        return typedData;
     }
     getParams(call) {
         // If call has parameters
@@ -319,78 +331,81 @@ class BatchMultiSigCall {
                 });
                 return (0, helpers_1.createValidatorTxData)(call);
             }
-            return Object.assign({}, call.params.reduce((acc, param) => {
-                let value;
-                // If parameter is a custom type (struct)
-                if (param.customType) {
-                    // If parameter is an array of custom types
-                    if (param.type.lastIndexOf("[") > 0) {
-                        const valueArray = param.value;
-                        value = valueArray.map((item) => item.reduce((acc, item2) => {
-                            if (item2.variable) {
-                                item2.value = this.getVariableFCValue(item2.variable);
-                            }
-                            return Object.assign(Object.assign({}, acc), { [item2.name]: item2.value });
-                        }, {}));
+            return {
+                ...call.params.reduce((acc, param) => {
+                    let value;
+                    // If parameter is a custom type (struct)
+                    if (param.customType) {
+                        // If parameter is an array of custom types
+                        if (param.type.lastIndexOf("[") > 0) {
+                            const valueArray = param.value;
+                            value = valueArray.map((item) => item.reduce((acc, item2) => {
+                                if (item2.variable) {
+                                    item2.value = this.getVariableFCValue(item2.variable);
+                                }
+                                return { ...acc, [item2.name]: item2.value };
+                            }, {}));
+                        }
+                        else {
+                            // If parameter is a custom type
+                            const valueArray = param.value;
+                            value = valueArray.reduce((acc, item) => {
+                                if (item.variable) {
+                                    item.value = this.getVariableFCValue(item.variable);
+                                }
+                                return { ...acc, [item.name]: item.value };
+                            }, {});
+                        }
                     }
                     else {
-                        // If parameter is a custom type
-                        const valueArray = param.value;
-                        value = valueArray.reduce((acc, item) => {
-                            if (item.variable) {
-                                item.value = this.getVariableFCValue(item.variable);
-                            }
-                            return Object.assign(Object.assign({}, acc), { [item.name]: item.value });
-                        }, {});
+                        // If parameter isn't a struct/custom type
+                        value = param.value;
                     }
-                }
-                else {
-                    // If parameter isn't a struct/custom type
-                    value = param.value;
-                }
-                return Object.assign(Object.assign({}, acc), { [param.name]: value });
-            }, {}));
+                    return {
+                        ...acc,
+                        [param.name]: value,
+                    };
+                }, {}),
+            };
         }
         return {};
     }
-    verifyParams(params, index, additionalTypes, typedHashes) {
-        return __awaiter(this, void 0, void 0, function* () {
-            params.forEach((param) => {
-                if (param.variable) {
-                    param.value = this.getVariableFCValue(param.variable);
+    async verifyParams(params, index, additionalTypes, typedHashes) {
+        params.forEach((param) => {
+            if (param.variable) {
+                param.value = this.getVariableFCValue(param.variable);
+                return;
+            }
+            // If parameter value is FD (reference value to previous tx)
+            if (typeof param.value === "string" && param.value.includes("0xFD")) {
+                const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
+                // Checks if current transaction doesn't reference current or future transaction
+                if (refIndex >= index) {
+                    throw new Error(`Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`);
+                }
+                return;
+            }
+            if (param.customType) {
+                if (additionalTypes[param.type]) {
                     return;
                 }
-                // If parameter value is FD (reference value to previous tx)
-                if (typeof param.value === "string" && param.value.includes("0xFD")) {
-                    const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
-                    // Checks if current transaction doesn't reference current or future transaction
-                    if (refIndex >= index) {
-                        throw new Error(`Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`);
-                    }
-                    return;
+                if (param.type.lastIndexOf("[") > 0) {
+                    const type = param.type.slice(0, param.type.lastIndexOf("["));
+                    typedHashes.push(type);
+                    const arrayValue = param.value[0];
+                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                        return [...acc, { name: item.name, type: item.type }];
+                    }, []);
                 }
-                if (param.customType) {
-                    if (additionalTypes[param.type]) {
-                        return;
-                    }
-                    if (param.type.lastIndexOf("[") > 0) {
-                        const type = param.type.slice(0, param.type.lastIndexOf("["));
-                        typedHashes.push(type);
-                        const arrayValue = param.value[0];
-                        additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                            return [...acc, { name: item.name, type: item.type }];
-                        }, []);
-                    }
-                    else {
-                        const type = param.type;
-                        typedHashes.push(type);
-                        const arrayValue = param.value;
-                        additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                            return [...acc, { name: item.name, type: item.type }];
-                        }, []);
-                    }
+                else {
+                    const type = param.type;
+                    typedHashes.push(type);
+                    const arrayValue = param.value;
+                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
+                        return [...acc, { name: item.name, type: item.type }];
+                    }, []);
                 }
-            });
+            }
         });
     }
 }

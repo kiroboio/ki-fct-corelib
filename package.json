@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "hardhat test test/withoutPlugins.test.js",
+    "test": "hardhat test test/withoutPlugins.test.ts",
+    "test:plugins": "hardhat test test/v6.test.ts",
     "build": "tsc"
   },
   "repository": {

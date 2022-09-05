@@ -312,8 +312,6 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
     return param.value;
   });
 
-  console.log(types, values);
-
   return defaultAbiCoder.encode(types, values);
 };
 

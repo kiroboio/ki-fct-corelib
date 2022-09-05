@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -72,7 +63,7 @@ const typeValue = (param) => {
             const value = param.value;
             return [TYPE_ARRAY, value.length, ...(0, exports.getTypesArray)(param.value[0])];
         }
-        const parameter = Object.assign(Object.assign({}, param), { type: param.type.slice(0, param.type.lastIndexOf("[")) });
+        const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
         const insideType = typeValue(parameter);
         return [TYPE_ARRAY, ...insideType];
     }
@@ -123,7 +114,7 @@ const getSessionIdDetails = (call, defaultFlags, smallFlags) => {
     const before = call.beforeTimestamp ? getBeforeTimestamp(false, call.beforeTimestamp) : getBeforeTimestamp(true);
     const gasLimit = getMaxGas(call.gasLimit || 0);
     const maxGasPrice = call.maxGasPrice ? getMaxGasPrice(call.maxGasPrice) : "00000005D21DBA00"; // 25 Gwei
-    const pureFlags = Object.assign(Object.assign({}, defaultFlags), call.flags);
+    const pureFlags = { ...defaultFlags, ...call.flags };
     const flags = (0, exports.getFlags)(pureFlags, smallFlags);
     return {
         group,
@@ -201,16 +192,16 @@ const getTypeHash = (typedData) => {
 };
 exports.getTypeHash = getTypeHash;
 // Get Typed Data domain for EIP712
-const getTypedDataDomain = (factoryProxy) => __awaiter(void 0, void 0, void 0, function* () {
-    const chainId = yield factoryProxy.CHAIN_ID();
+const getTypedDataDomain = async (factoryProxy) => {
+    const chainId = await factoryProxy.CHAIN_ID();
     return {
-        name: yield factoryProxy.NAME(),
-        version: yield factoryProxy.VERSION(),
+        name: await factoryProxy.NAME(),
+        version: await factoryProxy.VERSION(),
         chainId: chainId.toNumber(),
         verifyingContract: factoryProxy.address,
-        salt: yield factoryProxy.uid(),
+        salt: await factoryProxy.uid(),
     };
-});
+};
 exports.getTypedDataDomain = getTypedDataDomain;
 //
 // METHOD HELPERS FOR FCTs
@@ -283,7 +274,6 @@ const getEncodedMethodParams = (call, withFunction) => {
         }
         return param.value;
     });
-    console.log(types, values);
     return utils_1.defaultAbiCoder.encode(types, values);
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
@@ -369,6 +359,16 @@ const createValidatorTxData = (call) => {
         ...[...Array(validatorFunction.inputs.length - 1).keys()].map(() => "bytes32"),
         "bytes",
     ];
-    return Object.assign(Object.assign(Object.assign({}, validator.params), { contractAddress: call.to, functionSignature: (0, exports.getMethodInterface)(call), method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)), method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)) }), call.params.reduce((acc, param) => (Object.assign(Object.assign({}, acc), { [param.name]: param.value })), {}));
+    return {
+        ...validator.params,
+        contractAddress: call.to,
+        functionSignature: (0, exports.getMethodInterface)(call),
+        method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, exports.getEncodedMethodParams)(call)),
+        method_data_length: (0, exports.getParamsLength)((0, exports.getEncodedMethodParams)(call)),
+        ...call.params.reduce((acc, param) => ({
+            ...acc,
+            [param.name]: param.value,
+        }), {}),
+    };
 };
 exports.createValidatorTxData = createValidatorTxData;

@@ -1,8 +1,8 @@
-const util = require("util");
-const { assert, expect } = require("chai");
-const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall } = require("../dist");
-const { Flow } = require("../dist/constants");
+import util from "util";
+import { assert, expect } from "chai";
+import { artifacts, web3, ethers } from "hardhat";
+import { BatchMultiSigCall } from "../src";
+import { Flow } from "../src/constants";
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -42,7 +42,7 @@ describe("batchMultiSigCall", () => {
   let activators;
   let validator;
   let multiplier;
-  let accounts = [];
+  let accounts: string[] = [];
   let factoryOwner1 = accounts[0];
   let factoryOwner2 = accounts[1];
   let factoryOwner3 = accounts[2];
@@ -197,7 +197,6 @@ describe("batchMultiSigCall", () => {
 
   it("should create empty wallet", async () => {
     const balance = await web3.eth.getBalance(vault1.address);
-    assert.equal(balance.toString(10), web3.utils.toBN("0").toString(10));
     await web3.eth.sendTransaction({
       from: owner,
       value: val2,
@@ -349,25 +348,23 @@ describe("batchMultiSigCall", () => {
   });
 
   describe("BatchMultiSigCall core lib", () => {
-    let batchMultiSigCall;
+    let batchMultiSigCall: BatchMultiSigCall;
 
-    it("Should add call", async () => {
+    it("Should initialise batchMultiSigCall", async () => {
       batchMultiSigCall = new BatchMultiSigCall({
         provider: ethers.provider,
         contractAddress: fctController.address,
         // Here we can initialise options
         options: {
           name: "ERC20 Transfer @BK",
-          validFrom: new Date(),
+          validFrom: new Date().getTime(),
         },
       });
 
-      // Or we can call setOptions to add options
-      batchMultiSigCall.setOptions({
-        maxGasPrice: "30000000000", // 30 GWei
-        cancelable: false,
-      });
+      expect(batchMultiSigCall.options.name).to.eq("ERC20 Transfer @BK");
+    });
 
+    it("Should add call", async () => {
       // Or create ERC20 Transfer call without plugin
       const calls = await batchMultiSigCall.create({
         to: kiro.address,
@@ -385,80 +382,37 @@ describe("batchMultiSigCall", () => {
 
       expect(calls.length).to.be.equal(1);
     });
+    it("Should setOptions", () => {
+      // Or we can call setOptions to add options
+      const options = batchMultiSigCall.setOptions({
+        name: "ERC20 Transfer @BK",
+        validFrom: new Date().getTime(),
+        expiresAt: new Date().setDate(new Date().getDate() + 30),
+        maxGasPrice: "300000000000",
+        cancelable: true,
+        purgeable: true,
+        recurrency: {
+          maxRepeats: 2,
+          chillTime: 60,
+          accumetable: false,
+        },
+        multisig: {
+          externalSigners: [accounts[1], accounts[2], accounts[3]],
+          minimumApprovals: 2,
+        },
+      });
+
+      expect(options.maxGasPrice).to.eq("300000000000");
+      expect(options.multisig?.minimumApprovals).to.eq(2);
+      expect(options.recurrency?.maxRepeats).to.eq(2);
+    });
     it("Should create a FCT", async () => {
       const FCT = await batchMultiSigCall.getFCT();
 
-      console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
+      // console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
+
+      expect(FCT).to.be.an("object");
     });
-
-    // it("Should add additional call", async () => {
-    //   const transfer = new ERC20.actions.Transfer({
-    //     initParams: {
-    //       token: kiro.address,
-    //       to: user1,
-    //       amount: "30000",
-    //     },
-    //   });
-
-    //   const calls = await batchMultiSigCall.create({
-    //     plugin: transfer,
-    //     from: vault11.address,
-    //     options: {
-    //       flow: Flow.OK_CONT_FAIL_REVERT,
-    //     },
-    //   });
-
-    //   expect(calls).to.be.lengthOf(2);
-    // });
-    // it("Should add another call", async () => {
-    //   const call = {
-    //     to: kiro.address,
-    //     method: "transfer",
-    //     params: [
-    //       { name: "to", type: "address", value: accounts[12] },
-    //       { name: "token_amount", type: "uint256", value: "20" },
-    //     ],
-    //     from: vault10.address,
-    //   };
-
-    //   const calls = await batchMultiSigCall.create(call);
-
-    //   expect(calls).to.be.lengthOf(3);
-    // });
-
-    // it("Should replace call", async () => {
-    //   const call = {
-    //     to: kiro.address,
-    //     method: "transfer",
-    //     params: [
-    //       { name: "to", type: "address", value: accounts[12] },
-    //       { name: "token_amount", type: "uint256", value: "30" },
-    //     ],
-    //     from: vault10.address,
-    //   };
-
-    //   const calls = batchMultiSigCall.replaceCall(call, 1);
-
-    //   expect(calls).to.be.lengthOf(3) && expect(calls[1].params[1].value).to.eq("30");
-    // });
-
-    // it("Should remove a call", async () => {
-    //   const calls = batchMultiSigCall.removeCall(1);
-
-    //   expect(calls).to.be.lengthOf(1);
-    // });
-
-    // it("Should return a call", async () => {
-    //   const call = batchMultiSigCall.getCall(0);
-
-    //   expect(call.to).to.be.equal(kiro.address);
-    // });
-
-    // it("Should return length", async () => {
-    //   const length = batchMultiSigCall.length;
-
-    //   expect(length).to.be.equal(3);
-    // });
 
     // it("Should execute batch", async () => {
     //   const FCT = await batchMultiSigCall.getFCT();

@@ -76,17 +76,16 @@ const manageCallId = (call, index) => {
     // 4 - Call index
     // 8 - Gas limit
     // 2 - Flags
-    var _a, _b, _c, _d, _e;
     const permissions = "0000";
-    const flow = ((_a = call === null || call === void 0 ? void 0 : call.options) === null || _a === void 0 ? void 0 : _a.flow) ? Number(helpers_1.flows[call.options.flow].value).toString(16).padStart(2, "0") : "00";
-    const failJump = ((_b = call === null || call === void 0 ? void 0 : call.options) === null || _b === void 0 ? void 0 : _b.jumpOnFail) ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "00";
-    const successJump = ((_c = call === null || call === void 0 ? void 0 : call.options) === null || _c === void 0 ? void 0 : _c.jumpOnSuccess)
+    const flow = call?.options?.flow ? Number(helpers_1.flows[call.options.flow].value).toString(16).padStart(2, "0") : "00";
+    const failJump = call?.options?.jumpOnFail ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "00";
+    const successJump = call?.options?.jumpOnSuccess
         ? Number(call.options.jumpOnSuccess).toString(16).padStart(4, "0")
         : "0000";
     const payerIndex = Number(index).toString(16).padStart(4, "0");
     const callIndex = Number(index).toString(16).padStart(4, "0");
-    const gasLimit = ((_d = call === null || call === void 0 ? void 0 : call.options) === null || _d === void 0 ? void 0 : _d.gasLimit) ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
-    const flags = ((_e = call === null || call === void 0 ? void 0 : call.options) === null || _e === void 0 ? void 0 : _e.flags) ? Number(call.options.flags).toString(16).padStart(2, "0") : "00";
+    const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+    const flags = call?.options?.flags ? Number(call.options.flags).toString(16).padStart(2, "0") : "00";
     return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
 };
 exports.manageCallId = manageCallId;
