@@ -434,7 +434,7 @@ describe("batchMultiSigCall", () => {
       expect(calls.length).to.be.equal(3);
     });
     it("Should create a FCT", async () => {
-      const FCT = await batchMultiSigCall.getFCT();
+      const FCT = await batchMultiSigCall.exportFCT();
 
       // console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
     });
