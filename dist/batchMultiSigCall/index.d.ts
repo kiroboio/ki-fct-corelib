@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
+import { PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
     private FactoryProxy;
     options: MSCallOptions;
@@ -17,12 +18,13 @@ export declare class BatchMultiSigCall {
     private getVariableFCValue;
     getCallValue(index: number, bytes?: boolean): string;
     setOptions(options: MSCallOptions): MSCallOptions;
+    getPlugin: (dataOrIndex: MSCall | number) => PluginInstance | undefined;
     create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]>;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];
     removeCall(index: number): MSCallInput[];
     getCall(index: number): MSCallInput;
     get length(): number;
-    getFCT(): Promise<{
+    exportFCT(): Promise<{
         typedData: TypedData;
         typeHash: string;
         sessionId: string;

@@ -433,6 +433,13 @@ describe("batchMultiSigCall", () => {
 
       expect(calls.length).to.be.equal(3);
     });
+
+    it("Should getPlugin from batchMultiSigCall", async () => {
+      const plugin = batchMultiSigCall.getPlugin(0);
+      console.log(plugin);
+      expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
+    });
+
     it("Should create a FCT", async () => {
       const FCT = await batchMultiSigCall.exportFCT();
 

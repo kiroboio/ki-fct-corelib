@@ -13,6 +13,7 @@ import {
   handleTypes,
   manageCallId,
 } from "./helpers";
+import { getPlugin, Plugin, PluginInstance, PluginType } from "@kirobo/ki-eth-fct-provider-ts";
 
 // DefaultFlag - "f100" // payment + eip712
 // const defaultFlags = {
@@ -101,17 +102,22 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  // public async getPlugin(dataOrIndex: MSCall | number) {
-  //   if (typeof dataOrIndex === "number") {
-  //     if (!this.calls[dataOrIndex].method) {
-  //       throw new Error("Method is required to get plugin");
-  //     }
-  //     return getPluginHelper({ signature: getMethodInterface(this.calls[dataOrIndex]) });
-  //   }
-  //   return;
-  // }
+  public getPlugin = (dataOrIndex: MSCall | number): PluginInstance | undefined => {
+    if (typeof dataOrIndex === "number") {
+      if (!this.calls[dataOrIndex].method) {
+        throw new Error("Method is required to get plugin");
+      }
+      const Plugin = getPlugin({ signature: getMethodInterface(this.calls[dataOrIndex]) });
+      const initPlugin = new Plugin();
 
-  public async create(callInput: MSCallInput | IWithPlugin, index?: number) {
+      return initPlugin;
+    } else {
+      // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
+      return undefined;
+    }
+  };
+
+  public async create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]> {
     let call: MSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();

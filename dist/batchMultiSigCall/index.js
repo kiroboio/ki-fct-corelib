@@ -9,6 +9,7 @@ const ethers_eip712_1 = require("ethers-eip712");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
+const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 // DefaultFlag - "f100" // payment + eip712
 // const defaultFlags = {
 //   eip712: true,
@@ -24,6 +25,21 @@ class BatchMultiSigCall {
         this.options = {};
         this.variables = [];
         this.calls = [];
+        // End of options
+        //
+        //
+        // FCT functions
+        this.getPlugin = (dataOrIndex) => {
+            if (typeof dataOrIndex === "number") {
+                if (!this.calls[dataOrIndex].method) {
+                    throw new Error("Method is required to get plugin");
+                }
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(this.calls[dataOrIndex]) });
+                const initPlugin = new Plugin();
+                return initPlugin;
+            }
+            return undefined;
+        };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
             if (call.validator) {
@@ -76,10 +92,6 @@ class BatchMultiSigCall {
         this.options = options;
         return this.options;
     }
-    // End of options
-    //
-    //
-    // FCT functions
     async create(callInput, index) {
         let call;
         if ("plugin" in callInput) {
@@ -124,7 +136,7 @@ class BatchMultiSigCall {
     get length() {
         return this.calls.length;
     }
-    async getFCT() {
+    async exportFCT() {
         if (this.calls.length === 0) {
             throw new Error("No calls added");
         }
