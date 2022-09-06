@@ -52,11 +52,12 @@ const getAfterTimestamp = (epochDate) => epochDate.toString(16).padStart(10, "0"
 const getBeforeTimestamp = (infinity, epochDate) => infinity ? "ffffffffff" : epochDate.toString(16).padStart(10, "0");
 const getMaxGas = (maxGas) => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice) => gasPrice.toString(16).padStart(16, "0");
+const TYPE_NATIVE = 1000;
+const TYPE_STRING = 2000;
+const TYPE_BYTES = 3000;
+const TYPE_ARRAY = 4000;
 const typeValue = (param) => {
-    const TYPE_NATIVE = 1000;
-    const TYPE_STRING = 2000;
-    const TYPE_BYTES = 3000;
-    const TYPE_ARRAY = 4000;
+    // return [];
     // If type is an array
     if (param.type.lastIndexOf("[") > 0) {
         if (param.customType) {
@@ -90,10 +91,11 @@ const typeValue = (param) => {
 };
 // Get Types array
 const getTypesArray = (params) => {
-    return params.reduce((acc, item) => {
+    const types = params.reduce((acc, item) => {
         const data = typeValue(item);
         return [...acc, ...data];
     }, []);
+    return types.some((item) => item !== TYPE_NATIVE) ? types : [];
 };
 exports.getTypesArray = getTypesArray;
 const getTypedHashes = (params, typedData) => {
