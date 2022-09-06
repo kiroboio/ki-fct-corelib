@@ -204,7 +204,7 @@ class BatchMultiSigCall {
             return {
                 ...acc,
                 [`transaction${index + 1}`]: {
-                    call: {
+                    meta: {
                         call_index: index + 1,
                         payer_index: index + 1,
                         from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
@@ -311,7 +311,7 @@ class BatchMultiSigCall {
                 ...this.calls.reduce((acc, call, index) => ({
                     ...acc,
                     [`Transaction${index + 1}`]: [
-                        { name: "call", type: "Transaction" },
+                        { name: "meta", type: "Transaction" },
                         ...(call.params || []).map((param) => ({
                             name: param.name,
                             type: param.type,

@@ -53,10 +53,10 @@ const getBeforeTimestamp = (infinity, epochDate) => infinity ? "ffffffffff" : ep
 const getMaxGas = (maxGas) => maxGas.toString(16).padStart(8, "0");
 const getMaxGasPrice = (gasPrice) => gasPrice.toString(16).padStart(16, "0");
 const typeValue = (param) => {
-    const TYPE_STRING = 1000;
-    const TYPE_BYTES = 2000;
-    const TYPE_ARRAY = 3000;
-    const TYPE_NATIVE = 4000;
+    const TYPE_NATIVE = 1000;
+    const TYPE_STRING = 2000;
+    const TYPE_BYTES = 3000;
+    const TYPE_ARRAY = 4000;
     // If type is an array
     if (param.type.lastIndexOf("[") > 0) {
         if (param.customType) {

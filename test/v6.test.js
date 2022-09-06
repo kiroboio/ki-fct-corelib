@@ -383,33 +383,33 @@ describe("batchMultiSigCall", () => {
         provider: ethers.provider,
         contractAddress: fctController.address,
         // Here we can initialise options
-        options: {
-          name: "ERC20 Transfer @BK",
-          validFrom: 1662444930,
-        },
+        // options: {
+        //   name: "ERC20 Transfer @BK",
+        //   validFrom: 1662444930,
+        // },
       });
 
       // Or we can call setOptions to add options
-      batchMultiSigCall.setOptions({
-        maxGasPrice: "30000000000", // 30 GWei
-        cancelable: false,
-      });
+      // batchMultiSigCall.setOptions({
+      //   maxGasPrice: "30000000000", // 30 GWei
+      //   cancelable: false,
+      // });
 
       // Create an ERC20 Transfer call with plugin
-      await batchMultiSigCall.create({
-        plugin: new ERC20.actions.Transfer({
-          initParams: {
-            token: kiro.address,
-            to: user1,
-            amount: "30000",
-          },
-        }),
-        from: vault11.address,
-        options: {
-          flow: Flow.OK_CONT_FAIL_REVERT,
-          jumpOnSuccess: 1,
-        },
-      });
+      // await batchMultiSigCall.create({
+      //   plugin: new ERC20.actions.Transfer({
+      //     initParams: {
+      //       token: kiro.address,
+      //       to: user1,
+      //       amount: "30000",
+      //     },
+      //   }),
+      //   from: vault11.address,
+      //   options: {
+      //     flow: Flow.OK_CONT_FAIL_REVERT,
+      //     jumpOnSuccess: 1,
+      //   },
+      // });
 
       // Or create ERC20 Transfer call without plugin
       await batchMultiSigCall.create({
@@ -423,17 +423,17 @@ describe("batchMultiSigCall", () => {
       });
 
       // Create an ERC20 balanceOf getter call (create function always returns all the added calls)
-      const calls = await batchMultiSigCall.create({
-        plugin: new ERC20.getters.BalanceOf({
-          initParams: {
-            token: kiro.address,
-            owner: vault10.address,
-          },
-        }),
-        from: vault10.address,
-      });
+      // const calls = await batchMultiSigCall.create({
+      //   plugin: new ERC20.getters.BalanceOf({
+      //     initParams: {
+      //       token: kiro.address,
+      //       owner: vault10.address,
+      //     },
+      //   }),
+      //   from: vault10.address,
+      // });
 
-      expect(calls.length).to.be.equal(3);
+      // expect(calls.length).to.be.equal(3);
     });
 
     it("Should getPlugin from batchMultiSigCall", async () => {
@@ -542,7 +542,7 @@ describe("batchMultiSigCall", () => {
       const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
-        const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
+        const signatures = [signer].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
       });
 
