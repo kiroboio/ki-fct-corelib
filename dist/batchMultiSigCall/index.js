@@ -95,7 +95,7 @@ class BatchMultiSigCall {
     //
     // Options
     setOptions(options) {
-        this.options = options;
+        this.options = { ...this.options, ...options };
         return this.options;
     }
     async create(callInput, index) {
@@ -313,10 +313,10 @@ class BatchMultiSigCall {
             primaryType: "BatchMultiSigCall",
             domain: await (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
             message: {
-                FCT: {
+                fct: {
                     name: this.options.name || "",
-                    selector: batchMultiSigSelector,
                     version,
+                    selector: batchMultiSigSelector,
                     eip712: true,
                     random_id: `0x${salt}`,
                 },

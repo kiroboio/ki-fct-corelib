@@ -42,37 +42,64 @@ contract FCT_Controller is FCT_Storage {
         );
     }
 
-    // TODO: timestamp | chilltime | chillmode | amount
-    // TODO: in limits (amount, chilltime, chillmode)
-    // TODO: header/meta with: builder-address
-    // TODO: header/meta with: multisig array and number of signers
-    // TODO: check usage of sessionid
     // TODO: events
+    // TODO: packed version for fct info
 
-    function register(bytes32 id, bytes32 dataHash, Meta calldata meta) external returns (bytes32 messageHash) {
+    /**@notice this function deletes an FCT from the blockchain in order to save gas
+     * @param id - a bytes 32 param that states the specific batchMultiSigCall that was selected
+        * abi.encodePacked(bytes4(FCT_BatchMultiSig.batchMultiSigCall.selector),VERSION,bytes24(0x0)) 
+     * @param messageHashes - an array of FCT's ready to be purged
+     */
+    function purge(bytes32 id, bytes32[] calldata messageHashes) external {
+        require(s_targets[id] == msg.sender, "FCT: not a version");
+        for (uint256 i=0; i<messageHashes.length; i++) {
+          Meta storage meta = s_fcts[messageHashes[i]];
+          if (meta.purgeable && meta.expiresAt < block.timestamp) {
+            delete s_fcts[messageHashes[i]];
+          }
+        }
+    }
+
+    /**@notice this function registers the FCT in order to keep track of them 
+     * @param id - a bytes 32 param that states the specific batchMultiSigCall that was selected 
+     * @param dataHash - a hash of all the data of the FCT
+     * @param meta - struct that contains the flags in the FCT
+     * @return messageHash - a hash of the msg
+    */
+    function register(bytes32 id, bytes32 dataHash, MetaInput calldata meta) external returns (bytes32 messageHash) {
         require(s_targets[id] == msg.sender, "FCT: not a version");
         messageHash = _messageToRecover(dataHash, meta.eip712);
         Meta storage curMeta = s_fcts[messageHash];
         require(curMeta.amount != 1, "FCT: allready executed");
         if (curMeta.amount == 0) {
             s_fcts[messageHash] = Meta({
+                expiresAt: uint40(meta.expiresAt),
+                starttime: uint40(block.timestamp),
+                lasttime: uint40(block.timestamp),
                 timestamp: uint40(block.timestamp),
                 chilltime: meta.chilltime,
-                amount: meta.amount,
+                amount: meta.startamount == 0 ? 1 : meta.startamount,
+                startamount: meta.startamount == 0 ? 1 : meta.startamount,
                 eip712: meta.eip712,
-                chillmode: meta.chillmode 
+                accumatable: meta.accumatable,
+                purgeable: meta.purgeable,
+                cancelable: meta.cancelable
             });
         } else {
             require(block.timestamp - curMeta.timestamp > curMeta.chilltime, "FCT: too early");
             curMeta.amount = curMeta.amount - 1;
-            if (curMeta.chillmode == 0) {
-                curMeta.timestamp = uint40(block.timestamp);
+            if (curMeta.accumatable) {
+              curMeta.timestamp = curMeta.timestamp + curMeta.chilltime;
             } else {
-                 curMeta.timestamp = curMeta.timestamp + curMeta.chillmode;               
+              curMeta.timestamp = uint40(block.timestamp);
             }
+            curMeta.lasttime = uint40(block.timestamp);
         }
     }
 
+    /**@notice this is the function that is called when an activator activates the FCT an runs the transaction inside it
+     * the msg.data contains all the FCT call data 
+     */
     fallback() external {
         address target = s_targets[abi.decode(msg.data, (bytes32))];
         require(target != address(0), "FCT: target not found");
@@ -95,6 +122,10 @@ contract FCT_Controller is FCT_Storage {
         }
     }
 
+    /**@notice returns the version of the FCT call according to the input callId
+     * @param id - a bytes 32 param that states the specific batchMultiSigCall that was selected
+     * @return bytes3 - that contains the version
+     */
     function version(bytes32 id) external view returns (bytes3) {
         address target  = s_targets[id];
         require(target != address(0), "FCT: target not found");
@@ -103,6 +134,9 @@ contract FCT_Controller is FCT_Storage {
         return IFCT_Engine(target).VERSION();
     }
 
+    /**@notice in case we want to create a new version of a specific function we can add a target using this function
+     * @param target address of the new target
+     */
     function addTarget(address target) external onlyOwner {
         require(target != address(0), "no target address");
         bytes32[] memory ids = IFCT_Engine(target).getIDs();        
@@ -118,6 +152,15 @@ contract FCT_Controller is FCT_Storage {
     function funcAddress(bytes32 funcID) external view returns (address) {
       return s_targets[funcID];
     }
+
+    function fctInfo(bytes32 messageHash) external view returns (Meta memory) {
+      return s_fcts[messageHash];
+    }
+
+    // TODO: tight packed with << >> 
+    // function fctInfoPacked(bytes32 messageHash) external view returns (uint256) {
+    //   return abi.decode(abi.encodePacked(s_fcts[messageHash]), (uint256));
+    // }
 
     function setActivator(address newActivator) external onlyOwner {
         s_activator = newActivator;

@@ -12,6 +12,7 @@ import "../contracts/lib/Interface.sol";
 import "../contracts/lib/Storage.sol";
 import "../contracts/interfaces/IOracle.sol";
 import "../contracts/interfaces/IFCT_Controller.sol";
+import "../contracts/interfaces/IFCT_Runner.sol";
 
 import "hardhat/console.sol";
 
@@ -129,37 +130,61 @@ contract RecoveryWallet is
   return out;
 } */
 
-    function LocalCall_(
+    function fctCall(
         bytes32 funcID,
         address target,
         uint256 value,
         bytes calldata data,
-        bytes32 messageHash
+        bytes32 messageHash,
+        address[] calldata signers,
+        uint256 sessionId,
+        uint16 permissions
     ) external /*onlyCreator*/ returns (bytes memory) {
         require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
+        //IFCT_Controller(FCT_CONTROLLER_CONTRACT).version(funcID);
         // console.log("running target %s, value %s", target, value);
         // console.logBytes(data);
         // console.logBytes32(messageHash);
+        
         if (messageHash != 0) {
             require(
                 s_blocked[messageHash] == 0,
                 "Wallet: transaction canceled"
             );
         }
+
+        uint256 canRun;
+        for (uint256 i = 0; i < signers.length; i++) {
+            //console.log("signer[i]:", signers[i]);
+            //console.log("s_owner:", s_owner);
+            if (
+                // fctVersion == 0 &&
+                signers[i] == s_owner &&
+                s_backup.state != BACKUP_STATE_ACTIVATED
+            ) {
+                canRun = 1;
+                break;
+            }
+        }
+        require(canRun == 1, "FCT: wrong signer");
+
         (bool success, bytes memory res) = target.call{value: value}(data);
         if (!success) {
             revert(_getRevertMsg(res));
         }
-        // console.log("success");
+        // console.log("success!!!");
         // console.logBytes(res);
         return res;
     }
 
-    function LocalStaticCall_(
+    function fctStaticCall(
         bytes32 funcID,
         address target,
         bytes calldata data,
-        bytes32 messageHash
+        bytes32 messageHash,
+        address[] calldata signers,
+        uint256 sessionId,
+        uint16 permissions
     ) external view /*onlyCreator*/ returns (bytes memory) {
         require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
         if (messageHash != 0) {
@@ -168,18 +193,34 @@ contract RecoveryWallet is
                 "Wallet: transaction canceled"
             );
         }
+        uint256 canRun;
+        for (uint256 i = 0; i < signers.length; i++) {
+            if (
+                // fctVersion == 0 &&
+                signers[i] == s_owner &&
+                s_backup.state != BACKUP_STATE_ACTIVATED
+            ) {
+                canRun = 1;
+                break;
+            }
+        }
+        require(canRun == 1, "FCT: wrong signer");
+
         (bool success, bytes memory res) = target.staticcall(data);
         if (!success) {
+            console.log("static revert!!!");
             revert(_getRevertMsg(res));
         }
+        console.log("static success!!!");
+        console.logBytes(res);
         return res;
     }
 
-    function isBlocked_(bytes32 messageHash) external view returns (uint256) {
+    function fctIsBlocked(bytes32 messageHash) external view returns (uint256) {
         return s_blocked[messageHash];
     }
 
-    function allowedToExecute_(address[] calldata signers, uint256 fctVersion)
+    function fctAllowedToExecute(address[] calldata signers, uint256 fctVersion)
         external
         view
         returns (uint256)

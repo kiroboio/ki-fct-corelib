@@ -93,7 +93,7 @@ export class BatchMultiSigCall {
   // Options
 
   public setOptions(options: MSCallOptions): MSCallOptions {
-    this.options = options;
+    this.options = { ...this.options, ...options };
     return this.options;
   }
 
@@ -186,6 +186,7 @@ export class BatchMultiSigCall {
     const version: string = "0x010101";
 
     const typedData: TypedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
+
     const sessionId: string = getSessionId(salt, this.options);
 
     const mcall: MSCall[] = this.calls.map((call, index) => ({
@@ -368,10 +369,10 @@ export class BatchMultiSigCall {
       primaryType: "BatchMultiSigCall",
       domain: await getTypedDataDomain(this.FactoryProxy),
       message: {
-        FCT: {
+        fct: {
           name: this.options.name || "",
-          selector: batchMultiSigSelector,
           version,
+          selector: batchMultiSigSelector,
           eip712: true,
           random_id: `0x${salt}`,
         },

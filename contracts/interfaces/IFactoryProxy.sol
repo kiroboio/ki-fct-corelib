@@ -60,7 +60,7 @@ interface IFactoryProxy {
         external
         returns (MReturn[] memory);
 
-    function batchMultiSigCall_(
+    function batchMultiSigCall(
         MSCalls[] calldata tr,
         bytes32[][] calldata variables
     ) external returns (MReturn[][] memory);

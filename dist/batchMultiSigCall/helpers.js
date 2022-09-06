@@ -93,26 +93,24 @@ const getSessionId = (salt, options) => {
     // 6 - Salt
     // 2 - External signers
     // 6 - Version
-    // 4 - Recurrent
+    // 4 - Max Repeats
     // 8 - Chill time
     // 10 - After timestamp
     // 10 - Before timestamp
     // 16 - Gas price limit
     // 2 - Flags
-    const externalSigners = options.multisig
-        ? options.multisig.externalSigners.length.toString(16).padStart(2, "0")
-        : "00";
+    const externalSigners = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
     const version = "010101";
     const recurrent = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
     const chillTime = options.recurrency
         ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
         : "00000000";
-    const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000";
-    const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff";
+    const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000"; // TODO: Date right now
+    const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff"; // TODO: Date right now + 30 days
     const gasPriceLimit = options.maxGasPrice
         ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
         : "00000005D21DBA00"; // 25 Gwei
     const flags = `08`; // Have to implement getFlags function
-    return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${afterTimestamp}${beforeTimestamp}${gasPriceLimit}${flags}`;
+    return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${beforeTimestamp}${afterTimestamp}${gasPriceLimit}${flags}`;
 };
 exports.getSessionId = getSessionId;

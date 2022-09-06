@@ -15,9 +15,11 @@ struct MSCall {
     bytes32 ensHash;
     bytes32 functionSignature;
     uint256 value;
+    uint256 callId;
     address from;
-    uint32 gasLimit;
-    uint8 flags;
+    // uint32 gasLimit;
+    // uint24 flags;
+    // uint16 permissions;
     address to;
     bytes data;
     uint256[] types;
@@ -25,7 +27,7 @@ struct MSCall {
 }
 
 struct MSCalls {
-    address builder;
+    // address builder;
     bytes32 typeHash;
     uint256 sessionId;
     string name;
@@ -35,40 +37,14 @@ struct MSCalls {
     address[] externalSigners;
 }
 
-struct MCall {
-    bytes32 typeHash;
-    bytes32 ensHash;
-    uint256 value;
-    bytes32 functionSignature;
-    address to;
-    uint32 gasLimit;
-    uint8 flags;
-    bytes data;
-}
-
-struct MCalls {
-    bytes32 r;
-    bytes32 s;
-    bytes32 typeHash;
-    uint256 sessionId;
-    // address signer;
-    uint8 v;
-    MCall[] mcall;
-}
-
-// struct MReturn {
-//     address vault;
-//     uint88 gas;
-// }
-
 interface IFCT_Engine {
     function getIDs() external pure returns (bytes32[] memory);
     function VERSION() external pure returns (bytes3);
 
-    function batchMultiSigCall_(
+    function batchMultiSigCall(
         bytes3 version,
-        MSCalls[] calldata tr
-        // bytes32[][] calldata variables
-    ) external returns (MReturn[][] memory);
+        MSCalls[] calldata tr,
+        bytes32[] calldata purgeFCTs
+    ) external returns (string[] memory names, uint256[] memory maxGasPrices, MReturn[][] memory);
 
 }

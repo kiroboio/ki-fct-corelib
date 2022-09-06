@@ -7,13 +7,17 @@ interface IFCT_Runner {
         address target,
         uint256 value,
         bytes calldata data,
-        bytes32 messageHash
+        bytes32 messageHash,
+        address[] calldata signers, 
+        uint256 sessionId
     ) external returns (bytes memory);
 
     function LocalStaticCall_(
         address target,
         bytes calldata data,
-        bytes32 messageHash
+        bytes32 messageHash,
+        address[] calldata signers, 
+        uint256 sessionId
     ) external view returns (bytes memory);
 
     function isBlocked_(bytes32 messageHash) external view returns (uint256);
