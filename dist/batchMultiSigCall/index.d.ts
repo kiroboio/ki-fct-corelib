@@ -29,7 +29,7 @@ export declare class BatchMultiSigCall {
         typedData: TypedData;
         typeHash: string;
         sessionId: string;
-        name: string;
+        nameHash: string;
         mcall: MSCall[];
     }>;
     private createTypedData;

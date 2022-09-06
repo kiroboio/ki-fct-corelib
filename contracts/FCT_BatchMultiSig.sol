@@ -13,9 +13,9 @@ pragma abicoder v2;
 // TODO: protection for payer (by calling vault for approve in activators)
 // TODO: always revert if signatures do not match (do flow if call fails)
 // DONE: protection for running the same version with different impl (adding func-sig to version in eip712)
-// TODO: return payees to activators
 // TODO: wallet: useStrictVersioning, isUsingStrictVersioning
 // TODO: events
+// TODO: Use short strings in requires
 // DONE: change localCall_, localStaticCall to fctCall fctStaticCall, etc.
 
 import "./FCT_Constants.sol";
@@ -57,7 +57,6 @@ uint256 constant FLAG_STATICCALL = 0x01;
 
 struct MultiSigCallLocals {
     bytes32 messageHash;
-    uint256 gas;
     uint256 index;
     uint256 sessionId;
     uint16[] payerIndex;
@@ -87,7 +86,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         abi.encodePacked(
             FCT_BatchMultiSig.batchMultiSigCall.selector,
             VERSION,
-            bytes24(0x0)
+            bytes25(0x0)
         )
     );
 
@@ -192,36 +191,28 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         return value;
     }
 
-    function uid() external pure returns (bytes32) {
-        return 0x00;
-    }
-
-    function activator() external pure returns (address) {
-        return address(0);
-    }
-
-    // Stubs ends
-    bytes32 public constant BATCH_MULTI_SIG_CALL_FCT_TYPEHASH_ =
+   // Stubs ends
+    bytes32 public constant BATCH_MULTI_SIG_CALL_FCT_TYPEHASH =
         keccak256(
-            "FCT(string name,bytes4 selector,bytes3 version,bytes3 random_id,bool eip712)"
+            "FCT(string name,address builder,bytes4 selector,bytes3 version,bytes3 random_id,bool eip712)"
         );
 
-    bytes32 public constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_ =
+    bytes32 public constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH =
         keccak256(
             "Limits(uint40 valid_from,uint40 expires_at,uint64 gas_price_limit,bool purgeable,bool cancelable)"
         );
 
-    bytes32 public constant BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH_ =
+    bytes32 public constant BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH =
         keccak256(
             "Recurrency(uint16 max_repeats,uint32 chill_time,bool accumetable)"
         );
 
-    bytes32 public constant BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH_ =
+    bytes32 public constant BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH =
         keccak256(
             "Multisig(address[] external_signers,uint8 minimum_approvals)"
         );
 
-    bytes32 public constant BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_ =
+    bytes32 public constant BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH =
         keccak256(
             "Transaction(uint16 call_index,uint16 payer_index,address from,address to,string to_ens,uint256 eth_value,uint32 gas_limit,bool view_only,uint16 permissions,string flow_control,uint16 jump_on_success,uint16 jump_on_fail,string method_interface)"
         );
@@ -364,29 +355,32 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
      * @param tr - array of MSCalls which are equal to FCT's
      * @param purgeFCTs - FCT's that are ready to be purged (removed, and by that get gas back)
      * @return names - name of FCT, in order to keep track for builders
+     * @return builders - the address of the builder
      * @return maxGasPrices - max gas price that was defined for each FCT
      *              used for calculation of costs for the users and refund for the activators
      * @return rt - a struct that hold info regarding who is the vault assosiatet with the call 
      *              used for calculation of costs for the users and refund for the activators 
      */
     function batchMultiSigCall(
-        bytes3 version,
+        bytes32 version,
         MSCalls[] calldata tr,
         bytes32[] calldata purgeFCTs
-    ) external returns (string[] memory names, uint256[] memory maxGasPrices, MReturn[][] memory rt) {
-        require(version == VERSION, "fct: wrong version");
+    ) external returns (bytes32[] memory names, address[] memory builders, uint256[] memory maxGasPrices, MReturn[][] memory rt) {
+        require(bytes3(version) == VERSION, "fct: wrong version");
         uint256 trLength = tr.length;
         rt = new MReturn[][](trLength);
-        names = new string[](trLength);
+        names = new bytes32[](trLength);
+        builders = new address[](trLength);
         maxGasPrices = new uint256[](trLength);
         /** @dev creating the msg hash from the msg itself by doing hash of every part of the msg 
         * and then a hash of all of them 
         */
         unchecked {
             for (uint256 i; i < trLength; ++i) {
-                uint256 IGas = gasleft();
                 MSCalls calldata mcalls = tr[i];
-                names[i] = mcalls.name;
+                // names[i] = keccak256(abi.encodePacked(mcalls.name));
+                names[i] = mcalls.nameHash;
+                builders[i] = mcalls.builder;
                 uint256 sessionId = mcalls.sessionId;
                 maxGasPrices[i] = uint64(sessionId >> GAS_PRICE_LIMIT_BIT);
                 /** @dev hash of the Info part*/
@@ -394,8 +388,10 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     mcalls.typeHash,
                     keccak256(
                         abi.encode(
-                            BATCH_MULTI_SIG_CALL_FCT_TYPEHASH_,
-                            keccak256(abi.encodePacked(mcalls.name)),
+                            BATCH_MULTI_SIG_CALL_FCT_TYPEHASH,
+                            // keccak256(abi.encodePacked(mcalls.name)),
+                            mcalls.nameHash,
+                            mcalls.builder,
                             FCT_BatchMultiSig.batchMultiSigCall.selector,
                             bytes32(sessionId >> VERSION_BIT << 232),
                             bytes32(sessionId >> SALT_BIT << 232), //random_id
@@ -413,7 +409,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 /** @dev hash of the Limits part*/
                 msg2 = bytes.concat(msg2, keccak256(
                         abi.encode(
-                            BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_,
+                            BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH,
                             uint40(sessionId >> AFTER_TS_BIT), // valid_from
                             uint40(sessionId >> BEFORE_TS_BIT),
                             uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
@@ -433,7 +429,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 if(uint16(sessionId >> RECURRENT_BIT) > 1 ){
                     msg2 = bytes.concat(msg2, keccak256(
                             abi.encode(
-                                BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH_,
+                                BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH,
                                 uint16(sessionId >> RECURRENT_BIT),
                                 uint32(sessionId >> CHILL_TIME_BIT),
                                 (sessionId & FLAG_ACCUMATABLE) != 0
@@ -444,7 +440,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 if(uint8(sessionId >> EXT_SIGNERS_BIT) > 0 ){
                     msg2 = bytes.concat(msg2, keccak256(
                             abi.encode(
-                                BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH_,
+                                BATCH_MULTI_SIG_CALL_MULTISIG_TYPEHASH,
                                 keccak256(abi.encodePacked(mcalls.externalSigners)),
                                 uint8(sessionId >> EXT_SIGNERS_BIT)
                             )
@@ -543,12 +539,12 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     }
                     locals.rt = rt;
                     locals.rt[locals.index] = new MReturn[](length);
-                    locals.gas = IGas - gasleft();
                 }
                 locals.returnedValues = new bytes[](length);
                 locals.callFromList = new address[](length);
                 /**@dev goin over each call in the FCT */
                 for (uint256 j; j < length; ++j) {
+                    console.log("running on call number:",j );
                     uint256 gas = gasleft();
                     MSCall calldata call = mcalls.mcall[j];
                     if (call.to == address(0)) {
@@ -717,6 +713,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                     varLocals.callPayer, // wallet.addr,
                                     gas
                                 );
+                                console.log("in OK_CONT_FAIL_CONT with jump value:", uint16(call.callId >> OK_JUMP_BIT));
                                 j = j + uint16(call.callId >> OK_JUMP_BIT);
                                 continue;
                             }
@@ -792,7 +789,7 @@ function _calcMultiSigTransactionHash(
         return
             keccak256(
                 abi.encode(
-                    BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_,
+                    BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH,
                     uint16(callId >> CALL_INDEX_BIT),
                     uint16(callId >> PAYER_INDEX_BIT),
                     call.from,
@@ -876,9 +873,6 @@ function _calcMultiSigTransactionHash(
             tx.gasprice <= uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
             "FCT: gas price too high"
         );
-        console.log('block.timestamp',block.timestamp);
-        console.log("input timestamp", uint40(sessionId >> AFTER_TS_BIT));
-
         require(
             block.timestamp > uint40(sessionId >> AFTER_TS_BIT),
             "FCT: too early"

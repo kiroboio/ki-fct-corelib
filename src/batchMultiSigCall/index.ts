@@ -14,6 +14,7 @@ import {
   manageCallId,
 } from "./helpers";
 import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
+import { id } from "ethers/lib/utils";
 
 // DefaultFlag - "f100" // payment + eip712
 // const defaultFlags = {
@@ -22,7 +23,7 @@ import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fc
 //   flow: false,
 // };
 
-const batchMultiSigSelector = "0x40aa0f39";
+const batchMultiSigSelector = "0xa7973c1f";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -173,7 +174,7 @@ export class BatchMultiSigCall {
     typedData: TypedData;
     typeHash: string;
     sessionId: string;
-    name: string;
+    nameHash: string;
     mcall: MSCall[];
   }> {
     if (this.calls.length === 0) {
@@ -210,7 +211,7 @@ export class BatchMultiSigCall {
       typedData,
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
       sessionId,
-      name: this.options.name || "",
+      nameHash: id(this.options.name || ""),
       mcall, // This is where are the MSCall[] are returned
     };
   }
@@ -323,6 +324,7 @@ export class BatchMultiSigCall {
         ],
         FCT: [
           { name: "name", type: "string" },
+          { name: "builder", type: "address" },
           { name: "selector", type: "bytes4" },
           { name: "version", type: "bytes3" },
           { name: "eip712", type: "bool" },
@@ -371,6 +373,7 @@ export class BatchMultiSigCall {
       message: {
         fct: {
           name: this.options.name || "",
+          builder: "0x0000000000000000000000000000000000000000",
           version,
           selector: batchMultiSigSelector,
           eip712: true,

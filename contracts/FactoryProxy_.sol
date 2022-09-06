@@ -1166,8 +1166,6 @@ contract FactoryProxy_ is FactoryStorage {
             tx.gasprice <= uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
             "FCT: gas price too high"
         );
-        console.log('block.timestamp',block.timestamp);
-        console.log("input timestamp", uint40(sessionId >> AFTER_TS_BIT));
         require(
             block.timestamp > uint40(sessionId >> AFTER_TS_BIT),
             "FCT: too early"

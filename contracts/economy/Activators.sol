@@ -152,7 +152,7 @@ contract Activators is AccessControl {
         if (!success_) {
             revert(_getRevertMsg(data_));
         }
-        (string[] memory names, uint256[] memory maxGasPrices, MReturn[][] memory rts) = abi.decode(data_, (string[], uint256[], MReturn[][]));
+        (bytes32[] memory names, address[] memory builders, uint256[] memory maxGasPrices, MReturn[][] memory rts) = abi.decode(data_, (bytes32[], address[], uint256[], MReturn[][]));
         // uint256 totalGas = (gasStart - gasleft()); // * tx.gasprice;
         // console.log("total gas:", totalGas);
         if (
@@ -194,7 +194,7 @@ contract Activators is AccessControl {
         address vault;
         uint256 maxGasPrice;
         for (uint256 i = 0; i < rts.length; i++) {
-            name = names[i];
+            // name = names[i];
             rt = rts[i];
             maxGasPrice = maxGasPrices[i];
             builder = s_builders[keccak256(abi.encodePacked(name))];

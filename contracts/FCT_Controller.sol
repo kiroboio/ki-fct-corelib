@@ -100,8 +100,14 @@ contract FCT_Controller is FCT_Storage {
     /**@notice this is the function that is called when an activator activates the FCT an runs the transaction inside it
      * the msg.data contains all the FCT call data 
      */
+    //   selector  version reserved (bytes17)                 nonce (64 bit)   not used
+    // 0xffffffff  ffffff  0000000000000000000000000000000000 0000000000000000 00000000
+    // 0xffffffff  ffffff  ffffffffffffffffffffffffffffffffff 0000000000000000 (id mask)
+    // 0xffffffff  ff0000  ffffffffffff0000000000000000000000 0000000000000000 (nonce id mask)
+    // 0x00000000  000000  0000000000000000000000000000000000 ffffffffffffffff (nonce mask)
     fallback() external {
-        address target = s_targets[abi.decode(msg.data, (bytes32))];
+        require(msg.sender == s_activator, "not an activator");
+        address target = s_targets[abi.decode(msg.data, (bytes32)) & bytes32(0xffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000)];
         require(target != address(0), "FCT: target not found");
         assembly {
             calldatacopy(0x00, 0x00, calldatasize())

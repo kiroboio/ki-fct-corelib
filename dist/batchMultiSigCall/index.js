@@ -10,13 +10,14 @@ const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.a
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+const utils_1 = require("ethers/lib/utils");
 // DefaultFlag - "f100" // payment + eip712
 // const defaultFlags = {
 //   eip712: true,
 //   payment: true,
 //   flow: false,
 // };
-const batchMultiSigSelector = "0x40aa0f39";
+const batchMultiSigSelector = "0xa7973c1f";
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -170,7 +171,7 @@ class BatchMultiSigCall {
             typedData,
             typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
             sessionId,
-            name: this.options.name || "",
+            nameHash: (0, utils_1.id)(this.options.name || ""),
             mcall, // This is where are the MSCall[] are returned
         };
     }
@@ -270,6 +271,7 @@ class BatchMultiSigCall {
                 ],
                 FCT: [
                     { name: "name", type: "string" },
+                    { name: "builder", type: "address" },
                     { name: "selector", type: "bytes4" },
                     { name: "version", type: "bytes3" },
                     { name: "eip712", type: "bool" },
@@ -315,6 +317,7 @@ class BatchMultiSigCall {
             message: {
                 fct: {
                     name: this.options.name || "",
+                    builder: "0x0000000000000000000000000000000000000000",
                     version,
                     selector: batchMultiSigSelector,
                     eip712: true,

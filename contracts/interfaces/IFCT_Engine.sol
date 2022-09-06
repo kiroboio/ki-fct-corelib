@@ -30,7 +30,8 @@ struct MSCalls {
     // address builder;
     bytes32 typeHash;
     uint256 sessionId;
-    string name;
+    bytes32 nameHash;
+    address builder;
     MSCall[] mcall;
     Signature[] signatures;
     bytes32[] variables;
@@ -42,9 +43,9 @@ interface IFCT_Engine {
     function VERSION() external pure returns (bytes3);
 
     function batchMultiSigCall(
-        bytes3 version,
+        bytes32 version,
         MSCalls[] calldata tr,
         bytes32[] calldata purgeFCTs
-    ) external returns (string[] memory names, uint256[] memory maxGasPrices, MReturn[][] memory);
+    ) external returns (bytes32[] memory names, address[] memory builders, uint256[] memory maxGasPrices, MReturn[][] memory);
 
 }

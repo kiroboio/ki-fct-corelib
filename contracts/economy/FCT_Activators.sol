@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../uniswap-oracle/UniswapV2OracleLibrary.sol";
 import "../uniswap-oracle/IUniswapV2Factory.sol";
 import "../interfaces/IFactory.sol";
@@ -18,25 +19,36 @@ import "../interfaces/IWallet.sol";
 
 import "hardhat/console.sol";
 
-contract FCT_Activators is IFCT_Activators, AccessControl {
+bytes32 constant NONCE_ID_MASK = 0xffffffffff0000ffffffffffff00000000000000000000000000000000000000;
+bytes32 constant NONCE_MASK = 0x000000000000000000000000000000000000000000000000ffffffffffffffff;
+
+contract FCT_Activators is /*IFCT_Activators,*/ AccessControl {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using FixedPoint for *;
 
-    mapping(address => uint256) public s_userBalance;
-    mapping(address => uint256) public s_builderBalance;
-    mapping(address => uint256) public s_activatorBalance;
+    struct Activator {
+      uint160 balance;
+      uint40 blockNumber;
+    }
 
-    mapping(address => uint256) public s_vaultBalance;
-    mapping(address => uint256) private s_activators;
-    mapping(bytes32 => address) private s_builders;
-    uint256 s_builderBPS;
-    uint256 s_profitBPS;
+    // balances
+    mapping(address => Activator) public s_staked;
+    mapping(address => uint256) public s_balances;
+    uint256 public s_total_staked;
     
-    uint256 s_userTotalBalance;
-    uint256 s_builderTotalBalance;
-    uint256 s_activatorTotalBalance;
+    mapping(bytes32 => address) public s_builders;
+    mapping(bytes32 => uint256) public s_nonces;
 
+    // controlled by the dao
+    uint256 s_activatorShare;
+    uint256 s_builderShare;
+    uint256 s_baseBPS;
+    uint256 s_bonusBPS;
+    address s_kirobo;
+    uint256 s_minActivatorStake;
+        
+    // token-price releated
     uint256 s_lastUpdateDateOfPrice;
     uint256 s_timeBetweenKiroPriceUpdate = 24 hours;
     uint256 public price0CumulativeLast;
@@ -47,20 +59,13 @@ contract FCT_Activators is IFCT_Activators, AccessControl {
     IUniswapV2Pair immutable pair;
     address public immutable token0;
     address public immutable token1;
-    address private immutable s_factory;
+
+    // immutables
+    address private immutable s_kiro;
     address private immutable s_fctController;
-    address public immutable KIRO_ADDRESS;
 
     bytes32 public constant OPERATOR_ROLE =
         0x97667070c54ef182b0f5858b034beac1b6f3089aa2d3188bb1e8929f4fa9b929;
-
-    uint8 private constant BACKUP_STATE_ACTIVATED = 3;
-
-    modifier onlyActivator() {
-        console.log("onlyActivator");
-        require(s_activators[msg.sender] == 1, "not an activator");
-        _;
-    }
 
     modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "not an admin");
@@ -68,17 +73,15 @@ contract FCT_Activators is IFCT_Activators, AccessControl {
     }
 
     constructor(
-        address factory,
+        address kiro,
         address fctController,
-        address kiroAddress,
         address pairAddress
     ) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OPERATOR_ROLE, msg.sender);
 
-        s_factory = factory;
+        s_kiro = kiro;
         s_fctController = fctController;
-        KIRO_ADDRESS = kiroAddress;
 
         IUniswapV2Pair _pair = IUniswapV2Pair(pairAddress);
         pair = _pair;
@@ -92,168 +95,172 @@ contract FCT_Activators is IFCT_Activators, AccessControl {
         updateKiroPrice();
         s_lastUpdateDateOfPrice = block.timestamp;
         require(reserve0 != 0 && reserve1 != 0, "NO_RESERVES"); // ensure that there's liquidity in the pair
+        s_baseBPS = 1000;
+        s_bonusBPS = 5000;
+        s_activatorShare = 6000;
+        s_builderShare = 2000;
+        s_minActivatorStake = 100000;
     }
 
-    /**@dev updates the time required between kiro price update 
-  @param time in seconds */
-    function updateTimeBetweenKiroPriceUpdate(uint256 time) external onlyAdmin {
-        s_timeBetweenKiroPriceUpdate = time;
-    }
-
-    function addActivator(address activator) external onlyAdmin {
-        console.log("addActivator");
-        s_activators[activator] = 1;
-    }
-
-    function removeActivator(address activator) external onlyAdmin {
-        s_activators[activator] = 0;
-    }
-
-    function totalLocked() external view returns (uint256) {
-        return s_activatorTotalBalance;
-    }
-
-    function getActivator(uint256 lockedPos) external pure returns (address) {
-        return address(0);
-    }
-
-    function _getRevertMsg(bytes memory returnData)
-        internal
-        pure
-        returns (string memory)
-    {
-        if (returnData.length < 68)
-            return "Wallet: Transaction reverted silently";
-
-        assembly {
-            returnData := add(returnData, 0x04)
-        }
-        return abi.decode(returnData, (string));
-    }
-
-    function activate(bytes calldata data) external onlyActivator {
+    function activate(bytes calldata data) external {
         uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
         console.log("---------------------> activating ", data.length);
+        {
+            bytes32 id = abi.decode(data, (bytes32));
+            // console.logBytes32(id);
+            // console.log('value', uint256(id & NONCE_MASK));
+            uint256 nextNonce = s_nonces[id & NONCE_ID_MASK] + 1;
+            require(nextNonce == uint256(id & NONCE_MASK), "FCT: wrong nonce");
+            s_nonces[id & NONCE_ID_MASK] = nextNonce;
+            require(s_staked[msg.sender].balance >= s_minActivatorStake, "FCT: not enough staked");
+        }
+
         (bool success_, bytes memory data_) = s_fctController.call(data);
         console.log('------------------------- activate gas --------------------------', gasStart - gasleft());
         console.log('success', success_);
         if (!success_) {
             revert(_getRevertMsg(data_));
         }
-        (string[] memory names, uint256[] memory maxGasPrices, MReturn[][] memory rts) = abi.decode(data_, (string[], uint256[], MReturn[][]));
+        (bytes32[] memory names, address[] memory builders, uint256[] memory maxGasPrices, MReturn[][] memory rts) = abi.decode(data_, (bytes32[], address[], uint256[], MReturn[][]));
         if (
-            block.timestamp >
+            block.number >
             s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
         ) {
             updateKiroPrice();
-            s_lastUpdateDateOfPrice = block.timestamp;
+            s_lastUpdateDateOfPrice = block.number;
         }
 
-        uint256 sumOfGas;
-        uint256 totalCalls;
-        MReturn[] memory rt;
-        for (uint256 i = 0; i < rts.length; i++) {
-            rt = rts[i];
-            totalCalls = totalCalls + rts[i].length;
-            for (uint256 j = 0; j < rts[i].length; j++) {
-                if (rt[j].vault != address(0)) {
-                    sumOfGas += rt[j].gas;
-                }
-            }
+        uint256 constGas;
+        {
+          uint256 sumOfGas;
+          uint256 totalCalls;
+          uint256 totalCallsGas;
+          for (uint256 i = 0; i < rts.length; i++) {
+              MReturn[] memory rt = rts[i];
+              totalCalls = totalCalls + rts[i].length;
+              for (uint256 j = 0; j < rts[i].length; j++) {
+                  if (rt[j].vault != address(0)) {
+                      sumOfGas += rt[j].gas;
+                  }
+              }
+          }
+          uint256 totalGas = gasStart - gasleft();
+          constGas = ((totalGas - sumOfGas) / totalCalls) + 1;
+          console.log('------------------------- total calls --------------------------', totalCalls);
+          console.log('------------------------- total calls gas --------------------------', totalCallsGas);
+          console.log('------------------------- fcts  gas --------------------------', sumOfGas);
+          console.log('------------------------- const  gas --------------------------', constGas);
         }
 
-        uint256 totalGas = gasStart - gasleft();
-        uint256 constGas = ((totalGas - sumOfGas) / totalCalls) + 1;
 
         console.log('------------------------- data length --------------------------', data.length);
         console.log('------------------------- res length --------------------------', data_.length);
-        console.log('------------------------- total gas --------------------------', totalGas);
-        console.log('------------------------- fcts  gas --------------------------', sumOfGas);
-        console.log('------------------------- const  gas --------------------------', constGas);
-        console.log('------------------------- total calls --------------------------', totalCalls);
-        {
-            uint256 toPayInKiro;
-            uint256 toPayBuilder;
-            string memory name;
-            address builder;
-            uint256 toPayActivator;
-            address vault;
-            uint256 maxGasPrice;
-            for (uint256 i = 0; i < rts.length; i++) {
-                name = names[i];
-                rt = rts[i];
-                maxGasPrice = maxGasPrices[i];
-                builder = s_builders[keccak256(abi.encodePacked(name))];
-                for (uint256 j = 0; j < rt.length; j++) {
-                    toPayBuilder = 0;
-                    vault = rt[j].vault; 
-                    if (vault != address(0)) {
-                        toPayInKiro = getAmountOfKiroForGivenEth(rt[j].gas + constGas + (maxGasPrice - tx.gasprice) * s_profitBPS / 10000);
-                        //console.log("toPayInKiro", toPayInKiro, "rt[i][j].vault", rt[i][j].vault);
-                        s_vaultBalance[vault] -= toPayInKiro;
-                        if (builder != address(0)) {
-                            uint256 builderPaymentInKiro = toPayInKiro * s_builderBPS / 10000; 
-                            toPayBuilder += builderPaymentInKiro;
-                            toPayActivator += (toPayInKiro - builderPaymentInKiro);
-                        } else {
-                            toPayActivator += toPayInKiro;
+        uint256 activatorPayment;
+        uint256 kiroboPayment;
+        Activator storage staked = s_staked[msg.sender];
+        for (uint256 i = 0; i < rts.length; i++) {
+            uint256 builderPayment;
+            MReturn[] memory rt = rts[i];
+            uint256 maxGasPrice = maxGasPrices[i];
+            address builder = s_builders[names[i]];
+            for (uint256 j = 0; j < rt.length; j++) {
+                address user = rt[j].vault;
+                if (user != address(0)) {
+                    uint256 refund = getAmountOfKiroForGivenEth(rt[j].gas + constGas);
+                    uint256 fees = getAmountOfKiroForGivenEth(_calcFee(staked, maxGasPrice));
+                    s_balances[user] -= (refund + fees);
+                    if (builder != address(0)) {
+                        uint256 builderFees = fees * s_builderShare / 10000;
+                        if (builderFees > 0) {
+                            builderPayment += builderFees;
                         }
+                        uint256 activatorFees = fees * s_activatorShare / 10000;
+                        if (activatorFees > 0) {
+                            activatorPayment += (refund + activatorFees);
+                        }
+                        kiroboPayment += (fees - activatorFees - builderFees);
+                    } else {
+                        uint256 activatorFees = fees * s_activatorShare / 10000;
+                        if (activatorFees > 0) {
+                            activatorPayment += (refund + activatorFees);
+                        }
+                        kiroboPayment += (fees - activatorFees);
                     }
                 }
-                if (builder != address(0)) {
-                    s_builderBalance[builder] += toPayBuilder;
-                }
             }
-            s_activatorBalance[msg.sender] += toPayActivator;
-            s_activatorTotalBalance += toPayActivator;
+            if (builder != address(0) && builderPayment > 0) {
+                s_balances[builder] += builderPayment;
+            }
+            console.log('------------------------- builderPayment --------------------------', builderPayment);
+            console.log('------------------------- activatorPayment --------------------------', activatorPayment);
+            console.log('------------------------- kiroboPayment --------------------------', kiroboPayment);
+            if (activatorPayment > 0) {
+                // Activator storage staked = s_staked[msg.sender];
+                s_staked[msg.sender] = Activator(uint160(s_staked[msg.sender].balance + activatorPayment), uint40(block.number));
+                //staked.balance += uint160(activatorPayment);
+                // staked.timestamp = uint40(block.timestamp);
+                s_total_staked += activatorPayment;
+            }
+            if (kiroboPayment > 0) {
+              s_balances[s_kirobo] += kiroboPayment;
+            }
         }
-        totalGas = gasStart - gasleft();
-        console.log('------------------------- full total gas --------------------------', totalGas);
+        console.log('------------------------- full total gas --------------------------', gasStart - gasleft());
     }
 
-    function activatorDeposit(uint256 kiroAmount) external onlyActivator {
-        IERC20(KIRO_ADDRESS).safeTransferFrom(
-            msg.sender,
-            address(this),
-            kiroAmount
-        );
-        s_activatorBalance[msg.sender] += kiroAmount;
-        s_activatorTotalBalance += kiroAmount;
-    }
-        
-    function activatorWithdraw(uint256 kiroAmount) external onlyActivator {
-        uint256 balance = s_activatorBalance[msg.sender];
-        require(balance >= kiroAmount, "amount too high");
-        s_activatorBalance[msg.sender] -= kiroAmount;
-        s_activatorTotalBalance -= kiroAmount;
-        IERC20(KIRO_ADDRESS).safeTransfer(
-            msg.sender,
-            kiroAmount
-        );
+    function _calcFee(Activator storage staked, uint256 maxGasPrice) private returns (uint256) {
+      if (s_total_staked == 0) {
+        return 0;
+      }
+      return (Math.min(10000, 10000 * (block.number - staked.blockNumber) * staked.balance / s_total_staked) * 
+              (tx.gasprice * s_baseBPS + (maxGasPrice - tx.gasprice) * s_bonusBPS) / 10000 / 10000
+      );
     }
 
-    function activatorBalance(address activator) external view returns (uint256) {
-        return s_activatorBalance[activator];
-    }
-
-    function vaultWithdraw() external {
-        address owner = IWallet(msg.sender).owner();
-        address wallet = IFactory(s_factory).getWalletOfOwner(owner);
-        require(wallet == msg.sender, "not vault owner");
-        require(
-            IWallet(wallet).getBackupState() != BACKUP_STATE_ACTIVATED,
-            "vault owner is not in active state"
-        );
-        IERC20(KIRO_ADDRESS).safeTransfer(wallet, s_vaultBalance[wallet]);
-    }
-
-    function addVaultAllowance(address vault, uint256 amount) external {
-        IERC20(KIRO_ADDRESS).safeTransferFrom(
+    function addFunds(uint256 amount) external {
+        IERC20(s_kiro).safeTransferFrom(
             msg.sender,
             address(this),
             amount
         );
-        s_vaultBalance[vault] += amount;
+        s_balances[msg.sender] += amount;
+    }
+
+    function addFundsTo(address to, uint256 amount) external {
+        IERC20(s_kiro).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        s_balances[to] += amount;
+    }
+
+    function removeFunds(uint256 amount) external {
+        s_balances[msg.sender] -= amount;
+        IERC20(s_kiro).safeTransfer(msg.sender, amount);
+    }
+
+    function deposit(uint160 amount) external {
+        IERC20(s_kiro).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        Activator storage staked = s_staked[msg.sender];
+        staked.balance += amount;
+        s_total_staked += amount;
+        staked.blockNumber = uint40(block.number);
+    }
+
+    function widthdraw(uint160 amount) external {
+        Activator storage staked = s_staked[msg.sender];
+        s_total_staked -= amount;
+        staked.balance -= amount;
+        staked.blockNumber = uint40(block.number);
+        IERC20(s_kiro).safeTransfer(
+            msg.sender,
+            amount
+        );
     }
 
     /**@notice this function checks if the time since the last update is bigger then the desired time set
@@ -293,6 +300,32 @@ contract FCT_Activators is IFCT_Activators, AccessControl {
         view
         returns (uint256 amountOut)
     {
-        amountOut = price1Average.mul(amountIn).decode144();
+        if (amountIn == 0) {
+          amountOut = 0;
+        } else {
+          amountOut = price1Average.mul(amountIn).decode144();
+        }
     }
+
+        /**@dev updates the time required between kiro price update 
+        @param time in seconds 
+    */
+    function updateTimeBetweenKiroPriceUpdate(uint256 time) external onlyAdmin {
+        s_timeBetweenKiroPriceUpdate = time;
+    }
+
+    function _getRevertMsg(bytes memory returnData)
+        internal
+        pure
+        returns (string memory)
+    {
+        if (returnData.length < 68)
+            return "Wallet: Transaction reverted silently";
+
+        assembly {
+            returnData := add(returnData, 0x04)
+        }
+        return abi.decode(returnData, (string));
+    }
+
 }
