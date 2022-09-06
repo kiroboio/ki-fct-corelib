@@ -7,18 +7,18 @@ https://www.kirobo.io/
 the NFT is connected to a GasReturn contract and each NFT id has it's own
 amount of gas fees to be returned for the gas used via the kirobo liquid vault */
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+//import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "openzeppelin-solidity/contracts/security/Pausable.sol";
+import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/utils/Strings.sol";
 import "../interfaces/IGasReturn.sol";
 
 contract KiroboNFT is
-  ERC721,
+  //ERC721,
   ERC721Enumerable,
   ERC721URIStorage,
   Pausable,
@@ -112,6 +112,15 @@ contract KiroboNFT is
   function getPenaltyFreeDate() external view returns (string memory) {
     return s_penaltyFreeDate;
   }
+
+  function _beforeConsecutiveTokenTransfer(
+        address,
+        address,
+        uint256,
+        uint96
+    ) internal virtual override (ERC721Enumerable, ERC721){
+        revert("ERC721Enumerable: consecutive transfers not supported");
+    }
 
   function pause() external onlyRole(PAUSER_ROLE) {
     _pause();

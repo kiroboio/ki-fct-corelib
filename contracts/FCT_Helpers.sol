@@ -3,8 +3,8 @@
 pragma solidity ^0.8.0;
 pragma abicoder v1;
 
-import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/SignatureChecker.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 
 
 abstract contract FCT_Helpers {

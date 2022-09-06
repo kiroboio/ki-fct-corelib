@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 pragma abicoder v1;
 import "./lib/Proxy.sol";
 import "./lib/ProxyLatest.sol";
-import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/SignatureChecker.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
+import "openzeppelin-solidity/contracts/access/Ownable.sol";
 
 struct Wallet {
     address addr;

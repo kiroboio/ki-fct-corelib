@@ -4,10 +4,10 @@ pragma solidity ^0.8.2;
 /** @notice NFT minter contract
 this contract is the minter for the Kirobo utility NFT */
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/utils/Address.sol";
 import "../interfaces/IKiroboNFT.sol";
 import "../interfaces/IFactory.sol";
 import "../interfaces/IWallet.sol";

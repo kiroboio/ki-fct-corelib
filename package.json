@@ -6,8 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "tsc",
-    "test": "hardhat test test/v6.test.ts",
-    "test:plugins": "hardhat test test/v6.test.ts",
+    "test": "hardhat test test/v6.test.js",
+    "test:plugins": "hardhat test test/v6.test.js",
     "build": "tsc"
   },
   "repository": {
@@ -41,6 +41,7 @@
     "ganache": "^7.3.2",
     "hardhat": "^2.10.1",
     "ki-eth-contracts": "github:kiroboio/ki-eth-contracts",
+    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git",
     "mocha": "^10.0.0",
     "ts-node": "^10.8.0",
     "typescript": "^4.7.2"

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import "../interfaces/ITokenEconomy.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 
 /**@dev this contract get inherited from the Activator contract
         it hold getters and setters for the activators functionality */

@@ -6,10 +6,10 @@ pragma abicoder v2;
     this contract allows user to activate pending transaction for inheritance, backup...
 */
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import "@openzeppelin/contracts/access/Ownable.sol";
+import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC721/IERC721.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/utils/SafeERC20.sol';
+import "openzeppelin-solidity/contracts/access/Ownable.sol";
 
 import '../lib/ActivatorBase.sol';
 import '../interfaces/ITokenEconomy.sol';

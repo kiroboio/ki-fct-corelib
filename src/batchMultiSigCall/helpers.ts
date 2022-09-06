@@ -102,7 +102,7 @@ export const manageCallId = (call: MSCallInput, index: number) => {
   const payerIndex = Number(index).toString(16).padStart(4, "0");
   const callIndex = Number(index).toString(16).padStart(4, "0");
   const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
-  const flags = call?.options?.flags ? Number(call.options.flags).toString(16).padStart(2, "0") : "00";
+  const flags = `0${call.viewOnly ? "1" : "0"}`;
 
   return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
 };
@@ -124,13 +124,18 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
   const chillTime = options.recurrency
     ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
     : "00000000";
-  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000"; // TODO: Date right now
   const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff"; // TODO: Date right now + 30 days
+  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000"; // TODO: Date right now
   const gasPriceLimit = options.maxGasPrice
     ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
     : "00000005D21DBA00"; // 25 Gwei
 
-  const flags = `08`; // Have to implement getFlags function
+  let flagValue = 8; // EIP712 true by default
+  if (options.recurrency?.accumetable) flagValue += 1;
+  if (options.purgeable) flagValue += 2;
+  if (options.cancelable) flagValue += 4;
+
+  const flags = flagValue.toString(16).padStart(2, "0");
 
   return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${beforeTimestamp}${afterTimestamp}${gasPriceLimit}${flags}`;
 };

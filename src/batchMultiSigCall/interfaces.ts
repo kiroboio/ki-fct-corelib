@@ -12,7 +12,6 @@ export interface MSCallInput {
   params?: Params[];
 
   options?: CallOptions;
-  // flags?: Partial<MultiCallFlags>;
 }
 
 export interface MSCall {

@@ -23,7 +23,13 @@ const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
-        this.options = {};
+        this.options = {
+            validFrom: Number((new Date().getTime() / 1000).toFixed()),
+            expiresAt: 0xffffffffff,
+            maxGasPrice: "25000000000",
+            purgeable: true,
+            cancelable: true,
+        };
         this.variables = [];
         this.calls = [];
         // End of options
@@ -40,8 +46,10 @@ class BatchMultiSigCall {
                 return initPlugin;
             }
             else {
+                const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
                 // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
-                return undefined;
+                const initPlugin = new Plugins[0]();
+                return initPlugin;
             }
         };
         this.getAllPlugins = () => {
@@ -60,7 +68,7 @@ class BatchMultiSigCall {
             return this.getVariableFCValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
-        this.options = options ?? {};
+        this.options = { ...this.options, ...options };
     }
     // Validate
     validate(call) {
@@ -324,11 +332,11 @@ class BatchMultiSigCall {
                     random_id: `0x${salt}`,
                 },
                 limits: {
-                    valid_from: this.options.validFrom ?? 0,
-                    expires_at: this.options.expiresAt ?? 0,
-                    gas_price_limit: this.options.maxGasPrice ?? "20000000000",
-                    purgeable: this.options.purgeable ?? true,
-                    cancelable: this.options.cancelable || true,
+                    valid_from: this.options.validFrom,
+                    expires_at: this.options.expiresAt,
+                    gas_price_limit: this.options.maxGasPrice,
+                    purgeable: this.options.purgeable,
+                    cancelable: this.options.cancelable,
                 },
                 ...optionalMessage,
                 ...typedDataMessage,

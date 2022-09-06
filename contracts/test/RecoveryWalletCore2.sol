@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 pragma abicoder v1;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "../lib/Heritable.sol";
 
 contract RecoveryWalletCore2 is IVersion, Heritable, ReentrancyGuard {

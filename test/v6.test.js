@@ -3,7 +3,8 @@ const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCall } = require("../dist");
 const { Flow } = require("../dist/constants");
-const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
+const { ERC20, getPlugins, getPlugin } = require("@kirobo/ki-eth-fct-provider-ts");
+const { TypedDataUtils } = require("ethers-eip712");
 
 // import util from "util";
 // import { assert, expect } from "chai";
@@ -535,6 +536,8 @@ describe("batchMultiSigCall", () => {
         return signature;
       };
 
+      console.log(util.inspect(FCT, false, null, true /* enable colors */));
+
       // Signing the FCT
       const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
@@ -542,6 +545,8 @@ describe("batchMultiSigCall", () => {
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
       });
+
+      // console.log(util.inspect(signedCalls, false, null, true /* enable colors */));
 
       const callData = fctBatchMultiSig.contract.methods
         .batchMultiSigCall(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [])

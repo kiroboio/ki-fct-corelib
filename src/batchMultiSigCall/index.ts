@@ -32,7 +32,13 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 export class BatchMultiSigCall {
   private FactoryProxy: ethers.Contract;
 
-  options: MSCallOptions = {};
+  options: MSCallOptions = {
+    validFrom: Number((new Date().getTime() / 1000).toFixed()),
+    expiresAt: 0xffffffffff,
+    maxGasPrice: "25000000000",
+    purgeable: true,
+    cancelable: true,
+  };
 
   variables: string[][] = [];
   calls: MSCallInput[] = [];
@@ -48,7 +54,7 @@ export class BatchMultiSigCall {
   }) {
     this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
 
-    this.options = options ?? {};
+    this.options = { ...this.options, ...options };
   }
 
   // Validate
@@ -247,7 +253,7 @@ export class BatchMultiSigCall {
       return {
         ...acc,
         [`transaction${index + 1}`]: {
-          call: {
+          meta: {
             call_index: index + 1,
             payer_index: index + 1,
             from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
@@ -359,7 +365,7 @@ export class BatchMultiSigCall {
           (acc: object, call: MSCallInput, index: number) => ({
             ...acc,
             [`Transaction${index + 1}`]: [
-              { name: "call", type: "Transaction" },
+              { name: "meta", type: "Transaction" },
               ...(call.params || []).map((param: Params) => ({
                 name: param.name,
                 type: param.type,
@@ -382,11 +388,11 @@ export class BatchMultiSigCall {
           random_id: `0x${salt}`,
         },
         limits: {
-          valid_from: this.options.validFrom ?? 0, // TODO: Valid from the moment of creating FCT as default value
-          expires_at: this.options.expiresAt ?? 0, // TODO: Expires after 30 days as default
-          gas_price_limit: this.options.maxGasPrice ?? "20000000000", // 20 GWei as default
-          purgeable: this.options.purgeable ?? true,
-          cancelable: this.options.cancelable || true,
+          valid_from: this.options.validFrom, // TODO: Valid from the moment of creating FCT as default value
+          expires_at: this.options.expiresAt, // TODO: Expires after 30 days as default
+          gas_price_limit: this.options.maxGasPrice, // 20 GWei as default
+          purgeable: this.options.purgeable,
+          cancelable: this.options.cancelable,
         },
         ...optionalMessage,
         ...typedDataMessage,
