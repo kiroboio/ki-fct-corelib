@@ -30,6 +30,7 @@ class BatchMultiSigCall {
             maxGasPrice: 25000000000,
             purgeable: false,
             cancelable: true,
+            builder: "0x0000000000000000000000000000000000000000",
         };
         this.variables = [];
         this.calls = [];
@@ -158,12 +159,13 @@ class BatchMultiSigCall {
         }
         let typedHashes = [];
         let additionalTypes = {};
-        const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        // const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        const salt = "000000";
         const version = "0x010101";
         const typedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
         const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
         const mcall = this.calls.map((call, index) => ({
-            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)),
+            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
             ensHash: (0, helpers_2.handleEnsHash)(call),
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: call.value || "0",
@@ -294,6 +296,17 @@ class BatchMultiSigCall {
                     { name: "cancelable", type: "bool" },
                 ],
                 ...optionalTypes,
+                ...this.calls.reduce((acc, call, index) => ({
+                    ...acc,
+                    [`transaction${index + 1}`]: [
+                        { name: "meta", type: "Transaction" },
+                        ...(call.params || []).map((param) => ({
+                            name: param.name,
+                            type: param.type,
+                        })),
+                    ],
+                }), {}),
+                ...additionalTypes,
                 Transaction: [
                     { name: "call_index", type: "uint16" },
                     { name: "payer_index", type: "uint16" },
@@ -309,24 +322,13 @@ class BatchMultiSigCall {
                     { name: "jump_on_fail", type: "uint16" },
                     { name: "method_interface", type: "string" },
                 ],
-                ...this.calls.reduce((acc, call, index) => ({
-                    ...acc,
-                    [`transaction${index + 1}`]: [
-                        { name: "meta", type: "Transaction" },
-                        ...(call.params || []).map((param) => ({
-                            name: param.name,
-                            type: param.type,
-                        })),
-                    ],
-                }), {}),
-                ...additionalTypes,
             },
             primaryType: "BatchMultiSigCall",
             domain: await (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
             message: {
                 fct: {
                     name: this.options.name || "",
-                    builder: "0x0000000000000000000000000000000000000000",
+                    builder: this.options.builder,
                     selector: batchMultiSigSelector,
                     version,
                     random_id: `0x${salt}`,

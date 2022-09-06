@@ -39,6 +39,7 @@ export class BatchMultiSigCall {
     maxGasPrice: 25000000000,
     purgeable: false,
     cancelable: true,
+    builder: "0x0000000000000000000000000000000000000000",
   };
 
   variables: string[][] = [];
@@ -192,7 +193,8 @@ export class BatchMultiSigCall {
     let typedHashes: string[] = [];
     let additionalTypes = {};
 
-    const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    // const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    const salt: string = "000000";
     const version: string = "0x010101";
 
     const typedData: TypedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
@@ -200,9 +202,7 @@ export class BatchMultiSigCall {
     const sessionId: string = getSessionId(salt, this.options);
 
     const mcall: MSCall[] = this.calls.map((call, index) => ({
-      typeHash: ethers.utils.hexlify(
-        TypedDataUtils.typeHash(typedData.types, typedData.types.BatchMultiSigCall[index + 1].type)
-      ),
+      typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: call.value || "0",
@@ -347,6 +347,20 @@ export class BatchMultiSigCall {
           { name: "cancelable", type: "bool" },
         ],
         ...optionalTypes,
+        ...this.calls.reduce(
+          (acc: object, call: MSCallInput, index: number) => ({
+            ...acc,
+            [`transaction${index + 1}`]: [
+              { name: "meta", type: "Transaction" },
+              ...(call.params || []).map((param: Params) => ({
+                name: param.name,
+                type: param.type,
+              })),
+            ],
+          }),
+          {}
+        ),
+        ...additionalTypes,
         Transaction: [
           { name: "call_index", type: "uint16" },
           { name: "payer_index", type: "uint16" },
@@ -362,27 +376,13 @@ export class BatchMultiSigCall {
           { name: "jump_on_fail", type: "uint16" },
           { name: "method_interface", type: "string" },
         ],
-        ...this.calls.reduce(
-          (acc: object, call: MSCallInput, index: number) => ({
-            ...acc,
-            [`transaction${index + 1}`]: [
-              { name: "meta", type: "Transaction" },
-              ...(call.params || []).map((param: Params) => ({
-                name: param.name,
-                type: param.type,
-              })),
-            ],
-          }),
-          {}
-        ),
-        ...additionalTypes,
       },
       primaryType: "BatchMultiSigCall",
       domain: await getTypedDataDomain(this.FactoryProxy),
       message: {
         fct: {
           name: this.options.name || "",
-          builder: "0x0000000000000000000000000000000000000000",
+          builder: this.options.builder,
           selector: batchMultiSigSelector,
           version,
           random_id: `0x${salt}`,

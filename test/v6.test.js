@@ -83,13 +83,23 @@ describe("batchMultiSigCall", () => {
     if (address === owner) {
       return "0x5f055f3bc7f2c8cabcc5132d97d6b594c25becbc57139221f1ef89263efc99c7"; // `0x${wallet._privKey.toString('hex')}`
     }
+    if (address === accounts[5]) {
+      return "0x6526bc2e0536920488919e6fd86845141eb2886294d576ceb29445e59b398fad";
+    }
     if (address === accounts[10]) {
       return "0x557bca6ef564e9573c073ca84c6b8093063221807abc5abf784b9c0ad1cc94a1";
     }
     if (address === accounts[11]) {
       return "0x90f789c3b13f709b8638f8641e5123cc06e540e5dcc34287b820485c1948b9f5";
     }
+    if (address === accounts[12]) {
+      return "0x9a4a566d5c0fefaf2817dd2d31cd91ad2635c3eb06336ca14611ddb25a9d2bda";
+    }
+    if (address === accounts[13]) {
+      return "0x071cf463bfe72143005c4c28b15f21bfafc43c21cb0617c2a7bd2c3acb244a30";
+    }
   };
+
   //const valBN = web3.utils.toBN(val1).add(web3.utils.toBN(val2)).add(web3.utils.toBN(val3));
 
   let OK_CONT_FAIL_REVERT; // 0x10
@@ -420,7 +430,7 @@ describe("batchMultiSigCall", () => {
           { name: "to", type: "address", value: accounts[12] },
           { name: "token_amount", type: "uint256", value: "20" },
         ],
-        from: vault10.address,
+        from: vault13.address,
       });
 
       // Create an ERC20 balanceOf getter call (create function always returns all the added calls)
@@ -451,7 +461,7 @@ describe("batchMultiSigCall", () => {
       const FCT = await batchMultiSigCall.exportFCT();
       // Here I get object with typedData, typeHash, sessionId, name and mcall array (MSCall[])
 
-      const signer = getSigner(10);
+      const signer = getSigner(13);
       const signer2 = getSigner(11);
 
       const getSignature = (messageDigest, signer) => {

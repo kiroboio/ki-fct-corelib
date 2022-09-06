@@ -30,6 +30,7 @@ export interface MSCallOptions {
   name?: string;
   validFrom?: number;
   expiresAt?: number;
+  builder?: string;
   maxGasPrice?: number;
   cancelable?: boolean;
   purgeable?: boolean;
