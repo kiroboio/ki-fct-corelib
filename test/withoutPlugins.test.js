@@ -1,8 +1,8 @@
-import util from "util";
-import { assert, expect } from "chai";
-import { artifacts, web3, ethers } from "hardhat";
-import { BatchMultiSigCall } from "../src";
-import { Flow } from "../src/constants";
+const util = require("util");
+const { assert, expect } = require("chai");
+const { artifacts, web3, ethers } = require("hardhat");
+const { BatchMultiSigCall } = require("../dist");
+const { Flow } = require("../dist/constants");
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -42,7 +42,7 @@ describe("batchMultiSigCall", () => {
   let activators;
   let validator;
   let multiplier;
-  let accounts: string[] = [];
+  let accounts = [];
   let factoryOwner1 = accounts[0];
   let factoryOwner2 = accounts[1];
   let factoryOwner3 = accounts[2];

@@ -113,8 +113,10 @@ export class BatchMultiSigCall {
 
       return initPlugin;
     } else {
+      const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
       // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
-      return undefined;
+      const initPlugin = new Plugins[0]();
+      return initPlugin;
     }
   };
 
