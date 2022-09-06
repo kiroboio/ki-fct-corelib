@@ -204,7 +204,7 @@ class BatchMultiSigCall {
             const jumpOnFail = options.jumpOnFail ?? 0;
             return {
                 ...acc,
-                [`transaction${index + 1}`]: {
+                [`transaction_${index + 1}`]: {
                     meta: {
                         call_index: index + 1,
                         payer_index: index + 1,
@@ -274,8 +274,8 @@ class BatchMultiSigCall {
                     { name: "fct", type: "FCT" },
                     { name: "limits", type: "Limits" },
                     ...this.calls.map((_, index) => ({
-                        name: `transaction${index + 1}`,
-                        type: `Transaction${index + 1}`,
+                        name: `transaction_${index + 1}`,
+                        type: `transaction${index + 1}`,
                     })),
                 ],
                 FCT: [
@@ -311,7 +311,7 @@ class BatchMultiSigCall {
                 ],
                 ...this.calls.reduce((acc, call, index) => ({
                     ...acc,
-                    [`Transaction${index + 1}`]: [
+                    [`transaction${index + 1}`]: [
                         { name: "meta", type: "Transaction" },
                         ...(call.params || []).map((param) => ({
                             name: param.name,

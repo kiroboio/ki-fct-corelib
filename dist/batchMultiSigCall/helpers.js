@@ -86,7 +86,8 @@ const manageCallId = (call, index) => {
     const callIndex = Number(index).toString(16).padStart(4, "0");
     const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
     const flags = `0${call.viewOnly ? "1" : "0"}`;
-    return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
+    return ("0x" +
+        `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`.padStart(64, "0"));
 };
 exports.manageCallId = manageCallId;
 const getSessionId = (salt, options) => {

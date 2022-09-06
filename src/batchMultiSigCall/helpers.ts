@@ -104,7 +104,10 @@ export const manageCallId = (call: MSCallInput, index: number) => {
   const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
   const flags = `0${call.viewOnly ? "1" : "0"}`;
 
-  return `0x${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`;
+  return (
+    "0x" +
+    `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`.padStart(64, "0")
+  );
 };
 
 export const getSessionId = (salt: string, options: MSCallOptions) => {
