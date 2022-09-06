@@ -414,6 +414,7 @@ describe("batchMultiSigCall", () => {
       // Or create ERC20 Transfer call without plugin
       await batchMultiSigCall.create({
         to: kiro.address,
+        toENS: "@token.kiro.eth",
         method: "transfer",
         params: [
           { name: "to", type: "address", value: accounts[12] },
@@ -445,81 +446,6 @@ describe("batchMultiSigCall", () => {
       const plugins = batchMultiSigCall.getAllPlugins();
       expect(plugins).to.be.instanceOf(Array);
     });
-
-    it("Should create a FCT", async () => {
-      const FCT = await batchMultiSigCall.exportFCT();
-
-      // console.log(util.inspect(FCT, { showHidden: false, depth: null, colors: true }));
-    });
-
-    // it("Should add additional call", async () => {
-    //   const transfer = new ERC20.actions.Transfer({
-    //     initParams: {
-    //       token: kiro.address,
-    //       to: user1,
-    //       amount: "30000",
-    //     },
-    //   });
-
-    //   const calls = await batchMultiSigCall.create({
-    //     plugin: transfer,
-    //     from: vault11.address,
-    //     options: {
-    //       flow: Flow.OK_CONT_FAIL_REVERT,
-    //     },
-    //   });
-
-    //   expect(calls).to.be.lengthOf(2);
-    // });
-    // it("Should add another call", async () => {
-    //   const call = {
-    //     to: kiro.address,
-    //     method: "transfer",
-    //     params: [
-    //       { name: "to", type: "address", value: accounts[12] },
-    //       { name: "token_amount", type: "uint256", value: "20" },
-    //     ],
-    //     from: vault10.address,
-    //   };
-
-    //   const calls = await batchMultiSigCall.create(call);
-
-    //   expect(calls).to.be.lengthOf(3);
-    // });
-
-    // it("Should replace call", async () => {
-    //   const call = {
-    //     to: kiro.address,
-    //     method: "transfer",
-    //     params: [
-    //       { name: "to", type: "address", value: accounts[12] },
-    //       { name: "token_amount", type: "uint256", value: "30" },
-    //     ],
-    //     from: vault10.address,
-    //   };
-
-    //   const calls = batchMultiSigCall.replaceCall(call, 1);
-
-    //   expect(calls).to.be.lengthOf(3) && expect(calls[1].params[1].value).to.eq("30");
-    // });
-
-    // it("Should remove a call", async () => {
-    //   const calls = batchMultiSigCall.removeCall(1);
-
-    //   expect(calls).to.be.lengthOf(1);
-    // });
-
-    // it("Should return a call", async () => {
-    //   const call = batchMultiSigCall.getCall(0);
-
-    //   expect(call.to).to.be.equal(kiro.address);
-    // });
-
-    // it("Should return length", async () => {
-    //   const length = batchMultiSigCall.length;
-
-    //   expect(length).to.be.equal(3);
-    // });
 
     it("Should execute batch", async () => {
       const FCT = await batchMultiSigCall.exportFCT();

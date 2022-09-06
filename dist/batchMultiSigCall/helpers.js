@@ -27,8 +27,8 @@ const handleFunctionSignature = (call) => {
 };
 exports.handleFunctionSignature = handleFunctionSignature;
 const handleEnsHash = (call) => {
-    if (call.toEnsHash) {
-        return ethers_1.utils.id(call.toEnsHash);
+    if (call.toENS) {
+        return ethers_1.utils.id(call.toENS);
     }
     return nullValue;
 };

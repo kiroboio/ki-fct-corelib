@@ -39,8 +39,8 @@ export const handleFunctionSignature = (call: MSCallInput) => {
 };
 
 export const handleEnsHash = (call: MSCallInput) => {
-  if (call.toEnsHash) {
-    return utils.id(call.toEnsHash);
+  if (call.toENS) {
+    return utils.id(call.toENS);
   }
   return nullValue;
 };

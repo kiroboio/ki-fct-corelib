@@ -3,7 +3,7 @@ export interface MSCallInput {
     value?: string;
     to: string;
     from: string;
-    toEnsHash?: string;
+    toENS?: string;
     validator?: Validator;
     viewOnly?: boolean;
     method?: string;
@@ -25,7 +25,7 @@ export interface MSCallOptions {
     name?: string;
     validFrom?: number;
     expiresAt?: number;
-    maxGasPrice?: string;
+    maxGasPrice?: number;
     cancelable?: boolean;
     purgeable?: boolean;
     recurrency?: {

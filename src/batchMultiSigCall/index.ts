@@ -34,9 +34,10 @@ export class BatchMultiSigCall {
 
   options: MSCallOptions = {
     validFrom: Number((new Date().getTime() / 1000).toFixed()),
+    // validFrom: 0,
     expiresAt: 0xffffffffff,
-    maxGasPrice: "25000000000",
-    purgeable: true,
+    maxGasPrice: 25000000000,
+    purgeable: false,
     cancelable: true,
   };
 
@@ -252,13 +253,13 @@ export class BatchMultiSigCall {
 
       return {
         ...acc,
-        [`transaction${index + 1}`]: {
+        [`transaction_${index + 1}`]: {
           meta: {
             call_index: index + 1,
             payer_index: index + 1,
             from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
             to: this.handleTo(call),
-            to_ens: call.toEnsHash || "",
+            to_ens: call.toENS || "",
             eth_value: call.value || "0",
             gas_limit: gasLimit,
             view_only: call.viewOnly || false,
@@ -326,8 +327,8 @@ export class BatchMultiSigCall {
           { name: "fct", type: "FCT" },
           { name: "limits", type: "Limits" },
           ...this.calls.map((_, index) => ({
-            name: `transaction${index + 1}`,
-            type: `Transaction${index + 1}`,
+            name: `transaction_${index + 1}`,
+            type: `transaction${index + 1}`,
           })),
         ],
         FCT: [
@@ -335,8 +336,8 @@ export class BatchMultiSigCall {
           { name: "builder", type: "address" },
           { name: "selector", type: "bytes4" },
           { name: "version", type: "bytes3" },
-          { name: "eip712", type: "bool" },
           { name: "random_id", type: "bytes3" },
+          { name: "eip712", type: "bool" },
         ],
         Limits: [
           { name: "valid_from", type: "uint40" },
@@ -364,7 +365,7 @@ export class BatchMultiSigCall {
         ...this.calls.reduce(
           (acc: object, call: MSCallInput, index: number) => ({
             ...acc,
-            [`Transaction${index + 1}`]: [
+            [`transaction${index + 1}`]: [
               { name: "meta", type: "Transaction" },
               ...(call.params || []).map((param: Params) => ({
                 name: param.name,
@@ -382,10 +383,10 @@ export class BatchMultiSigCall {
         fct: {
           name: this.options.name || "",
           builder: "0x0000000000000000000000000000000000000000",
-          version,
           selector: batchMultiSigSelector,
-          eip712: true,
+          version,
           random_id: `0x${salt}`,
+          eip712: true,
         },
         limits: {
           valid_from: this.options.validFrom, // TODO: Valid from the moment of creating FCT as default value
