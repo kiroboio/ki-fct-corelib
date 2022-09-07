@@ -429,7 +429,7 @@ describe("batchMultiSigCall", () => {
       });
 
       // Test with a validator call
-      const calls12 = await batchMultiSigCall.create({
+      await batchMultiSigCall.create({
         to: kiro.address,
         method: "balanceof",
         params: [{ name: "owner", type: "address", value: vault10.address }],
