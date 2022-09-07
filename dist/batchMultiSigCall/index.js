@@ -66,7 +66,7 @@ class BatchMultiSigCall {
                 return call.to;
             }
             // Else it is a variable
-            return this.getVariableFCValue(call.to);
+            return this.getVariableValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
         this.options = { ...this.options, ...options };
@@ -86,6 +86,11 @@ class BatchMultiSigCall {
         this.variables = [...this.variables, [variableId, value ?? undefined]];
         return this.variables.map((item) => item[0]);
     }
+    addVariableValue(variableId, value) {
+        const index = this.getVariableIndex(variableId);
+        this.variables[index][1] = value;
+        return this.variables.map((item) => item[0]);
+    }
     getVariableIndex(variableId, throwError = true) {
         const index = this.variables.findIndex((item) => item[0] === variableId);
         if (index === -1 && throwError) {
@@ -93,12 +98,27 @@ class BatchMultiSigCall {
         }
         return index;
     }
-    getVariableFCValue(variableId) {
+    getVariableValue(variableId) {
         const index = this.getVariableIndex(variableId);
+        if (index === -1) {
+            throw new Error(`Variable ${variableId} doesn't exist`);
+        }
         return String(index + 1).padStart(variableBase.length, variableBase);
     }
     getCallValue(index, bytes = false) {
         return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
+    }
+    getVariablesAsBytes32() {
+        return this.variables.map((item) => {
+            const value = item[1];
+            if (value === undefined) {
+                throw new Error(`Variable ${item[0]} doesn't have a value`);
+            }
+            if (isNaN(Number(value)) || ethers_1.utils.isAddress(value)) {
+                return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
+            }
+            return `0x${Number(value).toString(16).padStart(64, "0")}`;
+        });
     }
     // End of variables
     //
@@ -168,7 +188,7 @@ class BatchMultiSigCall {
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: call.value || "0",
             callId: (0, helpers_2.manageCallId)(call, index + 1),
-            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
             to: this.handleTo(call),
             data: (0, helpers_2.handleData)(call),
             types: (0, helpers_2.handleTypes)(call),
@@ -208,7 +228,7 @@ class BatchMultiSigCall {
                     meta: {
                         call_index: index + 1,
                         payer_index: index + 1,
-                        from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+                        from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
                         to: this.handleTo(call),
                         to_ens: call.toENS || "",
                         eth_value: call.value || "0",
@@ -353,7 +373,7 @@ class BatchMultiSigCall {
                 Object.entries(call.validator.params).forEach(([key, value]) => {
                     const index = this.getVariableIndex(value, false);
                     if (index !== -1) {
-                        call.validator.params[key] = this.getVariableFCValue(this.variables[index][0]);
+                        call.validator.params[key] = this.getVariableValue(this.variables[index][0]);
                     }
                 });
                 return (0, helpers_1.createValidatorTxData)(call);
@@ -368,7 +388,7 @@ class BatchMultiSigCall {
                             const valueArray = param.value;
                             value = valueArray.map((item) => item.reduce((acc, item2) => {
                                 if (item2.variable) {
-                                    item2.value = this.getVariableFCValue(item2.variable);
+                                    item2.value = this.getVariableValue(item2.variable);
                                 }
                                 return { ...acc, [item2.name]: item2.value };
                             }, {}));
@@ -378,7 +398,7 @@ class BatchMultiSigCall {
                             const valueArray = param.value;
                             value = valueArray.reduce((acc, item) => {
                                 if (item.variable) {
-                                    item.value = this.getVariableFCValue(item.variable);
+                                    item.value = this.getVariableValue(item.variable);
                                 }
                                 return { ...acc, [item.name]: item.value };
                             }, {});
@@ -400,7 +420,7 @@ class BatchMultiSigCall {
     async verifyParams(params, index, additionalTypes, typedHashes) {
         params.forEach((param) => {
             if (param.variable) {
-                param.value = this.getVariableFCValue(param.variable);
+                param.value = this.getVariableValue(param.variable);
                 return;
             }
             // If parameter value is FD (reference value to previous tx)

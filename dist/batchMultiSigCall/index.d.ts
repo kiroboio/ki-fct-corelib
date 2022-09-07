@@ -14,9 +14,11 @@ export declare class BatchMultiSigCall {
     });
     validate(call: MSCallInput): boolean;
     createVariable(variableId: string, value?: string): string[];
+    addVariableValue(variableId: string, value: string): string[];
     private getVariableIndex;
-    private getVariableFCValue;
+    getVariableValue(variableId: string): string;
     getCallValue(index: number, bytes?: boolean): string;
+    getVariablesAsBytes32(): string[];
     setOptions(options: MSCallOptions): MSCallOptions;
     getPlugin: (dataOrIndex: MSCall | number) => PluginInstance | undefined;
     getAllPlugins: () => Plugin[];
@@ -31,7 +33,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         nameHash: string;
         mcall: MSCall[];
-    }>;
+    } | Error>;
     private createTypedData;
     private getParams;
     private verifyParams;

@@ -475,6 +475,24 @@ describe("batchMultiSigCall", () => {
       expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
     });
 
+    it("Should create a variable and add a call from it", async () => {
+      // Here we create a variable and add a call
+      batchMultiSigCall.createVariable("receiver", accounts[12]);
+
+      // Create call
+      const calls = await batchMultiSigCall.create({
+        to: kiro.address,
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: batchMultiSigCall.getVariableValue("receiver") },
+          { name: "token_amount", type: "uint256", value: "20" },
+        ],
+        from: vault10.address,
+      });
+
+      expect(calls.length).to.be.equal(4);
+    });
+
     it("Should execute batch", async () => {
       // Here I get object with typedData, typeHash, sessionId, nameHash and mcall array (MSCall[])
       // I can use this object to create a signature
@@ -488,8 +506,16 @@ describe("batchMultiSigCall", () => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
         const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
-        return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
+        return {
+          ...item,
+          signatures,
+          variables: batchMultiSigCall.getVariablesAsBytes32(),
+          builder: ZERO_ADDRESS,
+          externalSigners: [],
+        };
       });
+
+      // console.log(util.inspect(signedCalls, false, null, true));
 
       // Creating callData
       const callData = fctBatchMultiSig.contract.methods

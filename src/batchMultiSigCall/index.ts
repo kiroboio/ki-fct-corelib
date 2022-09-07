@@ -79,6 +79,12 @@ export class BatchMultiSigCall {
     return this.variables.map((item) => item[0]);
   }
 
+  public addVariableValue(variableId: string, value: string) {
+    const index = this.getVariableIndex(variableId);
+    this.variables[index][1] = value;
+    return this.variables.map((item) => item[0]);
+  }
+
   private getVariableIndex(variableId: string, throwError: boolean = true): number {
     const index = this.variables.findIndex((item) => item[0] === variableId);
     if (index === -1 && throwError) {
@@ -87,13 +93,31 @@ export class BatchMultiSigCall {
     return index;
   }
 
-  private getVariableFCValue(variableId: string): string {
+  public getVariableValue(variableId: string): string {
     const index = this.getVariableIndex(variableId);
+    if (index === -1) {
+      throw new Error(`Variable ${variableId} doesn't exist`);
+    }
     return String(index + 1).padStart(variableBase.length, variableBase);
   }
 
   public getCallValue(index: number, bytes: boolean = false) {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
+  }
+
+  public getVariablesAsBytes32() {
+    return this.variables.map((item) => {
+      const value = item[1];
+      if (value === undefined) {
+        throw new Error(`Variable ${item[0]} doesn't have a value`);
+      }
+
+      if (isNaN(Number(value)) || utils.isAddress(value)) {
+        return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
+      }
+
+      return `0x${Number(value).toString(16).padStart(64, "0")}`;
+    });
   }
 
   // End of variables
@@ -208,7 +232,7 @@ export class BatchMultiSigCall {
       functionSignature: handleFunctionSignature(call),
       value: call.value || "0",
       callId: manageCallId(call, index + 1),
-      from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+      from: utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
       to: this.handleTo(call),
       data: handleData(call),
       types: handleTypes(call),
@@ -258,7 +282,7 @@ export class BatchMultiSigCall {
           meta: {
             call_index: index + 1,
             payer_index: index + 1,
-            from: utils.isAddress(call.from) ? call.from : this.getVariableFCValue(call.from),
+            from: utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
             to: this.handleTo(call),
             to_ens: call.toENS || "",
             eth_value: call.value || "0",
@@ -411,7 +435,7 @@ export class BatchMultiSigCall {
         Object.entries(call.validator.params).forEach(([key, value]) => {
           const index = this.getVariableIndex(value, false);
           if (index !== -1) {
-            call.validator.params[key] = this.getVariableFCValue(this.variables[index][0]);
+            call.validator.params[key] = this.getVariableValue(this.variables[index][0]);
           }
         });
 
@@ -430,7 +454,7 @@ export class BatchMultiSigCall {
               value = valueArray.map((item) =>
                 item.reduce((acc, item2) => {
                   if (item2.variable) {
-                    item2.value = this.getVariableFCValue(item2.variable);
+                    item2.value = this.getVariableValue(item2.variable);
                   }
                   return { ...acc, [item2.name]: item2.value };
                 }, {})
@@ -440,7 +464,7 @@ export class BatchMultiSigCall {
               const valueArray = param.value as Params[];
               value = valueArray.reduce((acc, item) => {
                 if (item.variable) {
-                  item.value = this.getVariableFCValue(item.variable);
+                  item.value = this.getVariableValue(item.variable);
                 }
                 return { ...acc, [item.name]: item.value };
               }, {});
@@ -462,7 +486,7 @@ export class BatchMultiSigCall {
   private async verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
     params.forEach((param) => {
       if (param.variable) {
-        param.value = this.getVariableFCValue(param.variable);
+        param.value = this.getVariableValue(param.variable);
         return;
       }
       // If parameter value is FD (reference value to previous tx)
@@ -510,6 +534,6 @@ export class BatchMultiSigCall {
     }
 
     // Else it is a variable
-    return this.getVariableFCValue(call.to);
+    return this.getVariableValue(call.to);
   };
 }
