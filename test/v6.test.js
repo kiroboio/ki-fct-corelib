@@ -100,10 +100,16 @@ describe("batchMultiSigCall", () => {
     }
   };
 
+  const getSignature = (messageDigest, signer) => {
+    const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
+    let signature = signingKey.signDigest(messageDigest);
+    signature.v = "0x" + signature.v.toString(16);
+
+    return signature;
+  };
+
   //const valBN = web3.utils.toBN(val1).add(web3.utils.toBN(val2)).add(web3.utils.toBN(val3));
 
-  let OK_CONT_FAIL_REVERT; // 0x10
-  let OK_CONT_FAIL_REVERT_MSG; // 'continue on success, revert on fail'
   before("setup contract for the test", async () => {
     accounts = await web3.eth.getAccounts();
     factoryOwner1 = accounts[0];
@@ -393,33 +399,33 @@ describe("batchMultiSigCall", () => {
         provider: ethers.provider,
         contractAddress: fctController.address,
         // Here we can initialise options
-        // options: {
-        //   name: "ERC20 Transfer @BK",
-        //   validFrom: 1662444930,
-        // },
+        options: {
+          name: "ERC20 Transfer @BK",
+          validFrom: 1662444930,
+        },
       });
 
       // Or we can call setOptions to add options
-      // batchMultiSigCall.setOptions({
-      //   maxGasPrice: "30000000000", // 30 GWei
-      //   cancelable: false,
-      // });
+      batchMultiSigCall.setOptions({
+        maxGasPrice: "30000000000", // 30 GWei
+        cancelable: false,
+      });
 
       // Create an ERC20 Transfer call with plugin
-      // await batchMultiSigCall.create({
-      //   plugin: new ERC20.actions.Transfer({
-      //     initParams: {
-      //       token: kiro.address,
-      //       to: user1,
-      //       amount: "30000",
-      //     },
-      //   }),
-      //   from: vault11.address,
-      //   options: {
-      //     flow: Flow.OK_CONT_FAIL_REVERT,
-      //     jumpOnSuccess: 1,
-      //   },
-      // });
+      await batchMultiSigCall.create({
+        plugin: new ERC20.actions.Transfer({
+          initParams: {
+            token: kiro.address,
+            to: user1,
+            amount: "30000",
+          },
+        }),
+        from: vault11.address,
+        options: {
+          flow: Flow.OK_CONT_FAIL_REVERT,
+          jumpOnSuccess: 1,
+        },
+      });
 
       // Or create ERC20 Transfer call without plugin
       await batchMultiSigCall.create({
@@ -430,75 +436,78 @@ describe("batchMultiSigCall", () => {
           { name: "to", type: "address", value: accounts[12] },
           { name: "token_amount", type: "uint256", value: "20" },
         ],
-        from: vault13.address,
+        from: vault10.address,
       });
 
       // Create an ERC20 balanceOf getter call (create function always returns all the added calls)
-      // const calls = await batchMultiSigCall.create({
-      //   plugin: new ERC20.getters.BalanceOf({
-      //     initParams: {
-      //       token: kiro.address,
-      //       owner: vault10.address,
-      //     },
-      //   }),
-      //   from: vault10.address,
-      // });
+      const calls = await batchMultiSigCall.create({
+        plugin: new ERC20.getters.BalanceOf({
+          initParams: {
+            token: kiro.address,
+            owner: vault10.address,
+          },
+        }),
+        from: vault10.address,
+      });
 
-      // expect(calls.length).to.be.equal(3);
+      expect(calls.length).to.be.equal(3);
     });
 
     it("Should getPlugin from batchMultiSigCall", async () => {
+      // Here we get plugin from the first call
       const plugin = batchMultiSigCall.getPlugin(0);
       expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
     });
 
     it("Should getAllPlugins", async () => {
+      // Here we get a list of all available plugins
       const plugins = batchMultiSigCall.getAllPlugins();
       expect(plugins).to.be.instanceOf(Array);
     });
 
-    it("Should execute batch", async () => {
+    it("Should return plugin from MSCall", async () => {
+      // Here we get plugin from already created FCT call
       const FCT = await batchMultiSigCall.exportFCT();
-      // Here I get object with typedData, typeHash, sessionId, name and mcall array (MSCall[])
+      const call = FCT.mcall[0];
 
-      const signer = getSigner(13);
+      const plugin = batchMultiSigCall.getPlugin(call);
+
+      expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
+    });
+
+    it("Should execute batch", async () => {
+      // Here I get object with typedData, typeHash, sessionId, nameHash and mcall array (MSCall[])
+      // I can use this object to create a signature
+      const FCT = await batchMultiSigCall.exportFCT();
+
+      const signer = getSigner(10);
       const signer2 = getSigner(11);
 
-      const getSignature = (messageDigest, signer) => {
-        const signingKey = new ethers.utils.SigningKey(getPrivateKey(signer));
-        let signature = signingKey.signDigest(messageDigest);
-        signature.v = "0x" + signature.v.toString(16);
-
-        return signature;
-      };
-
-      console.log(util.inspect(FCT, false, null, true /* enable colors */));
-
-      // Signing the FCT
+      // Signing the FCT with 2 signers
       const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
 
-        const signatures = [signer].map((item) => getSignature(messageDigest, item));
+        const signatures = [signer, signer2].map((item) => getSignature(messageDigest, item));
         return { ...item, signatures, variables: [], builder: ZERO_ADDRESS, externalSigners: [] };
       });
 
-      // console.log(util.inspect(signedCalls, false, null, true /* enable colors */));
-
+      // Creating callData
       const callData = fctBatchMultiSig.contract.methods
         .batchMultiSigCall(await fctController.version(await fctBatchMultiSig.batchMultiSigCallID()), signedCalls, [])
         .encodeABI();
 
+      // Adding user1 as activator
       await activators.addActivator(user1, {
         from: owner,
         nonce: await web3.eth.getTransactionCount(owner),
       });
 
-      try {
-        const res = await activators.activate(callData, { from: user1 });
-        console.log(res);
-      } catch (err) {
-        console.log(err);
-      }
+      const res = await activators.activate(callData, { from: user1 });
+
+      console.log("TX successful", res.tx);
+
+      expect(res).to.have.a.property("tx");
+      expect(res).to.have.a.property("receipt");
     });
   });
 });

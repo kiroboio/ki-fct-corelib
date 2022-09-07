@@ -49,7 +49,6 @@ class BatchMultiSigCall {
             }
             else {
                 const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-                // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
                 const initPlugin = new Plugins[0]();
                 return initPlugin;
             }
@@ -159,8 +158,7 @@ class BatchMultiSigCall {
         }
         let typedHashes = [];
         let additionalTypes = {};
-        // const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-        const salt = "000000";
+        const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
         const version = "0x010101";
         const typedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
         const sessionId = (0, helpers_2.getSessionId)(salt, this.options);

@@ -7,14 +7,20 @@
     "mocha": true,
     "browser": true
   },
-  "extends": ["plugin:prettier/recommended", "prettier/@typescript-eslint", "plugin:@typescript-eslint/recommended"],
+  "extends": [
+    "plugin:prettier/recommended",
+    "prettier/@typescript-eslint",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "plugins": ["prettier", "simple-import-sort", "unused-imports"],
-  "ignorePatterns": ["test"],
   "rules": {
     "prettier/prettier": "error",
     "unused-imports/no-unused-imports": "error",
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "no-unused-vars": "error"
   },
   "parserOptions": {
     "requireConfigFile": false

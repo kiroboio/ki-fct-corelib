@@ -122,7 +122,6 @@ export class BatchMultiSigCall {
       return initPlugin;
     } else {
       const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-      // TODO: Get plugin from methodInterfaceHash (now only non-hashed methodInterface is supported)
       const initPlugin = new Plugins[0]();
       return initPlugin;
     }
@@ -180,21 +179,23 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<{
-    typedData: TypedData;
-    typeHash: string;
-    sessionId: string;
-    nameHash: string;
-    mcall: MSCall[];
-  }> {
+  public async exportFCT(): Promise<
+    | {
+        typedData: TypedData;
+        typeHash: string;
+        sessionId: string;
+        nameHash: string;
+        mcall: MSCall[];
+      }
+    | Error
+  > {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
     let typedHashes: string[] = [];
     let additionalTypes = {};
 
-    // const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    const salt: string = "000000";
+    const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";
 
     const typedData: TypedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
