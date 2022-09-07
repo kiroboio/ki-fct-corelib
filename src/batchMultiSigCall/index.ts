@@ -23,6 +23,12 @@ import { id } from "ethers/lib/utils";
 //   flow: false,
 // };
 
+function getDate(days: number = 0) {
+  var result = new Date();
+  result.setDate(result.getDate() + days);
+  return Number(result.getTime() / 1000).toFixed();
+}
+
 const batchMultiSigSelector = "0xa7973c1f";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
@@ -33,10 +39,9 @@ export class BatchMultiSigCall {
   private FactoryProxy: ethers.Contract;
 
   options: MSCallOptions = {
-    validFrom: Number((new Date().getTime() / 1000).toFixed()),
-    // validFrom: 0,
-    expiresAt: 0xffffffffff,
     maxGasPrice: 25000000000,
+    validFrom: getDate(), // Valid from now
+    expiresAt: getDate(30), // Expires after 30 days
     purgeable: false,
     cancelable: true,
     builder: "0x0000000000000000000000000000000000000000",
@@ -56,7 +61,10 @@ export class BatchMultiSigCall {
   }) {
     this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
 
-    this.options = { ...this.options, ...options };
+    this.options = {
+      ...this.options,
+      ...options,
+    };
   }
 
   // Validate

@@ -17,6 +17,11 @@ const utils_1 = require("ethers/lib/utils");
 //   payment: true,
 //   flow: false,
 // };
+function getDate(days = 0) {
+    var result = new Date();
+    result.setDate(result.getDate() + days);
+    return Number(result.getTime() / 1000).toFixed();
+}
 const batchMultiSigSelector = "0xa7973c1f";
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -24,10 +29,9 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
         this.options = {
-            validFrom: Number((new Date().getTime() / 1000).toFixed()),
-            // validFrom: 0,
-            expiresAt: 0xffffffffff,
             maxGasPrice: 25000000000,
+            validFrom: getDate(),
+            expiresAt: getDate(30),
             purgeable: false,
             cancelable: true,
             builder: "0x0000000000000000000000000000000000000000",
@@ -69,7 +73,14 @@ class BatchMultiSigCall {
             return this.getVariableValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
-        this.options = { ...this.options, ...options };
+        // const date = new Date();
+        // const expireDate = new Date(date.getTime() + 86400000);
+        this.options = {
+            ...this.options,
+            // validFrom: Number(date.getTime() / 1000).toFixed(),
+            // expiresAt: Number(expireDate.getTime() / 1000).toFixed(),
+            ...options,
+        };
     }
     // Validate
     validate(call) {

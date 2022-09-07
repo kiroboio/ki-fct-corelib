@@ -23,8 +23,8 @@ export interface MSCall {
 }
 export interface MSCallOptions {
     name?: string;
-    validFrom?: number;
-    expiresAt?: number;
+    validFrom?: number | string;
+    expiresAt?: number | string;
     builder?: string;
     maxGasPrice?: number;
     cancelable?: boolean;
