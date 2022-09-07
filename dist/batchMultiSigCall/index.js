@@ -317,13 +317,15 @@ class BatchMultiSigCall {
                 ...optionalTypes,
                 ...this.calls.reduce((acc, call, index) => ({
                     ...acc,
-                    [`transaction${index + 1}`]: [
-                        { name: "meta", type: "Transaction" },
-                        ...(call.params || []).map((param) => ({
-                            name: param.name,
-                            type: param.type,
-                        })),
-                    ],
+                    [`transaction${index + 1}`]: call.validator
+                        ? [{ name: "meta", type: "Transaction" }, ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params)]
+                        : [
+                            { name: "meta", type: "Transaction" },
+                            ...(call.params || []).map((param) => ({
+                                name: param.name,
+                                type: param.type,
+                            })),
+                        ],
                 }), {}),
                 ...additionalTypes,
                 Transaction: [

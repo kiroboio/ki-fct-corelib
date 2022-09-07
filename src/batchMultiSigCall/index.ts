@@ -3,7 +3,13 @@ import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
-import { getTypedDataDomain, createValidatorTxData, flows, getMethodInterface } from "../helpers";
+import {
+  getTypedDataDomain,
+  createValidatorTxData,
+  flows,
+  getMethodInterface,
+  getValidatorFunctionData,
+} from "../helpers";
 import {
   getSessionId,
   handleData,
@@ -376,13 +382,15 @@ export class BatchMultiSigCall {
         ...this.calls.reduce(
           (acc: object, call: MSCallInput, index: number) => ({
             ...acc,
-            [`transaction${index + 1}`]: [
-              { name: "meta", type: "Transaction" },
-              ...(call.params || []).map((param: Params) => ({
-                name: param.name,
-                type: param.type,
-              })),
-            ],
+            [`transaction${index + 1}`]: call.validator
+              ? [{ name: "meta", type: "Transaction" }, ...getValidatorFunctionData(call.validator, call.params)]
+              : [
+                  { name: "meta", type: "Transaction" },
+                  ...(call.params || []).map((param: Params) => ({
+                    name: param.name,
+                    type: param.type,
+                  })),
+                ],
           }),
           {}
         ),

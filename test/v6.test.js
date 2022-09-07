@@ -423,9 +423,24 @@ describe("batchMultiSigCall", () => {
         from: vault11.address,
         options: {
           flow: Flow.OK_CONT_FAIL_CONT,
-          jumpOnSuccess: 0,
+          jumpOnSuccess: 1,
           jumpOnFail: 0,
         },
+      });
+
+      // Test with a validator call
+      const calls12 = await batchMultiSigCall.create({
+        to: kiro.address,
+        method: "balanceof",
+        params: [{ name: "owner", type: "address", value: vault10.address }],
+        validator: {
+          validatorAddress: validator.address,
+          method: "greaterThan",
+          params: {
+            valueToCompare: "10",
+          },
+        },
+        from: vault10.address,
       });
 
       // Or create ERC20 Transfer call without plugin
@@ -451,7 +466,7 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       });
 
-      expect(calls.length).to.be.equal(3);
+      expect(calls.length).to.be.equal(4);
     });
 
     it("Should getPlugin from batchMultiSigCall", async () => {
@@ -491,7 +506,7 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       });
 
-      expect(calls.length).to.be.equal(4);
+      expect(calls.length).to.be.equal(5);
     });
 
     it("Should execute batch", async () => {
