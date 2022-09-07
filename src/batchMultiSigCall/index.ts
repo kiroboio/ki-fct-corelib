@@ -16,15 +16,8 @@ import {
 import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { id } from "ethers/lib/utils";
 
-// DefaultFlag - "f100" // payment + eip712
-// const defaultFlags = {
-//   eip712: true,
-//   payment: true,
-//   flow: false,
-// };
-
 function getDate(days: number = 0) {
-  var result = new Date();
+  const result = new Date();
   result.setDate(result.getDate() + days);
   return Number(result.getTime() / 1000).toFixed();
 }
@@ -224,8 +217,8 @@ export class BatchMultiSigCall {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
-    let typedHashes: string[] = [];
-    let additionalTypes = {};
+    const typedHashes: string[] = [];
+    const additionalTypes = {};
 
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";
@@ -309,7 +302,7 @@ export class BatchMultiSigCall {
 
     let optionalMessage = {};
     let optionalTypes = {};
-    let primaryType = [];
+    const primaryType = [];
 
     if ("recurrency" in this.options) {
       optionalMessage = {

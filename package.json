@@ -8,7 +8,8 @@
     "pretest": "tsc",
     "test": "hardhat test test/v6.test.js",
     "test:plugins": "hardhat test test/v6.test.js",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint  --ext .js,.ts ."
   },
   "repository": {
     "type": "git",
@@ -29,11 +30,11 @@
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
-    "@typescript-eslint/eslint-plugin": "^5.36.1",
-    "@typescript-eslint/parser": "^5.36.1",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
     "@uniswap/v2-core": "github:kiroboio/uniswapv2-solc0.8",
     "chai": "^4.3.6",
-    "eslint": "^8.16.0",
+    "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-simple-import-sort": "^8.0.0",
@@ -41,8 +42,9 @@
     "ganache": "^7.3.2",
     "hardhat": "^2.10.1",
     "ki-eth-contracts": "github:kiroboio/ki-eth-contracts",
-    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git",
     "mocha": "^10.0.0",
+    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git",
+    "prettier": "^2.7.1",
     "ts-node": "^10.8.0",
     "typescript": "^4.7.2"
   },

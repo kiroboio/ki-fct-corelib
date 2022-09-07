@@ -3,11 +3,11 @@ export interface MSCallInput {
     value?: string;
     to: string;
     from: string;
+    params?: Params[];
+    method?: string;
     toENS?: string;
     validator?: Validator;
     viewOnly?: boolean;
-    method?: string;
-    params?: Params[];
     options?: CallOptions;
 }
 export interface MSCall {

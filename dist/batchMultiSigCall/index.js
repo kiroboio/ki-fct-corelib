@@ -11,14 +11,8 @@ const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const utils_1 = require("ethers/lib/utils");
-// DefaultFlag - "f100" // payment + eip712
-// const defaultFlags = {
-//   eip712: true,
-//   payment: true,
-//   flow: false,
-// };
 function getDate(days = 0) {
-    var result = new Date();
+    const result = new Date();
     result.setDate(result.getDate() + days);
     return Number(result.getTime() / 1000).toFixed();
 }
@@ -73,12 +67,8 @@ class BatchMultiSigCall {
             return this.getVariableValue(call.to);
         };
         this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
-        // const date = new Date();
-        // const expireDate = new Date(date.getTime() + 86400000);
         this.options = {
             ...this.options,
-            // validFrom: Number(date.getTime() / 1000).toFixed(),
-            // expiresAt: Number(expireDate.getTime() / 1000).toFixed(),
             ...options,
         };
     }
@@ -187,8 +177,8 @@ class BatchMultiSigCall {
         if (this.calls.length === 0) {
             throw new Error("No calls added");
         }
-        let typedHashes = [];
-        let additionalTypes = {};
+        const typedHashes = [];
+        const additionalTypes = {};
         const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
         const version = "0x010101";
         const typedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
@@ -257,7 +247,7 @@ class BatchMultiSigCall {
         }, {});
         let optionalMessage = {};
         let optionalTypes = {};
-        let primaryType = [];
+        const primaryType = [];
         if ("recurrency" in this.options) {
             optionalMessage = {
                 recurrency: {

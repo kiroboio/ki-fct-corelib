@@ -1,4 +1,3 @@
-import { Flow } from "../constants";
 import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
 
 export interface MSCallInput {

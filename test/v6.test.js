@@ -422,8 +422,9 @@ describe("batchMultiSigCall", () => {
         }),
         from: vault11.address,
         options: {
-          flow: Flow.OK_CONT_FAIL_REVERT,
-          jumpOnSuccess: 1,
+          flow: Flow.OK_CONT_FAIL_CONT,
+          jumpOnSuccess: 0,
+          jumpOnFail: 0,
         },
       });
 
@@ -515,7 +516,7 @@ describe("batchMultiSigCall", () => {
         };
       });
 
-      // console.log(util.inspect(signedCalls, false, null, true));
+      console.log(util.inspect(signedCalls, false, null, true));
 
       // Creating callData
       const callData = fctBatchMultiSig.contract.methods

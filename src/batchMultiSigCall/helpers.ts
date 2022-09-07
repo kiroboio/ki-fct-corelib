@@ -95,7 +95,7 @@ export const manageCallId = (call: MSCallInput, index: number) => {
 
   const permissions = "0000";
   const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
-  const failJump = call?.options?.jumpOnFail ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "00";
+  const failJump = call?.options?.jumpOnFail ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "0000";
   const successJump = call?.options?.jumpOnSuccess
     ? Number(call.options.jumpOnSuccess).toString(16).padStart(4, "0")
     : "0000";

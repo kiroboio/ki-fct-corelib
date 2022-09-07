@@ -4,14 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.constants = exports.utils = exports.getPlugins = exports.getPlugin = exports.BatchMultiSigCall = void 0;
-// import { BatchTransfer } from "./batchTransfer";
-// import { BatchTransferPacked } from "./batchTransferPacked";
-// import { BatchMultiCallPacked } from "./batchMultiCallPacked";
-// import { BatchCallPacked } from "./batchCallPacked";
-// import { BatchCall } from "./batchCall";
-// import { BatchMultiCall } from "./batchMultiCall";
-// import { BatchMultiSigCallPacked } from "./batchMultiSigCallPacked";
-// import { BatchMultiSigCall } from "./batchMultiSigCall_OldV2";
 var batchMultiSigCall_1 = require("./batchMultiSigCall");
 Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: function () { return batchMultiSigCall_1.BatchMultiSigCall; } });
 var ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
