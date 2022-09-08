@@ -216,7 +216,8 @@ const parseCallID = (callId) => {
     const gasLimit = parseInt(callId.slice(24, 32), 16);
     const flags = parseInt(callId.slice(32, 34), 16);
     const getFlow = () => {
-        const flow = Object.values(helpers_1.flows).find((value) => {
+        const flow = Object.entries(helpers_1.flows).find(([, value]) => {
+            console.log(value.value, flowNumber.toString());
             return value.value === flowNumber.toString();
         });
         return flow[0];

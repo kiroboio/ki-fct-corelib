@@ -20,7 +20,7 @@ export declare class BatchMultiSigCall {
     getCallValue(index: number, bytes?: boolean): string;
     getVariablesAsBytes32(): string[];
     setOptions(options: MSCallOptions): MSCallOptions;
-    getPlugin: (dataOrIndex: MSCall | number) => PluginInstance | undefined;
+    getPlugin: (dataOrIndex: MSCall | number) => Promise<PluginInstance>;
     getAllPlugins: () => Plugin[];
     create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]>;
     replaceCall(tx: MSCallInput, index: number): MSCallInput[];
@@ -34,7 +34,7 @@ export declare class BatchMultiSigCall {
         nameHash: string;
         mcall: MSCall[];
     } | Error>;
-    importFCT(fct: IBatchMultiSigCallFCT): Promise<any>;
+    importFCT(fct: IBatchMultiSigCallFCT): Promise<MSCallInput[] | Error>;
     private createTypedData;
     private getParams;
     private verifyParams;

@@ -36,18 +36,26 @@ class BatchMultiSigCall {
         //
         //
         // FCT functions
-        this.getPlugin = (dataOrIndex) => {
+        this.getPlugin = async (dataOrIndex) => {
             if (typeof dataOrIndex === "number") {
-                if (!this.calls[dataOrIndex].method) {
+                const call = this.getCall(dataOrIndex);
+                if (!call.method) {
                     throw new Error("Method is required to get plugin");
                 }
-                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(this.calls[dataOrIndex]) });
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
                 const initPlugin = new Plugin();
+                // @ts-ignore
+                await initPlugin.reverseCall(call);
                 return initPlugin;
             }
             else {
                 const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
+                if (!Plugins || Plugins.length === 0) {
+                    throw new Error("No plugin found");
+                }
                 const initPlugin = new Plugins[0]();
+                // @ts-ignore
+                await initPlugin.reverseCall(dataOrIndex);
                 return initPlugin;
             }
         };
@@ -209,20 +217,23 @@ class BatchMultiSigCall {
         // Here we import FCT and add all the data inside BatchMultiSigCall
         const options = (0, helpers_2.parseSessionID)(fct.sessionId);
         this.setOptions(options);
-        fct.mcall.forEach((call) => {
-            // First, we need to check if the call is a plugin
-            // If it is, we need to get the plugin and decode the call data
-            // If it isn't, we throw an error
+        for (const [index, call] of fct.mcall.entries()) {
+            // Check if plugin exists for this call
+            const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: call.functionSignature } });
+            if (!Plugins || Plugins.length === 0) {
+                throw new Error(`No plugin found for call at index ${index}`);
+            }
+            // If exists, we continue
             const callId = (0, helpers_2.parseCallID)(call.callId);
             const data = {
-                value: call.value,
+                plugin: await this.getPlugin(call),
                 from: call.from,
-                to: call.to,
                 options: callId.options,
                 viewOnly: callId.viewOnly,
             };
+            console.log("data", data);
             this.create(data);
-        });
+        }
         return this.calls;
     }
     // End of main FCT functions

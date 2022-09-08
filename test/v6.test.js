@@ -445,13 +445,9 @@ describe("batchMultiSigCall", () => {
         from: vault10.address,
       });
 
-      expect(calls.length).to.be.equal(4);
-    });
+      console.log(util.inspect(calls, false, null, true));
 
-    it("Should getPlugin from batchMultiSigCall", async () => {
-      // Here we get plugin from the first call
-      const plugin = batchMultiSigCall.getPlugin(0);
-      expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
+      expect(calls.length).to.be.equal(4);
     });
 
     it("Should getAllPlugins", async () => {
@@ -465,7 +461,7 @@ describe("batchMultiSigCall", () => {
       const FCT = await batchMultiSigCall.exportFCT();
       const call = FCT.mcall[0];
 
-      const plugin = batchMultiSigCall.getPlugin(call);
+      const plugin = await batchMultiSigCall.getPlugin(call);
 
       expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
     });
@@ -488,17 +484,39 @@ describe("batchMultiSigCall", () => {
       expect(calls.length).to.be.equal(5);
     });
 
+    it("Should getPlugin from batchMultiSigCall", async () => {
+      // Here we get plugin from the first call
+      const plugin = await batchMultiSigCall.getPlugin(0);
+      console.log(plugin.input.get());
+      expect(plugin).to.be.instanceOf(ERC20.actions.Transfer);
+    });
+
     it("Should import fct", async () => {
+      const batchMultiSigCall3 = new BatchMultiSigCall({
+        provider: ethers.provider,
+        contractAddress: fctController.address,
+      });
+
+      await batchMultiSigCall3.create({
+        plugin: new ERC20.actions.Transfer({
+          initParams: {
+            token: kiro.address,
+            to: user1,
+            amount: "30000",
+          },
+        }),
+        from: vault11.address,
+      });
+
       const batchMultiSigCall2 = new BatchMultiSigCall({
         provider: ethers.provider,
         contractAddress: fctController.address,
       });
 
-      const FCT = await batchMultiSigCall.exportFCT();
-
+      const FCT = await batchMultiSigCall3.exportFCT();
       const calls = await batchMultiSigCall2.importFCT(FCT);
 
-      expect(calls.length).to.be.equal(5);
+      expect(calls.length).to.be.equal(1);
     });
 
     it("Should execute batch", async () => {
@@ -523,7 +541,7 @@ describe("batchMultiSigCall", () => {
         };
       });
 
-      console.log(util.inspect(signedCalls, false, null, true));
+      // console.log(util.inspect(signedCalls, false, null, true));
 
       // Creating callData
       const callData = fctBatchMultiSig.contract.methods

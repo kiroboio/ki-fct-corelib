@@ -248,8 +248,9 @@ export const parseCallID = (
   const gasLimit = parseInt(callId.slice(24, 32), 16);
   const flags = parseInt(callId.slice(32, 34), 16);
 
-  const getFlow = (): Flow => {
-    const flow = Object.values(flows).find((value) => {
+  const getFlow = () => {
+    const flow = Object.entries(flows).find(([, value]) => {
+      console.log(value.value, flowNumber.toString());
       return value.value === flowNumber.toString();
     });
     return flow[0];
