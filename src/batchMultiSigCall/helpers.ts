@@ -223,3 +223,22 @@ export const parseSessionID = (sessionId: string): MSCallOptions => {
     },
   };
 };
+
+export const parseCallID = (callId: string): MSCallOptions => {
+  const permissions = callId.slice(2, 6);
+  const flow = flows[parseInt(callId.slice(6, 8), 16)];
+  const jumpOnFail = parseInt(callId.slice(8, 12), 16);
+  const jumpOnSuccess = parseInt(callId.slice(12, 16), 16);
+  const payerIndex = parseInt(callId.slice(16, 20), 16);
+  const callIndex = parseInt(callId.slice(20, 24), 16);
+  const gasLimit = parseInt(callId.slice(24, 32), 16);
+  const flags = parseInt(callId.slice(32, 34), 16);
+
+  return {
+    flow: flow.name,
+    jumpOnFail,
+    jumpOnSuccess,
+    gasLimit,
+    viewOnly: flags === 1,
+  };
+};

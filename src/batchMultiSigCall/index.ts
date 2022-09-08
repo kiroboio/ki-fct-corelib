@@ -262,6 +262,14 @@ export class BatchMultiSigCall {
     // Here we import FCT and add all the data inside BatchMultiSigCall
     const options = parseSessionID(fct.sessionId);
     this.setOptions(options);
+
+    fct.mcall.forEach((call) => {
+      const data = {
+        value: call.value,
+        from: call.from,
+        to: call.to,
+      };
+    });
     return {};
   }
 
