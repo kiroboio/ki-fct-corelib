@@ -1,5 +1,12 @@
 import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
 
+export interface IBatchMultiSigCallFCT {
+  typeHash: string;
+  sessionId: string;
+  nameHash: string;
+  mcall: MSCall[];
+}
+
 export interface MSCallInput {
   value?: string;
   to: string;

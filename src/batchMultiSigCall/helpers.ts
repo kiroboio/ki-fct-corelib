@@ -121,15 +121,15 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
   // 16 - Gas price limit
   // 2 - Flags
 
-  const externalSigners = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
+  const minimumApprovals = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
   const version = "010101";
-  const recurrent = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
+  const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
   const chillTime = options.recurrency
     ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
     : "00000000";
   const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff"; // TODO: Date right now + 30 days
   const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000"; // TODO: Date right now
-  const gasPriceLimit = options.maxGasPrice
+  const maxGasPrice = options.maxGasPrice
     ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
     : "00000005D21DBA00"; // 25 Gwei
 
@@ -140,5 +140,78 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
 
   const flags = flagValue.toString(16).padStart(2, "0");
 
-  return `0x${salt}${externalSigners}${version}${recurrent}${chillTime}${beforeTimestamp}${afterTimestamp}${gasPriceLimit}${flags}`;
+  return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
+};
+
+export const parseSessionID = (sessionId: string) => {
+  const salt = sessionId.slice(2, 8);
+  const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
+  const version = sessionId.slice(10, 16);
+  const maxRepeats = parseInt(sessionId.slice(16, 20), 16);
+  const chillTime = parseInt(sessionId.slice(20, 28), 16);
+  const expiresAt = parseInt(sessionId.slice(28, 38), 16);
+  const validFrom = parseInt(sessionId.slice(38, 48), 16);
+  const maxGasPrice = parseInt(sessionId.slice(48, 64), 16);
+  const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
+
+  let flags = {
+    eip712: true,
+    accumetable: false,
+    purgeable: false,
+    cancelable: false,
+  };
+
+  if (flagsNumber === 9) {
+    flags = {
+      ...flags,
+      accumetable: true,
+    };
+  } else if (flagsNumber === 10) {
+    flags = {
+      ...flags,
+      purgeable: true,
+    };
+  } else if (flagsNumber === 11) {
+    flags = {
+      ...flags,
+      accumetable: true,
+      purgeable: true,
+    };
+  } else if (flagsNumber === 12) {
+    flags = {
+      ...flags,
+      cancelable: true,
+    };
+  } else if (flagsNumber === 13) {
+    flags = {
+      ...flags,
+      accumetable: true,
+      cancelable: true,
+    };
+  } else if (flagsNumber === 14) {
+    flags = {
+      ...flags,
+      purgeable: true,
+      cancelable: true,
+    };
+  } else if (flagsNumber === 15) {
+    flags = {
+      ...flags,
+      accumetable: true,
+      purgeable: true,
+      cancelable: true,
+    };
+  }
+
+  return {
+    salt,
+    minimumApprovals,
+    version,
+    maxRepeats,
+    chillTime,
+    expiresAt,
+    validFrom,
+    maxGasPrice,
+    flags,
+  };
 };

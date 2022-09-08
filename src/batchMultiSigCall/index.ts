@@ -2,7 +2,7 @@ import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
 import { Params } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
+import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import {
   getTypedDataDomain,
   createValidatorTxData,
@@ -255,6 +255,11 @@ export class BatchMultiSigCall {
       nameHash: id(this.options.name || ""),
       mcall, // This is where are the MSCall[] are returned
     };
+  }
+
+  public async importFCT(fct: IBatchMultiSigCallFCT): Promise<any> {
+    // Here we import FCT and add all the data inside BatchMultiSigCall
+    return {};
   }
 
   // End of main FCT functions
