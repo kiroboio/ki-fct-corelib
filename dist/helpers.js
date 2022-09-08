@@ -345,13 +345,13 @@ const getValidatorData = (call, noFunctionSignature) => {
 exports.getValidatorData = getValidatorData;
 const getValidatorDataOffset = (types, data) => {
     return `0x${utils_1.defaultAbiCoder
-        .encode(types, [...types.slice(0, -1).map((item) => "0x" + "0".repeat(64)), data])
+        .encode(types, [...types.slice(0, -1).map(() => "0x" + "0".repeat(64)), data])
         .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
 };
 const createValidatorTxData = (call) => {
     const iface = new ethers_1.ethers.utils.Interface(validator_abi_json_1.default);
     const validatorFunction = iface.getFunction(call.validator.method);
-    let validator = call.validator;
+    const validator = call.validator;
     if (!validatorFunction) {
         throw new Error(`Method ${validator.method} not found in Validator ABI`);
     }

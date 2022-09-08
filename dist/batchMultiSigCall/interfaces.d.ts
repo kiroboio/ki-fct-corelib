@@ -1,4 +1,10 @@
 import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
+export interface IBatchMultiSigCallFCT {
+    typeHash: string;
+    sessionId: string;
+    nameHash: string;
+    mcall: MSCall[];
+}
 export interface MSCallInput {
     value?: string;
     to: string;
@@ -15,6 +21,7 @@ export interface MSCall {
     ensHash: string;
     functionSignature: string;
     value: string;
+    callId: string;
     from: string;
     to: string;
     data: string;
@@ -30,13 +37,13 @@ export interface MSCallOptions {
     cancelable?: boolean;
     purgeable?: boolean;
     recurrency?: {
-        maxRepeats: number;
-        chillTime: number;
-        accumetable: boolean;
+        maxRepeats?: number;
+        chillTime?: number;
+        accumetable?: boolean;
     };
     multisig?: {
-        externalSigners: string[];
-        minimumApprovals: number;
+        externalSigners?: string[];
+        minimumApprovals?: number;
     };
 }
 export interface IWithPlugin {

@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import Contract from "web3/eth/contract";
 import { TypedData, TypedDataTypes } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 import { MSCallInput } from "./batchMultiSigCall_Old/interfaces";

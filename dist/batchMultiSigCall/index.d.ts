@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { MSCallInput, MSCall, MSCallOptions, IWithPlugin } from "./interfaces";
+import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
     private FactoryProxy;
@@ -34,6 +34,7 @@ export declare class BatchMultiSigCall {
         nameHash: string;
         mcall: MSCall[];
     } | Error>;
+    importFCT(fct: IBatchMultiSigCallFCT): Promise<any>;
     private createTypedData;
     private getParams;
     private verifyParams;

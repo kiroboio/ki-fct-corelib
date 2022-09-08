@@ -11,6 +11,7 @@ import {
   getValidatorMethodInterface,
 } from "../helpers";
 import { MSCallInput } from "./interfaces";
+import { Flow } from "../constants";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
@@ -144,9 +145,9 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
 };
 
 export const parseSessionID = (sessionId: string): MSCallOptions => {
-  const salt = sessionId.slice(2, 8);
+  // const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
-  const version = sessionId.slice(10, 16);
+  // const version = sessionId.slice(10, 16);
   const maxRepeats = parseInt(sessionId.slice(16, 20), 16);
   const chillTime = parseInt(sessionId.slice(20, 28), 16);
   const expiresAt = parseInt(sessionId.slice(28, 38), 16);
@@ -224,9 +225,22 @@ export const parseSessionID = (sessionId: string): MSCallOptions => {
   };
 };
 
-export const parseCallID = (callId: string): MSCallOptions => {
+export const parseCallID = (
+  callId: string
+): {
+  options: {
+    gasLimit: number;
+    flow: Flow;
+    jumpOnSuccess: number;
+    jumpOnFail: number;
+  };
+  viewOnly: boolean;
+  permissions: string;
+  payerIndex: number;
+  callIndex: number;
+} => {
   const permissions = callId.slice(2, 6);
-  const flow = flows[parseInt(callId.slice(6, 8), 16)];
+  const flowNumber = parseInt(callId.slice(6, 8), 16);
   const jumpOnFail = parseInt(callId.slice(8, 12), 16);
   const jumpOnSuccess = parseInt(callId.slice(12, 16), 16);
   const payerIndex = parseInt(callId.slice(16, 20), 16);
@@ -234,11 +248,23 @@ export const parseCallID = (callId: string): MSCallOptions => {
   const gasLimit = parseInt(callId.slice(24, 32), 16);
   const flags = parseInt(callId.slice(32, 34), 16);
 
+  const getFlow = (): Flow => {
+    const flow = Object.values(flows).find((value) => {
+      return value.value === flowNumber.toString();
+    });
+    return flow[0];
+  };
+
   return {
-    flow: flow.name,
-    jumpOnFail,
-    jumpOnSuccess,
-    gasLimit,
+    options: {
+      flow: Flow[getFlow()],
+      jumpOnFail,
+      jumpOnSuccess,
+      gasLimit,
+    },
     viewOnly: flags === 1,
+    permissions,
+    payerIndex,
+    callIndex,
   };
 };

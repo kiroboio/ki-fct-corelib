@@ -18,6 +18,7 @@ import {
   handleMethodInterface,
   handleTypes,
   manageCallId,
+  parseCallID,
   parseSessionID,
 } from "./helpers";
 import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
@@ -264,13 +265,21 @@ export class BatchMultiSigCall {
     this.setOptions(options);
 
     fct.mcall.forEach((call) => {
+      // First, we need to check if the call is a plugin
+      // If it is, we need to get the plugin and decode the call data
+      // If it isn't, we throw an error
+      const callId = parseCallID(call.callId);
       const data = {
         value: call.value,
         from: call.from,
         to: call.to,
+        options: callId.options,
+        viewOnly: callId.viewOnly,
       };
+
+      this.create(data);
     });
-    return {};
+    return this.calls;
   }
 
   // End of main FCT functions

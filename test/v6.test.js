@@ -509,6 +509,19 @@ describe("batchMultiSigCall", () => {
       expect(calls.length).to.be.equal(5);
     });
 
+    it("Should import fct", async () => {
+      const batchMultiSigCall2 = new BatchMultiSigCall({
+        provider: ethers.provider,
+        contractAddress: fctController.address,
+      });
+
+      const FCT = await batchMultiSigCall.exportFCT();
+
+      const calls = await batchMultiSigCall2.importFCT(FCT);
+
+      expect(calls.length).to.be.equal(5);
+    });
+
     it("Should execute batch", async () => {
       // Here I get object with typedData, typeHash, sessionId, nameHash and mcall array (MSCall[])
       // I can use this object to create a signature

@@ -1,4 +1,3 @@
-import { IWithPlugin } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 
 export interface Params {

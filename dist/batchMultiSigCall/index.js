@@ -205,6 +205,26 @@ class BatchMultiSigCall {
             mcall, // This is where are the MSCall[] are returned
         };
     }
+    async importFCT(fct) {
+        // Here we import FCT and add all the data inside BatchMultiSigCall
+        const options = (0, helpers_2.parseSessionID)(fct.sessionId);
+        this.setOptions(options);
+        fct.mcall.forEach((call) => {
+            // First, we need to check if the call is a plugin
+            // If it is, we need to get the plugin and decode the call data
+            // If it isn't, we throw an error
+            const callId = (0, helpers_2.parseCallID)(call.callId);
+            const data = {
+                value: call.value,
+                from: call.from,
+                to: call.to,
+                options: callId.options,
+                viewOnly: callId.viewOnly,
+            };
+            this.create(data);
+        });
+        return this.calls;
+    }
     // End of main FCT functions
     //
     //

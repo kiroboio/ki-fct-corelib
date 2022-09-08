@@ -26,6 +26,7 @@ export interface MSCall {
   ensHash: string;
   functionSignature: string;
   value: string;
+  callId: string;
   from: string;
   to: string;
   data: string;

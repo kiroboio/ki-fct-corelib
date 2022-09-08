@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import Contract from "web3/eth/contract";
 import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
@@ -393,14 +392,14 @@ export const getValidatorData = (call: Partial<MSCallInput>, noFunctionSignature
 
 const getValidatorDataOffset = (types: string[], data: string): string => {
   return `0x${defaultAbiCoder
-    .encode(types, [...types.slice(0, -1).map((item) => "0x" + "0".repeat(64)), data])
+    .encode(types, [...types.slice(0, -1).map(() => "0x" + "0".repeat(64)), data])
     .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
 };
 
 export const createValidatorTxData = (call: Partial<MSCallInput>): object | Error => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(call.validator.method);
-  let validator = call.validator;
+  const validator = call.validator;
 
   if (!validatorFunction) {
     throw new Error(`Method ${validator.method} not found in Validator ABI`);
