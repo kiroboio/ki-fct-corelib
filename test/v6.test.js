@@ -27,7 +27,7 @@ const FCT_Controler = artifacts.require("FCT_Controller");
 const FCT_BatchMultiSig = artifacts.require("FCT_BatchMultiSig");
 const ERC20Token = artifacts.require("ERC20Token");
 const Validator = artifacts.require("Validator");
-const MultiplierTest = artifacts.require("MultiplyTest");
+// const MultiplierTest = artifacts.require("MultiplyTest");
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -46,33 +46,22 @@ describe("batchMultiSigCall", () => {
   let weth;
   let oracle;
   let activatorC;
-  let DOMAIN_SEPARATOR;
   let sw_factory_proxy_;
   let uniSwapPair;
   let activators;
   let validator;
-  let multiplier;
   let accounts = [];
-  let factoryOwner1 = accounts[0];
-  let factoryOwner2 = accounts[1];
   let factoryOwner3 = accounts[2];
   let owner = accounts[3];
   let user1 = accounts[4];
   let user2 = accounts[5];
   let user3 = accounts[6];
-  let activator = accounts[7];
-  let operator = accounts[7];
   let user10 = accounts[10];
   let user11 = accounts[11];
   let user12 = accounts[12];
   let user13 = accounts[13];
-  let user4 = accounts[8];
 
-  const userCount = 2;
-  const userCountParameters = 1;
-  const val1 = web3.utils.toWei("0.5", "gwei");
   const val2 = web3.utils.toWei("0.4", "gwei");
-  const val3 = web3.utils.toWei("0.6", "gwei");
 
   const getSigner = (index) => {
     return accounts[index];
@@ -112,20 +101,15 @@ describe("batchMultiSigCall", () => {
 
   before("setup contract for the test", async () => {
     accounts = await web3.eth.getAccounts();
-    factoryOwner1 = accounts[0];
-    factoryOwner2 = accounts[1];
     factoryOwner3 = accounts[2];
     owner = accounts[3];
     user1 = accounts[4];
     user2 = accounts[5];
     user3 = accounts[6];
-    activator = accounts[7];
-    operator = accounts[7];
     user10 = accounts[10];
     user11 = accounts[11];
     user12 = accounts[12];
     user13 = accounts[13];
-    user4 = accounts[8];
 
     kiro = await ERC20Token.new("Kirobo ERC20 Token", "KDB20", { from: owner });
     weth = await ERC20Token.new("weth ERC20 Token", "WETH", { from: owner });
@@ -214,15 +198,10 @@ describe("batchMultiSigCall", () => {
     await factoryProxy.setLocalEns("token.kiro.eth", kiro.address, {
       from: owner,
     });
-    multiplier = await MultiplierTest.new({ from: owner });
     validator = await Validator.new({ from: owner });
-
-    OK_CONT_FAIL_REVERT = (await fctBatchMultiSig.OK_CONT_FAIL_REVERT()).toString();
-    OK_CONT_FAIL_REVERT_MSG = await fctBatchMultiSig.OK_CONT_FAIL_REVERT_MSG();
   });
 
   it("should create empty wallet", async () => {
-    const balance = await web3.eth.getBalance(vault1.address);
     await web3.eth.sendTransaction({
       from: owner,
       value: val2,
