@@ -143,7 +143,7 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
   return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 
-export const parseSessionID = (sessionId: string) => {
+export const parseSessionID = (sessionId: string): MSCallOptions => {
   const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
   const version = sessionId.slice(10, 16);
@@ -203,15 +203,23 @@ export const parseSessionID = (sessionId: string) => {
     };
   }
 
-  return {
-    salt,
-    minimumApprovals,
-    version,
-    maxRepeats,
-    chillTime,
-    expiresAt,
+  const data = {
     validFrom,
+    expiresAt,
     maxGasPrice,
-    flags,
+    cancelable: flags.cancelable,
+    purgeable: flags.purgeable,
+  };
+
+  return {
+    ...data,
+    recurrency: {
+      accumetable: flags.accumetable,
+      chillTime,
+      maxRepeats,
+    },
+    multisig: {
+      minimumApprovals,
+    },
   };
 };

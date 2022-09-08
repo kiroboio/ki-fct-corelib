@@ -18,6 +18,7 @@ import {
   handleMethodInterface,
   handleTypes,
   manageCallId,
+  parseSessionID,
 } from "./helpers";
 import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { id } from "ethers/lib/utils";
@@ -259,6 +260,8 @@ export class BatchMultiSigCall {
 
   public async importFCT(fct: IBatchMultiSigCallFCT): Promise<any> {
     // Here we import FCT and add all the data inside BatchMultiSigCall
+    const options = parseSessionID(fct.sessionId);
+    this.setOptions(options);
     return {};
   }
 

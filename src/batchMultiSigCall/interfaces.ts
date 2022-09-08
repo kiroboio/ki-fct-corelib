@@ -42,13 +42,13 @@ export interface MSCallOptions {
   cancelable?: boolean;
   purgeable?: boolean;
   recurrency?: {
-    maxRepeats: number;
-    chillTime: number;
-    accumetable: boolean;
+    maxRepeats?: number;
+    chillTime?: number;
+    accumetable?: boolean;
   };
   multisig?: {
-    externalSigners: string[];
-    minimumApprovals: number;
+    externalSigners?: string[];
+    minimumApprovals?: number;
   };
 }
 
