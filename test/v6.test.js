@@ -541,7 +541,7 @@ describe("batchMultiSigCall", () => {
         };
       });
 
-      // console.log(util.inspect(signedCalls, false, null, true));
+      console.log(util.inspect(signedCalls, false, null, true));
 
       // Creating callData
       const callData = fctBatchMultiSig.contract.methods

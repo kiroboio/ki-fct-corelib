@@ -7,7 +7,7 @@
   "scripts": {
     "pretest": "tsc",
     "test": "hardhat test test/v6.test.js",
-    "test:plugins": "hardhat test test/v6.test.js",
+    "test:utils": "mocha test/utils.test.js",
     "build": "tsc",
     "lint": "eslint  --ext .js,.ts ."
   },

@@ -2,36 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
-const utils_1 = require("ethers/lib/utils");
-var Method;
-(function (Method) {
-    Method[Method["batchCall"] = 0] = "batchCall";
-    Method[Method["batchCallPacked"] = 1] = "batchCallPacked";
-    Method[Method["batchTransfer"] = 2] = "batchTransfer";
-    Method[Method["batchTransferPacked"] = 3] = "batchTransferPacked";
-    Method[Method["batchMultiCall"] = 4] = "batchMultiCall";
-    Method[Method["batchMultiCallPacked"] = 5] = "batchMultiCallPacked";
-    Method[Method["batchMultiSigCall"] = 6] = "batchMultiSigCall";
-    Method[Method["batchMultiSigCallPacked"] = 7] = "batchMultiSigCallPacked";
-})(Method || (Method = {}));
-// const web3 = new Web3();
-// function verifyMessage(message: string, signature: string, address: string) {
-//   const messageAddress = web3.eth.accounts.recover(message, signature);
-//   return messageAddress.toLowerCase() === address.toLowerCase();
-// }
-function decodeSessionId(sessionId) {
-    sessionId = sessionId.replace("0x", "");
-    return {
-        group: parseInt(sessionId.substring(0, 6), 16),
-        nonce: parseInt(sessionId.substring(6, 16), 16),
-        afterTimestamp: parseInt(sessionId.substring(16, 26), 16),
-        beforeTimestamp: parseInt(sessionId.substring(26, 36), 16),
-        gasLimit: parseInt(sessionId.substring(36, 44), 16),
-        maxGasPrice: parseInt(sessionId.substring(44, 60), 16),
-        flags: sessionId.substring(60, 64),
-    };
-}
-// Has to be implemented with ETHERS not WEB3
 // const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
 //   if (!transactionValidatorInterface.rpcUrl) {
 //     throw new Error("rpcUrl is required");
@@ -82,32 +52,7 @@ function decodeSessionId(sessionId) {
 //     gasUsed: tx.gasUsed,
 //   };
 // };
-const getEncodedData = (types, values) => {
-    const typedData = {
-        types: {
-            EIP712Domain: [
-                { name: "name", type: "string" },
-                { name: "version", type: "string" },
-                { name: "chainId", type: "uint256" },
-                { name: "verifyingContract", type: "address" },
-            ],
-            params: types.map((type, i) => ({ name: `param${i}`, type })),
-        },
-        primaryType: "params",
-        domain: {
-            name: "Ether Mail",
-            version: "1",
-            chainId: 1,
-            verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-        },
-        message: values.reduce((acc, value, i) => {
-            return { ...acc, [`param${i}`]: value };
-        }, {}),
-    };
-    const abiEncodedMessage = utils_1.defaultAbiCoder.encode(types, values);
-    return {
-        eipMessage: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeData(typedData, typedData.primaryType, typedData.message)),
-        abiEncodedMessage,
-    };
+const getFCTMessageHash = (typedData) => {
+    return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
 };
-exports.default = { decodeSessionId, getEncodedData };
+exports.default = { getFCTMessageHash };
