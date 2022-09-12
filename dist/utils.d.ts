@@ -1,3 +1,4 @@
+import { SignatureLike } from "@ethersproject/bytes";
 import { TypedData } from "ethers-eip712";
 interface IFCTTypedData extends TypedData {
     message: {
@@ -8,10 +9,31 @@ interface IFCTTypedData extends TypedData {
             purgeable: boolean;
             cancelable: boolean;
         };
+        fct: {
+            eip712: boolean;
+            builder: string;
+        };
     };
+}
+interface IFCT {
+    typedData: IFCTTypedData;
+    signatures: {
+        r: string;
+        s: string;
+        v: number;
+    }[];
 }
 declare const _default: {
     getFCTMessageHash: (typedData: TypedData) => string;
-    validateFCT: (typedData: IFCTTypedData) => boolean;
+    validateFCT: (FCT: IFCT) => {
+        getOptions: () => {
+            valid_from: string;
+            expires_at: string;
+            gas_price_limit: string;
+            builder: string;
+        };
+        getSignatures: () => string[];
+    };
+    recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
 };
 export default _default;

@@ -1,3 +1,4 @@
+import { SignatureLike } from "@ethersproject/bytes";
 import { ethers } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 
@@ -10,7 +11,20 @@ interface IFCTTypedData extends TypedData {
       purgeable: boolean;
       cancelable: boolean;
     };
+    fct: {
+      eip712: boolean;
+      builder: string;
+    };
   };
+}
+
+interface IFCT {
+  typedData: IFCTTypedData;
+  signatures: {
+    r: string;
+    s: string;
+    v: number;
+  }[];
 }
 
 // const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
@@ -74,12 +88,18 @@ interface IFCTTypedData extends TypedData {
 //   };
 // };
 
+const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike) => {
+  const messageHash = ethers.utils.arrayify(TypedDataUtils.encodeDigest(typedData));
+  return ethers.utils.recoverAddress(messageHash, signature);
+};
+
 const getFCTMessageHash = (typedData: TypedData) => {
   return ethers.utils.hexlify(TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
 };
 
-const validateFCT = (typedData: IFCTTypedData) => {
-  const limits = typedData.message.limits;
+const validateFCT = (FCT: IFCT) => {
+  const limits = FCT.typedData.message.limits;
+  const fctData = FCT.typedData.message.fct;
 
   const currentDate = new Date().getTime() / 1000;
   const validFrom = parseInt(limits.valid_from);
@@ -98,7 +118,23 @@ const validateFCT = (typedData: IFCTTypedData) => {
     throw new Error(`FCT gas price limit cannot be 0`);
   }
 
-  return true;
+  if (!fctData.eip712) {
+    throw new Error(`FCT must be type EIP712`);
+  }
+
+  return {
+    getOptions: () => {
+      return {
+        valid_from: limits.valid_from,
+        expires_at: limits.expires_at,
+        gas_price_limit: limits.gas_price_limit,
+        builder: fctData.builder,
+      };
+    },
+    getSignatures: () => {
+      return FCT.signatures.map((signature) => recoverAddressFromEIP712(FCT.typedData, signature));
+    },
+  };
 };
 
-export default { getFCTMessageHash, validateFCT };
+export default { getFCTMessageHash, validateFCT, recoverAddressFromEIP712 };

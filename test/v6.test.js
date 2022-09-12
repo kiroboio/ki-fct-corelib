@@ -1,7 +1,7 @@
 const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall, getPlugins, getPlugin } = require("../dist");
+const { BatchMultiSigCall, getPlugins, getPlugin, utils } = require("../dist");
 const { Flow } = require("../dist/constants");
 const { ERC20, PureValidator } = require("@kirobo/ki-eth-fct-provider-ts");
 const { TypedDataUtils } = require("ethers-eip712");
@@ -530,7 +530,7 @@ describe("batchMultiSigCall", () => {
         };
       });
 
-      console.log(util.inspect(signedCalls, false, null, true));
+      console.log("Signers", signer, signer2);
 
       // Creating callData
       const callData = fctBatchMultiSig.contract.methods

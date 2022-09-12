@@ -52,11 +52,16 @@ const ethers_eip712_1 = require("ethers-eip712");
 //     gasUsed: tx.gasUsed,
 //   };
 // };
+const recoverAddressFromEIP712 = (typedData, signature) => {
+    const messageHash = ethers_1.ethers.utils.arrayify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
+    return ethers_1.ethers.utils.recoverAddress(messageHash, signature);
+};
 const getFCTMessageHash = (typedData) => {
     return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
 };
-const validateFCT = (typedData) => {
-    const limits = typedData.message.limits;
+const validateFCT = (FCT) => {
+    const limits = FCT.typedData.message.limits;
+    const fctData = FCT.typedData.message.fct;
     const currentDate = new Date().getTime() / 1000;
     const validFrom = parseInt(limits.valid_from);
     const expiresAt = parseInt(limits.expires_at);
@@ -70,6 +75,21 @@ const validateFCT = (typedData) => {
     if (gasPriceLimit === "0") {
         throw new Error(`FCT gas price limit cannot be 0`);
     }
-    return true;
+    if (!fctData.eip712) {
+        throw new Error(`FCT must be type EIP712`);
+    }
+    return {
+        getOptions: () => {
+            return {
+                valid_from: limits.valid_from,
+                expires_at: limits.expires_at,
+                gas_price_limit: limits.gas_price_limit,
+                builder: fctData.builder,
+            };
+        },
+        getSignatures: () => {
+            return FCT.signatures.map((signature) => recoverAddressFromEIP712(FCT.typedData, signature));
+        },
+    };
 };
-exports.default = { getFCTMessageHash, validateFCT };
+exports.default = { getFCTMessageHash, validateFCT, recoverAddressFromEIP712 };
