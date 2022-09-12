@@ -129,9 +129,9 @@ const parseSessionID = (sessionId) => {
     // const version = sessionId.slice(10, 16);
     const maxRepeats = parseInt(sessionId.slice(16, 20), 16);
     const chillTime = parseInt(sessionId.slice(20, 28), 16);
-    const expiresAt = parseInt(sessionId.slice(28, 38), 16);
-    const validFrom = parseInt(sessionId.slice(38, 48), 16);
-    const maxGasPrice = parseInt(sessionId.slice(48, 64), 16);
+    const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
+    const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
+    const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
     const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
     let flags = {
         eip712: true,

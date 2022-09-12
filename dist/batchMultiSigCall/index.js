@@ -24,9 +24,9 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
         this.options = {
-            maxGasPrice: 25000000000,
+            maxGasPrice: "100000000000",
             validFrom: getDate(),
-            expiresAt: getDate(30),
+            expiresAt: getDate(7),
             purgeable: false,
             cancelable: true,
             builder: "0x0000000000000000000000000000000000000000",
@@ -219,7 +219,6 @@ class BatchMultiSigCall {
         const options = (0, helpers_2.parseSessionID)(fct.sessionId);
         this.setOptions(options);
         const typedData = fct.typedData;
-        // TODO: Get everything through typedData object (EIP712)
         for (const [index, call] of fct.mcall.entries()) {
             const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
             const { meta } = typedData.message[`transaction_${index + 1}`];

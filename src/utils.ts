@@ -1,6 +1,21 @@
 import { ethers } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 
+interface IFCTTypedData extends TypedData {
+  fct: {
+    eip712: boolean;
+  };
+  message: {
+    limits: {
+      valid_from: string;
+      expires_at: string;
+      gas_price_limit: string;
+      purgeable: boolean;
+      cancelable: boolean;
+    };
+  };
+}
+
 // const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
 //   if (!transactionValidatorInterface.rpcUrl) {
 //     throw new Error("rpcUrl is required");
@@ -66,4 +81,27 @@ const getFCTMessageHash = (typedData: TypedData) => {
   return ethers.utils.hexlify(TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
 };
 
-export default { getFCTMessageHash };
+const validateFCT = (typedData: IFCTTypedData) => {
+  const limits = typedData.message.limits;
+
+  const currentDate = new Date().getTime() / 1000;
+  const validFrom = parseInt(limits.valid_from);
+  const expiresAt = parseInt(limits.expires_at);
+  const gasPriceLimit = limits.gas_price_limit;
+
+  if (validFrom > currentDate) {
+    throw new Error(`FCT is not valid yet. FCT is valid from ${validFrom}`);
+  }
+
+  if (expiresAt < currentDate) {
+    throw new Error(`FCT has expired. FCT expired at ${expiresAt}`);
+  }
+
+  if (gasPriceLimit === "0") {
+    throw new Error(`FCT gas price limit cannot be 0`);
+  }
+
+  return true;
+};
+
+export default { getFCTMessageHash, validateFCT };

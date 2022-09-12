@@ -40,9 +40,9 @@ export class BatchMultiSigCall {
   private FactoryProxy: ethers.Contract;
 
   options: MSCallOptions = {
-    maxGasPrice: 25000000000,
+    maxGasPrice: "100000000000", // 100 Gwei as default
     validFrom: getDate(), // Valid from now
-    expiresAt: getDate(30), // Expires after 30 days
+    expiresAt: getDate(7), // Expires after 7 days
     purgeable: false,
     cancelable: true,
     builder: "0x0000000000000000000000000000000000000000",

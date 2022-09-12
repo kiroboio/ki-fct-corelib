@@ -38,10 +38,10 @@ export interface MSCall {
 
 export interface MSCallOptions {
   name?: string;
-  validFrom?: number | string;
-  expiresAt?: number | string;
+  validFrom?: string;
+  expiresAt?: string;
   builder?: string;
-  maxGasPrice?: number;
+  maxGasPrice?: string;
   cancelable?: boolean;
   purgeable?: boolean;
   recurrency?: {

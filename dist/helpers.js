@@ -204,36 +204,6 @@ const getTypedDataDomain = async (factoryProxy) => {
     };
 };
 exports.getTypedDataDomain = getTypedDataDomain;
-//
-// METHOD HELPERS FOR FCTs
-//
-// const handleValues = (value: string | string[], type: string) => {
-//   if (type === "bytes" || type === "string") {
-//     let v: Uint8Array;
-//     if (type === "string") {
-//       v = ethers.utils.toUtf8Bytes(value as string);
-//     } else {
-//       v = ethers.utils.arrayify(value as string);
-//     }
-//     return ethers.utils.arrayify(ethers.utils.hexZeroPad(ethers.utils.keccak256(v), 32));
-//   }
-//   if (type.lastIndexOf("[") > 0) {
-//     const values = value as string[];
-//     const t = type.slice(0, type.lastIndexOf("["));
-//     const v = values.map((item) => handleValues(item, t));
-//     return ethers.utils.arrayify(
-//       ethers.utils.keccak256(
-//         ethers.utils.arrayify(
-//           defaultAbiCoder.encode(
-//             v.map(() => t),
-//             v.map((value) => value)
-//           )
-//         )
-//       )
-//     );
-//   }
-//   return value;
-// };
 const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";

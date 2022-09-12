@@ -55,4 +55,21 @@ const ethers_eip712_1 = require("ethers-eip712");
 const getFCTMessageHash = (typedData) => {
     return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
 };
-exports.default = { getFCTMessageHash };
+const validateFCT = (typedData) => {
+    const limits = typedData.message.limits;
+    const currentDate = new Date().getTime() / 1000;
+    const validFrom = parseInt(limits.valid_from);
+    const expiresAt = parseInt(limits.expires_at);
+    const gasPriceLimit = limits.gas_price_limit;
+    if (validFrom > currentDate) {
+        throw new Error(`FCT is not valid yet. FCT is valid from ${validFrom}`);
+    }
+    if (expiresAt < currentDate) {
+        throw new Error(`FCT has expired. FCT expired at ${expiresAt}`);
+    }
+    if (gasPriceLimit === "0") {
+        throw new Error(`FCT gas price limit cannot be 0`);
+    }
+    return true;
+};
+exports.default = { getFCTMessageHash, validateFCT };
