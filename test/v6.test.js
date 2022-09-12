@@ -1,10 +1,11 @@
 const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall } = require("../dist");
+const { BatchMultiSigCall, getPlugins } = require("../dist");
 const { Flow } = require("../dist/constants");
-const { ERC20, getPlugins, getPlugin } = require("@kirobo/ki-eth-fct-provider-ts");
+// const { ERC20, getPlugins, getPlugin } = require("@kirobo/ki-eth-fct-provider-ts");
 const { TypedDataUtils } = require("ethers-eip712");
+const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
 
 // import util from "util";
 // import { assert, expect } from "chai";
@@ -562,6 +563,62 @@ describe("batchMultiSigCall", () => {
 
       expect(res).to.have.a.property("tx");
       expect(res).to.have.a.property("receipt");
+    });
+  });
+
+  describe("BatchMultiSigCall", () => {
+    let batchMultiSigCall;
+
+    it("Should batchMultiSigCall", async () => {
+      // Initializing BatchMultiSigCall - FCT
+      batchMultiSigCall = new BatchMultiSigCall({
+        provider: ethers.provider,
+        contractAddress: fctController.address,
+      });
+
+      // Get all of the available plugins
+      const plugins = getPlugins();
+
+      // Get Transfer plugin
+      const Transfer = new ERC20.actions.Transfer();
+
+      // Get params for Transfer plugin
+      const params = Transfer.input.get();
+
+      // Set input params for Transfer plugin
+      Transfer.input.set({
+        to: user1,
+        amount: "10000",
+        token: kiro.address,
+      });
+
+      // Create a call from the plugin
+      await batchMultiSigCall.create({
+        plugin: Transfer,
+        from: vault10.address,
+      });
+
+      // Create a call from the plugin - another way to do it with plugins
+      const node = await batchMultiSigCall.create({
+        plugin: new ERC20.actions.Transfer({
+          initParams: {
+            token: kiro.address,
+            to: user1,
+            amount: "10000",
+          },
+        }),
+        from: vault10.address,
+      });
+
+      // Remove call from the FCT at index 0
+      batchMultiSigCall.removeCall(0);
+
+      // Replace call at index 0 with a new call
+      batchMultiSigCall.replaceCall();
+
+      const nodes = batchMultiSigCall.calls;
+
+      const FCT = await batchMultiSigCall.exportFCT();
     });
   });
 });
