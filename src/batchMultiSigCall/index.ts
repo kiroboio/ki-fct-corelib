@@ -277,7 +277,6 @@ export class BatchMultiSigCall {
     this.setOptions(options);
     const typedData = fct.typedData;
 
-    // TODO: Get everything through typedData object (EIP712)
     for (const [index, call] of fct.mcall.entries()) {
       const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
       const { meta } = typedData.message[`transaction_${index + 1}`];
