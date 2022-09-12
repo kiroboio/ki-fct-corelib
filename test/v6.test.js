@@ -1,19 +1,10 @@
 const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall, getPlugins } = require("../dist");
+const { BatchMultiSigCall, getPlugins, getPlugin } = require("../dist");
 const { Flow } = require("../dist/constants");
-// const { ERC20, getPlugins, getPlugin } = require("@kirobo/ki-eth-fct-provider-ts");
+const { ERC20, PureValidator } = require("@kirobo/ki-eth-fct-provider-ts");
 const { TypedDataUtils } = require("ethers-eip712");
-const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
-
-// import util from "util";
-// import { assert, expect } from "chai";
-// import { artifacts, web3, ethers } from "hardhat";
-// import { BatchMultiSigCall, getPlugin, getPlugins } from "../src";
-// import { Flow } from "../src/constants";
-// import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
-// import { TypedDataUtils } from "ethers-eip712";
 
 const UniSwapPair = artifacts.require("UniSwapPair");
 const Activators = artifacts.require("Activators");
@@ -562,11 +553,9 @@ describe("batchMultiSigCall", () => {
   });
 
   describe("BatchMultiSigCall", () => {
-    let batchMultiSigCall;
-
     it("Should batchMultiSigCall", async () => {
       // Initializing BatchMultiSigCall - FCT
-      batchMultiSigCall = new BatchMultiSigCall({
+      const batchMultiSigCall = new BatchMultiSigCall({
         provider: ethers.provider,
         contractAddress: fctController.address,
       });
@@ -574,7 +563,7 @@ describe("batchMultiSigCall", () => {
       // Get all of the available plugins
       const plugins = getPlugins();
 
-      // Get Transfer plugin
+      // Lets say that user chooses to create a Transfer call with ERC20 actions Transfer plugin
       const Transfer = new ERC20.actions.Transfer();
 
       // Get params for Transfer plugin
@@ -594,7 +583,7 @@ describe("batchMultiSigCall", () => {
       });
 
       // Create a call from the plugin - another way to do it with plugins
-      const node = await batchMultiSigCall.create({
+      const nodes = await batchMultiSigCall.create({
         plugin: new ERC20.actions.Transfer({
           initParams: {
             token: kiro.address,
@@ -608,10 +597,29 @@ describe("batchMultiSigCall", () => {
       // Remove call from the FCT at index 0
       batchMultiSigCall.removeCall(0);
 
-      // Replace call at index 0 with a new call
-      batchMultiSigCall.replaceCall();
+      // Replace call at index 0 with a new call, amount is 20000
+      batchMultiSigCall.replaceCall(
+        {
+          plugin: new ERC20.actions.Transfer({
+            initParams: {
+              token: kiro.address,
+              to: user1,
+              amount: "20000",
+            },
+          }),
+          from: vault10.address,
+        },
+        0
+      );
 
-      const nodes = batchMultiSigCall.calls;
+      // Get call from FCT at index 0
+      const call = batchMultiSigCall.getCall(0);
+
+      // All the calls/nodes added to FCT
+      const calls = batchMultiSigCall.calls;
+
+      // Length of the calls/nodes added to FCT
+      const length = batchMultiSigCall.length;
 
       const FCT = await batchMultiSigCall.exportFCT();
     });
