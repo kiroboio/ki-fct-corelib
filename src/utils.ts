@@ -1,6 +1,7 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ethers } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
+import { MSCall } from "./batchMultiSigCall/interfaces";
 
 interface IFCTTypedData extends TypedData {
   message: {
@@ -25,6 +26,7 @@ interface IFCT {
     s: string;
     v: number;
   }[];
+  mcall: MSCall[];
 }
 
 // const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
@@ -131,8 +133,13 @@ const validateFCT = (FCT: IFCT) => {
         builder: fctData.builder,
       };
     },
-    getSignatures: () => {
-      return FCT.signatures.map((signature) => recoverAddressFromEIP712(FCT.typedData, signature));
+    getSigners: () => {
+      return FCT.mcall.reduce((acc: string[], { from }) => {
+        if (!acc.includes(from)) {
+          acc.push(from);
+        }
+        return acc;
+      }, []);
     },
   };
 };

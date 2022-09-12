@@ -87,8 +87,13 @@ const validateFCT = (FCT) => {
                 builder: fctData.builder,
             };
         },
-        getSignatures: () => {
-            return FCT.signatures.map((signature) => recoverAddressFromEIP712(FCT.typedData, signature));
+        getSigners: () => {
+            return FCT.mcall.reduce((acc, { from }) => {
+                if (!acc.includes(from)) {
+                    acc.push(from);
+                }
+                return acc;
+            }, []);
         },
     };
 };

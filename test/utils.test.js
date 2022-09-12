@@ -308,11 +308,8 @@ describe("Test utils", () => {
 
     expect(options.valid_from).to.eq("1662980301");
 
-    const signatures = fct.getSignatures();
+    const signatures = fct.getSigners();
 
-    // 0x08B7d04533DfAe2d72e693771b339FA6DF08635d 0x3d0aA8fc3CBfb7CA765C23cAD3C4A917959d6A65
-
-    expect(signatures[0]).to.eq("0x08B7d04533DfAe2d72e693771b339FA6DF08635d");
-    expect(signatures[1]).to.eq("0x3d0aA8fc3CBfb7CA765C23cAD3C4A917959d6A65");
+    expect(signatures.length).to.eq(2);
   });
 });

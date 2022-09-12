@@ -1,5 +1,6 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { TypedData } from "ethers-eip712";
+import { MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCTTypedData extends TypedData {
     message: {
         limits: {
@@ -22,6 +23,7 @@ interface IFCT {
         s: string;
         v: number;
     }[];
+    mcall: MSCall[];
 }
 declare const _default: {
     getFCTMessageHash: (typedData: TypedData) => string;
@@ -32,7 +34,7 @@ declare const _default: {
             gas_price_limit: string;
             builder: string;
         };
-        getSignatures: () => string[];
+        getSigners: () => string[];
     };
     recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
 };
