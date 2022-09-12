@@ -378,11 +378,6 @@ describe("batchMultiSigCall", () => {
       batchMultiSigCall = new BatchMultiSigCall({
         provider: ethers.provider,
         contractAddress: fctController.address,
-        // Here we can initialise options
-        options: {
-          name: "ERC20 Transfer @BK",
-          validFrom: 1662444930,
-        },
       });
 
       // Or we can call setOptions to add options

@@ -2,9 +2,6 @@ import { ethers } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 
 interface IFCTTypedData extends TypedData {
-  fct: {
-    eip712: boolean;
-  };
   message: {
     limits: {
       valid_from: string;
@@ -12,6 +9,9 @@ interface IFCTTypedData extends TypedData {
       gas_price_limit: string;
       purgeable: boolean;
       cancelable: boolean;
+    };
+    fct: {
+      eip712: boolean;
     };
   };
 }

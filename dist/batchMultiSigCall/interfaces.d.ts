@@ -34,8 +34,8 @@ export interface MSCallOptions {
     name?: string;
     validFrom?: string;
     expiresAt?: string;
-    builder?: string;
     maxGasPrice?: string;
+    builder?: string;
     cancelable?: boolean;
     purgeable?: boolean;
     recurrency?: {

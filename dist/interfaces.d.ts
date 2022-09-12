@@ -45,7 +45,7 @@ export interface BatchCallBase {
     flags?: Partial<BatchFlags>;
 }
 export interface CallOptions {
-    gasLimit?: number;
+    gasLimit?: string;
     flow?: Flow;
     jumpOnSuccess?: number;
     jumpOnFail?: number;
