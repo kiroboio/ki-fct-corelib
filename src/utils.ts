@@ -10,9 +10,6 @@ interface IFCTTypedData extends TypedData {
       purgeable: boolean;
       cancelable: boolean;
     };
-    fct: {
-      eip712: boolean;
-    };
   };
 }
 
