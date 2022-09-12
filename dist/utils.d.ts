@@ -18,11 +18,6 @@ interface IFCTTypedData extends TypedData {
 }
 interface IFCT {
     typedData: IFCTTypedData;
-    signatures: {
-        r: string;
-        s: string;
-        v: number;
-    }[];
     mcall: MSCall[];
 }
 declare const _default: {
