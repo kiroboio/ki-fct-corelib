@@ -217,14 +217,13 @@ const parseCallID = (callId) => {
     const flags = parseInt(callId.slice(32, 34), 16);
     const getFlow = () => {
         const flow = Object.entries(helpers_1.flows).find(([, value]) => {
-            console.log(value.value, flowNumber.toString());
             return value.value === flowNumber.toString();
         });
-        return flow[0];
+        return constants_1.Flow[flow[0]];
     };
     return {
         options: {
-            flow: constants_1.Flow[getFlow()],
+            flow: getFlow(),
             jumpOnFail,
             jumpOnSuccess,
             gasLimit,

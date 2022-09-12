@@ -18,11 +18,11 @@ import {
   handleMethodInterface,
   handleTypes,
   manageCallId,
-  parseCallID,
   parseSessionID,
 } from "./helpers";
 import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
-import { id } from "ethers/lib/utils";
+import { AbiCoder, id } from "ethers/lib/utils";
+import { Flow } from "../constants";
 
 function getDate(days: number = 0) {
   const result = new Date();
@@ -275,27 +275,48 @@ export class BatchMultiSigCall {
     // Here we import FCT and add all the data inside BatchMultiSigCall
     const options = parseSessionID(fct.sessionId);
     this.setOptions(options);
+    const typedData = fct.typedData;
 
+    // TODO: Get everything through typedData object (EIP712)
     for (const [index, call] of fct.mcall.entries()) {
-      // Check if plugin exists for this call
-      const Plugins = getPlugins({ by: { methodInterfaceHash: call.functionSignature } });
+      const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
+      const { meta } = typedData.message[`transaction_${index + 1}`];
 
-      if (!Plugins || Plugins.length === 0) {
-        throw new Error(`No plugin found for call at index ${index}`);
-      }
+      const decodedParams = new AbiCoder().decode(
+        dataTypes.map((type) => `${type.type} ${type.name}`),
+        call.data
+      );
 
-      // If exists, we continue
-      const callId = parseCallID(call.callId);
-      const data = {
-        plugin: await this.getPlugin(call),
-        from: call.from,
-        options: callId.options,
-        viewOnly: callId.viewOnly,
+      const params = dataTypes.map((t) => ({
+        name: t.name,
+        type: t.type,
+        value: BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
+      }));
+
+      const getFlow = () => {
+        const flow = Object.entries(flows).find(([, value]) => {
+          return value.text === meta.flow_control.toString();
+        });
+        return Flow[flow[0]];
       };
 
-      console.log("data", data);
+      const callInput: MSCallInput = {
+        to: call.to,
+        from: call.from,
+        value: call.value,
+        method: meta.method_interface.split("(")[0],
+        params,
+        toENS: meta.to_ens,
+        viewOnly: meta.view_only,
+        options: {
+          gasLimit: meta.gas_limit,
+          jumpOnSuccess: meta.jump_on_success,
+          jumpOnFail: meta.jump_on_fail,
+          flow: getFlow(),
+        },
+      };
 
-      this.create(data);
+      this.create(callInput);
     }
 
     return this.calls;

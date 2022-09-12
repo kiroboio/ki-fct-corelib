@@ -250,15 +250,14 @@ export const parseCallID = (
 
   const getFlow = () => {
     const flow = Object.entries(flows).find(([, value]) => {
-      console.log(value.value, flowNumber.toString());
       return value.value === flowNumber.toString();
     });
-    return flow[0];
+    return Flow[flow[0]];
   };
 
   return {
     options: {
-      flow: Flow[getFlow()],
+      flow: getFlow(),
       jumpOnFail,
       jumpOnSuccess,
       gasLimit,

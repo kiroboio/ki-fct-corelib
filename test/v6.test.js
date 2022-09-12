@@ -516,6 +516,8 @@ describe("batchMultiSigCall", () => {
       const FCT = await batchMultiSigCall3.exportFCT();
       const calls = await batchMultiSigCall2.importFCT(FCT);
 
+      console.log(util.inspect(calls, false, null, true));
+
       expect(calls.length).to.be.equal(1);
     });
 

@@ -11,6 +11,7 @@ const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const utils_1 = require("ethers/lib/utils");
+const constants_1 = require("../constants");
 function getDate(days = 0) {
     const result = new Date();
     result.setDate(result.getDate() + days);
@@ -217,22 +218,39 @@ class BatchMultiSigCall {
         // Here we import FCT and add all the data inside BatchMultiSigCall
         const options = (0, helpers_2.parseSessionID)(fct.sessionId);
         this.setOptions(options);
+        const typedData = fct.typedData;
+        // TODO: Get everything through typedData object (EIP712)
         for (const [index, call] of fct.mcall.entries()) {
-            // Check if plugin exists for this call
-            const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: call.functionSignature } });
-            if (!Plugins || Plugins.length === 0) {
-                throw new Error(`No plugin found for call at index ${index}`);
-            }
-            // If exists, we continue
-            const callId = (0, helpers_2.parseCallID)(call.callId);
-            const data = {
-                plugin: await this.getPlugin(call),
-                from: call.from,
-                options: callId.options,
-                viewOnly: callId.viewOnly,
+            const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
+            const { meta } = typedData.message[`transaction_${index + 1}`];
+            const decodedParams = new utils_1.AbiCoder().decode(dataTypes.map((type) => `${type.type} ${type.name}`), call.data);
+            const params = dataTypes.map((t) => ({
+                name: t.name,
+                type: t.type,
+                value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
+            }));
+            const getFlow = () => {
+                const flow = Object.entries(helpers_1.flows).find(([, value]) => {
+                    return value.text === meta.flow_control.toString();
+                });
+                return constants_1.Flow[flow[0]];
             };
-            console.log("data", data);
-            this.create(data);
+            const callInput = {
+                to: call.to,
+                from: call.from,
+                value: call.value,
+                method: meta.method_interface.split("(")[0],
+                params,
+                toENS: meta.to_ens,
+                viewOnly: meta.view_only,
+                options: {
+                    gasLimit: meta.gas_limit,
+                    jumpOnSuccess: meta.jump_on_success,
+                    jumpOnFail: meta.jump_on_fail,
+                    flow: getFlow(),
+                },
+            };
+            this.create(callInput);
         }
         return this.calls;
     }
