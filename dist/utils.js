@@ -53,8 +53,13 @@ const ethers_eip712_1 = require("ethers-eip712");
 //   };
 // };
 const recoverAddressFromEIP712 = (typedData, signature) => {
-    const messageHash = ethers_1.ethers.utils.arrayify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
-    return ethers_1.ethers.utils.recoverAddress(messageHash, signature);
+    try {
+        const messageHash = ethers_1.ethers.utils.arrayify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
+        return ethers_1.ethers.utils.recoverAddress(messageHash, signature);
+    }
+    catch (e) {
+        return null;
+    }
 };
 const getFCTMessageHash = (typedData) => {
     return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));

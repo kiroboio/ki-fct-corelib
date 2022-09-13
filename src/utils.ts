@@ -85,9 +85,13 @@ interface IFCT {
 //   };
 // };
 
-const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike) => {
-  const messageHash = ethers.utils.arrayify(TypedDataUtils.encodeDigest(typedData));
-  return ethers.utils.recoverAddress(messageHash, signature);
+const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike): string | null => {
+  try {
+    const messageHash = ethers.utils.arrayify(TypedDataUtils.encodeDigest(typedData));
+    return ethers.utils.recoverAddress(messageHash, signature);
+  } catch (e) {
+    return null;
+  }
 };
 
 const getFCTMessageHash = (typedData: TypedData) => {

@@ -9,5 +9,10 @@ export declare enum Flow {
 }
 declare const _default: {
     Flow: typeof Flow;
+    BLOCK_NUMBER: string;
+    BLOCK_TIMESTAMP: string;
+    GAS_PRICE: string;
+    MINDER_ADDRESS: string;
+    ACTIVATOR_ADDRESS: string;
 };
 export default _default;
