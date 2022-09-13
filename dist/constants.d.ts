@@ -14,5 +14,6 @@ declare const _default: {
     GAS_PRICE: string;
     MINER_ADDRESS: string;
     ACTIVATOR_ADDRESS: string;
+    getBlockHash: (indexOfPreviousBlock?: number) => string;
 };
 export default _default;

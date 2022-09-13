@@ -559,6 +559,12 @@ describe("batchMultiSigCall", () => {
       const minerAddress = constants.MINER_ADDRESS;
       const activatorAddress = constants.ACTIVATOR_ADDRESS;
 
+      const blockHash = constants.getBlockHash(1); // Get previous blockHash
+      const blockHash2 = constants.getBlockHash(2); // Get one before blockHash
+
+      expect(blockHash).to.be.eq("0xFF00000000000000000000000000000000000000");
+      expect(blockHash2).to.be.eq("0xFF00000000000000000000000000000000000001");
+
       expect(blockNumber).to.be.eq("0xFB0A000000000000000000000000000000000000");
       expect(blockTimestamp).to.be.eq("0xFB0B000000000000000000000000000000000000");
       expect(gasPrice).to.be.eq("0xFB0C000000000000000000000000000000000000");

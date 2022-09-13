@@ -16,4 +16,14 @@ const BLOCK_TIMESTAMP = "0xFB0B000000000000000000000000000000000000";
 const GAS_PRICE = "0xFB0C000000000000000000000000000000000000";
 const MINER_ADDRESS = "0xFA0A000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0x00FA0B000000000000000000000000000000000000";
-exports.default = { Flow, BLOCK_NUMBER, BLOCK_TIMESTAMP, GAS_PRICE, MINER_ADDRESS, ACTIVATOR_ADDRESS };
+const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
+const getBlockHash = (indexOfPreviousBlock = 1) => {
+    if (indexOfPreviousBlock === 0) {
+        throw new Error("Only previous blocks are supported");
+    }
+    if (indexOfPreviousBlock > 255) {
+        throw new Error("Only previous blocks up to 255 are supported");
+    }
+    return (indexOfPreviousBlock - 1).toString(16).padStart(BLOCK_HASH.length, BLOCK_HASH);
+};
+exports.default = { Flow, BLOCK_NUMBER, BLOCK_TIMESTAMP, GAS_PRICE, MINER_ADDRESS, ACTIVATOR_ADDRESS, getBlockHash };
