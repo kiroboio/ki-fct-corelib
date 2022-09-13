@@ -1,7 +1,7 @@
 const util = require("util");
 const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
-const { BatchMultiSigCall, getPlugins, getPlugin, utils } = require("../dist");
+const { BatchMultiSigCall, getPlugins, getPlugin, utils, constants } = require("../dist");
 const { Flow } = require("../dist/constants");
 const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
 const { TypedDataUtils } = require("ethers-eip712");
@@ -552,6 +552,20 @@ describe("batchMultiSigCall", () => {
   });
 
   describe("BatchMultiSigCall", () => {
+    it("Get constants", () => {
+      const blockNumber = constants.BLOCK_NUMBER;
+      const blockTimestamp = constants.BLOCK_TIMESTAMP;
+      const gasPrice = constants.GAS_PRICE;
+      const minerAddress = constants.MINER_ADDRESS;
+      const activatorAddress = constants.ACTIVATOR_ADDRESS;
+
+      expect(blockNumber).to.be.eq("0xFB0A000000000000000000000000000000000000");
+      expect(blockTimestamp).to.be.eq("0xFB0B000000000000000000000000000000000000");
+      expect(gasPrice).to.be.eq("0xFB0C000000000000000000000000000000000000");
+      expect(minerAddress).to.be.eq("0xFA0A000000000000000000000000000000000000");
+      expect(activatorAddress).to.be.eq("0x00FA0B000000000000000000000000000000000000");
+    });
+
     it("batchMultiSigCall example", async () => {
       // Initializing BatchMultiSigCall - FCT
       const batchMultiSigCall = new BatchMultiSigCall({

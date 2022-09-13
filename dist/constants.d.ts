@@ -12,7 +12,7 @@ declare const _default: {
     BLOCK_NUMBER: string;
     BLOCK_TIMESTAMP: string;
     GAS_PRICE: string;
-    MINDER_ADDRESS: string;
+    MINER_ADDRESS: string;
     ACTIVATOR_ADDRESS: string;
 };
 export default _default;
