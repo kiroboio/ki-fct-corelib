@@ -348,7 +348,7 @@ describe("batchMultiSigCall", () => {
   });
 
   describe("BatchMultiSigCall core lib", () => {
-    let batchMultiSigCall: BatchMultiSigCall;
+    let batchMultiSigCall;
 
     it("Should initialise batchMultiSigCall", async () => {
       batchMultiSigCall = new BatchMultiSigCall({

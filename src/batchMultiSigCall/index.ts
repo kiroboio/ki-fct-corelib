@@ -389,9 +389,9 @@ export class BatchMultiSigCall {
     if ("recurrency" in this.options) {
       optionalMessage = {
         recurrency: {
-          max_repeats: this.options.recurrency.maxRepeats || "1",
-          chill_time: this.options.recurrency.chillTime || "0",
-          accumetable: this.options.recurrency.accumetable || false,
+          max_repeats: this.options?.recurrency?.maxRepeats || "1",
+          chill_time: this.options?.recurrency?.chillTime || "0",
+          accumetable: this.options?.recurrency?.accumetable || false,
         },
       };
       optionalTypes = {
@@ -408,8 +408,8 @@ export class BatchMultiSigCall {
       optionalMessage = {
         ...optionalMessage,
         multisig: {
-          external_signers: this.options.multisig.externalSigners,
-          minimum_approvals: this.options.multisig.minimumApprovals || 2,
+          external_signers: this.options?.multisig?.externalSigners,
+          minimum_approvals: this.options?.multisig?.minimumApprovals || 2,
         },
       };
       optionalTypes = {
