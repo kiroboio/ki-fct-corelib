@@ -162,11 +162,22 @@ class BatchMultiSigCall {
         }
         return this.calls;
     }
-    replaceCall(tx, index) {
+    async replaceCall(callInput, index) {
         if (index >= this.calls.length) {
             throw new Error(`Index ${index} is out of bounds.`);
         }
-        this.calls[index] = tx;
+        let call;
+        if ("plugin" in callInput) {
+            const pluginCall = await callInput.plugin.create();
+            call = { ...pluginCall, from: callInput.from, options: callInput.options };
+        }
+        else {
+            if (!callInput.to) {
+                throw new Error("To address is required");
+            }
+            call = { ...callInput };
+        }
+        this.calls[index] = call;
         return this.calls;
     }
     removeCall(index) {
@@ -208,6 +219,7 @@ class BatchMultiSigCall {
         }));
         return {
             typedData,
+            builder: this.options.builder,
             typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
             sessionId,
             nameHash: (0, utils_1.id)(this.options.name || ""),
@@ -216,7 +228,7 @@ class BatchMultiSigCall {
     }
     async importFCT(fct) {
         // Here we import FCT and add all the data inside BatchMultiSigCall
-        const options = (0, helpers_2.parseSessionID)(fct.sessionId);
+        const options = (0, helpers_2.parseSessionID)(fct.sessionId, fct.builder);
         this.setOptions(options);
         const typedData = fct.typedData;
         for (const [index, call] of fct.mcall.entries()) {

@@ -200,11 +200,21 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  public replaceCall(tx: MSCallInput, index: number): MSCallInput[] {
+  public async replaceCall(callInput: MSCallInput | IWithPlugin, index: number): Promise<MSCallInput[]> {
     if (index >= this.calls.length) {
       throw new Error(`Index ${index} is out of bounds.`);
     }
-    this.calls[index] = tx;
+    let call: MSCallInput;
+    if ("plugin" in callInput) {
+      const pluginCall = await callInput.plugin.create();
+      call = { ...pluginCall, from: callInput.from, options: callInput.options };
+    } else {
+      if (!callInput.to) {
+        throw new Error("To address is required");
+      }
+      call = { ...callInput } as MSCallInput;
+    }
+    this.calls[index] = call;
     return this.calls;
   }
 
@@ -228,6 +238,7 @@ export class BatchMultiSigCall {
     | {
         typedData: TypedData;
         typeHash: string;
+        builder: string;
         sessionId: string;
         nameHash: string;
         mcall: MSCall[];
@@ -264,6 +275,7 @@ export class BatchMultiSigCall {
 
     return {
       typedData,
+      builder: this.options.builder,
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
       sessionId,
       nameHash: id(this.options.name || ""),
@@ -273,7 +285,7 @@ export class BatchMultiSigCall {
 
   public async importFCT(fct: IBatchMultiSigCallFCT): Promise<MSCallInput[] | Error> {
     // Here we import FCT and add all the data inside BatchMultiSigCall
-    const options = parseSessionID(fct.sessionId);
+    const options = parseSessionID(fct.sessionId, fct.builder);
     this.setOptions(options);
     const typedData = fct.typedData;
 

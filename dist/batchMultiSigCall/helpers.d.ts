@@ -11,7 +11,7 @@ export declare const handleTypedHashes: (call: MSCallInput, typedData: TypedData
 export declare const manageFlow: (call: MSCallInput) => string;
 export declare const manageCallId: (call: MSCallInput, index: number) => string;
 export declare const getSessionId: (salt: string, options: MSCallOptions) => string;
-export declare const parseSessionID: (sessionId: string) => MSCallOptions;
+export declare const parseSessionID: (sessionId: string, builder: string) => MSCallOptions;
 export declare const parseCallID: (callId: string) => {
     options: {
         gasLimit: number;

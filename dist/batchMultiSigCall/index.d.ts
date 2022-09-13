@@ -23,13 +23,14 @@ export declare class BatchMultiSigCall {
     getPlugin: (dataOrIndex: MSCall | number) => Promise<PluginInstance>;
     getAllPlugins: () => Plugin[];
     create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]>;
-    replaceCall(tx: MSCallInput, index: number): MSCallInput[];
+    replaceCall(callInput: MSCallInput | IWithPlugin, index: number): Promise<MSCallInput[]>;
     removeCall(index: number): MSCallInput[];
     getCall(index: number): MSCallInput;
     get length(): number;
     exportFCT(): Promise<{
         typedData: TypedData;
         typeHash: string;
+        builder: string;
         sessionId: string;
         nameHash: string;
         mcall: MSCall[];

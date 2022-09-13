@@ -3,7 +3,7 @@ const { assert, expect } = require("chai");
 const { artifacts, web3, ethers } = require("hardhat");
 const { BatchMultiSigCall, getPlugins, getPlugin, utils } = require("../dist");
 const { Flow } = require("../dist/constants");
-const { ERC20, PureValidator } = require("@kirobo/ki-eth-fct-provider-ts");
+const { ERC20 } = require("@kirobo/ki-eth-fct-provider-ts");
 const { TypedDataUtils } = require("ethers-eip712");
 
 const UniSwapPair = artifacts.require("UniSwapPair");
@@ -525,7 +525,7 @@ describe("batchMultiSigCall", () => {
           ...item,
           signatures,
           variables: batchMultiSigCall.getVariablesAsBytes32(),
-          builder: ZERO_ADDRESS,
+          // builder: ZERO_ADDRESS,
           externalSigners: [],
         };
       });
@@ -553,7 +553,7 @@ describe("batchMultiSigCall", () => {
   });
 
   describe("BatchMultiSigCall", () => {
-    it("Should batchMultiSigCall", async () => {
+    it("batchMultiSigCall example", async () => {
       // Initializing BatchMultiSigCall - FCT
       const batchMultiSigCall = new BatchMultiSigCall({
         provider: ethers.provider,
@@ -561,7 +561,7 @@ describe("batchMultiSigCall", () => {
       });
 
       // Get all of the available plugins
-      const plugins = getPlugins();
+      const plugins = getPlugins({});
 
       // Lets say that user chooses to create a Transfer call with ERC20 actions Transfer plugin
       const Transfer = new ERC20.actions.Transfer();

@@ -123,7 +123,7 @@ const getSessionId = (salt, options) => {
     return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 exports.getSessionId = getSessionId;
-const parseSessionID = (sessionId) => {
+const parseSessionID = (sessionId, builder) => {
     // const salt = sessionId.slice(2, 8);
     const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
     // const version = sessionId.slice(10, 16);
@@ -195,6 +195,7 @@ const parseSessionID = (sessionId) => {
     };
     return {
         ...data,
+        builder,
         recurrency: {
             accumetable: flags.accumetable,
             chillTime,

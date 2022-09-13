@@ -7,6 +7,7 @@ export interface IBatchMultiSigCallFCT {
   sessionId: string;
   nameHash: string;
   mcall: MSCall[];
+  builder: string;
 }
 
 export interface MSCallInput {
@@ -38,13 +39,13 @@ export interface MSCall {
 
 export interface MSCallOptions {
   name?: string;
-  validFrom?: string;
-  expiresAt?: string;
-  maxGasPrice?: string;
+  validFrom: string;
+  expiresAt: string;
+  maxGasPrice: string;
+  cancelable: boolean;
+  purgeable: boolean;
+  builder: string;
 
-  builder?: string;
-  cancelable?: boolean;
-  purgeable?: boolean;
   recurrency?: {
     maxRepeats?: number;
     chillTime?: number;
