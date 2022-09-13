@@ -44,20 +44,14 @@ class BatchMultiSigCall {
                     throw new Error("Method is required to get plugin");
                 }
                 const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
-                const initPlugin = new Plugin();
-                // @ts-ignore
-                await initPlugin.reverseCall(call);
-                return initPlugin;
+                return Plugin;
             }
             else {
                 const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
                 if (!Plugins || Plugins.length === 0) {
                     throw new Error("No plugin found");
                 }
-                const initPlugin = new Plugins[0]();
-                // @ts-ignore
-                await initPlugin.reverseCall(dataOrIndex);
-                return initPlugin;
+                return Plugins[0];
             }
         };
         this.getAllPlugins = () => {
@@ -311,9 +305,9 @@ class BatchMultiSigCall {
         if ("recurrency" in this.options) {
             optionalMessage = {
                 recurrency: {
-                    max_repeats: this.options.recurrency.maxRepeats || "1",
-                    chill_time: this.options.recurrency.chillTime || "0",
-                    accumetable: this.options.recurrency.accumetable || false,
+                    max_repeats: this.options?.recurrency?.maxRepeats || "1",
+                    chill_time: this.options?.recurrency?.chillTime || "0",
+                    accumetable: this.options?.recurrency?.accumetable || false,
                 },
             };
             optionalTypes = {
@@ -329,8 +323,8 @@ class BatchMultiSigCall {
             optionalMessage = {
                 ...optionalMessage,
                 multisig: {
-                    external_signers: this.options.multisig.externalSigners,
-                    minimum_approvals: this.options.multisig.minimumApprovals || 2,
+                    external_signers: this.options?.multisig?.externalSigners,
+                    minimum_approvals: this.options?.multisig?.minimumApprovals || 2,
                 },
             };
             optionalTypes = {

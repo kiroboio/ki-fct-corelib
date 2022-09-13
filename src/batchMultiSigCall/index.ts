@@ -20,7 +20,7 @@ import {
   manageCallId,
   parseSessionID,
 } from "./helpers";
-import { getPlugin, getPlugins, Plugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { AbiCoder, id } from "ethers/lib/utils";
 import { Flow } from "../constants";
 
@@ -144,35 +144,28 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  public getPlugin = async (dataOrIndex: MSCall | number): Promise<PluginInstance> => {
+  public getPlugin = async (
+    dataOrIndex: MSCall | number
+  ): Promise<{ name: string; description: string; plugin: Plugin }> => {
     if (typeof dataOrIndex === "number") {
       const call = this.getCall(dataOrIndex);
       if (!call.method) {
         throw new Error("Method is required to get plugin");
       }
       const Plugin = getPlugin({ signature: getMethodInterface(call) });
-      const initPlugin = new Plugin();
 
-      // @ts-ignore
-      await initPlugin.reverseCall(call);
-
-      return initPlugin;
+      return Plugin;
     } else {
       const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
       if (!Plugins || Plugins.length === 0) {
         throw new Error("No plugin found");
       }
 
-      const initPlugin = new Plugins[0]();
-
-      // @ts-ignore
-      await initPlugin.reverseCall(dataOrIndex);
-
-      return initPlugin;
+      return Plugins[0];
     }
   };
 
-  public getAllPlugins = (): Plugin[] => {
+  public getAllPlugins = (): { name: string; description: string; plugin: Plugin }[] => {
     return getPlugins({});
   };
 
