@@ -85,7 +85,7 @@ export class BatchMultiSigCall {
 
   // Helpers
 
-  public getCalldataForActivator = async (
+  public getCalldataForActuator = async (
     actuatorAddress: string,
     signedFCTs: object,
     listOfPrugedFCTs: string[] = []
