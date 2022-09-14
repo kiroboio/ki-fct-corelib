@@ -40,6 +40,7 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 export class BatchMultiSigCall {
   private FCT_BatchMultiSigCall: ethers.Contract;
   private batchMultiSigSelector: string = "0xa7973c1f";
+  private provider: ethers.providers.JsonRpcProvider;
 
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
@@ -63,6 +64,7 @@ export class BatchMultiSigCall {
     options?: MSCallOptions;
   }) {
     this.FCT_BatchMultiSigCall = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    this.provider = provider;
 
     this.options = {
       ...this.options,
@@ -91,13 +93,13 @@ export class BatchMultiSigCall {
     listOfPurgedFCTs: string[] = []
   ) => {
     const version = "010101";
-    const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.FCT_BatchMultiSigCall.provider);
+    const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.provider);
     const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
 
     const activateId =
       "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
 
-    return this.FCT_BatchMultiSigCall.contract.interface.encodeFunctionData("batchMultiSigCall", [
+    return this.FCT_BatchMultiSigCall.interface.encodeFunctionData("batchMultiSigCall", [
       activateId,
       signedFCTs,
       listOfPurgedFCTs,

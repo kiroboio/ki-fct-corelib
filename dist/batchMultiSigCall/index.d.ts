@@ -5,6 +5,7 @@ import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
     private FCT_BatchMultiSigCall;
     private batchMultiSigSelector;
+    private provider;
     options: MSCallOptions;
     variables: string[][];
     calls: MSCallInput[];
@@ -14,7 +15,7 @@ export declare class BatchMultiSigCall {
         options?: MSCallOptions;
     });
     validate(call: MSCallInput): boolean;
-    getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<any>;
+    getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<string>;
     createVariable(variableId: string, value?: string): string[];
     addVariableValue(variableId: string, value: string): string[];
     private getVariableIndex;
