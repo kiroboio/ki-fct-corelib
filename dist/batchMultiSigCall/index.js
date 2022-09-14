@@ -36,7 +36,7 @@ class BatchMultiSigCall {
         this.variables = [];
         this.calls = [];
         // Helpers
-        this.getCalldataForActuator = async (actuatorAddress, signedFCTs, listOfPrugedFCTs = []) => {
+        this.getCalldataForActuator = async (actuatorAddress, signedFCTs, listOfPurgedFCTs = []) => {
             const version = "010101";
             const actuator = new ethers_1.ethers.Contract(actuatorAddress, FCT_Actuator_abi_json_1.default, this.FCT_BatchMultiSigCall.provider);
             const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
@@ -44,7 +44,7 @@ class BatchMultiSigCall {
             return this.FCT_BatchMultiSigCall.contract.interface.encodeFunctionData("batchMultiSigCall", [
                 activateId,
                 signedFCTs,
-                listOfPrugedFCTs,
+                listOfPurgedFCTs,
             ]);
         };
         // End of options

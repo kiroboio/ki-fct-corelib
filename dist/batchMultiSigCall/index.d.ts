@@ -14,7 +14,7 @@ export declare class BatchMultiSigCall {
         options?: MSCallOptions;
     });
     validate(call: MSCallInput): boolean;
-    getCalldataForActuator: (actuatorAddress: string, signedFCTs: object, listOfPrugedFCTs?: string[]) => Promise<any>;
+    getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<any>;
     createVariable(variableId: string, value?: string): string[];
     addVariableValue(variableId: string, value: string): string[];
     private getVariableIndex;

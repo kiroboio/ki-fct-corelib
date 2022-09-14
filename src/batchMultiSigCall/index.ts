@@ -87,8 +87,8 @@ export class BatchMultiSigCall {
 
   public getCalldataForActuator = async (
     actuatorAddress: string,
-    signedFCTs: object,
-    listOfPrugedFCTs: string[] = []
+    signedFCTs: object[],
+    listOfPurgedFCTs: string[] = []
   ) => {
     const version = "010101";
     const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.FCT_BatchMultiSigCall.provider);
@@ -100,7 +100,7 @@ export class BatchMultiSigCall {
     return this.FCT_BatchMultiSigCall.contract.interface.encodeFunctionData("batchMultiSigCall", [
       activateId,
       signedFCTs,
-      listOfPrugedFCTs,
+      listOfPurgedFCTs,
     ]);
   };
 
