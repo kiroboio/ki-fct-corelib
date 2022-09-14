@@ -1,6 +1,7 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import {
@@ -30,14 +31,15 @@ function getDate(days: number = 0) {
   return Number(result.getTime() / 1000).toFixed();
 }
 
-const batchMultiSigSelector = "0xa7973c1f";
+// const batchMultiSigSelector = "0xa7973c1f";
 
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 
 export class BatchMultiSigCall {
-  private FactoryProxy: ethers.Contract;
+  private FCT_BatchMultiSigCall: ethers.Contract;
+  private batchMultiSigSelector: string = "0xa7973c1f";
 
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
@@ -60,7 +62,7 @@ export class BatchMultiSigCall {
     contractAddress: string;
     options?: MSCallOptions;
   }) {
-    this.FactoryProxy = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    this.FCT_BatchMultiSigCall = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
 
     this.options = {
       ...this.options,
@@ -80,6 +82,27 @@ export class BatchMultiSigCall {
     }
     return true;
   }
+
+  // Helpers
+
+  public getCalldataForActivator = async (
+    actuatorAddress: string,
+    signedFCTs: object,
+    listOfPrugedFCTs: string[] = []
+  ) => {
+    const version = "010101";
+    const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.FCT_BatchMultiSigCall.provider);
+    const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
+
+    const activateId =
+      "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+
+    return this.FCT_BatchMultiSigCall.contract.interface.encodeFunctionData("batchMultiSigCall", [
+      activateId,
+      signedFCTs,
+      listOfPrugedFCTs,
+    ]);
+  };
 
   // Variables
 
@@ -481,12 +504,12 @@ export class BatchMultiSigCall {
         ],
       },
       primaryType: "BatchMultiSigCall",
-      domain: await getTypedDataDomain(this.FactoryProxy),
+      domain: await getTypedDataDomain(this.FCT_BatchMultiSigCall),
       message: {
         fct: {
           name: this.options.name || "",
           builder: this.options.builder,
-          selector: batchMultiSigSelector,
+          selector: this.batchMultiSigSelector,
           version,
           random_id: `0x${salt}`,
           eip712: true,

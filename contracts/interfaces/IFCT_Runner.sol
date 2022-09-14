@@ -8,7 +8,7 @@ interface IFCT_Runner {
         uint256 value,
         bytes calldata data,
         bytes32 messageHash,
-        address[] calldata signers, 
+        address[] calldata signers,
         uint256 sessionId
     ) external returns (bytes memory);
 
@@ -16,11 +16,13 @@ interface IFCT_Runner {
         address target,
         bytes calldata data,
         bytes32 messageHash,
-        address[] calldata signers, 
+        address[] calldata signers,
         uint256 sessionId
     ) external view returns (bytes memory);
 
     function isBlocked_(bytes32 messageHash) external view returns (uint256);
+
+    function fctIsVersionSupported(bytes32 funcID) external view returns (bool);
 
     function allowedToExecute_(address[] calldata signers, uint256 version)
         external

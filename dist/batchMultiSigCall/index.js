@@ -7,6 +7,7 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
+const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
@@ -17,12 +18,13 @@ function getDate(days = 0) {
     result.setDate(result.getDate() + days);
     return Number(result.getTime() / 1000).toFixed();
 }
-const batchMultiSigSelector = "0xa7973c1f";
+// const batchMultiSigSelector = "0xa7973c1f";
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
+        this.batchMultiSigSelector = "0xa7973c1f";
         this.options = {
             maxGasPrice: "100000000000",
             validFrom: getDate(),
@@ -33,6 +35,18 @@ class BatchMultiSigCall {
         };
         this.variables = [];
         this.calls = [];
+        // Helpers
+        this.getCalldataForActivator = async (actuatorAddress, signedFCTs, listOfPrugedFCTs = []) => {
+            const version = "010101";
+            const actuator = new ethers_1.ethers.Contract(actuatorAddress, FCT_Actuator_abi_json_1.default, this.FCT_BatchMultiSigCall.provider);
+            const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
+            const activateId = "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+            return this.FCT_BatchMultiSigCall.contract.interface.encodeFunctionData("batchMultiSigCall", [
+                activateId,
+                signedFCTs,
+                listOfPrugedFCTs,
+            ]);
+        };
         // End of options
         //
         //
@@ -69,7 +83,7 @@ class BatchMultiSigCall {
             // Else it is a variable
             return this.getVariableValue(call.to);
         };
-        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
+        this.FCT_BatchMultiSigCall = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
         this.options = {
             ...this.options,
             ...options,
@@ -399,12 +413,12 @@ class BatchMultiSigCall {
                 ],
             },
             primaryType: "BatchMultiSigCall",
-            domain: await (0, helpers_1.getTypedDataDomain)(this.FactoryProxy),
+            domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_BatchMultiSigCall),
             message: {
                 fct: {
                     name: this.options.name || "",
                     builder: this.options.builder,
-                    selector: batchMultiSigSelector,
+                    selector: this.batchMultiSigSelector,
                     version,
                     random_id: `0x${salt}`,
                     eip712: true,

@@ -3,7 +3,8 @@ import { TypedData } from "ethers-eip712";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
-    private FactoryProxy;
+    private FCT_BatchMultiSigCall;
+    private batchMultiSigSelector;
     options: MSCallOptions;
     variables: string[][];
     calls: MSCallInput[];
@@ -13,6 +14,7 @@ export declare class BatchMultiSigCall {
         options?: MSCallOptions;
     });
     validate(call: MSCallInput): boolean;
+    getCalldataForActivator: (actuatorAddress: string, signedFCTs: object, listOfPrugedFCTs?: string[]) => Promise<any>;
     createVariable(variableId: string, value?: string): string[];
     addVariableValue(variableId: string, value: string): string[];
     private getVariableIndex;

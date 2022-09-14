@@ -515,6 +515,12 @@ describe("batchMultiSigCall", () => {
       const signer = getSigner(10);
       const signer2 = getSigner(11);
 
+      const buildActivateId = async () => {
+        const version = "010101";
+        const nonce = BigInt(await actuator.s_nonces(batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
+        return "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+      };
+
       // Signing the FCT with 2 signers
       const signedCalls = [FCT].map((item) => {
         const messageDigest = TypedDataUtils.encodeDigest(item.typedData);
