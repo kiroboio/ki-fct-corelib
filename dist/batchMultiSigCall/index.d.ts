@@ -45,7 +45,7 @@ export declare class BatchMultiSigCall {
         sessionId: string;
         nameHash: string;
         mcall: MSCall[];
-    } | Error>;
+    }>;
     importFCT(fct: IBatchMultiSigCallFCT): Promise<MSCallInput[] | Error>;
     private createTypedData;
     private getParams;

@@ -252,17 +252,14 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<
-    | {
-        typedData: TypedData;
-        typeHash: string;
-        builder: string;
-        sessionId: string;
-        nameHash: string;
-        mcall: MSCall[];
-      }
-    | Error
-  > {
+  public async exportFCT(): Promise<{
+    typedData: TypedData;
+    typeHash: string;
+    builder: string;
+    sessionId: string;
+    nameHash: string;
+    mcall: MSCall[];
+  }> {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }

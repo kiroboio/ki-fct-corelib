@@ -652,39 +652,4 @@ describe("batchMultiSigCall", () => {
       const FCT = await batchMultiSigCall.exportFCT();
     });
   });
-
-  describe("Create FCT", async () => {
-    it("Should create FCT", async () => {
-      const batchMultiSigCall = new BatchMultiSigCall({
-        provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
-        contractAddress: "0x0bBb48Cd5aCF40622965F83d9dF13cAbCE525a31",
-      });
-
-      const vault = process.env.VAULT;
-      const key = process.env.PRIVATE_KEY;
-
-      await batchMultiSigCall.create({
-        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-        from: vault,
-        value: "10000000000000000",
-      });
-
-      const FCT = await batchMultiSigCall.exportFCT();
-
-      const messageDigest = TypedDataUtils.encodeDigest(FCT.typedData);
-      const signingKey = new ethers.utils.SigningKey(key);
-      let signature = signingKey.signDigest(messageDigest);
-      signature.v = "0x" + signature.v.toString(16);
-
-      const signedFCT = {
-        ...FCT,
-        signatures: [signature],
-        variables: [],
-        builder: ZERO_ADDRESS,
-        externalSigners: [],
-      };
-
-      console.log(util.inspect(signedFCT, false, null, true));
-    });
-  });
 });
