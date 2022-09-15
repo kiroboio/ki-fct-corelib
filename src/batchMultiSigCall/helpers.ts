@@ -137,7 +137,7 @@ export const getSessionId = (salt: string, options: MSCallOptions) => {
   let flagValue = 8; // EIP712 true by default
   if (options.recurrency?.accumetable) flagValue += 1;
   if (options.purgeable) flagValue += 2;
-  if (options.cancelable) flagValue += 4;
+  if (options.blockable) flagValue += 4;
 
   const flags = flagValue.toString(16).padStart(2, "0");
 
@@ -159,7 +159,7 @@ export const parseSessionID = (sessionId: string, builder: string): MSCallOption
     eip712: true,
     accumetable: false,
     purgeable: false,
-    cancelable: false,
+    blockable: false,
   };
 
   if (flagsNumber === 9) {
@@ -181,26 +181,26 @@ export const parseSessionID = (sessionId: string, builder: string): MSCallOption
   } else if (flagsNumber === 12) {
     flags = {
       ...flags,
-      cancelable: true,
+      blockable: true,
     };
   } else if (flagsNumber === 13) {
     flags = {
       ...flags,
       accumetable: true,
-      cancelable: true,
+      blockable: true,
     };
   } else if (flagsNumber === 14) {
     flags = {
       ...flags,
       purgeable: true,
-      cancelable: true,
+      blockable: true,
     };
   } else if (flagsNumber === 15) {
     flags = {
       ...flags,
       accumetable: true,
       purgeable: true,
-      cancelable: true,
+      blockable: true,
     };
   }
 
@@ -208,7 +208,7 @@ export const parseSessionID = (sessionId: string, builder: string): MSCallOption
     validFrom,
     expiresAt,
     maxGasPrice,
-    cancelable: flags.cancelable,
+    blockable: flags.blockable,
     purgeable: flags.purgeable,
   };
 

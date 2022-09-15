@@ -47,7 +47,7 @@ export class BatchMultiSigCall {
     validFrom: getDate(), // Valid from now
     expiresAt: getDate(7), // Expires after 7 days
     purgeable: false,
-    cancelable: true,
+    blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
   };
 
@@ -470,7 +470,7 @@ export class BatchMultiSigCall {
           { name: "expires_at", type: "uint40" },
           { name: "gas_price_limit", type: "uint64" },
           { name: "purgeable", type: "bool" },
-          { name: "cancelable", type: "bool" },
+          { name: "blockable", type: "bool" },
         ],
         ...optionalTypes,
         ...this.calls.reduce(
@@ -521,7 +521,7 @@ export class BatchMultiSigCall {
           expires_at: this.options.expiresAt, // TODO: Expires after 30 days as default
           gas_price_limit: this.options.maxGasPrice, // 20 GWei as default
           purgeable: this.options.purgeable,
-          cancelable: this.options.cancelable,
+          blockable: this.options.blockable,
         },
         ...optionalMessage,
         ...typedDataMessage,

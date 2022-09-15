@@ -1,207 +1,14 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "contract ENS",
+        "name": "ens",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchCallPackedReverted_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchCallReverted_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "innerIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchMultiCallFailed_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "innerIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchMultiCallPackedFailed_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "innerIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchMultiSigCallFailed_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "innerIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchMultiSigCallPackedFailed_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "mode",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "block",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchTransfered_",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -223,201 +30,8 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "TransferPackedReverted_",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "TransferReverted_",
-    "type": "event"
-  },
-  {
     "stateMutability": "nonpayable",
     "type": "fallback"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_CALL_PACKED_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_CALL_TRANSACTION_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_CALL_LIMITS_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_CALL_TRANSACTION_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_CALL_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_SIG_CALL_APPROVAL_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_MULTI_SIG_CALL_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_TRANSFER_PACKED_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "BATCH_TRANSFER_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -447,51 +61,12 @@
   },
   {
     "inputs": [],
-    "name": "LATEST",
-    "outputs": [
-      {
-        "internalType": "bytes8",
-        "name": "",
-        "type": "bytes8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "NAME",
     "outputs": [
       {
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PACKED_BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PACKED_BATCH_MULTI_SIG_CALL_TRANSACTION_TYPEHASH_",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -533,659 +108,139 @@
         "type": "address"
       }
     ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "data",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct PackedCall[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "silentRevert",
-        "type": "bool"
-      }
-    ],
-    "name": "batchCallPacked_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "typeHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "ensHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "functionSignature",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes",
-            "name": "data",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct Call[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "silentRevert",
-        "type": "bool"
-      }
-    ],
-    "name": "batchCall_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint8",
-            "name": "v",
-            "type": "uint8"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-              },
-              {
-                "internalType": "uint32",
-                "name": "gasLimit",
-                "type": "uint32"
-              },
-              {
-                "internalType": "uint16",
-                "name": "flags",
-                "type": "uint16"
-              },
-              {
-                "internalType": "bytes",
-                "name": "data",
-                "type": "bytes"
-              }
-            ],
-            "internalType": "struct PackedMCall[]",
-            "name": "mcall",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct PackedMCalls[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      }
-    ],
-    "name": "batchMultiCallPacked_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "typeHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint8",
-            "name": "v",
-            "type": "uint8"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes32",
-                "name": "typeHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "ensHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "functionSignature",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-              },
-              {
-                "internalType": "uint32",
-                "name": "gasLimit",
-                "type": "uint32"
-              },
-              {
-                "internalType": "uint16",
-                "name": "flags",
-                "type": "uint16"
-              },
-              {
-                "internalType": "bytes",
-                "name": "data",
-                "type": "bytes"
-              }
-            ],
-            "internalType": "struct MCall[]",
-            "name": "mcall",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct MCalls[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      }
-    ],
-    "name": "batchMultiCall_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "signer",
-                "type": "address"
-              },
-              {
-                "internalType": "uint32",
-                "name": "gasLimit",
-                "type": "uint32"
-              },
-              {
-                "internalType": "uint16",
-                "name": "flags",
-                "type": "uint16"
-              },
-              {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-              },
-              {
-                "internalType": "bytes",
-                "name": "data",
-                "type": "bytes"
-              }
-            ],
-            "internalType": "struct PackedMSCall[]",
-            "name": "mcall",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes32",
-                "name": "r",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "s",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "uint8",
-                "name": "v",
-                "type": "uint8"
-              }
-            ],
-            "internalType": "struct Signature[]",
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct PackedMSCalls[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      }
-    ],
-    "name": "batchMultiSigCallPacked_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "typeHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes32",
-                "name": "typeHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "ensHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "functionSignature",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "signer",
-                "type": "address"
-              },
-              {
-                "internalType": "uint32",
-                "name": "gasLimit",
-                "type": "uint32"
-              },
-              {
-                "internalType": "uint16",
-                "name": "flags",
-                "type": "uint16"
-              },
-              {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-              },
-              {
-                "internalType": "bytes",
-                "name": "data",
-                "type": "bytes"
-              }
-            ],
-            "internalType": "struct MSCall[]",
-            "name": "mcall",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes32",
-                "name": "r",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "s",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "uint8",
-                "name": "v",
-                "type": "uint8"
-              }
-            ],
-            "internalType": "struct Signature[]",
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct MSCalls[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "nonceGroup",
-        "type": "uint256"
-      }
-    ],
-    "name": "batchMultiSigCall_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct PackedTransfer[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint24",
-        "name": "nonceGroup",
-        "type": "uint24"
-      },
-      {
-        "internalType": "bool",
-        "name": "silentRevert",
-        "type": "bool"
-      }
-    ],
-    "name": "batchTransferPacked_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "r",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "s",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "tokenEnsHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "toEnsHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sessionId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct Transfer[]",
-        "name": "tr",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "uint24",
-        "name": "nonceGroup",
-        "type": "uint24"
-      },
-      {
-        "internalType": "bool",
-        "name": "silentRevert",
-        "type": "bool"
-      }
-    ],
-    "name": "batchTransfer_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "recipient",
+        "name": "target",
         "type": "address"
       }
     ],
-    "name": "collectDebt_",
+    "name": "addTarget",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "freezeTarget_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "ensHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "expectedAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ensToAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "result",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "messageHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "fctInfo",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "starttime",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lasttime",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "timestamp",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "expiresAt",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint32",
+            "name": "chilltime",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint16",
+            "name": "amount",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint16",
+            "name": "startamount",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bool",
+            "name": "accumatable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "eip712",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "purgeable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "cancelable",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct Meta",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "funcID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "funcAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1202,36 +257,94 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "renounceOwnership",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "messageHashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "purge",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "s_frozen",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "dataHash",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint40",
+            "name": "expiresAt",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint32",
+            "name": "chilltime",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint16",
+            "name": "startamount",
+            "type": "uint16"
+          },
+          {
+            "internalType": "bool",
+            "name": "accumatable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "eip712",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "purgeable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "cancelable",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct MetaInput",
+        "name": "meta",
+        "type": "tuple"
       }
     ],
-    "stateMutability": "view",
+    "name": "register",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "messageHash",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "s_frozen_",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1242,7 +355,7 @@
         "type": "address"
       }
     ],
-    "name": "setActivator_",
+    "name": "setActivator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1260,20 +373,7 @@
         "type": "address"
       }
     ],
-    "name": "setLocalEns_",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "target",
-        "type": "address"
-      }
-    ],
-    "name": "setTarget_",
+    "name": "setLocalEns",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1301,7 +401,26 @@
         "type": "bytes32"
       }
     ],
-    "stateMutability": "pure",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "version",
+    "outputs": [
+      {
+        "internalType": "bytes3",
+        "name": "",
+        "type": "bytes3"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

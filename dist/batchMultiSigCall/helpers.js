@@ -117,7 +117,7 @@ const getSessionId = (salt, options) => {
         flagValue += 1;
     if (options.purgeable)
         flagValue += 2;
-    if (options.cancelable)
+    if (options.blockable)
         flagValue += 4;
     const flags = flagValue.toString(16).padStart(2, "0");
     return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
@@ -137,7 +137,7 @@ const parseSessionID = (sessionId, builder) => {
         eip712: true,
         accumetable: false,
         purgeable: false,
-        cancelable: false,
+        blockable: false,
     };
     if (flagsNumber === 9) {
         flags = {
@@ -161,21 +161,21 @@ const parseSessionID = (sessionId, builder) => {
     else if (flagsNumber === 12) {
         flags = {
             ...flags,
-            cancelable: true,
+            blockable: true,
         };
     }
     else if (flagsNumber === 13) {
         flags = {
             ...flags,
             accumetable: true,
-            cancelable: true,
+            blockable: true,
         };
     }
     else if (flagsNumber === 14) {
         flags = {
             ...flags,
             purgeable: true,
-            cancelable: true,
+            blockable: true,
         };
     }
     else if (flagsNumber === 15) {
@@ -183,14 +183,14 @@ const parseSessionID = (sessionId, builder) => {
             ...flags,
             accumetable: true,
             purgeable: true,
-            cancelable: true,
+            blockable: true,
         };
     }
     const data = {
         validFrom,
         expiresAt,
         maxGasPrice,
-        cancelable: flags.cancelable,
+        blockable: flags.blockable,
         purgeable: flags.purgeable,
     };
     return {

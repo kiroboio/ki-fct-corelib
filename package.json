@@ -34,6 +34,7 @@
     "@typescript-eslint/parser": "^5.36.2",
     "@uniswap/v2-core": "github:kiroboio/uniswapv2-solc0.8",
     "chai": "^4.3.6",
+    "dotenv": "^16.0.2",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",

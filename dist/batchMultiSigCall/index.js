@@ -30,7 +30,7 @@ class BatchMultiSigCall {
             validFrom: getDate(),
             expiresAt: getDate(7),
             purgeable: false,
-            cancelable: true,
+            blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
         };
         this.variables = [];
@@ -381,7 +381,7 @@ class BatchMultiSigCall {
                     { name: "expires_at", type: "uint40" },
                     { name: "gas_price_limit", type: "uint64" },
                     { name: "purgeable", type: "bool" },
-                    { name: "cancelable", type: "bool" },
+                    { name: "blockable", type: "bool" },
                 ],
                 ...optionalTypes,
                 ...this.calls.reduce((acc, call, index) => ({
@@ -429,7 +429,7 @@ class BatchMultiSigCall {
                     expires_at: this.options.expiresAt,
                     gas_price_limit: this.options.maxGasPrice,
                     purgeable: this.options.purgeable,
-                    cancelable: this.options.cancelable,
+                    blockable: this.options.blockable,
                 },
                 ...optionalMessage,
                 ...typedDataMessage,
