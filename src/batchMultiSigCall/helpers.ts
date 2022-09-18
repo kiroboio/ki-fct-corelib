@@ -111,16 +111,23 @@ export const manageCallId = (call: MSCallInput, index: number) => {
   );
 };
 
-export const getSessionId = (salt: string, options: MSCallOptions) => {
-  // 6 - Salt
-  // 2 - External signers
-  // 6 - Version
-  // 4 - Max Repeats
-  // 8 - Chill time
-  // 10 - After timestamp
-  // 10 - Before timestamp
-  // 16 - Gas price limit
-  // 2 - Flags
+// Deconstructed sessionID
+// 6 - Salt
+// 2 - External signers
+// 6 - Version
+// 4 - Max Repeats
+// 8 - Chill time
+// 10 - After timestamp
+// 10 - Before timestamp
+// 16 - Gas price limit
+// 2 - Flags
+
+export const getSessionId = (salt: string, options: MSCallOptions): string => {
+  const currentDate = new Date();
+
+  if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
+    throw new Error("Expires at date cannot be in the past");
+  }
 
   const minimumApprovals = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
   const version = "010101";
