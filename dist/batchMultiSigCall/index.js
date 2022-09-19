@@ -12,6 +12,7 @@ const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const utils_1 = require("ethers/lib/utils");
 const constants_1 = require("../constants");
+const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 function getDate(days = 0) {
     const result = new Date();
     result.setDate(result.getDate() + days);
@@ -44,6 +45,30 @@ class BatchMultiSigCall {
                 signedFCTs,
                 listOfPurgedFCTs,
             ]);
+        };
+        // End of options
+        //
+        //
+        // FCT functions
+        this.getPlugin = async (dataOrIndex) => {
+            if (typeof dataOrIndex === "number") {
+                const call = this.getCall(dataOrIndex);
+                if (!call.method) {
+                    throw new Error("Method is required to get plugin");
+                }
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
+                return Plugin;
+            }
+            else {
+                const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
+                if (!Plugins || Plugins.length === 0) {
+                    throw new Error("No plugin found");
+                }
+                return Plugins[0];
+            }
+        };
+        this.getAllPlugins = () => {
+            return (0, ki_eth_fct_provider_ts_1.getPlugins)({});
         };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
@@ -133,31 +158,6 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
-    // End of options
-    //
-    //
-    // FCT functions
-    // public getPlugin = async (
-    //   dataOrIndex: MSCall | number
-    // ): Promise<{ name: string; description: string; plugin: Plugin }> => {
-    //   if (typeof dataOrIndex === "number") {
-    //     const call = this.getCall(dataOrIndex);
-    //     if (!call.method) {
-    //       throw new Error("Method is required to get plugin");
-    //     }
-    //     const Plugin = getPlugin({ signature: getMethodInterface(call) });
-    //     return Plugin;
-    //   } else {
-    //     const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-    //     if (!Plugins || Plugins.length === 0) {
-    //       throw new Error("No plugin found");
-    //     }
-    //     return Plugins[0];
-    //   }
-    // };
-    // public getAllPlugins = (): { name: string; description: string; plugin: Plugin }[] => {
-    //   return getPlugins({});
-    // };
     async create(callInput, index) {
         let call;
         if ("plugin" in callInput) {
