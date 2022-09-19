@@ -312,7 +312,7 @@ class BatchMultiSigCall {
                         from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
                         to: this.handleTo(call),
                         to_ens: call.toENS || "",
-                        eth_value: call.value || "0",
+                        eth_value: this.handleValue(call),
                         gas_limit: gasLimit,
                         view_only: call.viewOnly || false,
                         permissions: 0,
