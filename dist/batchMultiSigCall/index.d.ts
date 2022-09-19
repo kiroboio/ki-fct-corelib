@@ -3,6 +3,7 @@ import { TypedData } from "ethers-eip712";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
+    private FCT_Controller;
     private FCT_BatchMultiSigCall;
     private batchMultiSigSelector;
     private provider;

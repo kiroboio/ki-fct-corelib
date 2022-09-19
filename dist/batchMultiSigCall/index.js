@@ -7,6 +7,7 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
+const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
@@ -40,7 +41,7 @@ class BatchMultiSigCall {
             const actuator = new ethers_1.ethers.Contract(actuatorAddress, FCT_Actuator_abi_json_1.default, this.provider);
             const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
             const activateId = "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
-            return this.FCT_BatchMultiSigCall.interface.encodeFunctionData("batchMultiSigCall", [
+            return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
                 activateId,
                 signedFCTs,
                 listOfPurgedFCTs,
@@ -94,7 +95,8 @@ class BatchMultiSigCall {
             // Else it is a variable
             return this.getVariableValue(call.value);
         };
-        this.FCT_BatchMultiSigCall = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
+        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
+        this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.provider = provider;
         this.options = {
             ...this.options,
@@ -425,7 +427,7 @@ class BatchMultiSigCall {
                 ],
             },
             primaryType: "BatchMultiSigCall",
-            domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_BatchMultiSigCall),
+            domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_Controller),
             message: {
                 fct: {
                     name: this.options.name || "",

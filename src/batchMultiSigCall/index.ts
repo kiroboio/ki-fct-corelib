@@ -1,6 +1,7 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
+import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
@@ -36,7 +37,8 @@ const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 
 export class BatchMultiSigCall {
-  private FCT_BatchMultiSigCall: ethers.Contract;
+  private FCT_Controller: ethers.Contract;
+  private FCT_BatchMultiSigCall: ethers.utils.Interface;
   private batchMultiSigSelector: string = "0xa7973c1f";
   private provider: ethers.providers.JsonRpcProvider;
 
@@ -61,7 +63,8 @@ export class BatchMultiSigCall {
     contractAddress: string;
     options?: Partial<MSCallOptions>;
   }) {
-    this.FCT_BatchMultiSigCall = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    this.FCT_Controller = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     this.provider = provider;
 
     this.options = {
@@ -97,7 +100,7 @@ export class BatchMultiSigCall {
     const activateId =
       "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
 
-    return this.FCT_BatchMultiSigCall.interface.encodeFunctionData("batchMultiSigCall", [
+    return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
       activateId,
       signedFCTs,
       listOfPurgedFCTs,
@@ -501,7 +504,7 @@ export class BatchMultiSigCall {
         ],
       },
       primaryType: "BatchMultiSigCall",
-      domain: await getTypedDataDomain(this.FCT_BatchMultiSigCall),
+      domain: await getTypedDataDomain(this.FCT_Controller),
       message: {
         fct: {
           name: this.options.name || "",
