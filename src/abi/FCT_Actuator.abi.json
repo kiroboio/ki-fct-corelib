@@ -8,213 +8,17 @@
       },
       {
         "internalType": "address",
-        "name": "factory",
+        "name": "fctController",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pairAddress",
         "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "AddedToWhitelist",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minFees",
-        "type": "uint256"
-      }
-    ],
-    "name": "BackupFees",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "initiator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reason",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "BackupFundsUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "discountNFT",
-        "type": "address"
-      }
-    ],
-    "name": "BackupRequirements",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minFees",
-        "type": "uint256"
-      }
-    ],
-    "name": "InheritanceFees",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "initiator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reason",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "InheritanceFundsUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "discountNFT",
-        "type": "address"
-      }
-    ],
-    "name": "InheritanceRequirements",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "RemovedFromWhitelist",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "requireFunds",
-        "type": "bool"
-      }
-    ],
-    "name": "RequireFundsChanged",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -292,119 +96,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timeout",
-        "type": "uint256"
-      }
-    ],
-    "name": "TimeoutChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minFees",
-        "type": "uint256"
-      }
-    ],
-    "name": "TokenInheritanceFees",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "initiator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reason",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "TokenInheritanceFundsUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "discountNFT",
-        "type": "address"
-      }
-    ],
-    "name": "TokenInheritanceRequirements",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "ACTIVATED",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [
@@ -419,11 +110,119 @@
   },
   {
     "inputs": [],
-    "name": "UPDATED",
+    "name": "OPERATOR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "activate",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "activate2",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addFundsTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "blockTimestampLast",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAmountOfKiroForGivenEth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
         "type": "uint256"
       }
     ],
@@ -433,198 +232,17 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "nameHash",
+        "type": "bytes32"
       }
     ],
-    "name": "activateBackup",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      }
-    ],
-    "name": "activateInheritance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "activateTokenInheritance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "addToWhitelist",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getBackupFees",
+    "name": "getBuilder",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "fee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "kiro",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.Fees",
+        "internalType": "address",
         "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getBackupRequirements",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bool",
-            "name": "hasVault",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "whitelistedKiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "discountedBPS",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "discountNFT",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.ActivatorRequirements",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getInheritanceFees",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "fee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "kiro",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.Fees",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getInheritanceRequirements",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bool",
-            "name": "hasVault",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "whitelistedKiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "discountedBPS",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "discountNFT",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.ActivatorRequirements",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getRequireFunds",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -644,84 +262,6 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getTimeout",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getTokenInheritanceFees",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "fee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "kiro",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.Fees",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getTokenInheritanceRequirements",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bool",
-            "name": "hasVault",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "whitelistedKiroAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "discountedBPS",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "discountNFT",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct IActivator.ActivatorRequirements",
-        "name": "",
-        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -772,17 +312,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "migrateBackup",
+    "name": "moveFundsFromDeposit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -790,53 +325,77 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "migrateInheritance",
+    "name": "moveFundsToDeposit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "price0Average",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
+        "internalType": "uint224",
+        "name": "_x",
+        "type": "uint224"
       }
     ],
-    "name": "migrateTokenInheritance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "price0CumulativeLast",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "price1Average",
+    "outputs": [
+      {
+        "internalType": "uint224",
+        "name": "_x",
+        "type": "uint224"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "price1CumulativeLast",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "removeFromWhitelist",
+    "name": "removeFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -885,7 +444,58 @@
         "type": "address"
       }
     ],
-    "name": "s_backupFunds",
+    "name": "s_balances",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "s_builders",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "s_minActivatorStake",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "s_nonces",
     "outputs": [
       {
         "internalType": "uint256",
@@ -904,45 +514,25 @@
         "type": "address"
       }
     ],
-    "name": "s_inheritanceFunds",
+    "name": "s_staked",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "forEtherValue",
+        "name": "balance",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint64",
+        "name": "blockNumber",
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "s_timestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "s_whitelist",
+    "inputs": [],
+    "name": "s_total_staked",
     "outputs": [
       {
         "internalType": "uint256",
@@ -956,163 +546,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "createFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setBackupFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "whitelistedKiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
-        "name": "discountNFT",
+        "name": "tokenomics",
         "type": "address"
       }
     ],
-    "name": "setBackupRequirements",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "createFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setInheritanceFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "whitelistedKiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "discountNFT",
-        "type": "address"
-      }
-    ],
-    "name": "setInheritanceRequirements",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "requireFunds",
-        "type": "bool"
-      }
-    ],
-    "name": "setRequireFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "timeout",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTimeout",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "createFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTokenInheritanceFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "hasVault",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "kiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "whitelistedKiroAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "discountedBPS",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "discountNFT",
-        "type": "address"
-      }
-    ],
-    "name": "setTokenInheritanceRequirements",
+    "name": "setTokenomics",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1137,39 +576,40 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "token0",
+    "outputs": [
       {
         "internalType": "address",
-        "name": "vaultOwner",
+        "name": "",
         "type": "address"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "token1",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
-        "name": "backupFunds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "inheritanceFunds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToRemove",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fundsPerToken",
+        "name": "time",
         "type": "uint256"
       }
     ],
-    "name": "updateAllFunds",
+    "name": "updateTimeBetweenKiroPriceUpdate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1177,96 +617,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
-        "name": "funds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToRemove",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fundsPerToken",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "updateAllInheritanceFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "funds",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateBackupFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "funds",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateInheritanceFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vaultOwner",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokensToRemove",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fundsPerToken",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateTokenInheritanceFunds",
+    "name": "widthdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

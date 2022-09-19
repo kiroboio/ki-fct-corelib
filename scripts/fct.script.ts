@@ -17,13 +17,20 @@ function addHours(numOfHours: number, date = new Date()) {
 
   return Number(date.getTime() / 1000).toFixed();
 }
+
+function addMinutes(numOfMinutes: number, date = new Date()) {
+  date.setTime(date.getTime() + numOfMinutes * 60 * 1000);
+
+  return Number(date.getTime() / 1000).toFixed();
+}
+
 async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
     contractAddress: "0x0bBb48Cd5aCF40622965F83d9dF13cAbCE525a31",
     options: {
-      validFrom: addHours(2), // UNIX timestamp
-      expiresAt: getDate(2), // UNIX timestamp
+      validFrom: addMinutes(10), // UNIX timestamp
+      expiresAt: addHours(7), // UNIX timestamp
     },
   });
 
