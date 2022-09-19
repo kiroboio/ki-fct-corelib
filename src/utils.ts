@@ -132,7 +132,7 @@ const validateFCT = (FCT: IFCT) => {
         builder: fctData.builder,
       };
     },
-    getFCTMessageHash,
+    getFCTMessageHash: () => getFCTMessageHash(FCT.typedData),
     getSigners: () => {
       return FCT.mcall.reduce((acc: string[], { from }) => {
         if (!acc.includes(from)) {
