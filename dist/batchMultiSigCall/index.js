@@ -10,7 +10,6 @@ const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
-const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const utils_1 = require("ethers/lib/utils");
 const constants_1 = require("../constants");
 function getDate(days = 0) {
@@ -46,30 +45,6 @@ class BatchMultiSigCall {
                 listOfPurgedFCTs,
             ]);
         };
-        // End of options
-        //
-        //
-        // FCT functions
-        this.getPlugin = async (dataOrIndex) => {
-            if (typeof dataOrIndex === "number") {
-                const call = this.getCall(dataOrIndex);
-                if (!call.method) {
-                    throw new Error("Method is required to get plugin");
-                }
-                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
-                return Plugin;
-            }
-            else {
-                const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-                if (!Plugins || Plugins.length === 0) {
-                    throw new Error("No plugin found");
-                }
-                return Plugins[0];
-            }
-        };
-        this.getAllPlugins = () => {
-            return (0, ki_eth_fct_provider_ts_1.getPlugins)({});
-        };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
             if (call.validator) {
@@ -81,6 +56,18 @@ class BatchMultiSigCall {
             }
             // Else it is a variable
             return this.getVariableValue(call.to);
+        };
+        this.handleValue = (call) => {
+            // If value isn't provided => 0
+            if (!call.value) {
+                return "0";
+            }
+            // Check if value is a number
+            if (!isNaN(call.value)) {
+                return call.value;
+            }
+            // Else it is a variable
+            return this.getVariableValue(call.value);
         };
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
         this.provider = provider;
@@ -123,7 +110,7 @@ class BatchMultiSigCall {
         }
         return String(index + 1).padStart(variableBase.length, variableBase);
     }
-    getCallValue(index, bytes = false) {
+    getCallOutput(index, bytes = false) {
         return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
     }
     getVariablesAsBytes32() {
@@ -146,6 +133,31 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
+    // End of options
+    //
+    //
+    // FCT functions
+    // public getPlugin = async (
+    //   dataOrIndex: MSCall | number
+    // ): Promise<{ name: string; description: string; plugin: Plugin }> => {
+    //   if (typeof dataOrIndex === "number") {
+    //     const call = this.getCall(dataOrIndex);
+    //     if (!call.method) {
+    //       throw new Error("Method is required to get plugin");
+    //     }
+    //     const Plugin = getPlugin({ signature: getMethodInterface(call) });
+    //     return Plugin;
+    //   } else {
+    //     const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
+    //     if (!Plugins || Plugins.length === 0) {
+    //       throw new Error("No plugin found");
+    //     }
+    //     return Plugins[0];
+    //   }
+    // };
+    // public getAllPlugins = (): { name: string; description: string; plugin: Plugin }[] => {
+    //   return getPlugins({});
+    // };
     async create(callInput, index) {
         let call;
         if ("plugin" in callInput) {
@@ -215,7 +227,7 @@ class BatchMultiSigCall {
             typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
             ensHash: (0, helpers_2.handleEnsHash)(call),
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-            value: call.value || "0",
+            value: this.handleValue(call),
             callId: (0, helpers_2.manageCallId)(call, index + 1),
             from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
             to: this.handleTo(call),

@@ -126,7 +126,7 @@ export class BatchMultiSigCall {
     return String(index + 1).padStart(variableBase.length, variableBase);
   }
 
-  public getCallValue(index: number, bytes: boolean = false) {
+  public getCallOutput(index: number, bytes: boolean = false) {
     return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
   }
 
@@ -268,7 +268,7 @@ export class BatchMultiSigCall {
       typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
-      value: call.value || "0",
+      value: this.handleValue(call),
       callId: manageCallId(call, index + 1),
       from: utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
       to: this.handleTo(call),
@@ -626,5 +626,20 @@ export class BatchMultiSigCall {
 
     // Else it is a variable
     return this.getVariableValue(call.to);
+  };
+
+  private handleValue = (call: MSCallInput) => {
+    // If value isn't provided => 0
+    if (!call.value) {
+      return "0";
+    }
+
+    // Check if value is a number
+    if (!isNaN(call.value as any)) {
+      return call.value;
+    }
+
+    // Else it is a variable
+    return this.getVariableValue(call.value);
   };
 }
