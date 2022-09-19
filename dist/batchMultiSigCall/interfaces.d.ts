@@ -40,8 +40,8 @@ export interface MSCallOptions {
     purgeable: boolean;
     builder: string;
     recurrency?: {
-        maxRepeats?: number;
-        chillTime?: number;
+        maxRepeats?: string;
+        chillTime?: string;
         accumetable?: boolean;
     };
     multisig?: {

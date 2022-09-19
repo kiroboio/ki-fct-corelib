@@ -24,13 +24,24 @@ function addMinutes(numOfMinutes: number, date = new Date()) {
   return Number(date.getTime() / 1000).toFixed();
 }
 
+// now - 1d
+// 1h - 1d
+// 1d - 3d
+
+const FCT_Controller_Rinkeby = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
+
 async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
-    contractAddress: "0x0bBb48Cd5aCF40622965F83d9dF13cAbCE525a31",
+    contractAddress: FCT_Controller_Rinkeby,
     options: {
-      validFrom: addMinutes(10), // UNIX timestamp
-      expiresAt: addHours(7), // UNIX timestamp
+      // validFrom: getDate(1), // UNIX timestamp
+      expiresAt: getDate(10), // UNIX timestamp
+      recurrency: {
+        maxRepeats: "800",
+        chillTime: "1",
+        accumetable: true,
+      },
     },
   });
 
@@ -40,7 +51,7 @@ async function main() {
   await batchMultiSigCall.create({
     to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     from: vault,
-    value: "10000000000000000",
+    value: "5000000000000",
   });
 
   const FCT = await batchMultiSigCall.exportFCT();

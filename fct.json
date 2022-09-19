@@ -33,6 +33,10 @@
           "type": "Limits"
         },
         {
+          "name": "recurrency",
+          "type": "Recurrency"
+        },
+        {
           "name": "transaction_1",
           "type": "transaction1"
         }
@@ -82,6 +86,20 @@
         },
         {
           "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "Recurrency": [
+        {
+          "name": "max_repeats",
+          "type": "uint16"
+        },
+        {
+          "name": "chill_time",
+          "type": "uint32"
+        },
+        {
+          "name": "accumetable",
           "type": "bool"
         }
       ],
@@ -151,8 +169,8 @@
       "name": "FCT Controller",
       "version": "1",
       "chainId": 4,
-      "verifyingContract": "0x0bBb48Cd5aCF40622965F83d9dF13cAbCE525a31",
-      "salt": "0x010059e0a2ee9009431600000bbb48cd5acf40622965f83d9df13cabce525a31"
+      "verifyingContract": "0xD614c22fb35d1d978053d42C998d0493f06FB440",
+      "salt": "0x0100c25914cb0bb62af70000d614c22fb35d1d978053d42c998d0493f06fb440"
     },
     "message": {
       "fct": {
@@ -160,15 +178,20 @@
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0xa7973c1f",
         "version": "0x010101",
-        "random_id": "0x62ccb6",
+        "random_id": "0x52a9aa",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1663580027",
-        "expires_at": "1663604627",
+        "valid_from": "1663598254",
+        "expires_at": "1664462254",
         "gas_price_limit": "100000000000",
         "purgeable": false,
         "blockable": true
+      },
+      "recurrency": {
+        "max_repeats": "800",
+        "chill_time": "1",
+        "accumetable": true
       },
       "transaction_1": {
         "meta": {
@@ -177,7 +200,7 @@
           "from": "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
           "to": "0x4f631612941F710db646B8290dB097bFB8657dC2",
           "to_ens": "",
-          "eth_value": "10000000000000000",
+          "eth_value": "5000000000000",
           "gas_limit": 0,
           "view_only": false,
           "permissions": 0,
@@ -190,15 +213,15 @@
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x433feb14617f4413d97a48213b0baa8a56dd8786d174bc4ad05f4c8991706f66",
-  "sessionId": "0x62ccb6000101010000000000000063289793006328377b000000174876e8000c",
+  "typeHash": "0xd5709225e2c8d1959ba1ee2b046ba5f2fa40a3719e25c53f8eb7b27a85a9db74",
+  "sessionId": "0x52a9aa00010101032000000001006335adae0063287eae000000174876e8000d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
       "typeHash": "0x27fd2787f8367e3c9f841dfe2e3b5dbde2bc66f6becf325ff777e0f54f405c23",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       "functionSignature": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "value": "10000000000000000",
+      "value": "5000000000000",
       "callId": "0x0000000000000000000000000000000000000000000000000100010000000000",
       "from": "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
       "to": "0x4f631612941F710db646B8290dB097bFB8657dC2",
@@ -209,13 +232,13 @@
   ],
   "signatures": [
     {
-      "r": "0x0e1e4897a91d3b082f8aa3ec2830bfe284e477187f9be6a7c23e023dfb934d14",
-      "s": "0x72cf415903fc2e7d368ef7d02fa55d266703fa40b5a4e2e275b55ba34eded0db",
-      "_vs": "0xf2cf415903fc2e7d368ef7d02fa55d266703fa40b5a4e2e275b55ba34eded0db",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xf2cf415903fc2e7d368ef7d02fa55d266703fa40b5a4e2e275b55ba34eded0db",
-      "compact": "0x0e1e4897a91d3b082f8aa3ec2830bfe284e477187f9be6a7c23e023dfb934d14f2cf415903fc2e7d368ef7d02fa55d266703fa40b5a4e2e275b55ba34eded0db"
+      "r": "0x34c9401a0655ca9993853a5d51c538daaaa474b500d285c4b2db99ba533db8d7",
+      "s": "0x2fb1a8afb290979e29e4893232a3861684df164c0085d1c6807d3f8e66ac5e90",
+      "_vs": "0x2fb1a8afb290979e29e4893232a3861684df164c0085d1c6807d3f8e66ac5e90",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x2fb1a8afb290979e29e4893232a3861684df164c0085d1c6807d3f8e66ac5e90",
+      "compact": "0x34c9401a0655ca9993853a5d51c538daaaa474b500d285c4b2db99ba533db8d72fb1a8afb290979e29e4893232a3861684df164c0085d1c6807d3f8e66ac5e90"
     }
   ],
   "variables": [],

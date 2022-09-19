@@ -101,6 +101,7 @@ exports.manageCallId = manageCallId;
 // 10 - Before timestamp
 // 16 - Gas price limit
 // 2 - Flags
+//0x2e97af0001010103e800000000006335a4c800632875c8000000174876e8000c
 const getSessionId = (salt, options) => {
     const currentDate = new Date();
     if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
@@ -132,8 +133,8 @@ const parseSessionID = (sessionId, builder) => {
     // const salt = sessionId.slice(2, 8);
     const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
     // const version = sessionId.slice(10, 16);
-    const maxRepeats = parseInt(sessionId.slice(16, 20), 16);
-    const chillTime = parseInt(sessionId.slice(20, 28), 16);
+    const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
+    const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
     const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
     const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
     const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();

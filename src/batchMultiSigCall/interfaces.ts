@@ -47,8 +47,8 @@ export interface MSCallOptions {
   builder: string;
 
   recurrency?: {
-    maxRepeats?: number;
-    chillTime?: number;
+    maxRepeats?: string;
+    chillTime?: string;
     accumetable?: boolean;
   };
   multisig?: {

@@ -450,6 +450,7 @@ export class BatchMultiSigCall {
         BatchMultiSigCall: [
           { name: "fct", type: "FCT" },
           { name: "limits", type: "Limits" },
+          ...primaryType,
           ...this.calls.map((_, index) => ({
             name: `transaction_${index + 1}`,
             type: `transaction${index + 1}`,
