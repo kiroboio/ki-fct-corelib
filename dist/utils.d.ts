@@ -29,6 +29,7 @@ declare const _default: {
             gas_price_limit: string;
             builder: string;
         };
+        getFCTMessageHash: (typedData: TypedData) => string;
         getSigners: () => string[];
     };
     recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
