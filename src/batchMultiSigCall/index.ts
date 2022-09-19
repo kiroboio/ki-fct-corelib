@@ -4,13 +4,7 @@ import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
-import {
-  getTypedDataDomain,
-  createValidatorTxData,
-  flows,
-  getMethodInterface,
-  getValidatorFunctionData,
-} from "../helpers";
+import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
 import {
   getSessionId,
   handleData,
@@ -21,7 +15,6 @@ import {
   manageCallId,
   parseSessionID,
 } from "./helpers";
-import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { AbiCoder, id } from "ethers/lib/utils";
 import { Flow } from "../constants";
 
@@ -167,30 +160,30 @@ export class BatchMultiSigCall {
   //
   // FCT functions
 
-  public getPlugin = async (
-    dataOrIndex: MSCall | number
-  ): Promise<{ name: string; description: string; plugin: Plugin }> => {
-    if (typeof dataOrIndex === "number") {
-      const call = this.getCall(dataOrIndex);
-      if (!call.method) {
-        throw new Error("Method is required to get plugin");
-      }
-      const Plugin = getPlugin({ signature: getMethodInterface(call) });
+  // public getPlugin = async (
+  //   dataOrIndex: MSCall | number
+  // ): Promise<{ name: string; description: string; plugin: Plugin }> => {
+  //   if (typeof dataOrIndex === "number") {
+  //     const call = this.getCall(dataOrIndex);
+  //     if (!call.method) {
+  //       throw new Error("Method is required to get plugin");
+  //     }
+  //     const Plugin = getPlugin({ signature: getMethodInterface(call) });
 
-      return Plugin;
-    } else {
-      const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-      if (!Plugins || Plugins.length === 0) {
-        throw new Error("No plugin found");
-      }
+  //     return Plugin;
+  //   } else {
+  //     const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
+  //     if (!Plugins || Plugins.length === 0) {
+  //       throw new Error("No plugin found");
+  //     }
 
-      return Plugins[0];
-    }
-  };
+  //     return Plugins[0];
+  //   }
+  // };
 
-  public getAllPlugins = (): { name: string; description: string; plugin: Plugin }[] => {
-    return getPlugins({});
-  };
+  // public getAllPlugins = (): { name: string; description: string; plugin: Plugin }[] => {
+  //   return getPlugins({});
+  // };
 
   public async create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]> {
     let call: MSCallInput;
