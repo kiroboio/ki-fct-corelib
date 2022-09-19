@@ -1,6 +1,6 @@
 import { ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
-import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
 import { Params } from "../interfaces";
 import { BatchMSCallInput, BatchMSCall, MSCallInput, MSCall } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, manageCallFlagsV2, flows } from "../helpers";
@@ -11,7 +11,6 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
   handleTo,
-  handleTypedHashes,
   handleTypes,
 } from "./helpers";
 
@@ -189,8 +188,8 @@ export class BatchMultiSigCall {
   private async getMultiSigCallData(batchCall: BatchMSCallInput): Promise<BatchMSCall> {
     const self: BatchMultiSigCall = this;
 
-    let typedHashes: string[] = [];
-    let additionalTypes = {};
+    const typedHashes: string[] = [];
+    const additionalTypes = {};
 
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";

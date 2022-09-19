@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
-const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
+const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const variableBase = "0xFC00000000000000000000000000000000000000";
@@ -24,7 +24,7 @@ class BatchMultiSigCall {
         this.variables = [];
         // this.web3 = web3;
         this.provider = provider;
-        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
+        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
     }
     //
     // Everything for variables
@@ -139,8 +139,8 @@ class BatchMultiSigCall {
     }
     async getMultiSigCallData(batchCall) {
         const self = this;
-        let typedHashes = [];
-        let additionalTypes = {};
+        const typedHashes = [];
+        const additionalTypes = {};
         const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
         const version = "0x010101";
         const typedData = await createTypedData(self, batchCall, additionalTypes, typedHashes, salt, version);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0;
-pragma abicoder v1;
+pragma abicoder v2;
 
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "../lib/Heritable.sol";

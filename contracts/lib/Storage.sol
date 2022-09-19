@@ -52,11 +52,13 @@ abstract contract Storage {
     struct TokenInheritance {
         bool[MAX_HEIRS] sent;
         uint256 totalTransfered;
+        uint256 timestamp;
     }
 
     Inheritance internal s_inheritance;
     uint256 internal s_totalTransfered;
     mapping (address => TokenInheritance) s_token_inheritance;
+    bool s_fctUseExactVersion;
 
     function uid() external view returns (bytes32) {
         return s_uid;

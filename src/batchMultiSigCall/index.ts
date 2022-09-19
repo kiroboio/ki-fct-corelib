@@ -1,6 +1,6 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
-import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
@@ -31,8 +31,6 @@ function getDate(days: number = 0) {
   return Number(result.getTime() / 1000).toFixed();
 }
 
-// const batchMultiSigSelector = "0xa7973c1f";
-
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
@@ -61,7 +59,7 @@ export class BatchMultiSigCall {
   }: {
     provider: ethers.providers.JsonRpcProvider;
     contractAddress: string;
-    options?: MSCallOptions;
+    options?: Partial<MSCallOptions>;
   }) {
     this.FCT_BatchMultiSigCall = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
     this.provider = provider;

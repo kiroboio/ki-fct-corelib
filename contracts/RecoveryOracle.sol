@@ -7,7 +7,7 @@ import "./interfaces/IOracle.sol";
 import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 
 contract RecoveryOracle is IOracle, AccessControl {
-  string public constant VERSION = "RC07-1.1";
+  string public constant VERSION = "RC06-1.6";
   address payable public immutable ACTIVATOR; 
 
   mapping(address => bool) private s_tokens_20;

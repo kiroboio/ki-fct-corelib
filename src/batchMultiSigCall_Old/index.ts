@@ -1,7 +1,7 @@
 import { ethers, utils } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import FactoryProxyABI from "../abi/factoryProxy_.abi.json";
+import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
 import { DecodeTx, Params } from "../interfaces";
 import { BatchMSCallInput, BatchMSCall, MSCallInput, MSCall } from "./interfaces";
 import {
@@ -196,8 +196,8 @@ export class BatchMultiSigCall {
     const self = this;
     const callDetails = getSessionIdDetails(batchCall, defaultFlags, false);
 
-    let typedHashes = [];
-    let additionalTypes = {};
+    const typedHashes = [];
+    const additionalTypes = {};
 
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {

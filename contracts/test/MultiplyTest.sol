@@ -37,6 +37,10 @@ contract MultiplyTest {
       return keccak256("this is a bytes32 string");
     }
 
+    function revertCall() public pure {
+      require(1 == 2, "reverting the call");
+    } 
+
     function testCall(address to, 
                       uint256 value, 
                       string memory name1, 

@@ -106,8 +106,8 @@ contract FCT_Actuator is AccessControl {
     FixedPoint.uq112x112 public price0Average;
     FixedPoint.uq112x112 public price1Average;
     IUniswapV2Pair immutable pair;
-    // address public immutable token0;
-    // address public immutable token1;
+    address public immutable token0;
+    address public immutable token1;
 
     // immutables
     address private immutable s_kiro;
@@ -117,7 +117,7 @@ contract FCT_Actuator is AccessControl {
         0x97667070c54ef182b0f5858b034beac1b6f3089aa2d3188bb1e8929f4fa9b929;
 
     modifier onlyAdmin() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "not an admin");
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "FCT:A not an admin");
         _;
     }
 
@@ -134,16 +134,16 @@ contract FCT_Actuator is AccessControl {
 
         IUniswapV2Pair _pair = IUniswapV2Pair(pairAddress);
         pair = _pair;
-        // token0 = _pair.token0();
-        // token1 = _pair.token1();
-        // price0CumulativeLast = _pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
-        // price1CumulativeLast = _pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
-        // uint112 reserve0;
-        // uint112 reserve1;
-        // (reserve0, reserve1, blockTimestampLast) = _pair.getReserves();
-        // _updateKiroPrice();
-        // s_lastUpdateDateOfPrice = block.timestamp;
-        // require(reserve0 != 0 && reserve1 != 0, "NO_RESERVES"); // ensure that there's liquidity in the pair
+        token0 = _pair.token0();
+        token1 = _pair.token1();
+        price0CumulativeLast = _pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
+        price1CumulativeLast = _pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
+        uint112 reserve0;
+        uint112 reserve1;
+        (reserve0, reserve1, blockTimestampLast) = _pair.getReserves();
+        _updateKiroPrice();
+        s_lastUpdateDateOfPrice = block.timestamp;
+        require(reserve0 != 0 && reserve1 != 0, "FCT:A no reserves"); // ensure that there's liquidity in the pair
         // s_baseBPS = 1000;
         // s_bonusBPS = 5000;
         // s_activatorShare = 6000;
@@ -161,12 +161,12 @@ contract FCT_Actuator is AccessControl {
 
     function _registerNonce(bytes32 id) private {
         uint256 nextNonce = s_nonces[id & NONCE_ID_MASK] + 1;
-        require(nextNonce == uint256(id & NONCE_MASK), "FCT: wrong nonce");
+        require(nextNonce == uint256(id & NONCE_MASK), "FCT:A wrong nonce");
         s_nonces[id & NONCE_ID_MASK] = nextNonce;
-        require(s_staked[msg.sender].balance >= s_minActivatorStake, "FCT: not enough staked");        
+        require(s_staked[msg.sender].balance >= s_minActivatorStake, "FCT:A not enough staked");        
     }
 
-    function activate(bytes calldata data) external {
+    function activate2(bytes calldata data) external {
         bytes32 id = abi.decode(data, (bytes32));
         _registerNonce(id);
         (bool success_, bytes memory data_) = s_fctController.call(data);
@@ -175,9 +175,9 @@ contract FCT_Actuator is AccessControl {
         }
     }
 
-    function activate2(bytes calldata data) external {
+    function activate(bytes calldata data) external returns (uint256) {
         uint256 gasStart = gasleft(); // + (data.length == 0 ? 22910 : data.length*12 + (((data.length-1)/32)*128) + 23325);
-        console.log('gas start', gasleft());
+        // console.log('gas start', gasleft());
         // console.log("---------------------> activating ", data.length);
         bytes32 id = abi.decode(data, (bytes32));
         _registerNonce(id);
@@ -189,99 +189,76 @@ contract FCT_Actuator is AccessControl {
             _updateKiroPrice();
             s_lastUpdateDateOfPrice = block.number;
         }
+
         Activator storage activator = s_staked[msg.sender];
-        PaymentOut memory res = 
+        (Payment[][] memory paymentOut, address[] memory builders) = 
             IFCT_Tokenomics(s_tokenomics).calcPayments(PaymentIn({ balance: activator.balance, blockNumber: activator.blockNumber, totalStaked: s_total_staked, gasStart: gasStart }), id, data_);
 
-        uint256 totalUserPayment;
+        require(paymentOut.length == builders.length, "FCT:A payment-builder not match");
+
+        uint256 totalUserGas;
         uint256 totalCalls;
     
-        for (uint256 i; i<res.userPayments.length; i++) {
-            UserPayment[] memory userPayments = res.userPayments[i];
-            for (uint256 j; j<userPayments.length; j++) {
-                UserPayment memory userPayment = userPayments[j];
-                if (userPayment.user != address(0) && userPayment.amount > 0) {
+        for (uint256 i; i<paymentOut.length; i++) {
+            Payment[] memory payments = paymentOut[i];
+            for (uint256 j; j<payments.length; j++) {
+                Payment memory payment = payments[j];
+                address payer = payment.payer;
+                if (payer != address(0)) {
                     uint256 userGasStart = gasleft();
-                    IFCT_Runner(userPayment.user).fctIsVersionSupported(id);
-                    if (s_balances[userPayment.user] == 0) {
-                      s_balances[userPayment.user] = 1;
-                      userPayment.amount += (userGasStart - gasleft()) - 1;  
-                    }
-                    userPayment.amount += (userGasStart - gasleft());
-                    totalUserPayment += userPayment.amount;
+                    IFCT_Runner(payer).fctIsVersionSupported(id);
+                    s_balances[payer] += 1;
+                    payment.gas += (userGasStart - gasleft());
+                    totalUserGas += payment.gas;
                     ++totalCalls;
                 }
             }
         }
 
-        uint256 totalBuilders;
-        for (uint256 i; i<res.builderPayments.length; i++) {
-            BuilderPayment memory builderPayment = res.builderPayments[i];
-            if (builderPayment.builder != address(0)) {
-                if (builderPayment.amount > 0) {
-                    s_balances[builderPayment.builder] += 1;
-                    ++totalBuilders;
-                }
+        for (uint256 i; i<builders.length; i++) {
+            address builder = builders[i];
+            if (builder != address(0)) {
+                s_balances[builder] += 1;
             }
         }
 
-        if (res.kiroboPayment > 0) {
-            s_balances[s_kirobo] += res.kiroboPayment;
-        }
+        uint256 commonGas = (gasStart - gasleft() - totalUserGas + 200*builders.length + 800*totalCalls + 33000 + 14*msg.data.length);
+        // console.log("common gas", commonGas);
+        // console.log("users gas", totalUserGas);
+        uint256 commonGasPerCall =  commonGas / totalCalls + 1;
 
-        if (res.activatorPayment > 0) {
-            s_staked[msg.sender] = Activator(s_staked[msg.sender].balance + res.activatorPayment, uint64(block.number));
-            s_total_staked += res.activatorPayment;
-        }
-
-
-        uint256 total;
-        uint256 constGas = (gasStart - gasleft() - totalUserPayment + 800*totalBuilders + 4000*totalCalls + 29000 + 7*msg.data.length);
-        constGas =  constGas / totalCalls + 1;
-        totalUserPayment = 0;
-
-        total = gasleft();
-        for (uint256 i; i<res.userPayments.length; i++) {
-            UserPayment[] memory userPayments = res.userPayments[i];
-            for (uint256 j; j<userPayments.length; j++) {
-                UserPayment memory userPayment = userPayments[j];
-                if (userPayment.user != address(0) && userPayment.amount > 0) {
-                    s_balances[userPayment.user] -= (userPayment.amount + constGas);
-                    totalUserPayment += (userPayment.amount + constGas); 
+        uint256 totalActivatorPayment;
+        uint256 totalKiroboPayment;        
+        uint256 totalFees;
+        for (uint256 i; i<paymentOut.length; i++) {
+            address builder = builders[i];
+            Payment[] memory payments = paymentOut[i];
+            uint256 totalBuilderPayment;
+            for (uint256 j; j<payments.length; j++) {
+                Payment memory payment = payments[j];
+                address payer = payment.payer;
+                if (payer != address(0)) {
+                    // uint256 fee = (payment.gas + commonGasPerCall);
+                    // uint256 fee = ((payment.gas + commonGasPerCall) * payment.effectiveGasPrice);
+                    uint256 fee = getAmountOfKiroForGivenEth((payment.gas + commonGasPerCall) * payment.effectiveGasPrice);
+                    // console.log("fee", fee);
+                    uint256 builderPayment = (fee * payment.builderShare / 10000);
+                    uint256 activatorPayment = (fee * payment.activatorShare / 10000);
+                    s_balances[payer] -= fee;
+                    totalFees += fee;
+                    totalBuilderPayment += builderPayment;
+                    totalActivatorPayment += activatorPayment;
+                    totalKiroboPayment += (fee - builderPayment - activatorPayment);
                 }
             }
-        }
-        total = gasleft();
-        // console.log("user update gas", total, totalCalls, total/totalCalls);
-        total = gasleft();
-        for (uint256 i; i<res.builderPayments.length; i++) {
-            BuilderPayment memory builderPayment = res.builderPayments[i];
-            if (builderPayment.builder != address(0)) {
-                if (builderPayment.amount > 0) {
-                    s_balances[builderPayment.builder] += (builderPayment.amount - 1);
-                }
-            }
-            // console.log('------------------------- builderPayment --------------------------', builderPayment.amount, builderPayment.builder);
-        }
-        total -= gasleft();
-        // console.log("builder update gas", total, totalBuilders, total/totalBuilders);
-        if (res.kiroboPayment > 0) {
-            s_balances[s_kirobo] += res.kiroboPayment;
+            s_balances[builder] += totalBuilderPayment;
         }
 
-        if (res.activatorPayment > 0) {
-            s_staked[msg.sender] = Activator(s_staked[msg.sender].balance + res.activatorPayment, uint64(block.number));
-            s_total_staked += res.activatorPayment;
-        }
-        total = gasStart - gasleft();
-        // console.log('total gas', total);
-        // console.log('const gas', constGas);
-        console.log('------------------------- totalUserPayment --------------------------', totalUserPayment);
-        // console.log('------------------------- Payment Diff --------------------------', 100000 + total - totalUserPayment);
-        
-        // console.log('------------------------- activatorPayment --------------------------', res.activatorPayment);
-        // console.log('------------------------- kiroboPayment --------------------------', res.kiroboPayment);
-        // console.log('------------------------- msg length --------------------------', msg.data.length);
+        s_staked[msg.sender] = Activator(s_staked[msg.sender].balance + totalActivatorPayment, uint64(block.number));
+        s_total_staked += totalActivatorPayment;
+        s_balances[s_kirobo] += totalKiroboPayment;
+        console.log("total gas", commonGas + totalUserGas);
+        return totalActivatorPayment;
     }
 
     function addFunds(uint256 amount) external {
@@ -358,7 +335,7 @@ contract FCT_Actuator is AccessControl {
         // ensure that at least one full period has passed since the last update
         require(
             timeElapsed >= s_timeBetweenKiroPriceUpdate,
-            "PERIOD_NOT_ELAPSED"
+            "FCT:A period not elapsed"
         );
 
         // overflow is desired, casting never truncates

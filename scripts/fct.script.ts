@@ -6,10 +6,25 @@ import * as dotenv from "dotenv";
 dotenv.config();
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+function getDate(days: number = 0) {
+  const result = new Date();
+  result.setDate(result.getDate() + days);
+  return Number(result.getTime() / 1000).toFixed();
+}
+
+function addHours(numOfHours: number, date = new Date()) {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+
+  return Number(date.getTime() / 1000).toFixed();
+}
 async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
     contractAddress: "0x0bBb48Cd5aCF40622965F83d9dF13cAbCE525a31",
+    options: {
+      validFrom: addHours(2), // UNIX timestamp
+      expiresAt: getDate(2), // UNIX timestamp
+    },
   });
 
   const vault = process.env.VAULT as string;

@@ -2,14 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-    struct BuilderPayment {
-      address builder;
-      uint256 amount;
-    }
-
-    struct UserPayment {
-      address user;
-      uint256 amount;
+    struct Payment {
+        address payer;
+        uint256 gas;
+        uint256 effectiveGasPrice;
+        uint256 builderShare;
+        uint256 activatorShare;
+        address builder;
     }
 
     struct PaymentIn {
@@ -19,17 +18,13 @@ pragma solidity ^0.8.0;
       uint256 gasStart;
     }
 
-    struct PaymentOut {
-        uint256 activatorPayment;
-        uint256 kiroboPayment;
-        // uint256 refund;
-        // uint256 fees;
-        uint256 totalCalls;
-        BuilderPayment[] builderPayments;
-        UserPayment[][] userPayments;
-    }
+    // struct PaymentOut {
+    //     uint256 totalCalls;
+    //     Payment[][] payments;
+    //     // address[] builders;
+    // }
 
 
 interface IFCT_Tokenomics {
-    function calcPayments(PaymentIn memory paymentIn, bytes32 id, bytes memory data) external view returns (PaymentOut memory paymentOut);
+    function calcPayments(PaymentIn memory paymentIn, bytes32 id, bytes memory data) external view returns (Payment[][] memory paymentOut, address[] memory builders);
 }

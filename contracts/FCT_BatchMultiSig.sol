@@ -10,13 +10,11 @@ pragma abicoder v2;
  *  using parameters (optional), multiSig (optional) ect.. 
 */
 
-// TODO: protection for payer (by calling vault for approve in activators)
-// TODO: always revert if signatures do not match (do flow if call fails)
-// DONE: protection for running the same version with different impl (adding func-sig to version in eip712)
-// TODO: wallet: useStrictVersioning, isUsingStrictVersioning
 // TODO: events
 // TODO: Use short strings in requires
+// TODO: add officialBuilder (by name) & builder shares (by builder)
 // DONE: change localCall_, localStaticCall to fctCall fctStaticCall, etc.
+// TODO: finilize IFCT interfaces
 
 import "./FCT_Constants.sol";
 import "./interfaces/IFCT_Engine.sol";
@@ -50,7 +48,7 @@ uint256 constant PERMISSIONS_BIT = 112;     // 112-128  16bit permissions
  * indevidual bits to hold the following flags: */
 uint256 constant FLAG_ACCUMATABLE = 0x01;
 uint256 constant FLAG_PURGEABLE = 0x02;
-uint256 constant FLAG_CANCELABLE = 0x04;
+uint256 constant FLAG_BLOCKABLE = 0x04;
 uint256 constant FLAG_EIP712 = 0x08;
 
 uint256 constant FLAG_STATICCALL = 0x01;
@@ -145,21 +143,30 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
      * @return address to be replaced from the input parameter
     */
     function _replace(address addr, bytes32[] calldata variables, uint256 trxNum, bytes[] memory returnedValues) 
-    private pure returns (address) {
+    private view returns (address) {
         uint256 value = uint256(uint160(addr));
         //0xFC000...xx
+        if (value < VAR_BASE) { // to save gas
+          return addr;
+        }
         if (value > VAR_MIN && value < VAR_MAX) {
-            require(value & VAR_MASK <= variables.length, "FCT: var out of bound");
+            require(value & VAR_MASK <= variables.length, "FCT:E var out of bound");
             return address(uint160(uint256(variables[(value & VAR_MASK) - 1])));
+        }
+        if (value == VAR_ADDRESS_ORIGIN) {
+          return tx.origin;
+        }
+        if (value == VAR_ADDRESS_COINBASE) {
+          return block.coinbase;
         }
         //0xFD000...xx
         if (value > RET_MIN && value < RET_MAX) {
-            require((value & VAR_MASK) <= trxNum, "FCT: tx out of bound");
+            require((value & VAR_MASK) <= trxNum, "FCT:E tx out of bound");
             bytes memory data = returnedValues[(value & VAR_MASK) - 1];
             uint256 innerPos = value < RET_REV 
                             ? ((value & RET_MASK) + 1) * 32 
                             : data.length - ((value & RET_MASK) + 1) * 32;
-            require(innerPos < data.length, "FCT: inner out of bound");
+            require(innerPos < data.length, "FCT:E inner out of bound");
             assembly { mstore( addr, mload(add(data, innerPos))) }
         }
         return addr;
@@ -174,18 +181,34 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
      * @return uint256 to be replaced from the input parameter
     */
     function _replace(uint256 value, bytes32[] calldata variables, uint256 trxNum, bytes[] memory returnedValues) 
-    private pure returns (uint256) {
+    private view returns (uint256) {
+        // console.log("value for _replace:", value);
+        if (value < VAR_BASE) { // to save gas
+          return value;
+        }
         if ((value > VAR_MIN && value < VAR_MAX) || (value > VARX_MIN && value < VARX_MAX)) {
-            require(value & VAR_MASK <= variables.length, "FCT: var out of bound");
+            require(value & VAR_MASK <= variables.length, "FCT:E var out of bound");
             return uint256(variables[(value & VAR_MASK) - 1]);
         }
+        if (value == VAR_BLOCK_NUMBER || value == VARX_BLOCK_NUMBER) {
+          return block.number;
+        }
+        if (value == VAR_BLOCK_TIMESTAMP || value == VARX_BLOCK_TIMESTAMP) {
+          return block.timestamp;
+        }
+        if (value == VAR_TX_GAS_PRICE || value == VARX_TX_GAS_PRICE) {
+          return tx.gasprice;
+        }
+        if ((value >= VAR_BLOCK_HASH_MIN && value < VAR_BLOCK_HASH_MAX) || (value >= VARX_BLOCK_HASH_MIN && value < VARX_BLOCK_HASH_MAX)) {
+            return uint256(blockhash(block.number - (value & VAR_BLOCK_HASH_MASK) - 1));
+        }
         if ((value > RET_MIN && value < RET_MAX) || (value > RETX_MIN && value < RETX_MAX)) {
-            require((value & VAR_MASK) <= trxNum, "FCT: tx out of bound");
+            require((value & VAR_MASK) <= trxNum, "FCT:E tx out of bound");
             bytes memory data = returnedValues[(value & VAR_MASK) - 1];
             uint256 innerPos = (value < RET_REV || (value > RETX_MIN && value < RETX_REV)) 
                             ? ((value & RET_MASK) + 1) * 32 
                             : data.length - ((value & RET_MASK) + 1) * 32;
-            require(innerPos < data.length, "FCT: inner out of bound");
+            require(innerPos < data.length, "FCT:E inner out of bound");
             assembly { mstore( value, mload(add(data, innerPos))) }
         }
         return value;
@@ -199,7 +222,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH =
         keccak256(
-            "Limits(uint40 valid_from,uint40 expires_at,uint64 gas_price_limit,bool purgeable,bool cancelable)"
+            "Limits(uint40 valid_from,uint40 expires_at,uint64 gas_price_limit,bool purgeable,bool blockable)"
         );
 
     bytes32 public constant BATCH_MULTI_SIG_CALL_RECURRENCY_TYPEHASH =
@@ -358,7 +381,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
      * @return builders - the address of the builder
      * @return maxGasPrices - max gas price that was defined for each FCT
      *              used for calculation of costs for the users and refund for the activators
-     * @return rt - a struct that hold info regarding who is the vault assosiatet with the call 
+     * @return rt - a struct that hold info regarding who is the payer assosiatet with the call 
      *              used for calculation of costs for the users and refund for the activators 
      */
     function batchMultiSigCall(
@@ -366,7 +389,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
         MSCalls[] calldata tr,
         bytes32[] calldata purgeFCTs
     ) external returns (bytes32[] memory names, address[] memory builders, uint256[] memory maxGasPrices, MReturn[][] memory rt) {
-        require(bytes3(version) == VERSION, "fct: wrong version");
+        require(bytes3(version) == VERSION, "FCT:E wrong version");
         uint256 trLength = tr.length;
         rt = new MReturn[][](trLength);
         names = new bytes32[](trLength);
@@ -414,7 +437,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             uint40(sessionId >> BEFORE_TS_BIT),
                             uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
                             (sessionId & FLAG_PURGEABLE) != 0,
-                            (sessionId & FLAG_CANCELABLE) != 0
+                            (sessionId & FLAG_BLOCKABLE) != 0
                         )
                 ));
                 // console.logBytes(abi.encode(
@@ -423,7 +446,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 //             uint40(sessionId >> BEFORE_TS_BIT),
                 //             uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
                 //             (sessionId & FLAG_PURGEABLE) != 0,
-                //             (sessionId & FLAG_CANCELABLE) != 0
+                //             (sessionId & FLAG_BLOCKABLE) != 0
                 //         ));
                 /** @dev hash of the Recurrent part (optional) */
                 if(uint16(sessionId >> RECURRENT_BIT) > 1 ){
@@ -457,7 +480,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 
                 for (uint256 j; j < length; ++j) {
                     MSCall calldata call = mcalls.mcall[j];
-                    require(uint16(call.callId >> CALL_INDEX_BIT) == j + 1, "FCT: wrong call index");
+                    require(uint16(call.callId >> CALL_INDEX_BIT) == j + 1, "FCT:E wrong call index");
                     locals.payerIndex[j] = uint16(call.callId >> PAYER_INDEX_BIT);
                     msg2 = abi.encodePacked(
                         msg2,
@@ -492,7 +515,8 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         eip712: (sessionId & FLAG_EIP712) != 0,
                         expiresAt: uint40(sessionId >> BEFORE_TS_BIT),
                         purgeable: (sessionId & FLAG_PURGEABLE) != 0,
-                        cancelable: (sessionId & FLAG_CANCELABLE) != 0
+                        blockable: (sessionId & FLAG_BLOCKABLE) != 0,
+                        reserved: 0
                     })
                 );
 
@@ -514,7 +538,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 if (uint8(sessionId >> EXT_SIGNERS_BIT) > 0) {
                     uint256 externalSigs = uint8(sessionId >> EXT_SIGNERS_BIT);
                     uint256 externalSignersLength = mcalls.externalSigners.length;
-                    require(externalSignersLength >= externalSigs, "FCT: wrong # approvals");
+                    require(externalSignersLength >= externalSigs, "FCT:E wrong # approvals");
                     for (uint256 s; s < signers.length; ++s) {
                         address signer = signers[s];
                         for (uint256 m; m < externalSignersLength; ++m) {
@@ -527,14 +551,14 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                             break;
                         }
                     }
-                    require(externalSigs == 0, "FCT: missing ext singatues");
+                    require(externalSigs == 0, "FCT:E missing ext singatues");
                 }
 
                 /**@notice this struct is to save gas and avoid stack too deep error */
                 {
                     locals.sessionId = sessionId;
                     locals.index = i;
-                    if (sessionId & FLAG_CANCELABLE != 0) {
+                    if (sessionId & FLAG_BLOCKABLE != 0) {
                         locals.messageHash = messageHash;
                     }
                     locals.rt = rt;
@@ -544,7 +568,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                 locals.callFromList = new address[](length);
                 /**@dev goin over each call in the FCT */
                 for (uint256 j; j < length; ++j) {
-                    console.log("running on call number:",j );
+                    // console.log("running on call number:", j);
                     uint256 gas = gasleft();
                     MSCall calldata call = mcalls.mcall[j];
                     if (call.to == address(0)) {
@@ -555,7 +579,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                     varLocals.callFrom = _replace(call.from, mcalls.variables, j, locals.returnedValues);
                     if (varLocals.callFrom != call.from) {
                         for (uint256 l; l < length; ++l) {
-                            require(varLocals.callFrom != mcalls.mcall[l].from, "FCT: from exists");
+                            require(varLocals.callFrom != mcalls.mcall[l].from, "FCT:E from exists");
                         }
                     }
                     locals.callFromList[j] = varLocals.callFrom;
@@ -579,6 +603,9 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                         .dataIndex + 32],
                                     (uint256)
                                 );
+                                if (varLocals.varId < VAR_BASE) { // to save gas
+                                  continue;
+                                }
                                 if (
                                     (varLocals.varId > VAR_MIN &&
                                         varLocals.varId < VAR_MAX) ||
@@ -589,11 +616,21 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                     require(
                                         (varLocals.varId & VAR_MASK) <=
                                             mcalls.variables.length,
-                                        "FCT: var out of bound"
+                                        "FCT:E var out of bound"
                                     );
                                     varLocals.varValue = mcalls.variables[
                                         (varLocals.varId & VAR_MASK) - 1
                                     ];
+                                } else if (varLocals.varId == VAR_BLOCK_NUMBER || varLocals.varId == VARX_BLOCK_NUMBER) {
+                                    varLocals.varValue = bytes32(block.number);
+                                } else if (varLocals.varId == VAR_BLOCK_TIMESTAMP || varLocals.varId == VARX_BLOCK_TIMESTAMP) {
+                                    varLocals.varValue = bytes32(block.timestamp);
+                                } else if (varLocals.varId == VAR_TX_GAS_PRICE || varLocals.varId == VARX_TX_GAS_PRICE) {
+                                    varLocals.varValue = bytes32(tx.gasprice);
+                                } else if (varLocals.varId == VAR_ADDRESS_COINBASE) {
+                                    varLocals.varValue = bytes32(uint256(uint160(address(block.coinbase))));
+                                } else if (varLocals.varId == VAR_ADDRESS_ORIGIN) {
+                                    varLocals.varValue = bytes32(uint256(uint160(tx.origin)));
                                 } else if (
                                     (varLocals.varId > RET_MIN &&
                                         varLocals.varId < RET_MAX) ||
@@ -602,7 +639,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                 ) {
                                     require(
                                         (varLocals.varId & VAR_MASK) <= j,
-                                        "FCT: tx out of bound"
+                                        "FCT:E tx out of bound"
                                     );
                                     bytes memory varData = varLocals.data;
                                     uint256 innerIndex = (varLocals.varId &
@@ -611,21 +648,25 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
 
                                     require(
                                         innerIndex * 32 < varData.length,
-                                        "FCT: inner out of bound"
+                                        "FCT:E inner out of bound"
                                     );
 
-                                console.logBytes(locals.returnedValues[(varLocals.varId & VAR_MASK)-1]);
-                                    varLocals.varValue = abi.decode(
-                                        locals.returnedValues[
-                                            (varLocals.varId & VAR_MASK) - 1
-                                        ],
-                                        (bytes32)
-                                    );
+                                // console.logBytes(locals.returnedValues[(varLocals.varId & VAR_MASK)-1]);
+                                //     varLocals.varValue = abi.decode(
+                                //         locals.returnedValues[
+                                //             (varLocals.varId & VAR_MASK) - 1
+                                //         ],
+                                //         (bytes32)
+                                //     );
 
+                                } else if ((varLocals.varId >= VAR_BLOCK_HASH_MIN && varLocals.varId < VAR_BLOCK_HASH_MAX) || (varLocals.varId >= VARX_BLOCK_HASH_MIN && varLocals.varId < VARX_BLOCK_HASH_MAX)) {
+                                    varLocals.varValue = blockhash(block.number - (varLocals.varId & VAR_BLOCK_HASH_MASK) - 1);
                                 }
+
                             }
                             {
                                 if (
+                                    varLocals.varId > VAR_BASE && ( // to save  gas
                                     (varLocals.varId > VAR_MIN &&
                                         varLocals.varId < VAR_MAX) ||
                                     (varLocals.varId > RET_MIN &&
@@ -633,7 +674,20 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                     (varLocals.varId > VARX_MIN &&
                                         varLocals.varId < VARX_MAX) ||
                                     (varLocals.varId > RETX_MIN &&
-                                        varLocals.varId < RETX_MAX)
+                                        varLocals.varId < RETX_MAX) ||
+                                    varLocals.varId == VAR_BLOCK_NUMBER ||
+                                    varLocals.varId == VARX_BLOCK_NUMBER || 
+                                    varLocals.varId == VAR_BLOCK_TIMESTAMP ||
+                                    varLocals.varId == VARX_BLOCK_TIMESTAMP ||
+                                    varLocals.varId == VAR_TX_GAS_PRICE ||
+                                    varLocals.varId == VARX_TX_GAS_PRICE ||
+                                    varLocals.varId == VAR_ADDRESS_COINBASE ||
+                                    varLocals.varId == VAR_ADDRESS_ORIGIN ||
+                                    (varLocals.varId >= VAR_BLOCK_HASH_MIN &&
+                                        varLocals.varId < VAR_BLOCK_HASH_MAX) ||
+                                    (varLocals.varId >= VARX_BLOCK_HASH_MIN &&
+                                        varLocals.varId < VARX_BLOCK_HASH_MAX)
+                                    )
                                 ) {
                                     bytes memory varData = varLocals.data;
                                     uint256 dataIndex = varLocals.dataIndex;
@@ -658,7 +712,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         }
                     }
 
-                    if ((sessionId & FLAG_CANCELABLE) != 0) {
+                    if ((sessionId & FLAG_BLOCKABLE) != 0) {
                         messageHash = bytes32(0);
                     }
 
@@ -702,18 +756,21 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                     varLocals.sessionId,
                                     uint16(call.callId >> PERMISSIONS_BIT)
                                 )
-                            ); 
-                                            
+                            );
+                        
+                        if (!success) {
+                            revert(_getRevertMsg(res));
+                        }
+                        
+                        (success, locals.returnedValues[j]) = abi.decode(res, (bool,bytes));
+
                         if (success) {
-                            if (res.length > 64) {
-                                locals.returnedValues[j] = abi.decode(res, (bytes));
-                            }
                             if (varLocals.flow <= OK_CONT_FAIL_CONT) {
                                 locals.rt[locals.index][j] = gasDiff(
                                     varLocals.callPayer, // wallet.addr,
                                     gas
                                 );
-                                console.log("in OK_CONT_FAIL_CONT with jump value:", uint16(call.callId >> OK_JUMP_BIT));
+                                // console.log("in OK_CONT_FAIL_CONT with jump value:", uint16(call.callId >> OK_JUMP_BIT));
                                 j = j + uint16(call.callId >> OK_JUMP_BIT);
                                 continue;
                             }
@@ -747,7 +804,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                                     gas
                                 );
                                 break;
-                            } else if (varLocals.flow == OK_CONT_FAIL_CONT){
+                            } else if (varLocals.flow == OK_CONT_FAIL_CONT || varLocals.flow == OK_REVERT_FAIL_CONT){
                                 locals.rt[locals.index][j] = gasDiff(
                                     varLocals.callPayer, // wallet.addr,
                                     gas
@@ -759,7 +816,7 @@ contract FCT_BatchMultiSig is IFCT_Engine, FCT_Helpers {
                         }
                 }
                 for (uint256 j; j < length; ++j) {
-                    locals.rt[locals.index][j].vault = _replace(locals.rt[locals.index][j].vault, mcalls.variables, j, locals.returnedValues);
+                    locals.rt[locals.index][j].payer = _replace(locals.rt[locals.index][j].payer, mcalls.variables, j, locals.returnedValues);
                 }
             }
 
@@ -807,34 +864,34 @@ function _calcMultiSigTransactionHash(
             );
     }
 
-    /**@dev returns the flow nu,ber according to the flow hash input 
+    /**@dev returns the flow number according to the flow hash input 
      * @param flowHash - input of the flow as a Hash
      * @return uint256 - flow number
     */
-    function _getFlow(bytes32 flowHash) private pure returns (uint256) {
-        if (flowHash == OK_CONT_FAIL_REVERT_HASH) {
-            return OK_CONT_FAIL_REVERT;
-        }
-        if (flowHash == OK_CONT_FAIL_STOP_HASH) {
-            return OK_CONT_FAIL_STOP;
-        }
-        if (flowHash == OK_CONT_FAIL_CONT_HASH) {
-            return OK_CONT_FAIL_CONT;
-        }
-        if (flowHash == OK_REVERT_FAIL_CONT_HASH) {
-            return OK_REVERT_FAIL_CONT;
-        }
-        if (flowHash == OK_REVERT_FAIL_STOP_HASH) {
-            return OK_REVERT_FAIL_STOP;
-        }
-        if (flowHash == OK_STOP_FAIL_CONT_HASH) {
-            return OK_STOP_FAIL_CONT;
-        }
-        if (flowHash == OK_STOP_FAIL_REVERT_HASH) {
-            return OK_STOP_FAIL_REVERT;
-        }
-        return 0x0;
-    }
+    // function _getFlow(bytes32 flowHash) private pure returns (uint256) {
+    //     if (flowHash == OK_CONT_FAIL_REVERT_HASH) {
+    //         return OK_CONT_FAIL_REVERT;
+    //     }
+    //     if (flowHash == OK_CONT_FAIL_STOP_HASH) {
+    //         return OK_CONT_FAIL_STOP;
+    //     }
+    //     if (flowHash == OK_CONT_FAIL_CONT_HASH) {
+    //         return OK_CONT_FAIL_CONT;
+    //     }
+    //     if (flowHash == OK_REVERT_FAIL_CONT_HASH) {
+    //         return OK_REVERT_FAIL_CONT;
+    //     }
+    //     if (flowHash == OK_REVERT_FAIL_STOP_HASH) {
+    //         return OK_REVERT_FAIL_STOP;
+    //     }
+    //     if (flowHash == OK_STOP_FAIL_CONT_HASH) {
+    //         return OK_STOP_FAIL_CONT;
+    //     }
+    //     if (flowHash == OK_STOP_FAIL_REVERT_HASH) {
+    //         return OK_STOP_FAIL_REVERT;
+    //     }
+    //     return 0x0;
+    // }
 
     /**@dev returns a flow hash from the flow number input
      * @param flow - flow number
@@ -871,15 +928,15 @@ function _calcMultiSigTransactionHash(
         // console.log('real gas price', tx.gasprice);
         require(
             tx.gasprice <= uint64(sessionId >> GAS_PRICE_LIMIT_BIT),
-            "FCT: gas price too high"
+            "FCT:E gas price too high"
         );
         require(
             block.timestamp > uint40(sessionId >> AFTER_TS_BIT),
-            "FCT: too early"
+            "FCT:E too early"
         );
         require(
             block.timestamp < uint40(sessionId >> BEFORE_TS_BIT),
-            "FCT: too late"
+            "FCT:E too late"
         );
     }
 

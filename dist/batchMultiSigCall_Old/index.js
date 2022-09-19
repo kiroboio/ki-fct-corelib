@@ -7,7 +7,7 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
 const utils_1 = require("ethers/lib/utils");
-const factoryProxy__abi_json_1 = __importDefault(require("../abi/factoryProxy_.abi.json"));
+const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
 const variableBase = "0xFC00000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
@@ -24,7 +24,7 @@ class BatchMultiSigCall {
         this.variables = [];
         // this.web3 = web3;
         this.provider = provider;
-        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, factoryProxy__abi_json_1.default, provider);
+        this.FactoryProxy = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
     }
     //
     // Everything for variables
@@ -142,8 +142,8 @@ class BatchMultiSigCall {
     async getMultiSigCallData(batchCall) {
         const self = this;
         const callDetails = (0, helpers_1.getSessionIdDetails)(batchCall, defaultFlags, false);
-        let typedHashes = [];
-        let additionalTypes = {};
+        const typedHashes = [];
+        const additionalTypes = {};
         // Creates messages from multiCalls array for EIP712 sign
         const typedDataMessage = batchCall.calls.reduce((acc, item, index) => {
             const txData = () => {

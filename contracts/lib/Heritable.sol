@@ -176,12 +176,11 @@ abstract contract Heritable is IHeritable, Backupable {
   }
 
   function clearInheritanceAndTokens(address[] calldata tokensToRemove) external onlyActiveOwner {
+    clearInheritance();
     if (tokensToRemove.length > 0) {
       updateTokensInheritancePayment(new address[](0), tokensToRemove, 0);
     }
-    clearInheritance();
   }
-
 
   /**@dev backwords competabillity */
   function setHeirs(address payable[] memory wallets, uint16[] memory bps)
@@ -256,12 +255,20 @@ abstract contract Heritable is IHeritable, Backupable {
 
     firstRun = true;
     s_inheritance.activated = true;
+    uint256 i;
 
     TokenInheritance storage sp_token_inheritance = s_token_inheritance[token];
-    uint256 currentBalance = IERC20(token).balanceOf(address(this)) + sp_token_inheritance.totalTransfered;
-    require(currentBalance > 0, "no balance");
 
-    uint256 i;
+    if (sp_token_inheritance.timestamp != s_inheritance.timestamp + s_inheritance.timeout) {
+      sp_token_inheritance.timestamp = s_inheritance.timestamp + s_inheritance.timeout;
+      sp_token_inheritance.totalTransfered = 0;
+      for (i = 0; i < sp_token_inheritance.sent.length; i++) {
+        sp_token_inheritance.sent[i] = false;
+      }
+    }
+    uint256 currentBalance = IERC20(token).balanceOf(address(this)) + sp_token_inheritance.totalTransfered;
+    // require(currentBalance > 0, "no balance");
+
     for (i = 0; i < s_inheritance.heirs.length; i++) {
       Heir storage sp_heir = s_inheritance.heirs[i];
       if (sp_heir.wallet == address(0)) {
@@ -296,7 +303,7 @@ abstract contract Heritable is IHeritable, Backupable {
     s_inheritance.activated = true;
 
     uint256 currentBalance = address(this).balance + s_totalTransfered;
-    require(currentBalance > 0, "no balance");
+    // require(currentBalance > 0, "no balance");
 
     uint256 i;
     for (i = 0; i < s_inheritance.heirs.length; i++) {
@@ -372,6 +379,14 @@ abstract contract Heritable is IHeritable, Backupable {
 
   function getInheritanceTimestamp() external view returns (uint40) {
     return s_inheritance.timestamp;
+  }
+
+  function getInheritanceInfo() external view returns (Inheritance memory) {
+    return s_inheritance;
+  }
+
+  function getTokenInheritanceInfo(address token) external view returns (TokenInheritance memory) {
+    return s_token_inheritance[token];
   }
 
   /** @notice getInheritanceTimeLeft - checks the time left until the inheritance can be activated

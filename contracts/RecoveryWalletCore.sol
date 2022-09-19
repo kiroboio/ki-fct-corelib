@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0;
-pragma abicoder v1;
+pragma abicoder v2;
 
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "./lib/Heritable.sol";
@@ -11,7 +11,7 @@ contract RecoveryWalletCore is IVersion, Heritable, ReentrancyGuard {
 
   uint8 public constant VERSION_NUMBER = 64;
   string public constant NAME = "Kirobo OCW";
-  string public constant VERSION = "RC07-1.1";
+  string public constant VERSION = "RC06-1.6";
 
   function version() public pure override returns (bytes8) {
     return bytes8(bytes(VERSION));

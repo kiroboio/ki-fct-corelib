@@ -308,8 +308,9 @@ contract GasReturn is AccessControl {
       kiroInVault >= s_stakingAmountNeeded,
       "vault must hold Kiro in order to make this action"
     );
-
+    //executing the function via the vault
     res = IWallet(wallet).execute2(to, value, data);
+    //if needed, update the kiro price
     if (
       block.timestamp > s_lastUpdateDateOfPrice + s_timeBetweenKiroPriceUpdate
     ) {
@@ -317,7 +318,7 @@ contract GasReturn is AccessControl {
       s_lastUpdateDateOfPrice = block.timestamp;
     }
 
-    uint256 month = getCurrentMonth();
+    uint256 month = getRelativaMonth();
 
     if (s_idToClosedMonth[nftId] == 0) {
       require(revealGasReturn(nftId), "No initial Gas in NFT");
@@ -428,7 +429,7 @@ contract GasReturn is AccessControl {
       IERC721(s_nftContractAddress).ownerOf(nftId) == vault,
       "vault doen't hold the NFT"
     );
-    uint256 month = getCurrentMonth();
+    uint256 month = getRelativaMonth();
     uint256 noPenalty = (value * month) / 36;
     uint256 penalty = value - noPenalty;
     s_idToCollectedGas[nftId] = value;
@@ -536,7 +537,7 @@ contract GasReturn is AccessControl {
   (after the penalty)
   @param nftId nft id */
   function RewardAmount(uint256 nftId) external view returns (uint256 amount) {
-    uint256 month = getCurrentMonth();
+    uint256 month = getRelativaMonth();
     amount =
       ((s_idToUsedGasReturn[nftId] - s_idToCollectedGas[nftId]) * month) /
       36;
@@ -588,11 +589,9 @@ contract GasReturn is AccessControl {
   @param i_nftId nft id*/
   function revealGasReturn(uint256 i_nftId) internal returns (bool res) {
     res = false;
+    bytes32 h = s_idToHash[i_nftId];
     for (uint256 i = 0; i < s_nftAmountArray.length; i++) {
-      if (
-        s_idToHash[i_nftId] ==
-        keccak256(abi.encodePacked(i_nftId, s_key, s_nftAmountArray[i]))
-      ) {
+      if (h == keccak256(abi.encodePacked(i_nftId, s_key, s_nftAmountArray[i]))) {
         s_idToMaxGasReturn[i_nftId] = s_nftAmountArray[i] * DECIMAL;
         s_idToClosedMonth[i_nftId] = 1;
         res = true;
@@ -602,6 +601,8 @@ contract GasReturn is AccessControl {
   }
 
   /**@dev caculates the gas fee that will be reimburst for the action
+  the total reimburst is calculated by the returnSize, that is the length of the data
+  returned from the execution function in the vault
   @param gasStart how much gas was available for the transaction
   @param i_nftId nft id  
   @param returnSize the size of the returned data*/
@@ -613,17 +614,17 @@ contract GasReturn is AccessControl {
     uint256 maxGas = s_idToMaxGasReturn[i_nftId];
     uint256 gasUsed = s_idToUsedGasReturn[i_nftId];
     require(gasUsed < maxGas, "There is no gas left on this NFT");
-
-    uint256 additionalGas = gasUsed == 0 ? 11600 + 1333 : 2854 + 1333
-    ;
+    //new assignment to a veriable that was 0, is more expensive then regular update
+    uint256 additionalGas = gasUsed == 0 ? 11600 + 1333 : 2854 + 1333;
     if (returnSize > 0) {
         additionalGas += returnSize*3;   
     }
+    //calulation the amount of gas 
     uint256 totalGas = additionalGas + gasStart - gasleft();
-
+    //getting the amount of kiro that the gas costs
     uint256 toPayInKiro = getAmountOfKiroForGivenEth(totalGas * tx.gasprice);
     if (maxGas >= gasUsed + toPayInKiro) {
-      s_idToUsedGasReturn[i_nftId] = totalGas; // * tx.gasprice; //returnSize; // totalGas; // += toPayInKiro;
+      s_idToUsedGasReturn[i_nftId] = gasUsed + toPayInKiro;
     } else {
       s_idToUsedGasReturn[i_nftId] = maxGas; //finished the NFT gas
     }
@@ -708,7 +709,7 @@ contract GasReturn is AccessControl {
   /**@dev this function caculated the current month accurding to an 
     input array and a time referece to the start of the mint 
     s_timeArray holds months in an 8 bit form in a 256 uint array of 36*/
-  function getCurrentMonth() public view returns (uint256 month) {
+  function getRelativaMonth() public view returns (uint256 month) {
     uint256 timeDifferenceSinceStart = block.timestamp - s_timeReference;
     uint256 index = (timeDifferenceSinceStart / 1 days) / DAYS_IN_UINT256;
     uint256 remainder = ((timeDifferenceSinceStart / 1 days) % DAYS_IN_UINT256);

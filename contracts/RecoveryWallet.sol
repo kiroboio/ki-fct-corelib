@@ -29,7 +29,7 @@ contract RecoveryWallet is
 
     uint8 public constant VERSION_NUMBER = 64;
     string public constant NAME = "Kirobo OCW";
-    string public constant VERSION = "RC07-1.1";
+    string public constant VERSION = "RC06-1.6";
     address public immutable GAS_RETURN_CONTRACT;
     address public immutable RECOVERY_WALLET_CORE_CONTRACT;
     address public immutable FCT_CONTROLLER_CONTRACT;
@@ -139,42 +139,22 @@ contract RecoveryWallet is
         address[] calldata signers,
         uint256 sessionId,
         uint16 permissions
-    ) external /*onlyCreator*/ returns (bytes memory) {
-        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
-        //IFCT_Controller(FCT_CONTROLLER_CONTRACT).version(funcID);
+    ) external /*onlyCreator*/ returns (bool success, bytes memory result) {
+        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).s_targets(funcID) == msg.sender, "FCT:Rc unknown caller");
         // console.log("running target %s, value %s", target, value);
         // console.logBytes(data);
         // console.logBytes32(messageHash);
-        
+
         if (messageHash != 0) {
             require(
                 s_blocked[messageHash] == 0,
-                "Wallet: transaction canceled"
+                "FCT:R transaction blocked"
             );
         }
-
-        uint256 canRun;
-        for (uint256 i = 0; i < signers.length; i++) {
-            //console.log("signer[i]:", signers[i]);
-            //console.log("s_owner:", s_owner);
-            if (
-                // fctVersion == 0 &&
-                signers[i] == s_owner &&
-                s_backup.state != BACKUP_STATE_ACTIVATED
-            ) {
-                canRun = 1;
-                break;
-            }
-        }
-        require(canRun == 1, "FCT: wrong signer");
-
-        (bool success, bytes memory res) = target.call{value: value}(data);
-        if (!success) {
-            revert(_getRevertMsg(res));
-        }
-        // console.log("success!!!");
-        // console.logBytes(res);
-        return res;
+        require(fctIsVersionSupported(funcID), "FCT:Rc version not supported");
+        require(fctAllowedToExecute(signers, funcID), "FCT:Rc wrong signer");
+        // console.log('call');
+        (success, result) = target.call{value: value}(data);
     }
 
     function fctStaticCall(
@@ -185,58 +165,59 @@ contract RecoveryWallet is
         address[] calldata signers,
         uint256 sessionId,
         uint16 permissions
-    ) external view /*onlyCreator*/ returns (bytes memory) {
-        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).funcAddress(funcID) == msg.sender, "FCT: unknown caller");
+    ) external view /*onlyCreator*/ returns (bool success, bytes memory result) {
+        require(IFCT_Controller(FCT_CONTROLLER_CONTRACT).s_targets(funcID) == msg.sender, "FCT:Rs unknown caller");
         if (messageHash != 0) {
             require(
                 s_blocked[messageHash] == 0,
-                "Wallet: transaction canceled"
+                "FCT:R transaction blocked"
             );
         }
-        uint256 canRun;
-        for (uint256 i = 0; i < signers.length; i++) {
-            if (
-                // fctVersion == 0 &&
-                signers[i] == s_owner &&
-                s_backup.state != BACKUP_STATE_ACTIVATED
-            ) {
-                canRun = 1;
-                break;
-            }
-        }
-        require(canRun == 1, "FCT: wrong signer");
-
-        (bool success, bytes memory res) = target.staticcall(data);
-        if (!success) {
-            console.log("static revert!!!");
-            revert(_getRevertMsg(res));
-        }
-        console.log("static success!!!");
-        console.logBytes(res);
-        return res;
+        require(fctIsVersionSupported(funcID), "FCT:Rs version not supported");
+        require(fctAllowedToExecute(signers, funcID), "FCT:Rs wrong signer");
+        // console.log('static call');
+        (success, result) = target.staticcall(data);
     }
 
     function fctIsBlocked(bytes32 messageHash) external view returns (uint256) {
         return s_blocked[messageHash];
     }
 
-    function fctAllowedToExecute(address[] calldata signers, uint256 fctVersion)
-        external
+    function fctIsVersionSupported(bytes32 funcID) public view returns (bool) {
+        // console.log('selector');
+        // console.logBytes32(bytes4(funcID));
+        // console.log('version');
+        // console.logBytes32(bytes3(funcID<<32));
+        if (s_fctUseExactVersion) {
+            return (bytes7(funcID) == 0xa7973c1f010101);
+        }
+        return (bytes5(funcID) == 0xa7973c1f01); // the same selector, the same major version 
+    }
+
+    function fctSetUsingExactVersion(bool useExactVersion) public onlyActiveOwner {
+        s_fctUseExactVersion =  useExactVersion;
+    }
+
+    function fctIsUsingExactVersion() public view returns (bool) {
+        return s_fctUseExactVersion;
+    }
+
+    function fctAllowedToExecute(address[] calldata signers, bytes32 funcID)
+        public
         view
-        returns (uint256)
+        returns (bool)
     {
-        console.log("signers.length",signers.length);
-        console.log("fctVersion",fctVersion);
+        // console.log("signers.length",signers.length);
         for (uint256 i = 0; i < signers.length; i++) {
             if (
-                fctVersion == 0 &&
+                // fctVersion == 0 &&
                 signers[i] == s_owner &&
                 s_backup.state != BACKUP_STATE_ACTIVATED
             ) {
-                return 1;
+                return true;
             }
         }
-        return 0;
+        return false;
     }
 
     function sendEther(address payable to, uint256 value)
@@ -492,12 +473,12 @@ contract RecoveryWallet is
         return res;
     }
 
-    function blockTransaction(bytes32 messageHash) external onlyActiveOwner {
+    function fctBlockTransaction(bytes32 messageHash) external onlyActiveOwner {
         require(messageHash != bytes32(0), "blocking 0x0 is not allowed");
         s_blocked[messageHash] = 1;
     }
 
-    function unblockTransaction(bytes32 messageHash) external onlyActiveOwner {
+    function fctUnblockTransaction(bytes32 messageHash) external onlyActiveOwner {
         s_blocked[messageHash] = 0;
     }
 

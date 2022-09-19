@@ -12,7 +12,7 @@ export declare class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }: {
         provider: ethers.providers.JsonRpcProvider;
         contractAddress: string;
-        options?: MSCallOptions;
+        options?: Partial<MSCallOptions>;
     });
     validate(call: MSCallInput): boolean;
     getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<string>;
