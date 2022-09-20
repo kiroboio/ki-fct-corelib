@@ -19,9 +19,12 @@ function getDate(days = 0) {
     result.setDate(result.getDate() + days);
     return Number(result.getTime() / 1000).toFixed();
 }
-const variableBase = "0xFC00000000000000000000000000000000000000";
+const FCBase = "0xFC00000000000000000000000000000000000000";
+const FCBaseBytes = "0xFC00000000000000000000000000000000000000000000000000000000000000";
 const FDBase = "0xFD00000000000000000000000000000000000000";
 const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
+const FDBackBase = "0xFDB0000000000000000000000000000000000000";
+const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
         this.batchMultiSigSelector = "0xa7973c1f";
@@ -76,12 +79,11 @@ class BatchMultiSigCall {
             if (call.validator) {
                 return call.validator.validatorAddress;
             }
-            // Check if to is a valid address
-            if (ethers_1.utils.isAddress(call.to)) {
+            if (typeof call.to === "string") {
                 return call.to;
             }
             // Else it is a variable
-            return this.getVariableValue(call.to);
+            return this.getVariable(call.to, "address");
         };
         this.handleValue = (call) => {
             // If value isn't provided => 0
@@ -89,11 +91,11 @@ class BatchMultiSigCall {
                 return "0";
             }
             // Check if value is a number
-            if (!isNaN(call.value)) {
+            if (typeof call.value === "string") {
                 return call.value;
             }
             // Else it is a variable
-            return this.getVariableValue(call.value);
+            return this.getVariable(call.value, "uint256");
         };
         this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
@@ -102,16 +104,6 @@ class BatchMultiSigCall {
             ...this.options,
             ...options,
         };
-    }
-    // Validate
-    validate(call) {
-        if (!ethers_1.utils.isAddress(call.from) && this.getVariableIndex(call.from) === -1) {
-            throw new Error("From value is not an address");
-        }
-        if (ethers_1.BigNumber.from(call.value).lt(0)) {
-            throw new Error("Value cannot be negative");
-        }
-        return true;
     }
     // Variables
     createVariable(variableId, value) {
@@ -135,15 +127,53 @@ class BatchMultiSigCall {
         if (index === -1) {
             throw new Error(`Variable ${variableId} doesn't exist`);
         }
-        return String(index + 1).padStart(variableBase.length, variableBase);
+        return String(index + 1).padStart(FCBase.length, FCBase);
     }
-    getCallOutput(index, innerIndex, type) {
-        const outputIndexHex = (index + 1).toString(16).padStart(3, "0");
-        const innerIndexHex = innerIndex ? innerIndex.toString(16).padStart(3, "0") : "000";
-        if (type.includes("bytes")) {
-            return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
+    getVariable(variable, type) {
+        if (variable.type === "external") {
+            return this.getExternalVariable(variable.id, type);
         }
-        return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
+        if (variable.type === "output") {
+            const id = variable.id;
+            const indexForNode = this.calls.findIndex((call) => call.nodeId === id.nodeId);
+            return this.getOutputVariable(indexForNode, id.innerIndex, type);
+        }
+        if (variable.type === "global") {
+            // TODO: Implement global variables
+            return "0x0000000000000000000000000000000000000000000000000000000000000000";
+        }
+    }
+    getOutputVariable(index, innerIndex, type) {
+        const outputIndexHex = (index + 1).toString(16).padStart(3, "0");
+        let base;
+        let innerIndexHex;
+        innerIndex = innerIndex ?? 0;
+        if (innerIndex < 0) {
+            innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(3, "0");
+            if (type.includes("bytes")) {
+                base = FDBackBaseBytes;
+            }
+            else {
+                base = FDBackBase;
+            }
+        }
+        if (innerIndex >= 0) {
+            innerIndexHex = innerIndex.toString(16).padStart(3, "0");
+            if (type.includes("bytes")) {
+                base = FDBaseBytes;
+            }
+            else {
+                base = FDBase;
+            }
+        }
+        return (innerIndexHex + outputIndexHex).padStart(base.length, base);
+    }
+    getExternalVariable(index, type) {
+        const outputIndexHex = (index + 1).toString(16).padStart(3, "0");
+        if (type.includes("bytes")) {
+            return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
+        }
+        return outputIndexHex.padStart(FCBase.length, FDBase);
     }
     getVariablesAsBytes32() {
         return this.variables.map((item) => {
@@ -165,35 +195,7 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
-    async create(callInput, index) {
-        let call;
-        if ("plugin" in callInput) {
-            console.log(callInput.plugin);
-            const pluginCall = await callInput.plugin.create();
-            call = { ...pluginCall, from: callInput.from, options: callInput.options };
-        }
-        else {
-            if (!callInput.to) {
-                throw new Error("To address is required");
-            }
-            call = { ...callInput };
-        }
-        if (index) {
-            const length = this.calls.length;
-            if (index > length) {
-                throw new Error(`Index ${index} is out of bounds.`);
-            }
-            this.calls.splice(index, 0, call);
-        }
-        else {
-            this.calls.push(call);
-        }
-        return this.calls;
-    }
-    async replaceCall(callInput, index) {
-        if (index >= this.calls.length) {
-            throw new Error(`Index ${index} is out of bounds.`);
-        }
+    async create(callInput) {
         let call;
         if ("plugin" in callInput) {
             const pluginCall = await callInput.plugin.create();
@@ -205,14 +207,13 @@ class BatchMultiSigCall {
             }
             call = { ...callInput };
         }
-        this.calls[index] = call;
+        this.calls.push(call);
         return this.calls;
     }
-    removeCall(index) {
-        if (index >= this.calls.length) {
-            throw new Error(`Index ${index} is out of bounds.`);
+    async createMultiple(calls) {
+        for (const call of calls) {
+            await this.create(call);
         }
-        this.calls.splice(index, 1);
         return this.calls;
     }
     getCall(index) {
@@ -237,7 +238,7 @@ class BatchMultiSigCall {
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: this.handleValue(call),
             callId: (0, helpers_2.manageCallId)(call, index + 1),
-            from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
+            from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
             to: this.handleTo(call),
             data: (0, helpers_2.handleData)(call),
             types: (0, helpers_2.handleTypes)(call),
@@ -275,6 +276,7 @@ class BatchMultiSigCall {
                 return constants_1.Flow[flow[0]];
             };
             const callInput = {
+                nodeId: `node${index}`,
                 to: call.to,
                 from: call.from,
                 value: call.value,
@@ -284,8 +286,8 @@ class BatchMultiSigCall {
                 viewOnly: meta.view_only,
                 options: {
                     gasLimit: meta.gas_limit,
-                    jumpOnSuccess: meta.jump_on_success,
-                    jumpOnFail: meta.jump_on_fail,
+                    jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
+                    jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index - meta.jump_on_fail}`,
                     flow: getFlow(),
                 },
             };
@@ -317,7 +319,7 @@ class BatchMultiSigCall {
                     meta: {
                         call_index: index + 1,
                         payer_index: index + 1,
-                        from: ethers_1.utils.isAddress(call.from) ? call.from : this.getVariableValue(call.from),
+                        from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
                         to: this.handleTo(call),
                         to_ens: call.toENS || "",
                         eth_value: this.handleValue(call),
@@ -463,9 +465,8 @@ class BatchMultiSigCall {
             // If mcall is a validation call
             if (call.validator) {
                 Object.entries(call.validator.params).forEach(([key, value]) => {
-                    const index = this.getVariableIndex(value, false);
-                    if (index !== -1) {
-                        call.validator.params[key] = this.getVariableValue(this.variables[index][0]);
+                    if (typeof value !== "string") {
+                        call.validator.params[key] = this.getVariable(value, "uint256");
                     }
                 });
                 return (0, helpers_1.createValidatorTxData)(call);
@@ -479,8 +480,8 @@ class BatchMultiSigCall {
                         if (param.type.lastIndexOf("[") > 0) {
                             const valueArray = param.value;
                             value = valueArray.map((item) => item.reduce((acc, item2) => {
-                                if (item2.variableId) {
-                                    item2.value = this.getVariableValue(item2.variableId);
+                                if (item2.variable && item2.variable.type === "external") {
+                                    item2.value = this.getExternalVariable(item2.variable.id, item2.type);
                                 }
                                 return { ...acc, [item2.name]: item2.value };
                             }, {}));
@@ -489,15 +490,14 @@ class BatchMultiSigCall {
                             // If parameter is a custom type
                             const valueArray = param.value;
                             value = valueArray.reduce((acc, item) => {
-                                if (item.variableId) {
-                                    item.value = this.getVariableValue(item.variableId);
+                                if (item.variable && item.variable.type === "external") {
+                                    item.value = this.getExternalVariable(item.variable.id, item.type);
                                 }
                                 return { ...acc, [item.name]: item.value };
                             }, {});
                         }
                     }
                     else {
-                        // If parameter isn't a struct/custom type
                         value = param.value;
                     }
                     return {
@@ -512,18 +512,8 @@ class BatchMultiSigCall {
     verifyParams(params, index, additionalTypes, typedHashes) {
         params.forEach((param) => {
             // If parameter is a variable
-            if (param.variableId) {
-                param.value = this.getVariableValue(param.variableId);
-                return;
-            }
-            // If parameter is a reference to previous call output
-            if ("outputIndex" in param && param.outputIndex !== undefined) {
-                // Check if value doesn't reference itself or future call output
-                if (param.outputIndex >= index) {
-                    throw new Error(`Call at position ${index} - parameter ${param.name} references a future or current call, referencing call at position ${param.outputIndex - 1}`);
-                }
-                param.value = this.getCallOutput(param.outputIndex, param?.innerIndex, param.type);
-                return;
+            if (param.variable) {
+                param.value = this.getVariable(param.variable, param.type);
             }
             if (param.customType) {
                 if (additionalTypes[param.type]) {

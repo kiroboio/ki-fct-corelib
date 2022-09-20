@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { TypedData, TypedDataTypes } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
-import { MSCallInput } from "./batchMultiSigCall_Old/interfaces";
+import { MSCallInput } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 export declare const flows: {
     OK_CONT_FAIL_REVERT: {

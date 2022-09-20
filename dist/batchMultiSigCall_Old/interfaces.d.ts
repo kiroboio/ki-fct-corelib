@@ -1,6 +1,6 @@
 import { Flow } from "../constants";
 import { BatchCallBase, MultiCallBase, Validator } from "../interfaces";
-export interface MSCallInput extends Omit<MultiCallBase, "flags"> {
+interface MSCallInput extends Omit<MultiCallBase, "flags"> {
     value: string;
     to: string;
     toEnsHash?: string;
@@ -41,3 +41,4 @@ export interface BatchMSCall {
     getCall: (index: number) => MSCall;
     get length(): number;
 }
+export {};

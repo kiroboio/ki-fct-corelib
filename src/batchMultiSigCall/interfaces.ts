@@ -1,5 +1,5 @@
 import { TypedData } from "ethers-eip712";
-import { CallOptions, IPlugin, Params, Validator } from "../interfaces";
+import { CallOptions, IPlugin, Params, Validator, Variable } from "../interfaces";
 
 export interface IBatchMultiSigCallFCT {
   typeHash: string;
@@ -11,9 +11,11 @@ export interface IBatchMultiSigCallFCT {
 }
 
 export interface MSCallInput {
-  value?: string;
-  to: string;
-  from: string;
+  nodeId: string;
+
+  value?: string | Variable;
+  to: string | Variable;
+  from: string | Variable;
   params?: Params[];
   method?: string;
 

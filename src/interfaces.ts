@@ -1,13 +1,16 @@
 import { Flow } from "./constants";
 
+export interface Variable {
+  type: "output" | "external" | "global";
+  id: string | number | { nodeId: string; innerIndex: number };
+}
+
 export interface Params {
   name: string;
   type: string;
   value?: boolean | string | string[] | Params[] | Params[][];
   customType?: boolean;
-  variableId?: string;
-  outputIndex?: number;
-  innerIndex?: number;
+  variable?: Variable;
 }
 
 export interface DecodeTx {
@@ -37,7 +40,7 @@ export interface MethodParamsInterface {
   method: string;
   params: Params[];
   validator?: Validator;
-  to?: string;
+  to?: string | Variable;
 }
 
 export interface ContractInteractionInterface {
@@ -59,8 +62,8 @@ export interface BatchCallBase {
 export interface CallOptions {
   gasLimit?: string;
   flow?: Flow;
-  jumpOnSuccess?: number;
-  jumpOnFail?: number;
+  jumpOnSuccess?: string;
+  jumpOnFail?: string;
 }
 
 export interface MultiCallBase {
@@ -74,7 +77,7 @@ export interface MultiCallBase {
 export interface Validator {
   method: string;
   params: {
-    [key: string]: string;
+    [key: string]: string | Variable;
   };
   validatorAddress: string;
 }

@@ -15,13 +15,14 @@ export declare class BatchMultiSigCall {
         contractAddress: string;
         options?: Partial<MSCallOptions>;
     });
-    validate(call: MSCallInput): boolean;
     getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<string>;
     createVariable(variableId: string, value?: string): string[];
     addVariableValue(variableId: string, value: string): string[];
     private getVariableIndex;
     getVariableValue(variableId: string): string;
-    getCallOutput(index: number, innerIndex: number, type: string): string;
+    private getVariable;
+    private getOutputVariable;
+    private getExternalVariable;
     getVariablesAsBytes32(): string[];
     setOptions(options: MSCallOptions): MSCallOptions;
     getPlugin: (dataOrIndex: MSCall | number) => Promise<{
@@ -34,9 +35,8 @@ export declare class BatchMultiSigCall {
         description?: string;
         plugin: Plugin;
     }[];
-    create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]>;
-    replaceCall(callInput: MSCallInput | IWithPlugin, index: number): Promise<MSCallInput[]>;
-    removeCall(index: number): MSCallInput[];
+    create(callInput: MSCallInput | IWithPlugin): Promise<MSCallInput[]>;
+    createMultiple(calls: (MSCallInput | IWithPlugin)[]): Promise<MSCallInput[]>;
     getCall(index: number): MSCallInput;
     get length(): number;
     exportFCT(): Promise<{

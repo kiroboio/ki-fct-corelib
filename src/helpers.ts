@@ -4,7 +4,7 @@ import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import ValidatorABI from "./abi/validator.abi.json";
-import { MSCallInput } from "./batchMultiSigCall_Old/interfaces";
+import { MSCallInput } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 
 export const flows = {
