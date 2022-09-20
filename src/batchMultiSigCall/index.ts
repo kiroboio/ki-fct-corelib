@@ -593,7 +593,7 @@ export class BatchMultiSigCall {
     return {};
   }
 
-  private async verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
+  private verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
     params.forEach((param) => {
       // If parameter is a variable
       if (param.variableId) {
@@ -602,17 +602,18 @@ export class BatchMultiSigCall {
       }
 
       // If parameter is a reference to previous call output
-      if ("outputIndex" in param) {
+      if ("outputIndex" in param && param.outputIndex !== undefined) {
         // Check if value doesn't reference itself or future call output
         if (param.outputIndex >= index) {
           throw new Error(
-            `Parameter ${param.name} references a future or current call, referencing call at position ${
-              param.outputIndex - 1
-            })`
+            `Call at position ${index} - parameter ${
+              param.name
+            } references a future or current call, referencing call at position ${param.outputIndex - 1}`
           );
         }
 
         param.value = this.getCallOutput(param.outputIndex, param?.innerIndex, param.type);
+
         return;
       }
 
