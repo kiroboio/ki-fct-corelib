@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "pretest": "tsc",
-    "test": "hardhat test test/withContracts.test.js",
+    "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
     "test:utils": "mocha test/utils.test.js",
     "build": "tsc",
     "fct": "ts-node scripts/fct.script.ts",
@@ -43,7 +42,6 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "ganache": "^7.3.2",
     "hardhat": "^2.10.1",
-    "ki-eth-contracts": "github:kiroboio/ki-eth-contracts",
     "mocha": "^10.0.0",
     "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git",
     "prettier": "^2.7.1",

@@ -200,7 +200,7 @@ const getTypedDataDomain = async (factoryProxy) => {
         version: await factoryProxy.VERSION(),
         chainId: chainId.toNumber(),
         verifyingContract: factoryProxy.address,
-        salt: await factoryProxy.uid(),
+        salt: await factoryProxy.UID(),
     };
 };
 exports.getTypedDataDomain = getTypedDataDomain;

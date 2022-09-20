@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { BatchMultiSigCall } from ".";
+// import { BatchMultiSigCall } from ".";
 import {
   getEncodedMethodParams,
   getMethodInterface,
@@ -13,20 +13,20 @@ import { BatchMSCallInput, MSCallInput } from "./interfaces";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
-export const handleTo = (self: BatchMultiSigCall, call: MSCallInput) => {
-  // If call is a validator method, return validator address as to address
-  if (call.validator) {
-    return call.validator.validatorAddress;
-  }
+// export const handleTo = (self: BatchMultiSigCall, call: MSCallInput) => {
+//   // If call is a validator method, return validator address as to address
+//   if (call.validator) {
+//     return call.validator.validatorAddress;
+//   }
 
-  // Check if to is a valid address
-  if (utils.isAddress(call.to)) {
-    return call.to;
-  }
+//   // Check if to is a valid address
+//   if (utils.isAddress(call.to)) {
+//     return call.to;
+//   }
 
-  // Else it is a variable
-  return self.getVariableFCValue(call.to);
-};
+//   // Else it is a variable
+//   return self.getVariableFCValue(call.to);
+// };
 
 export const handleMethodInterface = (call: MSCallInput): string => {
   // If call is not a ETH transfer

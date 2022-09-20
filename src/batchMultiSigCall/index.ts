@@ -1,6 +1,6 @@
 import { BigNumber, ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
-import FactoryProxyABI from "../abi/FCT_Controller.abi.json";
+import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params } from "../interfaces";
@@ -63,7 +63,7 @@ export class BatchMultiSigCall {
     contractAddress: string;
     options?: Partial<MSCallOptions>;
   }) {
-    this.FCT_Controller = new ethers.Contract(contractAddress, FactoryProxyABI, provider);
+    this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     this.provider = provider;
 
@@ -136,8 +136,15 @@ export class BatchMultiSigCall {
     return String(index + 1).padStart(variableBase.length, variableBase);
   }
 
-  public getCallOutput(index: number, bytes: boolean = false) {
-    return (index + 1).toString(16).padStart(bytes ? FDBaseBytes.length : FDBase.length, bytes ? FDBaseBytes : FDBase);
+  public getCallOutput(index: number, innerIndex: number, type: string) {
+    const outputIndexHex = (index + 1).toString(16).padStart(3, "0");
+    const innerIndexHex = innerIndex ? innerIndex.toString(16).padStart(3, "0") : "000";
+
+    if (type.includes("bytes")) {
+      return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
+    }
+
+    return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
   }
 
   public getVariablesAsBytes32() {
@@ -198,6 +205,7 @@ export class BatchMultiSigCall {
   public async create(callInput: MSCallInput | IWithPlugin, index?: number): Promise<MSCallInput[]> {
     let call: MSCallInput;
     if ("plugin" in callInput) {
+      console.log(callInput.plugin);
       const pluginCall = await callInput.plugin.create();
       call = { ...pluginCall, from: callInput.from, options: callInput.options } as MSCallInput;
     } else {
@@ -555,8 +563,8 @@ export class BatchMultiSigCall {
               const valueArray = param.value as Params[][];
               value = valueArray.map((item) =>
                 item.reduce((acc, item2) => {
-                  if (item2.variable) {
-                    item2.value = this.getVariableValue(item2.variable);
+                  if (item2.variableId) {
+                    item2.value = this.getVariableValue(item2.variableId);
                   }
                   return { ...acc, [item2.name]: item2.value };
                 }, {})
@@ -565,8 +573,8 @@ export class BatchMultiSigCall {
               // If parameter is a custom type
               const valueArray = param.value as Params[];
               value = valueArray.reduce((acc, item) => {
-                if (item.variable) {
-                  item.value = this.getVariableValue(item.variable);
+                if (item.variableId) {
+                  item.value = this.getVariableValue(item.variableId);
                 }
                 return { ...acc, [item.name]: item.value };
               }, {});
@@ -587,21 +595,27 @@ export class BatchMultiSigCall {
 
   private async verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
     params.forEach((param) => {
-      if (param.variable) {
-        param.value = this.getVariableValue(param.variable);
+      // If parameter is a variable
+      if (param.variableId) {
+        param.value = this.getVariableValue(param.variableId);
         return;
       }
-      // If parameter value is FD (reference value to previous tx)
-      if (typeof param.value === "string" && param.value.includes("0xFD")) {
-        const refIndex = parseInt(param.value.substring(param.value.length - 3), 16) - 1;
-        // Checks if current transaction doesn't reference current or future transaction
-        if (refIndex >= index) {
+
+      // If parameter is a reference to previous call output
+      if ("outputIndex" in param) {
+        // Check if value doesn't reference itself or future call output
+        if (param.outputIndex >= index) {
           throw new Error(
-            `Parameter ${param.name} references a future or current call, referencing call at position ${refIndex})`
+            `Parameter ${param.name} references a future or current call, referencing call at position ${
+              param.outputIndex - 1
+            })`
           );
         }
+
+        param.value = this.getCallOutput(param.outputIndex, param?.innerIndex, param.type);
         return;
       }
+
       if (param.customType) {
         if (additionalTypes[param.type]) {
           return;

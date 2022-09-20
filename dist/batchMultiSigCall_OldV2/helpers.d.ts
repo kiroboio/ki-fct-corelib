@@ -1,7 +1,5 @@
 import { TypedData } from "ethers-eip712";
-import { BatchMultiSigCall } from ".";
 import { BatchMSCallInput, MSCallInput } from "./interfaces";
-export declare const handleTo: (self: BatchMultiSigCall, call: MSCallInput) => string;
 export declare const handleMethodInterface: (call: MSCallInput) => string;
 export declare const handleFunctionSignature: (call: MSCallInput) => string;
 export declare const handleEnsHash: (call: MSCallInput) => string;

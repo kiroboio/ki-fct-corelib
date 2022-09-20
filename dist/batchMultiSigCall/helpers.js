@@ -101,7 +101,6 @@ exports.manageCallId = manageCallId;
 // 10 - Before timestamp
 // 16 - Gas price limit
 // 2 - Flags
-//0x2e97af0001010103e800000000006335a4c800632875c8000000174876e8000c
 const getSessionId = (salt, options) => {
     const currentDate = new Date();
     if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {

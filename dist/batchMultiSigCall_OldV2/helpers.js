@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSessionId = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.handleTo = void 0;
+exports.getSessionId = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
 const ethers_1 = require("ethers");
+// import { BatchMultiSigCall } from ".";
 const helpers_1 = require("../helpers");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
-const handleTo = (self, call) => {
-    // If call is a validator method, return validator address as to address
-    if (call.validator) {
-        return call.validator.validatorAddress;
-    }
-    // Check if to is a valid address
-    if (ethers_1.utils.isAddress(call.to)) {
-        return call.to;
-    }
-    // Else it is a variable
-    return self.getVariableFCValue(call.to);
-};
-exports.handleTo = handleTo;
+// export const handleTo = (self: BatchMultiSigCall, call: MSCallInput) => {
+//   // If call is a validator method, return validator address as to address
+//   if (call.validator) {
+//     return call.validator.validatorAddress;
+//   }
+//   // Check if to is a valid address
+//   if (utils.isAddress(call.to)) {
+//     return call.to;
+//   }
+//   // Else it is a variable
+//   return self.getVariableFCValue(call.to);
+// };
 const handleMethodInterface = (call) => {
     // If call is not a ETH transfer
     if (call.method) {

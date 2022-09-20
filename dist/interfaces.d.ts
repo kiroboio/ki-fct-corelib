@@ -4,7 +4,9 @@ export interface Params {
     type: string;
     value?: boolean | string | string[] | Params[] | Params[][];
     customType?: boolean;
-    variable?: string;
+    variableId?: string;
+    outputIndex?: number;
+    innerIndex?: number;
 }
 export interface DecodeTx {
     encodedMessage: string;
