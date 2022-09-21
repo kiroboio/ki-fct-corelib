@@ -9,9 +9,8 @@ export type Variable =
 export interface Params {
   name: string;
   type: string;
-  value?: boolean | string | string[] | Params[] | Params[][];
+  value?: boolean | string | string[] | Params[] | Params[][] | Variable;
   customType?: boolean;
-  variable?: Variable;
 }
 
 export interface DecodeTx {

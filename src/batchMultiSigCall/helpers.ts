@@ -12,8 +12,13 @@ import {
 } from "../helpers";
 import { MSCallInput } from "./interfaces";
 import { Flow } from "../constants";
+import { Variable } from "interfaces";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
+
+export const instanceOfVariable = (object: any): object is Variable => {
+  return typeof object === "object" && "type" in object && "id" in object;
+};
 
 export const handleMethodInterface = (call: MSCallInput): string => {
   // If call is not a ETH transfer

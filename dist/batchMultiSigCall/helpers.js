@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
+exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.instanceOfVariable = void 0;
 const ethers_1 = require("ethers");
 const helpers_1 = require("../helpers");
 const constants_1 = require("../constants");
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
+const instanceOfVariable = (object) => {
+    return typeof object === "object" && "type" in object && "id" in object;
+};
+exports.instanceOfVariable = instanceOfVariable;
 const handleMethodInterface = (call) => {
     // If call is not a ETH transfer
     if (call.method) {

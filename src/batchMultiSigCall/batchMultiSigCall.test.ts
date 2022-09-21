@@ -135,7 +135,7 @@ describe("BatchMultiSigCall", () => {
         method: "transfer",
         params: [
           { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
-          { name: "amount", type: "uint256", variable: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
+          { name: "amount", type: "uint256", value: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
         ],
       },
       {

@@ -2,6 +2,8 @@ import { TypedData } from "ethers-eip712";
 import { MSCallOptions } from "./interfaces";
 import { MSCallInput } from "./interfaces";
 import { Flow } from "../constants";
+import { Variable } from "interfaces";
+export declare const instanceOfVariable: (object: any) => object is Variable;
 export declare const handleMethodInterface: (call: MSCallInput) => string;
 export declare const handleFunctionSignature: (call: MSCallInput) => string;
 export declare const handleEnsHash: (call: MSCallInput) => string;

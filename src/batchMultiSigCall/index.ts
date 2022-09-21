@@ -19,6 +19,7 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
   handleTypes,
+  instanceOfVariable,
   manageCallId,
   parseSessionID,
 } from "./helpers";
@@ -546,8 +547,8 @@ export class BatchMultiSigCall {
               const valueArray = param.value as Params[][];
               value = valueArray.map((item) =>
                 item.reduce((acc, item2) => {
-                  if (item2.variable && item2.variable.type === "external") {
-                    item2.value = this.getExternalVariable(item2.variable.id as number, item2.type);
+                  if (instanceOfVariable(item2.value) && item2.value.type === "external") {
+                    item2.value = this.getVariable(item2.value, item2.type);
                   }
                   return { ...acc, [item2.name]: item2.value };
                 }, {})
@@ -556,8 +557,8 @@ export class BatchMultiSigCall {
               // If parameter is a custom type
               const valueArray = param.value as Params[];
               value = valueArray.reduce((acc, item) => {
-                if (item.variable && item.variable.type === "external") {
-                  item.value = this.getExternalVariable(item.variable.id as number, item.type);
+                if (instanceOfVariable(item.value) && item.value.type === "external") {
+                  item.value = this.getVariable(item.value, item.type);
                 }
                 return { ...acc, [item.name]: item.value };
               }, {});
@@ -578,8 +579,8 @@ export class BatchMultiSigCall {
   private verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
     params.forEach((param) => {
       // If parameter is a variable
-      if (param.variable) {
-        param.value = this.getVariable(param.variable, param.type);
+      if (instanceOfVariable(param.value)) {
+        param.value = this.getVariable(param.value, param.type);
       }
 
       if (param.customType) {
