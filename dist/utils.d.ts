@@ -33,21 +33,6 @@ declare const _default: {
         getSigners: () => string[];
     };
     recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
-    parseSessionID: (sessionId: string, builder: string) => {
-        builder: string;
-        recurrency: {
-            accumetable: boolean;
-            chillTime: string;
-            maxRepeats: string;
-        };
-        multisig: {
-            minimumApprovals: number;
-        };
-        validFrom: string;
-        expiresAt: string;
-        maxGasPrice: string;
-        blockable: boolean;
-        purgeable: boolean;
-    };
+    getVariablesAsBytes32: (variables: string[]) => string[];
 };
 export default _default;

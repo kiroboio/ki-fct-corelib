@@ -1,3 +1,4 @@
+import { GlobalVariable } from "variables";
 import { Flow } from "./constants";
 export declare type Variable = {
     type: "output";
@@ -10,7 +11,7 @@ export declare type Variable = {
     id: number;
 } | {
     type: "global";
-    id: string;
+    id: GlobalVariable;
 };
 export interface Params {
     name: string;
