@@ -62,7 +62,7 @@ const recoverAddressFromEIP712 = (typedData, signature) => {
     }
 };
 const getFCTMessageHash = (typedData) => {
-    return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
+    return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
 };
 const validateFCT = (FCT) => {
     const limits = FCT.typedData.message.limits;

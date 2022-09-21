@@ -95,7 +95,7 @@ const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike
 };
 
 const getFCTMessageHash = (typedData: TypedData) => {
-  return ethers.utils.hexlify(TypedDataUtils.hashStruct(typedData, typedData.primaryType, typedData.message));
+  return ethers.utils.hexlify(TypedDataUtils.encodeDigest(typedData));
 };
 
 const validateFCT = (FCT: IFCT) => {
