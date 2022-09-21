@@ -2,6 +2,7 @@ import { BatchMultiSigCall } from "./index";
 import { ethers } from "ethers";
 import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
+import utils from "../utils";
 
 const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
 const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
@@ -110,5 +111,38 @@ describe("BatchMultiSigCall", () => {
     expect(FCT.typedData.message["transaction_3"].asset).to.eq("0x6B175474E89094C44Da98b954EedeAC495271d0F");
     expect(FCT.typedData.message["transaction_3"].amount).to.eq("1000000000000000000");
     expect(FCT.typedData.message["transaction_3"].onBehalfOf).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+  });
+
+  it("Should...", async () => {
+    batchMultiSigCall = new BatchMultiSigCall({
+      contractAddress,
+      provider,
+    });
+
+    const calls = await batchMultiSigCall.createMultiple([
+      {
+        nodeId: "node1",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "balanceOf",
+        params: [{ name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" }],
+      },
+      {
+        nodeId: "node2",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "transfer",
+        params: [
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", variable: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
+        ],
+      },
+    ]);
+
+    const variables = ["1", "2"];
+
+    const variablesAsBytes32 = utils.getVariablesAsBytes32(variables);
+
+    const FCT = await batchMultiSigCall.exportFCT();
   });
 });

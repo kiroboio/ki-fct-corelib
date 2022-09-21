@@ -1,5 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { MSCall } from "./batchMultiSigCall/interfaces";
 
@@ -144,86 +144,14 @@ const validateFCT = (FCT: IFCT) => {
   };
 };
 
-const parseSessionID = (sessionId: string, builder: string) => {
-  // const salt = sessionId.slice(2, 8);
-  const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
-  // const version = sessionId.slice(10, 16);
-  const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
-  const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
-  const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
-  const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
-  const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
-  const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
+const getVariablesAsBytes32 = (variables: string[]) => {
+  return variables.map((v) => {
+    if (isNaN(Number(v)) || utils.isAddress(v)) {
+      return `0x${String(v).replace("0x", "").padStart(64, "0")}`;
+    }
 
-  let flags = {
-    eip712: true,
-    accumetable: false,
-    purgeable: false,
-    blockable: false,
-  };
-
-  if (flagsNumber === 9) {
-    flags = {
-      ...flags,
-      accumetable: true,
-    };
-  } else if (flagsNumber === 10) {
-    flags = {
-      ...flags,
-      purgeable: true,
-    };
-  } else if (flagsNumber === 11) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      purgeable: true,
-    };
-  } else if (flagsNumber === 12) {
-    flags = {
-      ...flags,
-      blockable: true,
-    };
-  } else if (flagsNumber === 13) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      blockable: true,
-    };
-  } else if (flagsNumber === 14) {
-    flags = {
-      ...flags,
-      purgeable: true,
-      blockable: true,
-    };
-  } else if (flagsNumber === 15) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      purgeable: true,
-      blockable: true,
-    };
-  }
-
-  const data = {
-    validFrom,
-    expiresAt,
-    maxGasPrice,
-    blockable: flags.blockable,
-    purgeable: flags.purgeable,
-  };
-
-  return {
-    ...data,
-    builder,
-    recurrency: {
-      accumetable: flags.accumetable,
-      chillTime,
-      maxRepeats,
-    },
-    multisig: {
-      minimumApprovals,
-    },
-  };
+    return `0x${Number(v).toString(16).padStart(64, "0")}`;
+  });
 };
 
-export default { getFCTMessageHash, validateFCT, recoverAddressFromEIP712, parseSessionID };
+export default { getFCTMessageHash, validateFCT, recoverAddressFromEIP712, getVariablesAsBytes32 };

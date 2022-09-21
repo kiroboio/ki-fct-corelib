@@ -101,33 +101,6 @@ export class BatchMultiSigCall {
 
   // Variables
 
-  public createVariable(variableId: string, value?: string): string[] {
-    this.variables = [...this.variables, [variableId, value ?? undefined]];
-    return this.variables.map((item) => item[0]);
-  }
-
-  public addVariableValue(variableId: string, value: string) {
-    const index = this.getVariableIndex(variableId);
-    this.variables[index][1] = value;
-    return this.variables.map((item) => item[0]);
-  }
-
-  private getVariableIndex(variableId: string, throwError: boolean = true): number {
-    const index = this.variables.findIndex((item) => item[0] === variableId);
-    if (index === -1 && throwError) {
-      throw new Error(`Variable ${variableId} doesn't exist`);
-    }
-    return index;
-  }
-
-  public getVariableValue(variableId: string): string {
-    const index = this.getVariableIndex(variableId);
-    if (index === -1) {
-      throw new Error(`Variable ${variableId} doesn't exist`);
-    }
-    return String(index + 1).padStart(FCBase.length, FCBase);
-  }
-
   private getVariable(variable: Variable, type: string) {
     if (variable.type === "external") {
       return this.getExternalVariable(variable.id as number, type);

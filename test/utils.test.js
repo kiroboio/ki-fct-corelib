@@ -252,9 +252,4 @@ describe("Test utils", () => {
     console.log("address", address);
     console.log("address should be", "0x4f631612941F710db646B8290dB097bFB8657dC2");
   });
-  it("Should decode sessionID", () => {
-    const sessionId = utils.parseSessionID(FCT.sessionId);
-
-    console.log(sessionId);
-  });
 });

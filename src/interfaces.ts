@@ -1,9 +1,10 @@
+import { GlobalVariable } from "variables";
 import { Flow } from "./constants";
 
 export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
-  | { type: "global"; id: string };
+  | { type: "global"; id: GlobalVariable };
 
 export interface Params {
   name: string;
