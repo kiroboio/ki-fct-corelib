@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
     "test:utils": "mocha test/utils.test.js",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "lint": "eslint  --ext .js,.ts ."
   },
