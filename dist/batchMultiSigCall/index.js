@@ -150,7 +150,7 @@ class BatchMultiSigCall {
         if (type.includes("bytes")) {
             return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
         }
-        return outputIndexHex.padStart(FCBase.length, FDBase);
+        return outputIndexHex.padStart(FCBase.length, FCBase);
     }
     getVariablesAsBytes32() {
         return this.variables.map((item) => {

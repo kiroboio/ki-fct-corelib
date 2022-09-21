@@ -151,7 +151,7 @@ export class BatchMultiSigCall {
       return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
     }
 
-    return outputIndexHex.padStart(FCBase.length, FDBase);
+    return outputIndexHex.padStart(FCBase.length, FCBase);
   }
 
   public getVariablesAsBytes32() {
