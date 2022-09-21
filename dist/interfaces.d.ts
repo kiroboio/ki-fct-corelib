@@ -1,11 +1,17 @@
 import { Flow } from "./constants";
-export interface Variable {
-    type: "output" | "external" | "global";
-    id: string | number | {
+export declare type Variable = {
+    type: "output";
+    id: {
         nodeId: string;
         innerIndex: number;
     };
-}
+} | {
+    type: "external";
+    id: number;
+} | {
+    type: "global";
+    id: string;
+};
 export interface Params {
     name: string;
     type: string;
@@ -71,7 +77,7 @@ export interface Validator {
     validatorAddress: string;
 }
 export interface IPlugin {
-    create: () => Promise<IPluginCall>;
+    create: () => Promise<IPluginCall | undefined>;
 }
 export interface IPluginCall {
     value?: string;

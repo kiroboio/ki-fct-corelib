@@ -240,6 +240,9 @@ export class BatchMultiSigCall {
     let call: MSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();
+      if (pluginCall === undefined) {
+        throw new Error("Error creating call with plugin");
+      }
       call = { ...pluginCall, from: callInput.from, options: callInput.options } as MSCallInput;
     } else {
       if (!callInput.to) {

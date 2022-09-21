@@ -1,118 +1,114 @@
-// import util from "util";
-// import { BatchMultiSigCall } from "./index";
-// import { expect } from "chai";
-// import { ethers } from "ethers";
-// import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
+import { BatchMultiSigCall } from "./index";
+import { ethers } from "ethers";
+import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
+import { expect } from "chai";
 
-// const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
-// const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
+const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
 
-// describe("BatchMultiSigCall", () => {
-//   let batchMultiSigCall: BatchMultiSigCall;
+describe("BatchMultiSigCall", () => {
+  let batchMultiSigCall: BatchMultiSigCall;
 
-//   beforeEach(async () => {
-//     batchMultiSigCall = new BatchMultiSigCall({
-//       contractAddress,
-//       provider,
-//     });
-//   });
+  beforeEach(async () => {
+    batchMultiSigCall = new BatchMultiSigCall({
+      contractAddress,
+      provider,
+    });
+  });
 
-//   it("Should create a simple call", async () => {
-//     const calls = await batchMultiSigCall.create({
-//       to: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//       value: "5000000000000",
-//     });
+  it("Should create simple ERC20 Transfer FCT", async () => {
+    const transfer = new ERC20.actions.Transfer({
+      initParams: {
+        to: "0xfeab457d95d9990b7eb6c943c839258245541754",
+        methodParams: {
+          amount: "1000000000000000000",
+          recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        },
+      },
+    });
 
-//     expect(calls.length).to.eq(1);
-//   });
+    const calls = await batchMultiSigCall.create({
+      nodeId: "node1",
+      plugin: transfer,
+      from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    });
 
-//   it("Should create a call with params and outputIndex", async () => {
-//     // create balanceOf call
-//     await batchMultiSigCall.create({
-//       to: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//       method: "balanceOf",
-//       viewOnly: true,
-//       params: [
-//         {
-//           name: "owner",
-//           type: "address",
-//           value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//         },
-//       ],
-//     });
+    expect(calls).to.be.an("array");
 
-//     // Create transfer call with outputIndex to balanceOf call
-//     await batchMultiSigCall.create({
-//       to: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//       method: "transfer",
-//       params: [
-//         {
-//           name: "recipient",
-//           type: "address",
-//           value: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//         },
-//         {
-//           name: "amount",
-//           type: "uint256",
-//           outputIndex: 0,
-//         },
-//       ],
-//     });
+    const FCT = await batchMultiSigCall.exportFCT();
 
-//     const FCT = await batchMultiSigCall.exportFCT();
+    expect(FCT).to.be.an("object");
+    expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
+  });
 
-//     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
-//   });
+  it("Should create ERC20 Transfer, ERC20 Balance Of and Aave V2 deposit FCT", async () => {
+    const plugins = getPlugins({});
 
-//   it("Should create a call with plugin", async () => {
-//     batchMultiSigCall = new BatchMultiSigCall({
-//       contractAddress,
-//       provider,
-//     });
+    const AaveDeposit = plugins.find((p) => p.name === "AAVE_deposit");
 
-//     // create balanceOf call
-//     await batchMultiSigCall.create({
-//       to: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//       method: "balanceOf",
-//       viewOnly: true,
-//       params: [
-//         {
-//           name: "owner",
-//           type: "address",
-//           value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//         },
-//       ],
-//     });
+    const transfer = new ERC20.actions.Transfer({
+      initParams: {
+        to: "0xfeab457d95d9990b7eb6c943c839258245541754",
+        methodParams: {
+          amount: "1000000000000000000",
+          recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        },
+      },
+    });
 
-//     // Create plugin
-//     const transfer = new ERC20.actions.Transfer();
+    const balanceOf = new ERC20.getters.BalanceOf({
+      initParams: {
+        to: "0xfeab457d95d9990b7eb6c943c839258245541754",
+        methodParams: {
+          owner: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        },
+      },
+    });
 
-//     const data = transfer.create();
+    const deposit = new AaveDeposit.plugin({
+      initParams: {
+        to: "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9",
+        methodParams: {
+          asset: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+          amount: "1000000000000000000",
+          onBehalfOf: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+          referralCode: "0",
+        },
+      },
+    });
 
-//     // Set to input
-//     await transfer.input.set({
-//       to: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       methodParams: {
-//         recipient: "0x27422B75008CB79Cf0d094f81DE854608eeA36b7",
-//       },
-//     });
+    const calls = await batchMultiSigCall.createMultiple([
+      {
+        nodeId: "node1",
+        plugin: transfer,
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      },
+      {
+        nodeId: "node2",
+        plugin: balanceOf,
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      },
+      {
+        nodeId: "node3",
+        plugin: deposit,
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      },
+    ]);
 
-//     // Set amount input as output from call at index 0
-//     transfer.input.params.methodParams.amount.setOutputVariable({ outputIndex: 0, innerIndex: 0 });
+    expect(calls).to.be.an("array");
 
-//     // Create call with plugin
-//     const calls = await batchMultiSigCall.create({
-//       plugin: transfer,
-//       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-//     });
+    const FCT = await batchMultiSigCall.exportFCT();
 
-//     // Export FCT
-//     const FCT = await batchMultiSigCall.exportFCT();
+    expect(FCT).to.be.an("object");
 
-//     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
-//   });
-// });
+    expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
+
+    expect(FCT.typedData.message["transaction_2"].owner).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+
+    expect(FCT.typedData.message["transaction_3"].asset).to.eq("0x6B175474E89094C44Da98b954EedeAC495271d0F");
+    expect(FCT.typedData.message["transaction_3"].amount).to.eq("1000000000000000000");
+    expect(FCT.typedData.message["transaction_3"].onBehalfOf).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+  });
+});
