@@ -23,20 +23,20 @@ const globalVariables = {
     activatorAddress: ACTIVATOR_ADDRESS,
     blockHash: BLOCK_HASH,
 };
-const getBlockNumber = () => ({ type: "global", id: "blockNumber" });
-const getBlockTimestamp = () => ({ type: "global", id: "blockTimestamp" });
-const getGasPrice = () => ({ type: "global", id: "gasPrice" });
-const getMinerAddress = () => ({ type: "global", id: "minerAddress" });
-const getActivatorAddress = () => ({ type: "global", id: "activatorAddress" });
+const useBlockNumber = () => ({ type: "global", id: "blockNumber" });
+const useBlockTimestamp = () => ({ type: "global", id: "blockTimestamp" });
+const useGasPrice = () => ({ type: "global", id: "gasPrice" });
+const useMinerAddress = () => ({ type: "global", id: "minerAddress" });
+const useActivatorAddress = () => ({ type: "global", id: "activatorAddress" });
 // const getBlockHash = (indexOfPreviousBlock: number = 1): Variable => ({
 //   type: "global",
 //   id: getBlockHash(indexOfPreviousBlock),
 // });
 exports.default = {
-    getBlockNumber,
-    getBlockTimestamp,
-    getGasPrice,
-    getMinerAddress,
-    getActivatorAddress,
+    useBlockNumber,
+    useBlockTimestamp,
+    useGasPrice,
+    useMinerAddress,
+    useActivatorAddress,
     globalVariables,
 };

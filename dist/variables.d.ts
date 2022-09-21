@@ -1,11 +1,11 @@
 import { Variable } from "interfaces";
 export declare type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "activatorAddress" | "blockHash" | string;
 declare const _default: {
-    getBlockNumber: () => Variable;
-    getBlockTimestamp: () => Variable;
-    getGasPrice: () => Variable;
-    getMinerAddress: () => Variable;
-    getActivatorAddress: () => Variable;
+    useBlockNumber: () => Variable;
+    useBlockTimestamp: () => Variable;
+    useGasPrice: () => Variable;
+    useMinerAddress: () => Variable;
+    useActivatorAddress: () => Variable;
     globalVariables: {
         blockNumber: string;
         blockTimestamp: string;
