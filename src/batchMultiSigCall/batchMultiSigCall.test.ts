@@ -112,6 +112,9 @@ describe("BatchMultiSigCall", () => {
         nodeId: "node1",
         plugin: transfer,
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        options: {
+          jumpOnSuccess: "node3",
+        },
       },
       {
         nodeId: "node2",
@@ -133,6 +136,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
+    expect(FCT.typedData.message["transaction_1"].meta.jump_on_success).to.eq(2);
 
     expect(FCT.typedData.message["transaction_2"].owner).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
 

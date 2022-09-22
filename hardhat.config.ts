@@ -22,11 +22,10 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
       // forking: {
       //   url: "https://eth-mainnet.g.alchemy.com/v2/woeVEuX9KS1k0ayHbSa-ZZ3LmRIrrWB_",
-      //   blockNumber: 14390000,
       // },
       accounts: {
         mnemonic: "awesome grain neither pond excess garage tackle table piece assist venture escape",
-        count: 220,
+        count: 10,
       },
     },
   },

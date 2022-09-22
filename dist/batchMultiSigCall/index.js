@@ -192,7 +192,12 @@ class BatchMultiSigCall {
             if (pluginCall === undefined) {
                 throw new Error("Error creating call with plugin");
             }
-            call = { ...pluginCall, from: callInput.from, options: callInput.options };
+            call = {
+                ...pluginCall,
+                from: callInput.from,
+                options: callInput.options,
+                nodeId: callInput.nodeId,
+            };
         }
         else {
             if (!callInput.to) {
@@ -236,7 +241,7 @@ class BatchMultiSigCall {
             ensHash: (0, helpers_2.handleEnsHash)(call),
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: this.handleValue(call),
-            callId: (0, helpers_2.manageCallId)(call, index + 1),
+            callId: (0, helpers_2.manageCallId)(this.calls, call, index + 1),
             from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
             to: this.handleTo(call),
             data: (0, helpers_2.handleData)(call),
@@ -275,7 +280,7 @@ class BatchMultiSigCall {
                 return constants_1.Flow[flow[0]];
             };
             const callInput = {
-                nodeId: `node${index}`,
+                nodeId: `node${index + 1}`,
                 to: call.to,
                 from: call.from,
                 value: call.value,
@@ -286,7 +291,7 @@ class BatchMultiSigCall {
                 options: {
                     gasLimit: meta.gas_limit,
                     jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
-                    jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index - meta.jump_on_fail}`,
+                    jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
                     flow: getFlow(),
                 },
             };
@@ -310,8 +315,18 @@ class BatchMultiSigCall {
             const options = call.options || {};
             const gasLimit = options.gasLimit ?? 0;
             const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
-            const jumpOnSuccess = options.jumpOnSuccess ?? 0;
-            const jumpOnFail = options.jumpOnFail ?? 0;
+            // const jumpOnSuccess = options.jumpOnSuccess ?? 0;
+            // const jumpOnFail = options.jumpOnFail ?? 0;
+            let jumpOnSuccess = 0;
+            let jumpOnFail = 0;
+            if (options.jumpOnSuccess) {
+                const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
+                jumpOnSuccess = jumpOnSuccessIndex - index;
+            }
+            if (options.jumpOnFail) {
+                const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
+                jumpOnFail = jumpOnFailIndex - index;
+            }
             return {
                 ...acc,
                 [`transaction_${index + 1}`]: {

@@ -72,7 +72,7 @@ const manageFlow = (call) => {
     return `0x${helpers_1.flows[flow].value}${jump.toString(16)}`;
 };
 exports.manageFlow = manageFlow;
-const manageCallId = (call, index) => {
+const manageCallId = (calls, call, index) => {
     // 4 - Permissions
     // 2 - Flow
     // 4 - Fail Jump
@@ -83,14 +83,30 @@ const manageCallId = (call, index) => {
     // 2 - Flags
     const permissions = "0000";
     const flow = call?.options?.flow ? Number(helpers_1.flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
-    const failJump = call?.options?.jumpOnFail ? Number(call.options.jumpOnFail).toString(16).padStart(4, "0") : "0000";
-    const successJump = call?.options?.jumpOnSuccess
-        ? Number(call.options.jumpOnSuccess).toString(16).padStart(4, "0")
-        : "0000";
     const payerIndex = Number(index).toString(16).padStart(4, "0");
     const callIndex = Number(index).toString(16).padStart(4, "0");
     const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
     const flags = `0${call.viewOnly ? "1" : "0"}`;
+    let successJump = "0000";
+    let failJump = "0000";
+    if (call?.options?.jumpOnFail) {
+        const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
+        if (nodeIndex === -1) {
+            throw new Error("Jump on fail node not found");
+        }
+        failJump = Number(nodeIndex - index)
+            .toString(16)
+            .padStart(4, "0");
+    }
+    if (call?.options?.jumpOnSuccess) {
+        const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnSuccess);
+        if (nodeIndex === -1) {
+            throw new Error("Jump on success node not found");
+        }
+        successJump = Number(nodeIndex - index)
+            .toString(16)
+            .padStart(4, "0");
+    }
     return ("0x" +
         `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`.padStart(64, "0"));
 };

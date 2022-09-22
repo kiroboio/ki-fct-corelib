@@ -234,12 +234,17 @@ export class BatchMultiSigCall {
       if (pluginCall === undefined) {
         throw new Error("Error creating call with plugin");
       }
-      call = { ...pluginCall, from: callInput.from, options: callInput.options } as MSCallInput;
+      call = {
+        ...pluginCall,
+        from: callInput.from,
+        options: callInput.options,
+        nodeId: callInput.nodeId,
+      };
     } else {
       if (!callInput.to) {
         throw new Error("To address is required");
       }
-      call = { ...callInput } as MSCallInput;
+      call = { ...callInput };
     }
 
     if (call.nodeId) {
@@ -294,7 +299,7 @@ export class BatchMultiSigCall {
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: this.handleValue(call),
-      callId: manageCallId(call, index + 1),
+      callId: manageCallId(this.calls, call, index + 1),
       from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
       to: this.handleTo(call),
       data: handleData(call),
@@ -343,7 +348,7 @@ export class BatchMultiSigCall {
       };
 
       const callInput: MSCallInput = {
-        nodeId: `node${index}`,
+        nodeId: `node${index + 1}`,
         to: call.to,
         from: call.from,
         value: call.value,
@@ -354,7 +359,7 @@ export class BatchMultiSigCall {
         options: {
           gasLimit: meta.gas_limit,
           jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
-          jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index - meta.jump_on_fail}`,
+          jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
           flow: getFlow(),
         },
       };
@@ -388,8 +393,22 @@ export class BatchMultiSigCall {
       const options = call.options || {};
       const gasLimit = options.gasLimit ?? 0;
       const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-      const jumpOnSuccess = options.jumpOnSuccess ?? 0;
-      const jumpOnFail = options.jumpOnFail ?? 0;
+
+      // const jumpOnSuccess = options.jumpOnSuccess ?? 0;
+      // const jumpOnFail = options.jumpOnFail ?? 0;
+
+      let jumpOnSuccess = 0;
+      let jumpOnFail = 0;
+
+      if (options.jumpOnSuccess) {
+        const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
+        jumpOnSuccess = jumpOnSuccessIndex - index;
+      }
+
+      if (options.jumpOnFail) {
+        const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
+        jumpOnFail = jumpOnFailIndex - index;
+      }
 
       return {
         ...acc,
@@ -532,9 +551,9 @@ export class BatchMultiSigCall {
           eip712: true,
         },
         limits: {
-          valid_from: this.options.validFrom, // TODO: Valid from the moment of creating FCT as default value
-          expires_at: this.options.expiresAt, // TODO: Expires after 30 days as default
-          gas_price_limit: this.options.maxGasPrice, // 20 GWei as default
+          valid_from: this.options.validFrom,
+          expires_at: this.options.expiresAt,
+          gas_price_limit: this.options.maxGasPrice,
           purgeable: this.options.purgeable,
           blockable: this.options.blockable,
         },
