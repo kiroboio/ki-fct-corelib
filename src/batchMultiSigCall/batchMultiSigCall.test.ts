@@ -2,7 +2,6 @@ import { BatchMultiSigCall } from "./index";
 import { ethers } from "ethers";
 import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
-import utils from "../utils";
 import variables from "../variables";
 
 const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
@@ -158,6 +157,10 @@ describe("BatchMultiSigCall", () => {
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         method: "balanceOf",
         params: [{ name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" }],
+        options: {
+          jumpOnSuccess: "node3",
+          jumpOnFail: "node2",
+        },
       },
       {
         nodeId: "node2",
@@ -181,10 +184,18 @@ describe("BatchMultiSigCall", () => {
       },
     ]);
 
-    const variablesArray = ["1", "2"];
-
-    const variablesAsBytes32 = utils.getVariablesAsBytes32(variablesArray);
-
     const FCT = await batchMultiSigCall.exportFCT();
+
+    expect(FCT).to.be.an("object");
+
+    expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_1"].meta.jump_on_success).to.eq(2);
+    expect(FCT.typedData.message["transaction_1"].meta.jump_on_fail).to.eq(1);
+
+    expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
+
+    expect(FCT.typedData.message["transaction_3"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_3"].amount).to.eq("100");
   });
 });
