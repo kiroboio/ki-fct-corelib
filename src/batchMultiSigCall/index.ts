@@ -200,7 +200,7 @@ export class BatchMultiSigCall {
   // End of options
   //
   //
-  // FCT functions
+  // Plugin functions
 
   public getPlugin = async (
     dataOrIndex: MSCall | number
@@ -226,6 +226,11 @@ export class BatchMultiSigCall {
   public getAllPlugins = (): { name: string; description?: string; plugin: Plugin }[] => {
     return getPlugins({});
   };
+
+  // End of plugin functions
+  //
+  //
+  // FCT Functions
 
   public async create(callInput: MSCallInput | IWithPlugin): Promise<MSCallInput[]> {
     let call: MSCallInput;
@@ -386,16 +391,13 @@ export class BatchMultiSigCall {
       // Update params if variables (FC) or references (FD) are used
       let paramsData = {};
       if (call.params) {
-        this.verifyParams(call.params, index, additionalTypes, typedHashes);
+        this.verifyParams(call.params, additionalTypes, typedHashes);
         paramsData = this.getParams(call);
       }
 
       const options = call.options || {};
       const gasLimit = options.gasLimit ?? 0;
       const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-
-      // const jumpOnSuccess = options.jumpOnSuccess ?? 0;
-      // const jumpOnFail = options.jumpOnFail ?? 0;
 
       let jumpOnSuccess = 0;
       let jumpOnFail = 0;
@@ -580,7 +582,7 @@ export class BatchMultiSigCall {
 
       return {
         ...call.params.reduce((acc, param) => {
-          let value;
+          let value: any;
 
           // If parameter is a custom type (struct)
           if (param.customType) {
@@ -589,9 +591,6 @@ export class BatchMultiSigCall {
               const valueArray = param.value as Params[][];
               value = valueArray.map((item) =>
                 item.reduce((acc, item2) => {
-                  if (instanceOfVariable(item2.value) && item2.value.type === "external") {
-                    item2.value = this.getVariable(item2.value, item2.type);
-                  }
                   return { ...acc, [item2.name]: item2.value };
                 }, {})
               );
@@ -599,9 +598,6 @@ export class BatchMultiSigCall {
               // If parameter is a custom type
               const valueArray = param.value as Params[];
               value = valueArray.reduce((acc, item) => {
-                if (instanceOfVariable(item.value) && item.value.type === "external") {
-                  item.value = this.getVariable(item.value, item.type);
-                }
                 return { ...acc, [item.name]: item.value };
               }, {});
             }
@@ -618,7 +614,7 @@ export class BatchMultiSigCall {
     return {};
   }
 
-  private verifyParams(params: Params[], index: number, additionalTypes: object, typedHashes: string[]) {
+  private verifyParams(params: Params[], additionalTypes: object, typedHashes: string[]) {
     params.forEach((param) => {
       // If parameter is a variable
       if (instanceOfVariable(param.value)) {
@@ -632,17 +628,21 @@ export class BatchMultiSigCall {
         if (param.type.lastIndexOf("[") > 0) {
           const type = param.type.slice(0, param.type.lastIndexOf("["));
           typedHashes.push(type);
+
+          for (const parameter of param.value as Params[][]) {
+            this.verifyParams(parameter as Params[], additionalTypes, typedHashes);
+          }
+
           const arrayValue = param.value[0] as Params[];
-          additionalTypes[type] = arrayValue.reduce((acc, item) => {
-            return [...acc, { name: item.name, type: item.type }];
-          }, []);
+          additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
         } else {
           const type = param.type;
           typedHashes.push(type);
+
+          this.verifyParams(param.value as Params[], additionalTypes, typedHashes);
+
           const arrayValue = param.value as Params[];
-          additionalTypes[type] = arrayValue.reduce((acc, item) => {
-            return [...acc, { name: item.name, type: item.type }];
-          }, []);
+          additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
         }
       }
     });

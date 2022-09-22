@@ -54,7 +54,7 @@ class BatchMultiSigCall {
         // End of options
         //
         //
-        // FCT functions
+        // Plugin functions
         this.getPlugin = async (dataOrIndex) => {
             if (typeof dataOrIndex === "number") {
                 const call = this.getCall(dataOrIndex);
@@ -185,6 +185,10 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
+    // End of plugin functions
+    //
+    //
+    // FCT Functions
     async create(callInput) {
         let call;
         if ("plugin" in callInput) {
@@ -309,14 +313,12 @@ class BatchMultiSigCall {
             // Update params if variables (FC) or references (FD) are used
             let paramsData = {};
             if (call.params) {
-                this.verifyParams(call.params, index, additionalTypes, typedHashes);
+                this.verifyParams(call.params, additionalTypes, typedHashes);
                 paramsData = this.getParams(call);
             }
             const options = call.options || {};
             const gasLimit = options.gasLimit ?? 0;
             const flow = options.flow ? helpers_1.flows[options.flow].text : "continue on success, revert on fail";
-            // const jumpOnSuccess = options.jumpOnSuccess ?? 0;
-            // const jumpOnFail = options.jumpOnFail ?? 0;
             let jumpOnSuccess = 0;
             let jumpOnFail = 0;
             if (options.jumpOnSuccess) {
@@ -494,9 +496,6 @@ class BatchMultiSigCall {
                         if (param.type.lastIndexOf("[") > 0) {
                             const valueArray = param.value;
                             value = valueArray.map((item) => item.reduce((acc, item2) => {
-                                if ((0, helpers_2.instanceOfVariable)(item2.value) && item2.value.type === "external") {
-                                    item2.value = this.getVariable(item2.value, item2.type);
-                                }
                                 return { ...acc, [item2.name]: item2.value };
                             }, {}));
                         }
@@ -504,9 +503,6 @@ class BatchMultiSigCall {
                             // If parameter is a custom type
                             const valueArray = param.value;
                             value = valueArray.reduce((acc, item) => {
-                                if ((0, helpers_2.instanceOfVariable)(item.value) && item.value.type === "external") {
-                                    item.value = this.getVariable(item.value, item.type);
-                                }
                                 return { ...acc, [item.name]: item.value };
                             }, {});
                         }
@@ -523,7 +519,7 @@ class BatchMultiSigCall {
         }
         return {};
     }
-    verifyParams(params, index, additionalTypes, typedHashes) {
+    verifyParams(params, additionalTypes, typedHashes) {
         params.forEach((param) => {
             // If parameter is a variable
             if ((0, helpers_2.instanceOfVariable)(param.value)) {
@@ -536,18 +532,18 @@ class BatchMultiSigCall {
                 if (param.type.lastIndexOf("[") > 0) {
                     const type = param.type.slice(0, param.type.lastIndexOf("["));
                     typedHashes.push(type);
+                    for (const parameter of param.value) {
+                        this.verifyParams(parameter, additionalTypes, typedHashes);
+                    }
                     const arrayValue = param.value[0];
-                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                        return [...acc, { name: item.name, type: item.type }];
-                    }, []);
+                    additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
                 }
                 else {
                     const type = param.type;
                     typedHashes.push(type);
+                    this.verifyParams(param.value, additionalTypes, typedHashes);
                     const arrayValue = param.value;
-                    additionalTypes[type] = arrayValue.reduce((acc, item) => {
-                        return [...acc, { name: item.name, type: item.type }];
-                    }, []);
+                    additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
                 }
             }
         });
