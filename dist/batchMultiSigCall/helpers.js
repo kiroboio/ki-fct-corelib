@@ -96,7 +96,6 @@ const manageCallId = (calls, call, index) => {
     let failJump = "0000";
     if (call?.options?.jumpOnFail) {
         const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
-        console.log(nodeIndex, index);
         if (nodeIndex === -1) {
             throw new Error("Jump on fail node not found");
         }

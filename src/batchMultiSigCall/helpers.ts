@@ -119,7 +119,6 @@ export const manageCallId = (calls: MSCallInput[], call: MSCallInput, index: num
   if (call?.options?.jumpOnFail) {
     const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
 
-    console.log(nodeIndex, index);
     if (nodeIndex === -1) {
       throw new Error("Jump on fail node not found");
     }
