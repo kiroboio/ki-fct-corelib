@@ -8,6 +8,12 @@ import variables from "../variables";
 const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
 const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
 
+function getDate(days: number = 0) {
+  const result = new Date();
+  result.setDate(result.getDate() + days);
+  return Number(result.getTime() / 1000).toFixed();
+}
+
 describe("BatchMultiSigCall", () => {
   let batchMultiSigCall: BatchMultiSigCall;
 
@@ -16,6 +22,27 @@ describe("BatchMultiSigCall", () => {
       contractAddress,
       provider,
     });
+  });
+
+  it("Should set settings", async () => {
+    const maxGasPriceErrorSettings = {
+      maxGasPrice: "0",
+    };
+
+    expect(() => batchMultiSigCall.setOptions(maxGasPriceErrorSettings)).to.throw("Max gas price cannot be 0 or less");
+
+    const expiresAtErrorSettings = {
+      expiresAt: "0",
+    };
+
+    expect(() => batchMultiSigCall.setOptions(expiresAtErrorSettings)).to.throw("Expires at must be in the future");
+
+    const validSettings = {
+      maxGasPrice: "100000000000",
+      expiresAt: getDate(1),
+    };
+
+    expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
   });
 
   it("Should create simple ERC20 Transfer FCT", async () => {
@@ -139,7 +166,7 @@ describe("BatchMultiSigCall", () => {
         ],
       },
       {
-        nodeId: "node2",
+        nodeId: "node3",
         to: variables.useMinerAddress(),
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         method: "transfer",

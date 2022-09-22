@@ -51,6 +51,7 @@ export interface MSCallOptions {
     };
 }
 export interface IWithPlugin {
+    nodeId: string;
     plugin: IPlugin;
     from: string;
     options?: CallOptions;

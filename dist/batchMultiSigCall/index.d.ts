@@ -20,7 +20,7 @@ export declare class BatchMultiSigCall {
     private getOutputVariable;
     private getExternalVariable;
     getVariablesAsBytes32(): string[];
-    setOptions(options: MSCallOptions): MSCallOptions;
+    setOptions(options: Partial<MSCallOptions>): MSCallOptions;
     getPlugin: (dataOrIndex: MSCall | number) => Promise<{
         name: string;
         description?: string;

@@ -175,7 +175,18 @@ export class BatchMultiSigCall {
   //
   // Options
 
-  public setOptions(options: MSCallOptions): MSCallOptions {
+  public setOptions(options: Partial<MSCallOptions>): MSCallOptions {
+    if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
+      throw new Error("Max gas price cannot be 0 or less");
+    }
+
+    if (options.expiresAt !== undefined) {
+      const now = Number(new Date().getTime() / 1000).toFixed();
+      if (options.expiresAt <= now) {
+        throw new Error("Expires at must be in the future");
+      }
+    }
+
     this.options = { ...this.options, ...options };
     return this.options;
   }
@@ -225,6 +236,12 @@ export class BatchMultiSigCall {
       call = { ...callInput } as MSCallInput;
     }
 
+    if (call.nodeId) {
+      const index = this.calls.findIndex((call) => call.nodeId === callInput.nodeId);
+      if (index > 0) {
+        throw new Error("Node id already exists, please use different id");
+      }
+    }
     this.calls.push(call);
 
     return this.calls;
