@@ -245,7 +245,7 @@ class BatchMultiSigCall {
             ensHash: (0, helpers_2.handleEnsHash)(call),
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: this.handleValue(call),
-            callId: (0, helpers_2.manageCallId)(this.calls, call, index + 1),
+            callId: (0, helpers_2.manageCallId)(this.calls, call, index),
             from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
             to: this.handleTo(call),
             data: (0, helpers_2.handleData)(call),

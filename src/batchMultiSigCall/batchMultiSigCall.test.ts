@@ -1,8 +1,10 @@
+import util from "util";
 import { BatchMultiSigCall } from "./index";
 import { ethers } from "ethers";
 import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import variables from "../variables";
+import { Flow } from "../constants";
 
 const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
 const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
@@ -109,10 +111,17 @@ describe("BatchMultiSigCall", () => {
     const calls = await batchMultiSigCall.createMultiple([
       {
         nodeId: "node1",
-        plugin: transfer,
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        toENS: "@token.kiro.eth",
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "token_amount", type: "uint256", value: "20" },
+        ],
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         options: {
-          jumpOnSuccess: "node3",
+          flow: Flow.OK_CONT_FAIL_CONT,
+          jumpOnFail: "node3",
         },
       },
       {
@@ -130,6 +139,8 @@ describe("BatchMultiSigCall", () => {
     expect(calls).to.be.an("array");
 
     const FCT = await batchMultiSigCall.exportFCT();
+
+    console.log(util.inspect(FCT, false, null, true));
 
     expect(FCT).to.be.an("object");
 

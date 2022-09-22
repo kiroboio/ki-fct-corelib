@@ -304,7 +304,7 @@ export class BatchMultiSigCall {
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: this.handleValue(call),
-      callId: manageCallId(this.calls, call, index + 1),
+      callId: manageCallId(this.calls, call, index),
       from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
       to: this.handleTo(call),
       data: handleData(call),

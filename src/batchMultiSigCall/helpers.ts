@@ -99,11 +99,17 @@ export const manageCallId = (calls: MSCallInput[], call: MSCallInput, index: num
   // 8 - Gas limit
   // 2 - Flags
 
+  // 0x0000000000000000000000000000000000000200010000000100010000000000
+
   const permissions = "0000";
   const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
 
-  const payerIndex = Number(index).toString(16).padStart(4, "0");
-  const callIndex = Number(index).toString(16).padStart(4, "0");
+  const payerIndex = Number(index + 1)
+    .toString(16)
+    .padStart(4, "0");
+  const callIndex = Number(index + 1)
+    .toString(16)
+    .padStart(4, "0");
   const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
   const flags = `0${call.viewOnly ? "1" : "0"}`;
 
@@ -112,6 +118,8 @@ export const manageCallId = (calls: MSCallInput[], call: MSCallInput, index: num
 
   if (call?.options?.jumpOnFail) {
     const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
+
+    console.log(nodeIndex, index);
     if (nodeIndex === -1) {
       throw new Error("Jump on fail node not found");
     }
