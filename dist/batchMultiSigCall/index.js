@@ -14,6 +14,7 @@ const helpers_2 = require("./helpers");
 const utils_1 = require("ethers/lib/utils");
 const constants_1 = require("../constants");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+const variables_1 = __importDefault(require("../variables"));
 function getDate(days = 0) {
     const result = new Date();
     result.setDate(result.getDate() + days);
@@ -116,8 +117,11 @@ class BatchMultiSigCall {
             return this.getOutputVariable(indexForNode, id.innerIndex, type);
         }
         if (variable.type === "global") {
-            // TODO: Implement global variables
-            return "0x0000000000000000000000000000000000000000000000000000000000000000";
+            const globalVariable = variables_1.default.globalVariables[variable.id];
+            if (!globalVariable) {
+                throw new Error("Global variable not found");
+            }
+            return globalVariable;
         }
     }
     getOutputVariable(index, innerIndex, type) {

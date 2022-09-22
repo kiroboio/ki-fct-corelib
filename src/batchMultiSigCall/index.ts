@@ -26,6 +26,7 @@ import {
 import { AbiCoder, id } from "ethers/lib/utils";
 import { Flow } from "../constants";
 import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import variables from "../variables";
 
 function getDate(days: number = 0) {
   const result = new Date();
@@ -113,8 +114,13 @@ export class BatchMultiSigCall {
       return this.getOutputVariable(indexForNode, id.innerIndex, type);
     }
     if (variable.type === "global") {
-      // TODO: Implement global variables
-      return "0x0000000000000000000000000000000000000000000000000000000000000000";
+      const globalVariable = variables.globalVariables[variable.id];
+
+      if (!globalVariable) {
+        throw new Error("Global variable not found");
+      }
+
+      return globalVariable;
     }
   }
 

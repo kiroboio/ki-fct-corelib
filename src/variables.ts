@@ -14,7 +14,6 @@ const BLOCK_TIMESTAMP = "0xFB0B000000000000000000000000000000000000";
 const GAS_PRICE = "0xFB0C000000000000000000000000000000000000";
 const MINER_ADDRESS = "0xFA0A000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0x00FA0B000000000000000000000000000000000000";
-
 const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
 
 // const getBlockHash = (indexOfPreviousBlock: number = 1) => {
@@ -33,7 +32,7 @@ const globalVariables = {
   gasPrice: GAS_PRICE,
   minerAddress: MINER_ADDRESS,
   activatorAddress: ACTIVATOR_ADDRESS,
-  blockHash: BLOCK_HASH,
+  // blockHash: BLOCK_HASH,
 };
 
 const useBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });

@@ -21,7 +21,7 @@ const globalVariables = {
     gasPrice: GAS_PRICE,
     minerAddress: MINER_ADDRESS,
     activatorAddress: ACTIVATOR_ADDRESS,
-    blockHash: BLOCK_HASH,
+    // blockHash: BLOCK_HASH,
 };
 const useBlockNumber = () => ({ type: "global", id: "blockNumber" });
 const useBlockTimestamp = () => ({ type: "global", id: "blockTimestamp" });

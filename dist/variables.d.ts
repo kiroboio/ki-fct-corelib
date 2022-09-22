@@ -12,7 +12,6 @@ declare const _default: {
         gasPrice: string;
         minerAddress: string;
         activatorAddress: string;
-        blockHash: string;
     };
 };
 export default _default;
