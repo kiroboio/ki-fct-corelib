@@ -35,13 +35,8 @@ async function main() {
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
     contractAddress: FCT_Controller_Rinkeby,
     options: {
-      // validFrom: getDate(1), // UNIX timestamp
-      expiresAt: getDate(10), // UNIX timestamp
-      recurrency: {
-        maxRepeats: "800",
-        chillTime: "1",
-        accumetable: true,
-      },
+      validFrom: addHours(1), // UNIX timestamp
+      expiresAt: getDate(2), // UNIX timestamp
     },
   });
 
@@ -49,6 +44,7 @@ async function main() {
   const key = process.env.PRIVATE_KEY as string;
 
   await batchMultiSigCall.create({
+    nodeId: "node0",
     to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     from: vault,
     value: "5000000000000",
