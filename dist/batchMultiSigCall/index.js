@@ -56,13 +56,17 @@ class BatchMultiSigCall {
         //
         // Plugin functions
         this.getPlugin = async (dataOrIndex) => {
+            const { chainId } = await this.provider.getNetwork();
             if (typeof dataOrIndex === "number") {
                 const call = this.getCall(dataOrIndex);
-                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
+                if ((0, helpers_2.instanceOfVariable)(call.to)) {
+                    throw new Error("To value cannot be a variable");
+                }
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call), address: call.to, chainId });
                 return Plugin;
             }
             else {
-                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature });
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
                 return Plugin;
             }
         };
