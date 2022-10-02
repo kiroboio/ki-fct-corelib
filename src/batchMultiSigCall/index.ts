@@ -5,13 +5,7 @@ import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params, Variable } from "../interfaces";
 import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
-import {
-  getTypedDataDomain,
-  createValidatorTxData,
-  flows,
-  getValidatorFunctionData,
-  getMethodInterface,
-} from "../helpers";
+import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
 import {
   getSessionId,
   handleData,
@@ -205,7 +199,7 @@ export class BatchMultiSigCall {
   public getPlugin = async (
     dataOrIndex: MSCall | number
   ): Promise<{ name: string; description?: string; plugin: Plugin }> => {
-    const { chainId } = await this.provider.getNetwork();
+    // const { chainId } = await this.provider.getNetwork();
 
     if (typeof dataOrIndex === "number") {
       const call = this.getCall(dataOrIndex);
@@ -213,10 +207,13 @@ export class BatchMultiSigCall {
       if (instanceOfVariable(call.to)) {
         throw new Error("To value cannot be a variable");
       }
-      const Plugin = getPlugin({ signature: getMethodInterface(call), address: call.to, chainId });
+
+      console.log("signature", handleFunctionSignature(call));
+
+      const Plugin = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId: 1 });
       return Plugin;
     } else {
-      const Plugin = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
+      const Plugin = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId: 1 });
       return Plugin;
     }
   };

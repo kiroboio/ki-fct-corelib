@@ -30,6 +30,8 @@ function addHours(numOfHours: number, date = new Date()) {
 // 1d - 3d
 
 const FCT_Controller_Rinkeby = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
+const Rinkeby_USDT = "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02";
+const Mainnet_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
 async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
@@ -53,7 +55,7 @@ async function main() {
 
   const transfer = new ERC20.actions.Transfer({
     initParams: {
-      to: "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D", //kiro
+      to: Mainnet_USDC,
       methodParams: {
         amount: "1000000000000000000",
         recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
