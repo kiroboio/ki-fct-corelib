@@ -207,19 +207,12 @@ export class BatchMultiSigCall {
   ): Promise<{ name: string; description?: string; plugin: Plugin }> => {
     if (typeof dataOrIndex === "number") {
       const call = this.getCall(dataOrIndex);
-      if (!call.method) {
-        throw new Error("Method is required to get plugin");
-      }
-      const Plugin = getPlugin({ signature: getMethodInterface(call) });
 
+      const Plugin = getPlugin({ signature: getMethodInterface(call) });
       return Plugin;
     } else {
-      const Plugins = getPlugins({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-      if (!Plugins || Plugins.length === 0) {
-        throw new Error("No plugin found");
-      }
-
-      return Plugins[0];
+      const Plugin = getPlugin({ signature: dataOrIndex.functionSignature });
+      return Plugin;
     }
   };
 

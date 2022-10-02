@@ -58,18 +58,12 @@ class BatchMultiSigCall {
         this.getPlugin = async (dataOrIndex) => {
             if (typeof dataOrIndex === "number") {
                 const call = this.getCall(dataOrIndex);
-                if (!call.method) {
-                    throw new Error("Method is required to get plugin");
-                }
                 const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_1.getMethodInterface)(call) });
                 return Plugin;
             }
             else {
-                const Plugins = (0, ki_eth_fct_provider_ts_1.getPlugins)({ by: { methodInterfaceHash: dataOrIndex.functionSignature } });
-                if (!Plugins || Plugins.length === 0) {
-                    throw new Error("No plugin found");
-                }
-                return Plugins[0];
+                const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature });
+                return Plugin;
             }
         };
         this.getAllPlugins = () => {
