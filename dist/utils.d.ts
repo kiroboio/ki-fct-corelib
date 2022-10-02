@@ -22,7 +22,7 @@ interface IFCT {
 }
 declare const _default: {
     getFCTMessageHash: (typedData: TypedData) => string;
-    validateFCT: (FCT: IFCT) => {
+    validateFCT: (FCT: IFCT, softValidation?: boolean) => {
         getOptions: () => {
             valid_from: string;
             expires_at: string;

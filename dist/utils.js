@@ -64,14 +64,14 @@ const recoverAddressFromEIP712 = (typedData, signature) => {
 const getFCTMessageHash = (typedData) => {
     return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
 };
-const validateFCT = (FCT) => {
+const validateFCT = (FCT, softValidation = false) => {
     const limits = FCT.typedData.message.limits;
     const fctData = FCT.typedData.message.fct;
     const currentDate = new Date().getTime() / 1000;
     const validFrom = parseInt(limits.valid_from);
     const expiresAt = parseInt(limits.expires_at);
     const gasPriceLimit = limits.gas_price_limit;
-    if (validFrom > currentDate) {
+    if (!softValidation && validFrom > currentDate) {
         throw new Error(`FCT is not valid yet. FCT is valid from ${validFrom}`);
     }
     if (expiresAt < currentDate) {

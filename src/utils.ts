@@ -98,7 +98,7 @@ const getFCTMessageHash = (typedData: TypedData) => {
   return ethers.utils.hexlify(TypedDataUtils.encodeDigest(typedData));
 };
 
-const validateFCT = (FCT: IFCT) => {
+const validateFCT = (FCT: IFCT, softValidation: boolean = false) => {
   const limits = FCT.typedData.message.limits;
   const fctData = FCT.typedData.message.fct;
 
@@ -107,7 +107,7 @@ const validateFCT = (FCT: IFCT) => {
   const expiresAt = parseInt(limits.expires_at);
   const gasPriceLimit = limits.gas_price_limit;
 
-  if (validFrom > currentDate) {
+  if (!softValidation && validFrom > currentDate) {
     throw new Error(`FCT is not valid yet. FCT is valid from ${validFrom}`);
   }
 
