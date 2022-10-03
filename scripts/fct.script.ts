@@ -3,7 +3,7 @@ import fs from "fs";
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import * as dotenv from "dotenv";
-import { ERC20, ERC721 } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 dotenv.config();
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -29,7 +29,7 @@ function addHours(numOfHours: number, date = new Date()) {
 // 1h - 1d
 // 1d - 3d
 
-const FCT_Controller_Rinkeby = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
+const FCT_Controller_Rinkeby = "0x5a59026F30Df81F482816350E50b27285D84E9c8";
 const Rinkeby_USDT = "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02";
 const Mainnet_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
@@ -38,8 +38,13 @@ async function main() {
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
     contractAddress: FCT_Controller_Rinkeby,
     options: {
-      validFrom: addHours(1), // UNIX timestamp
-      expiresAt: getDate(2), // UNIX timestamp
+      // validFrom: addHours(1), // UNIX timestamp
+      expiresAt: getDate(20), // UNIX timestamp
+      recurrency: {
+        accumetable: true,
+        maxRepeats: "1000",
+        chillTime: "1",
+      },
     },
   });
 
@@ -48,6 +53,27 @@ async function main() {
 
   await batchMultiSigCall.create({
     nodeId: "node0",
+    to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    from: vault,
+    value: "5000000000000",
+  });
+
+  await batchMultiSigCall.create({
+    nodeId: "node1",
+    to: Rinkeby_USDT,
+    from: vault,
+    method: "balanceOf",
+    params: [
+      {
+        name: "account",
+        type: "address",
+        value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      },
+    ],
+  });
+
+  await batchMultiSigCall.create({
+    nodeId: "node2",
     to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     from: vault,
     value: "5000000000000",
@@ -63,27 +89,30 @@ async function main() {
     },
   });
 
-  await batchMultiSigCall.create({
-    nodeId: "node1",
-    plugin: transfer,
-    from: vault,
-  });
+  // All possible options for Transfer plugin
+  const options = transfer.input.params.to.options;
 
-  const balanceOf = new ERC721.getters.IsApprovedForAll({
-    initParams: {
-      to: "0x4119c1268Ae527d068907B3D23c6a97b71a19084", // BadgeToken (BTO) (NFT)
-      methodParams: {
-        owner: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-        operator: vault,
-      },
-    },
-  });
+  // await batchMultiSigCall.create({
+  //   nodeId: "node1",
+  //   plugin: transfer,
+  //   from: vault,
+  // });
 
-  await batchMultiSigCall.create({
-    nodeId: "node2",
-    plugin: balanceOf,
-    from: vault,
-  });
+  // const balanceOf = new ERC721.getters.IsApprovedForAll({
+  //   initParams: {
+  //     to: "0x4119c1268Ae527d068907B3D23c6a97b71a19084", // BadgeToken (BTO) (NFT)
+  //     methodParams: {
+  //       owner: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+  //       operator: vault,
+  //     },
+  //   },
+  // });
+
+  // await batchMultiSigCall.create({
+  //   nodeId: "node2",
+  //   plugin: balanceOf,
+  //   from: vault,
+  // });
 
   const FCT = await batchMultiSigCall.exportFCT();
 
@@ -100,7 +129,7 @@ async function main() {
     externalSigners: [],
   };
 
-  fs.writeFileSync("fct.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("FCT_Expires20d.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main().catch((error) => {
