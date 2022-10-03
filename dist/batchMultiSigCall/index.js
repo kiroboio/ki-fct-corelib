@@ -62,7 +62,6 @@ class BatchMultiSigCall {
                 if ((0, helpers_2.instanceOfVariable)(call.to)) {
                     throw new Error("To value cannot be a variable");
                 }
-                console.log("signature", (0, helpers_2.handleFunctionSignature)(call));
                 const Plugin = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId: 1 });
                 return Plugin;
             }
