@@ -227,6 +227,18 @@ export class BatchMultiSigCall {
     }
   };
 
+  public getPluginClass = async (index: number): Promise<any> => {
+    const call = this.getCall(index);
+
+    if (instanceOfVariable(call.to)) {
+      throw new Error("To value cannot be a variable");
+    }
+
+    const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId: 1 });
+
+    return pluginData;
+  };
+
   public getAllPlugins = (): { name: string; description?: string; plugin: Plugin }[] => {
     return getPlugins({});
   };

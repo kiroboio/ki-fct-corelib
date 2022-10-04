@@ -22,6 +22,7 @@ export declare class BatchMultiSigCall {
     getVariablesAsBytes32(): string[];
     setOptions(options: Partial<MSCallOptions>): MSCallOptions;
     getPlugin: (dataOrIndex: MSCall | number) => Promise<any>;
+    getPluginClass: (index: number) => Promise<any>;
     getAllPlugins: () => {
         name: string;
         description?: string;

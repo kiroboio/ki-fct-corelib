@@ -3,7 +3,6 @@ import fs from "fs";
 import { ethers } from "ethers";
 import { TypedDataUtils } from "ethers-eip712";
 import * as dotenv from "dotenv";
-import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 dotenv.config();
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -55,11 +54,18 @@ async function main() {
     nodeId: "node0",
     to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     from: vault,
-    value: "5000000000000",
+    value: "2000000000000",
   });
 
   await batchMultiSigCall.create({
     nodeId: "node1",
+    to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    from: vault,
+    value: "1100000000000",
+  });
+
+  await batchMultiSigCall.create({
+    nodeId: "node2",
     to: Rinkeby_USDT,
     from: vault,
     method: "balanceOf",
@@ -72,25 +78,25 @@ async function main() {
     ],
   });
 
-  await batchMultiSigCall.create({
-    nodeId: "node2",
-    to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-    from: vault,
-    value: "5000000000000",
-  });
+  // await batchMultiSigCall.create({
+  //   nodeId: "node2",
+  //   to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+  //   from: vault,
+  //   value: "5000000000000",
+  // });
 
-  const transfer = new ERC20.actions.Transfer({
-    initParams: {
-      to: Mainnet_USDC,
-      methodParams: {
-        amount: "1000000000000000000",
-        recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-      },
-    },
-  });
+  // const transfer = new ERC20.actions.Transfer({
+  //   initParams: {
+  //     to: Mainnet_USDC,
+  //     methodParams: {
+  //       amount: "1000000000000000000",
+  //       recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+  //     },
+  //   },
+  // });
 
-  // All possible options for Transfer plugin
-  const options = transfer.input.params.to.options;
+  // // All possible options for Transfer plugin
+  // const options = transfer.input.params.to.options;
 
   // await batchMultiSigCall.create({
   //   nodeId: "node1",
