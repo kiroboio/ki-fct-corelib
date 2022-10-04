@@ -27,7 +27,7 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 const FDBackBase = "0xFDB0000000000000000000000000000000000000";
 const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
-    constructor({ provider, contractAddress, options, }) {
+    constructor({ provider, contractAddress, web3Provider, options, }) {
         this.batchMultiSigSelector = "0xa7973c1f";
         this.options = {
             maxGasPrice: "100000000000",
@@ -115,7 +115,12 @@ class BatchMultiSigCall {
         };
         this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
-        this.provider = provider;
+        if (web3Provider) {
+            this.provider = new ethers_1.ethers.providers.Web3Provider(web3Provider);
+        }
+        else {
+            this.provider = provider;
+        }
         this.options = {
             ...this.options,
             ...options,

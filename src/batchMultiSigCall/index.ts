@@ -41,7 +41,7 @@ export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
   private batchMultiSigSelector: string = "0xa7973c1f";
-  private provider: ethers.providers.JsonRpcProvider;
+  private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
 
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
@@ -58,15 +58,21 @@ export class BatchMultiSigCall {
   constructor({
     provider,
     contractAddress,
+    web3Provider,
     options,
   }: {
-    provider: ethers.providers.JsonRpcProvider;
+    provider?: ethers.providers.JsonRpcProvider;
+    web3Provider?: ethers.providers.ExternalProvider | ethers.providers.JsonRpcFetchFunc;
     contractAddress: string;
     options?: Partial<MSCallOptions>;
   }) {
     this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-    this.provider = provider;
+    if (web3Provider) {
+      this.provider = new ethers.providers.Web3Provider(web3Provider);
+    } else {
+      this.provider = provider;
+    }
 
     this.options = {
       ...this.options,

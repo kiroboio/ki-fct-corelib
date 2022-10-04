@@ -10,8 +10,9 @@ export declare class BatchMultiSigCall {
     options: MSCallOptions;
     variables: string[][];
     calls: MSCallInput[];
-    constructor({ provider, contractAddress, options, }: {
-        provider: ethers.providers.JsonRpcProvider;
+    constructor({ provider, contractAddress, web3Provider, options, }: {
+        provider?: ethers.providers.JsonRpcProvider;
+        web3Provider?: ethers.providers.ExternalProvider | ethers.providers.JsonRpcFetchFunc;
         contractAddress: string;
         options?: Partial<MSCallOptions>;
     });
