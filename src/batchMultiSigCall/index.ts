@@ -203,7 +203,7 @@ export class BatchMultiSigCall {
   // Plugin functions
 
   public getPlugin = async (dataOrIndex: MSCall | number): Promise<any> => {
-    // const { chainId } = await this.provider.getNetwork();
+    const { chainId } = await this.provider.getNetwork();
 
     if (typeof dataOrIndex === "number") {
       const call = this.getCall(dataOrIndex);
@@ -219,6 +219,7 @@ export class BatchMultiSigCall {
       }, {});
 
       const plugin = new pluginData.plugin({
+        chainId,
         initParams: {
           to: call.to,
           methodParams,

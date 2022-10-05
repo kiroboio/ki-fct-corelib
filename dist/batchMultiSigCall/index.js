@@ -56,7 +56,7 @@ class BatchMultiSigCall {
         //
         // Plugin functions
         this.getPlugin = async (dataOrIndex) => {
-            // const { chainId } = await this.provider.getNetwork();
+            const { chainId } = await this.provider.getNetwork();
             if (typeof dataOrIndex === "number") {
                 const call = this.getCall(dataOrIndex);
                 if ((0, helpers_2.instanceOfVariable)(call.to)) {
@@ -67,6 +67,7 @@ class BatchMultiSigCall {
                     return { ...acc, [param.name]: param.value };
                 }, {});
                 const plugin = new pluginData.plugin({
+                    chainId,
                     initParams: {
                         to: call.to,
                         methodParams,
