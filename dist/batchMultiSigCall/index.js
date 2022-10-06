@@ -62,7 +62,7 @@ class BatchMultiSigCall {
                 if ((0, helpers_2.instanceOfVariable)(call.to)) {
                     throw new Error("To value cannot be a variable");
                 }
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId: 1 });
+                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId });
                 const methodParams = call.params.reduce((acc, param) => {
                     return { ...acc, [param.name]: param.value };
                 }, {});
@@ -76,7 +76,7 @@ class BatchMultiSigCall {
                 return plugin;
             }
             else {
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId: 1 });
+                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
                 return pluginData.plugin;
             }
         };

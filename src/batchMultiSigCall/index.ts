@@ -212,7 +212,7 @@ export class BatchMultiSigCall {
         throw new Error("To value cannot be a variable");
       }
 
-      const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId: 1 });
+      const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId });
 
       const methodParams = call.params.reduce((acc, param) => {
         return { ...acc, [param.name]: param.value };
@@ -228,7 +228,7 @@ export class BatchMultiSigCall {
 
       return plugin;
     } else {
-      const pluginData = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId: 1 });
+      const pluginData = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
 
       return pluginData.plugin;
     }
