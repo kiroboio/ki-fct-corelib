@@ -27,6 +27,8 @@ const FCT_Controller_Rinkeby = "0x5a59026F30Df81F482816350E50b27285D84E9c8";
 const Rinkeby_USDT = "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02";
 const Mainnet_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
+// GOERLI RPC URL - https://eth-goerli.public.blastapi.io
+
 async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"),
