@@ -24,6 +24,7 @@ function addHours(numOfHours: number, date = new Date()) {
 // }
 
 const FCT_Controller_Rinkeby = "0x5a59026F30Df81F482816350E50b27285D84E9c8";
+const FCT_Controller_Goerli = "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd";
 const Rinkeby_USDT = "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02";
 const Mainnet_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
