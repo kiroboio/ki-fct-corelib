@@ -28,7 +28,7 @@ const FDBackBase = "0xFDB0000000000000000000000000000000000000";
 const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, web3Provider, options, }) {
-        this.batchMultiSigSelector = "0xb91c650e0101";
+        this.batchMultiSigSelector = "0xb91c650e";
         this.options = {
             maxGasPrice: "100000000000",
             validFrom: getDate(),

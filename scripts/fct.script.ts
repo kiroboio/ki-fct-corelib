@@ -38,8 +38,8 @@ async function main() {
     provider: new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io"),
     contractAddress: FCT_Controller_Goerli,
     options: {
-      validFrom: addHours(0.66), // UNIX timestamp
-      // expiresAt: addHours(5), // UNIX timestamp
+      // validFrom: addHours(0.66), // UNIX timestamp
+      expiresAt: addHours(5), // UNIX timestamp
       recurrency: {
         accumetable: true,
         maxRepeats: "1000",

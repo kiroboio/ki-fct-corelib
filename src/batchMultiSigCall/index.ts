@@ -40,7 +40,7 @@ const FDBackBaseBytes = "0xFDB00000000000000000000000000000000000000000000000000
 export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
-  private batchMultiSigSelector: string = "0xb91c650e0101";
+  private batchMultiSigSelector: string = "0xb91c650e";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
 
   options: MSCallOptions = {
