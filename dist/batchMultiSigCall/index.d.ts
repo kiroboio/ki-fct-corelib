@@ -16,7 +16,7 @@ export declare class BatchMultiSigCall {
         contractAddress: string;
         options?: Partial<MSCallOptions>;
     });
-    getCalldataForActuator: (actuatorAddress: string, signedFCTs: object[], listOfPurgedFCTs?: string[]) => Promise<string>;
+    getCalldataForActuator: (actuatorAddress: string, signedFCT: object, purgedFCT: string) => Promise<string>;
     private getVariable;
     private getOutputVariable;
     private getExternalVariable;

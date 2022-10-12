@@ -82,11 +82,7 @@ export class BatchMultiSigCall {
 
   // Helpers
 
-  public getCalldataForActuator = async (
-    actuatorAddress: string,
-    signedFCTs: object[],
-    listOfPurgedFCTs: string[] = []
-  ) => {
+  public getCalldataForActuator = async (actuatorAddress: string, signedFCT: object, purgedFCT: string) => {
     const version = "010101";
     const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.provider);
     const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
@@ -94,11 +90,7 @@ export class BatchMultiSigCall {
     const activateId =
       "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
 
-    return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
-      activateId,
-      signedFCTs,
-      listOfPurgedFCTs,
-    ]);
+    return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [activateId, signedFCT, purgedFCT]);
   };
 
   // Variables
