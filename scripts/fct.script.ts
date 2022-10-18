@@ -39,7 +39,7 @@ async function main() {
     contractAddress: FCT_Controller_Goerli,
     options: {
       // validFrom: addHours(0.66), // UNIX timestamp
-      expiresAt: addHours(5), // UNIX timestamp
+      expiresAt: addHours(0.166667), // UNIX timestamp
       recurrency: {
         accumetable: true,
         maxRepeats: "1000",
@@ -137,7 +137,7 @@ async function main() {
     externalSigners: [],
   };
 
-  fs.writeFileSync("FCT_Valid40min.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("FCT_Expires10min.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main().catch((error) => {
