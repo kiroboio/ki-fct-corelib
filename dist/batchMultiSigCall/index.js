@@ -142,12 +142,12 @@ class BatchMultiSigCall {
         }
     }
     getOutputVariable(index, innerIndex, type) {
-        const outputIndexHex = (index + 1).toString(16).padStart(2, "0");
+        const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
         let base;
         let innerIndexHex;
         innerIndex = innerIndex ?? 0;
         if (innerIndex < 0) {
-            innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(2, "0");
+            innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(4, "0");
             if (type.includes("bytes")) {
                 base = FDBackBaseBytes;
             }
@@ -156,7 +156,7 @@ class BatchMultiSigCall {
             }
         }
         if (innerIndex >= 0) {
-            innerIndexHex = innerIndex.toString(16).padStart(2, "0");
+            innerIndexHex = innerIndex.toString(16).padStart(4, "0");
             if (type.includes("bytes")) {
                 base = FDBaseBytes;
             }
