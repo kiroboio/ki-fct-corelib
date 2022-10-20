@@ -19,9 +19,14 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const provider = new ethers_1.ethers.providers.Web3Provider(ganacheProvider);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
         const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
+        const gas = await signer.estimateGas({
+            to: actuatorContractAddress,
+            data: actuatorContract.encodeFunctionData("activate", [callData]),
+        });
         const tx = await signer.sendTransaction({
             to: actuatorContractAddress,
             data: actuatorContract.encodeFunctionData("activate", [callData]),
+            gasLimit: gas,
         });
         const receipt = await tx.wait();
         return {

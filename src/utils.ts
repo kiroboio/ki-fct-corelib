@@ -48,9 +48,15 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
 
+    const gas = await signer.estimateGas({
+      to: actuatorContractAddress,
+      data: actuatorContract.encodeFunctionData("activate", [callData]),
+    });
+
     const tx = await signer.sendTransaction({
       to: actuatorContractAddress,
       data: actuatorContract.encodeFunctionData("activate", [callData]),
+      gasLimit: gas,
     });
 
     const receipt = await tx.wait();
