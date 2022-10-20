@@ -19,27 +19,22 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const provider = new ethers_1.ethers.providers.Web3Provider(ganacheProvider);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
         const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
-        const gas = await signer.estimateGas({
-            to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-        });
         const tx = await signer.sendTransaction({
             to: actuatorContractAddress,
             data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-            gasLimit: gas,
         });
         const receipt = await tx.wait();
+        // Add 15% to gasUsed value
+        const gasUsed = receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15;
         return {
             isValid: true,
-            gasUsed: receipt.gasUsed.toString(),
-            error: undefined,
+            gasUsed,
         };
     }
     catch (err) {
         return {
             isValid: false,
             gasUsed: "0",
-            error: err,
         };
     }
 };

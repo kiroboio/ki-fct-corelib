@@ -50,29 +50,24 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
 
-    const gas = await signer.estimateGas({
-      to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-    });
-
     const tx = await signer.sendTransaction({
       to: actuatorContractAddress,
       data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-      gasLimit: gas,
     });
 
     const receipt = await tx.wait();
 
+    // Add 15% to gasUsed value
+    const gasUsed = receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15;
+
     return {
       isValid: true,
-      gasUsed: receipt.gasUsed.toString(),
-      error: undefined,
+      gasUsed,
     };
   } catch (err) {
     return {
       isValid: false,
       gasUsed: "0",
-      error: err,
     };
   }
 };

@@ -43,8 +43,10 @@ declare const _default: {
     getVariablesAsBytes32: (variables: string[]) => string[];
     transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
         isValid: boolean;
+        gasUsed: number;
+    } | {
+        isValid: boolean;
         gasUsed: string;
-        error: any;
     }>;
 };
 export default _default;
