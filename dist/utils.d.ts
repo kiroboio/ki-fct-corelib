@@ -1,5 +1,4 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
 import { MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCTTypedData extends TypedData {
@@ -43,7 +42,8 @@ declare const _default: {
     getVariablesAsBytes32: (variables: string[]) => string[];
     transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
         isValid: boolean;
-        gasUsed: ethers.BigNumber;
+        gasUsed: string;
+        error: any;
     }>;
 };
 export default _default;

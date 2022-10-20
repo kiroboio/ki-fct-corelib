@@ -8,25 +8,35 @@ const ethers_eip712_1 = require("ethers-eip712");
 const ganache_1 = __importDefault(require("ganache"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const transactionValidator = async (transactionValidatorInterface) => {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
-    // Creates a forked ganache instance from indicated chainId's rpcUrl
-    const ganacheProvider = ganache_1.default.provider({
-        fork: {
-            url: rpcUrl,
-        },
-    });
-    const provider = new ethers_1.ethers.providers.Web3Provider(ganacheProvider);
-    const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-    const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
-    const tx = await signer.sendTransaction({
-        to: actuatorContractAddress,
-        data: actuatorContract.encodeFunctionData("activate", [callData]),
-    });
-    const receipt = await tx.wait();
-    return {
-        isValid: true,
-        gasUsed: receipt.gasUsed,
-    };
+    try {
+        const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
+        // Creates a forked ganache instance from indicated chainId's rpcUrl
+        const ganacheProvider = ganache_1.default.provider({
+            fork: {
+                url: rpcUrl,
+            },
+        });
+        const provider = new ethers_1.ethers.providers.Web3Provider(ganacheProvider);
+        const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
+        const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
+        const tx = await signer.sendTransaction({
+            to: actuatorContractAddress,
+            data: actuatorContract.encodeFunctionData("activate", [callData]),
+        });
+        const receipt = await tx.wait();
+        return {
+            isValid: true,
+            gasUsed: receipt.gasUsed.toString(),
+            error: undefined,
+        };
+    }
+    catch (err) {
+        return {
+            isValid: false,
+            gasUsed: "0",
+            error: err,
+        };
+    }
 };
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {

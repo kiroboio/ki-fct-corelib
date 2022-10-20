@@ -33,31 +33,40 @@ interface ITxValidator {
 }
 
 const transactionValidator = async (transactionValidatorInterface: ITxValidator) => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
+  try {
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
 
-  // Creates a forked ganache instance from indicated chainId's rpcUrl
-  const ganacheProvider = ganache.provider({
-    fork: {
-      url: rpcUrl,
-    },
-  }) as any;
+    // Creates a forked ganache instance from indicated chainId's rpcUrl
+    const ganacheProvider = ganache.provider({
+      fork: {
+        url: rpcUrl,
+      },
+    }) as any;
 
-  const provider = new ethers.providers.Web3Provider(ganacheProvider);
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+    const provider = new ethers.providers.Web3Provider(ganacheProvider);
+    const signer = new ethers.Wallet(actuatorPrivateKey, provider);
 
-  const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
+    const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
 
-  const tx = await signer.sendTransaction({
-    to: actuatorContractAddress,
-    data: actuatorContract.encodeFunctionData("activate", [callData]),
-  });
+    const tx = await signer.sendTransaction({
+      to: actuatorContractAddress,
+      data: actuatorContract.encodeFunctionData("activate", [callData]),
+    });
 
-  const receipt = await tx.wait();
+    const receipt = await tx.wait();
 
-  return {
-    isValid: true,
-    gasUsed: receipt.gasUsed,
-  };
+    return {
+      isValid: true,
+      gasUsed: receipt.gasUsed.toString(),
+      error: undefined,
+    };
+  } catch (err) {
+    return {
+      isValid: false,
+      gasUsed: "0",
+      error: err,
+    };
+  }
 };
 
 const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike): string | null => {
