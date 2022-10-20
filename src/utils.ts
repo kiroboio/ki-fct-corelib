@@ -2,7 +2,8 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { MSCall } from "./batchMultiSigCall/interfaces";
-
+import ganache from "ganache";
+import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
 interface IFCTTypedData extends TypedData {
   message: {
     limits: {
@@ -24,66 +25,40 @@ interface IFCT {
   mcall: MSCall[];
 }
 
-// const transactionValidator = async (transactionValidatorInterface: transactionValidatorInterface) => {
-//   if (!transactionValidatorInterface.rpcUrl) {
-//     throw new Error("rpcUrl is required");
-//   }
+interface ITxValidator {
+  rpcUrl: string;
+  callData: string;
+  actuatorPrivateKey: string;
+  actuatorContractAddress: string;
+}
 
-//   if (!transactionValidatorInterface.activatorPrivateKey) {
-//     throw new Error("activatorPrivateKey is required");
-//   }
+const transactionValidator = async (transactionValidatorInterface: ITxValidator) => {
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
 
-//   if (!transactionValidatorInterface.factoryProxyAddress) {
-//     throw new Error("factoryProxyAddress is required");
-//   }
+  // Creates a forked ganache instance from indicated chainId's rpcUrl
+  const ganacheProvider = ganache.provider({
+    fork: {
+      url: rpcUrl,
+    },
+  }) as any;
 
-//   const {
-//     calls,
-//     method,
-//     groupId,
-//     rpcUrl,
-//     activatorPrivateKey: activator,
-//     factoryProxyAddress,
-//   } = transactionValidatorInterface;
+  const provider = new ethers.providers.Web3Provider(ganacheProvider);
+  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
 
-//   // Creates a forked ganache instance from indicated chainId's rpcUrl
-//   const web3 = new Web3(
-//     ganache.provider({
-//       fork: {
-//         url: rpcUrl,
-//       },
-//     }) as any
-//   );
+  const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
 
-//   const transaction = getTransaction(
-//     web3,
-//     factoryProxyAddress,
-//     `${method}_`,
-//     transactionValidatorInterface.silentRevert
-//       ? [calls, groupId, transactionValidatorInterface.silentRevert]
-//       : [calls, groupId]
-//   );
+  const tx = await signer.sendTransaction({
+    to: actuatorContractAddress,
+    data: actuatorContract.encodeFunctionData("activate", [callData]),
+  });
 
-//   // Create account from activator private key
-//   const account = web3.eth.accounts.privateKeyToAccount(activator as string).address;
+  const receipt = await tx.wait();
 
-//   const options = {
-//     to: factoryProxyAddress,
-//     data: transaction.encodeABI(),
-//     gas: await transaction.estimateGas({ from: account }),
-//   };
-
-//   // Activator signs the transaction
-//   const signed = await web3.eth.accounts.signTransaction(options, activator as string);
-
-//   // Execute the transaction in forked ganache instance
-//   const tx = await web3.eth.sendSignedTransaction(signed.rawTransaction as string);
-
-//   return {
-//     isValid: true,
-//     gasUsed: tx.gasUsed,
-//   };
-// };
+  return {
+    isValid: true,
+    gasUsed: receipt.gasUsed,
+  };
+};
 
 const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike): string | null => {
   try {
@@ -154,4 +129,10 @@ const getVariablesAsBytes32 = (variables: string[]) => {
   });
 };
 
-export default { getFCTMessageHash, validateFCT, recoverAddressFromEIP712, getVariablesAsBytes32 };
+export default {
+  getFCTMessageHash,
+  validateFCT,
+  recoverAddressFromEIP712,
+  getVariablesAsBytes32,
+  transactionValidator,
+};

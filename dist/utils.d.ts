@@ -1,4 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
+import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
 import { MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCTTypedData extends TypedData {
@@ -20,6 +21,12 @@ interface IFCT {
     typedData: IFCTTypedData;
     mcall: MSCall[];
 }
+interface ITxValidator {
+    rpcUrl: string;
+    callData: string;
+    actuatorPrivateKey: string;
+    actuatorContractAddress: string;
+}
 declare const _default: {
     getFCTMessageHash: (typedData: TypedData) => string;
     validateFCT: (FCT: IFCT, softValidation?: boolean) => {
@@ -34,5 +41,9 @@ declare const _default: {
     };
     recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
     getVariablesAsBytes32: (variables: string[]) => string[];
+    transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
+        isValid: boolean;
+        gasUsed: ethers.BigNumber;
+    }>;
 };
 export default _default;

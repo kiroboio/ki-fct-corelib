@@ -1,6 +1,7 @@
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-truffle5";
+import "@nomiclabs/hardhat-ethers";
 import { HardhatUserConfig } from "hardhat/types";
 
 // You need to export an object to set up your config
@@ -16,6 +17,7 @@ const config: HardhatUserConfig = {
       },
     },
   },
+
   networks: {
     hardhat: {
       chainId: 4,
@@ -28,6 +30,9 @@ const config: HardhatUserConfig = {
         count: 10,
       },
     },
+  },
+  paths: {
+    sources: "./contracts",
   },
 };
 

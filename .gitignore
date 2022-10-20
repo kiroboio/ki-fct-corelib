@@ -106,3 +106,4 @@ typings/
 # Hardhat files
 artifacts
 cache
+/contracts
