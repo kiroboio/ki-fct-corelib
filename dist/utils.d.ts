@@ -44,9 +44,6 @@ declare const _default: {
     transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
         isValid: boolean;
         gasUsed: number;
-    } | {
-        isValid: boolean;
-        gasUsed: string;
     }>;
 };
 export default _default;

@@ -58,7 +58,7 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
     const receipt = await tx.wait();
 
     // Add 15% to gasUsed value
-    const gasUsed = receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15;
+    const gasUsed = Math.round(receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15);
 
     return {
       isValid: true,
@@ -67,7 +67,7 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
   } catch (err) {
     return {
       isValid: false,
-      gasUsed: "0",
+      gasUsed: 0,
     };
   }
 };
