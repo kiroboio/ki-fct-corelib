@@ -21,11 +21,11 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
         const gas = await signer.estimateGas({
             to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData("activate", [callData]),
+            data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
         });
         const tx = await signer.sendTransaction({
             to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData("activate", [callData]),
+            data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
             gasLimit: gas,
         });
         const receipt = await tx.wait();

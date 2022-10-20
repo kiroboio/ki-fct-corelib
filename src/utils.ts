@@ -50,12 +50,12 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const gas = await signer.estimateGas({
       to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData("activate", [callData]),
+      data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
     });
 
     const tx = await signer.sendTransaction({
       to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData("activate", [callData]),
+      data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
       gasLimit: gas,
     });
 
