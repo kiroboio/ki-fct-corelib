@@ -9,7 +9,7 @@ const ganache_1 = __importDefault(require("ganache"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const transactionValidator = async (transactionValidatorInterface) => {
     try {
-        const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
+        const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
         // Creates a forked ganache instance from indicated chainId's rpcUrl
         const ganacheProvider = ganache_1.default.provider({
             fork: {
@@ -21,11 +21,11 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
         const gas = await signer.estimateGas({
             to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
+            data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
         });
         const tx = await signer.sendTransaction({
             to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
+            data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
             gasLimit: gas,
         });
         const receipt = await tx.wait();

@@ -25,6 +25,7 @@ interface ITxValidator {
     callData: string;
     actuatorPrivateKey: string;
     actuatorContractAddress: string;
+    activateForFree: boolean;
 }
 declare const _default: {
     getFCTMessageHash: (typedData: TypedData) => string;

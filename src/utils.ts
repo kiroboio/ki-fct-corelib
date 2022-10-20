@@ -30,11 +30,13 @@ interface ITxValidator {
   callData: string;
   actuatorPrivateKey: string;
   actuatorContractAddress: string;
+  activateForFree: boolean;
 }
 
 const transactionValidator = async (transactionValidatorInterface: ITxValidator) => {
   try {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl } = transactionValidatorInterface;
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
+      transactionValidatorInterface;
 
     // Creates a forked ganache instance from indicated chainId's rpcUrl
     const ganacheProvider = ganache.provider({
@@ -50,12 +52,12 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const gas = await signer.estimateGas({
       to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
+      data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
     });
 
     const tx = await signer.sendTransaction({
       to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData("activateForFree", [callData]),
+      data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
       gasLimit: gas,
     });
 
