@@ -12,7 +12,7 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
         const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
-        const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](callData, activateForFree);
+        const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"]([callData]);
         // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
         // const tx = await signer.sendTransaction({
         //   to: actuatorContractAddress,
