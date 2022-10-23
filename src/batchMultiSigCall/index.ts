@@ -1,10 +1,10 @@
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params, Variable } from "../interfaces";
-import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
+import { IMSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
 import {
   getSessionId,
@@ -43,6 +43,7 @@ export class BatchMultiSigCall {
   private batchMultiSigSelector: string = "0xb91c650e";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
 
+  calls: IMSCallInput[] = [];
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
     validFrom: getDate(), // Valid from now
@@ -51,9 +52,6 @@ export class BatchMultiSigCall {
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
   };
-
-  variables: string[][] = [];
-  calls: MSCallInput[] = [];
 
   constructor({
     provider,
@@ -153,21 +151,6 @@ export class BatchMultiSigCall {
     return outputIndexHex.padStart(FCBase.length, FCBase);
   }
 
-  public getVariablesAsBytes32() {
-    return this.variables.map((item) => {
-      const value = item[1];
-      if (value === undefined) {
-        throw new Error(`Variable ${item[0]} doesn't have a value`);
-      }
-
-      if (isNaN(Number(value)) || utils.isAddress(value)) {
-        return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
-      }
-
-      return `0x${Number(value).toString(16).padStart(64, "0")}`;
-    });
-  }
-
   // End of variables
   //
   //
@@ -247,8 +230,8 @@ export class BatchMultiSigCall {
   //
   // FCT Functions
 
-  public async create(callInput: MSCallInput | IWithPlugin): Promise<MSCallInput[]> {
-    let call: MSCallInput;
+  public async create(callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]> {
+    let call: IMSCallInput;
     if ("plugin" in callInput) {
       const pluginCall = await callInput.plugin.create();
       if (pluginCall === undefined) {
@@ -278,14 +261,14 @@ export class BatchMultiSigCall {
     return this.calls;
   }
 
-  public async createMultiple(calls: (MSCallInput | IWithPlugin)[]): Promise<MSCallInput[]> {
+  public async createMultiple(calls: (IMSCallInput | IWithPlugin)[]): Promise<IMSCallInput[]> {
     for (const call of calls) {
       await this.create(call);
     }
     return this.calls;
   }
 
-  public getCall(index: number): MSCallInput {
+  public getCall(index: number): IMSCallInput {
     return this.calls[index];
   }
 
@@ -339,7 +322,7 @@ export class BatchMultiSigCall {
     };
   }
 
-  public async importFCT(fct: IBatchMultiSigCallFCT): Promise<MSCallInput[] | Error> {
+  public async importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error> {
     // Here we import FCT and add all the data inside BatchMultiSigCall
     const options = parseSessionID(fct.sessionId, fct.builder);
     this.setOptions(options);
@@ -367,7 +350,7 @@ export class BatchMultiSigCall {
         return Flow[flow[0]];
       };
 
-      const callInput: MSCallInput = {
+      const callInput: IMSCallInput = {
         nodeId: `node${index + 1}`,
         to: call.to,
         from: call.from,
@@ -402,7 +385,7 @@ export class BatchMultiSigCall {
     version: string
   ): Promise<TypedData> {
     // Creates messages from multiCalls array for EIP712 sign
-    const typedDataMessage = this.calls.reduce((acc: object, call: MSCallInput, index: number) => {
+    const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
       let paramsData = {};
       if (call.params) {
@@ -525,7 +508,7 @@ export class BatchMultiSigCall {
         ],
         ...optionalTypes,
         ...this.calls.reduce(
-          (acc: object, call: MSCallInput, index: number) => ({
+          (acc: object, call: IMSCallInput, index: number) => ({
             ...acc,
             [`transaction${index + 1}`]: call.validator
               ? [{ name: "meta", type: "Transaction" }, ...getValidatorFunctionData(call.validator, call.params)]
@@ -581,7 +564,7 @@ export class BatchMultiSigCall {
     return typedData;
   }
 
-  private getParams(call: MSCallInput) {
+  private getParams(call: IMSCallInput) {
     // If call has parameters
     if (call.params) {
       // If mcall is a validation call
@@ -662,7 +645,7 @@ export class BatchMultiSigCall {
       }
     });
   }
-  private handleTo = (call: MSCallInput) => {
+  private handleTo = (call: IMSCallInput) => {
     // If call is a validator method, return validator address as to address
     if (call.validator) {
       return call.validator.validatorAddress;
@@ -676,7 +659,7 @@ export class BatchMultiSigCall {
     return this.getVariable(call.to, "address");
   };
 
-  private handleValue = (call: MSCallInput): string => {
+  private handleValue = (call: IMSCallInput): string => {
     // If value isn't provided => 0
     if (!call.value) {
       return "0";

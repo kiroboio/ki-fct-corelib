@@ -3,6 +3,8 @@ import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import { TypedDataUtils } from "ethers-eip712";
 import fs from "fs";
+import { ERC20, PureValidator } from "@kirobo/ki-eth-fct-provider-ts";
+import { Flow } from "../src/constants";
 
 dotenv.config();
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -31,6 +33,14 @@ const Rinkeby_USDT = "0xD9BA894E0097f8cC2BBc9D24D308b98e36dc6D02";
 const Mainnet_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 const Goerli_USDC = "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557";
 
+const data = {
+  KIRO_GOERLI: "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+  PUREVALIDATOR_GOERLI: "0x1716898d72BE098F4828B435a3918cBFda562Efc",
+  PURESAFEMATH_GOERLI: "0x850c7E3eBf05d0A617DAe4beE14A4A5C03CAb9da",
+};
+
+const wallet = "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586";
+
 // GOERLI RPC URL - https://eth-goerli.public.blastapi.io
 
 async function main() {
@@ -40,87 +50,56 @@ async function main() {
     options: {
       // validFrom: addHours(0.66), // UNIX timestamp
       expiresAt: getDate(10), // UNIX timestamp
-      recurrency: {
-        accumetable: true,
-        maxRepeats: "1000",
-        chillTime: "1",
-      },
     },
   });
 
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
 
-  // await batchMultiSigCall.create({
-  //   nodeId: "node0",
-  //   to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-  //   from: vault,
-  //   value: "2000000000000",
-  // });
-
-  await batchMultiSigCall.create({
-    nodeId: "node1",
-    to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-    from: vault,
-    value: "1100000000000",
-  });
-
-  await batchMultiSigCall.create({
-    nodeId: "node2",
-    to: Goerli_USDC,
-    from: vault,
-    method: "balanceOf",
-    params: [
-      {
-        name: "account",
-        type: "address",
-        value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+  const balanceOf = new ERC20.getters.BalanceOf({
+    chainId: 1,
+    initParams: {
+      to: data.KIRO_GOERLI,
+      methodParams: {
+        owner: vault,
       },
-    ],
+    },
   });
 
-  await batchMultiSigCall.create({
-    nodeId: "node3",
-    to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-    from: vault,
-    value: "5000000000000",
+  const greaterThan = new PureValidator.validate.GreaterThan({
+    chainId: 1,
+    initParams: {
+      to: data.PUREVALIDATOR_GOERLI,
+      methodParams: {
+        value1: balanceOf.output.params.balance.getOutputVariable("1"),
+        value2: "10",
+      },
+    },
   });
 
-  // const transfer = new ERC20.actions.Transfer({
-  //   chainId: 1,
-  //   initParams: {
-  //     to: Rinkeby_USDT,
-  //     methodParams: {
-  //       amount: "1000000000000000000",
-  //       recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-  //     },
-  //   },
-  // });
+  const transfer = new ERC20.actions.Transfer({
+    chainId: 1,
+    initParams: {
+      to: data.KIRO_GOERLI,
+      methodParams: {
+        recipient: wallet,
+        amount: "10",
+      },
+    },
+  });
 
-  // All possible options for Transfer plugin
-  // const options = transfer.input.params.to.options;
-
-  // await batchMultiSigCall.create({
-  //   nodeId: "node3",
-  //   plugin: transfer,
-  //   from: vault,
-  // });
-
-  // const balanceOf = new ERC721.getters.IsApprovedForAll({
-  //   initParams: {
-  //     to: "0x4119c1268Ae527d068907B3D23c6a97b71a19084", // BadgeToken (BTO) (NFT)
-  //     methodParams: {
-  //       owner: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-  //       operator: vault,
-  //     },
-  //   },
-  // });
-
-  // await batchMultiSigCall.create({
-  //   nodeId: "node2",
-  //   plugin: balanceOf,
-  //   from: vault,
-  // });
+  await batchMultiSigCall.createMultiple([
+    { plugin: balanceOf, from: vault, nodeId: "1" },
+    {
+      plugin: greaterThan,
+      from: vault,
+      nodeId: "2",
+      options: {
+        flow: Flow.OK_CONT_FAIL_REVERT,
+      },
+    },
+    { plugin: transfer, from: vault, nodeId: "3" },
+  ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
 
@@ -137,7 +116,7 @@ async function main() {
     externalSigners: [],
   };
 
-  fs.writeFileSync("FCT_Expires10days.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main().catch((error) => {

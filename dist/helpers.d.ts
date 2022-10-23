@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { TypedData, TypedDataTypes } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
-import { MSCallInput } from "./batchMultiSigCall/interfaces";
+import { IMSCallInput } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 export declare const flows: {
     OK_CONT_FAIL_REVERT: {
@@ -78,5 +78,5 @@ export declare const getValidatorFunctionData: (validator: Validator, params: an
     type: string;
 }[];
 export declare const getValidatorMethodInterface: (validator: Validator) => string;
-export declare const getValidatorData: (call: Partial<MSCallInput>, noFunctionSignature: boolean) => string;
-export declare const createValidatorTxData: (call: Partial<MSCallInput>) => object | Error;
+export declare const getValidatorData: (call: Partial<IMSCallInput>, noFunctionSignature: boolean) => string;
+export declare const createValidatorTxData: (call: Partial<IMSCallInput>) => object | Error;

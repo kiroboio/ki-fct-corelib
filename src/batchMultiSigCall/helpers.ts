@@ -10,7 +10,7 @@ import {
   getValidatorData,
   getValidatorMethodInterface,
 } from "../helpers";
-import { MSCallInput } from "./interfaces";
+import { IMSCallInput } from "./interfaces";
 import { Flow } from "../constants";
 import { Variable } from "interfaces";
 
@@ -20,7 +20,7 @@ export const instanceOfVariable = (object: any): object is Variable => {
   return typeof object === "object" && "type" in object && "id" in object;
 };
 
-export const handleMethodInterface = (call: MSCallInput): string => {
+export const handleMethodInterface = (call: IMSCallInput): string => {
   // If call is not a ETH transfer
   if (call.method) {
     // If call is a validation call
@@ -36,7 +36,7 @@ export const handleMethodInterface = (call: MSCallInput): string => {
   return "";
 };
 
-export const handleFunctionSignature = (call: MSCallInput) => {
+export const handleFunctionSignature = (call: IMSCallInput) => {
   if (call.method) {
     const value = call.validator ? getValidatorMethodInterface(call.validator) : getMethodInterface(call);
     return utils.id(value);
@@ -44,14 +44,14 @@ export const handleFunctionSignature = (call: MSCallInput) => {
   return nullValue;
 };
 
-export const handleEnsHash = (call: MSCallInput) => {
+export const handleEnsHash = (call: IMSCallInput) => {
   if (call.toENS) {
     return utils.id(call.toENS);
   }
   return nullValue;
 };
 
-export const handleData = (call: MSCallInput) => {
+export const handleData = (call: IMSCallInput) => {
   if (call.validator) {
     return getValidatorData(call, true);
   }
@@ -59,21 +59,21 @@ export const handleData = (call: MSCallInput) => {
   return getEncodedMethodParams(call);
 };
 
-export const handleTypes = (call: MSCallInput) => {
+export const handleTypes = (call: IMSCallInput) => {
   if (call.params) {
     return getTypesArray(call.params);
   }
   return [];
 };
 
-export const handleTypedHashes = (call: MSCallInput, typedData: TypedData) => {
+export const handleTypedHashes = (call: IMSCallInput, typedData: TypedData) => {
   if (call.params) {
     return getTypedHashes(call.params, typedData);
   }
   return [];
 };
 
-export const manageFlow = (call: MSCallInput) => {
+export const manageFlow = (call: IMSCallInput) => {
   // const jump = (call.options && call.options.jump) || 0;
   const jump = 0;
   const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
@@ -89,7 +89,7 @@ export const manageFlow = (call: MSCallInput) => {
   return `0x${flows[flow].value}${jump.toString(16)}`;
 };
 
-export const manageCallId = (calls: MSCallInput[], call: MSCallInput, index: number) => {
+export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: number) => {
   // 4 - Permissions
   // 2 - Flow
   // 4 - Fail Jump

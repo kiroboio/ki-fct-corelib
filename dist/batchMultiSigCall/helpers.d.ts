@@ -1,17 +1,17 @@
 import { TypedData } from "ethers-eip712";
 import { MSCallOptions } from "./interfaces";
-import { MSCallInput } from "./interfaces";
+import { IMSCallInput } from "./interfaces";
 import { Flow } from "../constants";
 import { Variable } from "interfaces";
 export declare const instanceOfVariable: (object: any) => object is Variable;
-export declare const handleMethodInterface: (call: MSCallInput) => string;
-export declare const handleFunctionSignature: (call: MSCallInput) => string;
-export declare const handleEnsHash: (call: MSCallInput) => string;
-export declare const handleData: (call: MSCallInput) => string;
-export declare const handleTypes: (call: MSCallInput) => number[];
-export declare const handleTypedHashes: (call: MSCallInput, typedData: TypedData) => string[];
-export declare const manageFlow: (call: MSCallInput) => string;
-export declare const manageCallId: (calls: MSCallInput[], call: MSCallInput, index: number) => string;
+export declare const handleMethodInterface: (call: IMSCallInput) => string;
+export declare const handleFunctionSignature: (call: IMSCallInput) => string;
+export declare const handleEnsHash: (call: IMSCallInput) => string;
+export declare const handleData: (call: IMSCallInput) => string;
+export declare const handleTypes: (call: IMSCallInput) => number[];
+export declare const handleTypedHashes: (call: IMSCallInput, typedData: TypedData) => string[];
+export declare const manageFlow: (call: IMSCallInput) => string;
+export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, index: number) => string;
 export declare const getSessionId: (salt: string, options: MSCallOptions) => string;
 export declare const parseSessionID: (sessionId: string, builder: string) => MSCallOptions;
 export declare const parseCallID: (callId: string) => {

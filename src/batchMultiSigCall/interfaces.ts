@@ -10,18 +10,15 @@ export interface IBatchMultiSigCallFCT {
   builder: string;
 }
 
-export interface MSCallInput {
+export interface IMSCallInput {
   nodeId: string;
-
   value?: string | Variable;
   to: string | Variable;
   from: string | Variable;
   params?: Params[];
   method?: string;
-
   toENS?: string;
   validator?: Validator;
-
   viewOnly?: boolean;
   options?: CallOptions;
 }

@@ -29,6 +29,7 @@ const FDBackBaseBytes = "0xFDB00000000000000000000000000000000000000000000000000
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, web3Provider, options, }) {
         this.batchMultiSigSelector = "0xb91c650e";
+        this.calls = [];
         this.options = {
             maxGasPrice: "100000000000",
             validFrom: getDate(),
@@ -37,8 +38,6 @@ class BatchMultiSigCall {
             blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
         };
-        this.variables = [];
-        this.calls = [];
         // Helpers
         this.getCalldataForActuator = async (actuatorAddress, signedFCT, purgedFCT) => {
             const version = "010101";
@@ -172,18 +171,6 @@ class BatchMultiSigCall {
             return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
         }
         return outputIndexHex.padStart(FCBase.length, FCBase);
-    }
-    getVariablesAsBytes32() {
-        return this.variables.map((item) => {
-            const value = item[1];
-            if (value === undefined) {
-                throw new Error(`Variable ${item[0]} doesn't have a value`);
-            }
-            if (isNaN(Number(value)) || ethers_1.utils.isAddress(value)) {
-                return `0x${String(value).replace("0x", "").padStart(64, "0")}`;
-            }
-            return `0x${Number(value).toString(16).padStart(64, "0")}`;
-        });
     }
     // End of variables
     //

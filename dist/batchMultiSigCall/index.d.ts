@@ -1,15 +1,14 @@
 import { ethers } from "ethers";
 import { TypedData } from "ethers-eip712";
-import { MSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
+import { IMSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
     private FCT_BatchMultiSigCall;
     private batchMultiSigSelector;
     private provider;
+    calls: IMSCallInput[];
     options: MSCallOptions;
-    variables: string[][];
-    calls: MSCallInput[];
     constructor({ provider, contractAddress, web3Provider, options, }: {
         provider?: ethers.providers.JsonRpcProvider;
         web3Provider?: ethers.providers.ExternalProvider | ethers.providers.JsonRpcFetchFunc;
@@ -20,7 +19,6 @@ export declare class BatchMultiSigCall {
     private getVariable;
     private getOutputVariable;
     private getExternalVariable;
-    getVariablesAsBytes32(): string[];
     setOptions(options: Partial<MSCallOptions>): MSCallOptions;
     getPlugin: (dataOrIndex: MSCall | number) => Promise<any>;
     getPluginClass: (index: number) => Promise<any>;
@@ -29,9 +27,9 @@ export declare class BatchMultiSigCall {
         description?: string;
         plugin: Plugin;
     }[];
-    create(callInput: MSCallInput | IWithPlugin): Promise<MSCallInput[]>;
-    createMultiple(calls: (MSCallInput | IWithPlugin)[]): Promise<MSCallInput[]>;
-    getCall(index: number): MSCallInput;
+    create(callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]>;
+    createMultiple(calls: (IMSCallInput | IWithPlugin)[]): Promise<IMSCallInput[]>;
+    getCall(index: number): IMSCallInput;
     get length(): number;
     exportFCT(): Promise<{
         typedData: TypedData;
@@ -41,7 +39,7 @@ export declare class BatchMultiSigCall {
         nameHash: string;
         mcall: MSCall[];
     }>;
-    importFCT(fct: IBatchMultiSigCallFCT): Promise<MSCallInput[] | Error>;
+    importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error>;
     private createTypedData;
     private getParams;
     private verifyParams;

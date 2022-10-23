@@ -8,7 +8,7 @@ export interface IBatchMultiSigCallFCT {
     mcall: MSCall[];
     builder: string;
 }
-export interface MSCallInput {
+export interface IMSCallInput {
     nodeId: string;
     value?: string | Variable;
     to: string | Variable;

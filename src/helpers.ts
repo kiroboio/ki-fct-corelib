@@ -4,7 +4,7 @@ import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import ValidatorABI from "./abi/validator.abi.json";
-import { MSCallInput } from "./batchMultiSigCall/interfaces";
+import { IMSCallInput } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 
 export const flows = {
@@ -345,7 +345,7 @@ export const getValidatorMethodInterface = (validator: Validator): string => {
   return `${validator.method}(${validatorFunction.inputs.map((item) => item.type).join(",")})`;
 };
 
-export const getValidatorData = (call: Partial<MSCallInput>, noFunctionSignature: boolean): string => {
+export const getValidatorData = (call: Partial<IMSCallInput>, noFunctionSignature: boolean): string => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const data = iface.encodeFunctionData(call.validator.method, [
     ...Object.values(call.validator.params),
@@ -363,7 +363,7 @@ const getValidatorDataOffset = (types: string[], data: string): string => {
     .slice(64 * types.slice(0, -1).length + 2, 64 * types.length + 2)}`;
 };
 
-export const createValidatorTxData = (call: Partial<MSCallInput>): object | Error => {
+export const createValidatorTxData = (call: Partial<IMSCallInput>): object | Error => {
   const iface = new ethers.utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(call.validator.method);
   const validator = call.validator;
