@@ -42,7 +42,7 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
-    const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"]([callData]);
+    const gas = await actuatorContract.estimateGas.activateForFree(callData);
 
     // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
 
