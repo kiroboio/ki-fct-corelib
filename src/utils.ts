@@ -2,7 +2,6 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { ethers, utils } from "ethers";
 import { TypedData, TypedDataUtils } from "ethers-eip712";
 import { MSCall } from "./batchMultiSigCall/interfaces";
-import ganache from "ganache";
 import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
 interface IFCTTypedData extends TypedData {
   message: {
@@ -38,27 +37,27 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
       transactionValidatorInterface;
 
-    // Creates a forked ganache instance from indicated chainId's rpcUrl
-    const ganacheProvider = ganache.provider({
-      fork: {
-        url: rpcUrl,
-      },
-    }) as any;
-
-    const provider = new ethers.providers.Web3Provider(ganacheProvider);
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers.Wallet(actuatorPrivateKey, provider);
 
-    const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
+    const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
-    const tx = await signer.sendTransaction({
-      to: actuatorContractAddress,
-      data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-    });
+    const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](
+      callData,
+      activateForFree
+    );
 
-    const receipt = await tx.wait();
+    // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
+
+    // const tx = await signer.sendTransaction({
+    //   to: actuatorContractAddress,
+    //   data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
+    // });
+
+    // const receipt = await tx.wait();
 
     // Add 15% to gasUsed value
-    const gasUsed = Math.round(receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15);
+    const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
 
     return {
       isValid: true,

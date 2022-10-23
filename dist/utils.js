@@ -5,27 +5,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ethers_1 = require("ethers");
 const ethers_eip712_1 = require("ethers-eip712");
-const ganache_1 = __importDefault(require("ganache"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const transactionValidator = async (transactionValidatorInterface) => {
     try {
         const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
-        // Creates a forked ganache instance from indicated chainId's rpcUrl
-        const ganacheProvider = ganache_1.default.provider({
-            fork: {
-                url: rpcUrl,
-            },
-        });
-        const provider = new ethers_1.ethers.providers.Web3Provider(ganacheProvider);
+        const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-        const actuatorContract = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
-        const tx = await signer.sendTransaction({
-            to: actuatorContractAddress,
-            data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-        });
-        const receipt = await tx.wait();
+        const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
+        const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](callData, activateForFree);
+        // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
+        // const tx = await signer.sendTransaction({
+        //   to: actuatorContractAddress,
+        //   data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
+        // });
+        // const receipt = await tx.wait();
         // Add 15% to gasUsed value
-        const gasUsed = Math.round(receipt.gasUsed.toNumber() + receipt.gasUsed.toNumber() * 0.15);
+        const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
         return {
             isValid: true,
             gasUsed,
