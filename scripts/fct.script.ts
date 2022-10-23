@@ -45,6 +45,11 @@ async function main() {
     options: {
       // validFrom: addHours(0.66),
       expiresAt: getDate(10),
+      recurrency: {
+        accumetable: true,
+        maxRepeats: "1000",
+        chillTime: "1",
+      },
     },
   });
 
@@ -67,7 +72,7 @@ async function main() {
       to: data[chainId].PureValidator,
       methodParams: {
         value1: balanceOf.output.params.balance.getOutputVariable("1"),
-        value2: "10",
+        value2: ethers.utils.parseUnits("10", 18).toString(),
       },
     },
   });
@@ -78,7 +83,7 @@ async function main() {
       to: data[chainId].KIRO,
       methodParams: {
         recipient: wallet,
-        amount: "10",
+        amount: ethers.utils.parseUnits("5", 18).toString(),
       },
     },
   });
