@@ -31,7 +31,7 @@ const data = {
   5: {
     FCT_Controller: "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd",
     USDC: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
-    KIRO: "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+    KIRO: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     PureValidator: "0x1716898d72BE098F4828B435a3918cBFda562Efc",
     PureSafeMath: "0x850c7E3eBf05d0A617DAe4beE14A4A5C03CAb9da",
     rpcUrl: "https://eth-goerli.public.blastapi.io",

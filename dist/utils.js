@@ -29,12 +29,14 @@ const transactionValidator = async (transactionValidatorInterface) => {
         return {
             isValid: true,
             gasUsed,
+            error: null,
         };
     }
     catch (err) {
         return {
             isValid: false,
             gasUsed: 0,
+            error: err.reason,
         };
     }
 };

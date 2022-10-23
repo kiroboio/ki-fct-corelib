@@ -63,11 +63,13 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
     return {
       isValid: true,
       gasUsed,
+      error: null,
     };
-  } catch (err) {
+  } catch (err: any) {
     return {
       isValid: false,
       gasUsed: 0,
+      error: err.reason,
     };
   }
 };
