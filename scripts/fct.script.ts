@@ -83,7 +83,7 @@ async function main() {
       to: data[chainId].KIRO,
       methodParams: {
         recipient: wallet,
-        amount: ethers.utils.parseUnits("5", 18).toString(),
+        amount: ethers.utils.parseUnits("6", 18).toString(),
       },
     },
   });
