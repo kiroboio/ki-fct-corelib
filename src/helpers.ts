@@ -37,7 +37,7 @@ export const flows = {
     value: "6",
   },
   OK_STOP_FAIL_STOP: {
-    text: "stop on success, revert on fail",
+    text: "stop on success, stop on fail",
     value: "7",
   },
 };
