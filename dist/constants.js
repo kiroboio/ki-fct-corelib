@@ -10,5 +10,6 @@ var Flow;
     Flow["OK_REVERT_FAIL_STOP"] = "OK_REVERT_FAIL_STOP";
     Flow["OK_STOP_FAIL_CONT"] = "OK_STOP_FAIL_CONT";
     Flow["OK_STOP_FAIL_REVERT"] = "OK_STOP_FAIL_REVERT";
+    Flow["OK_STOP_FAIL_STOP"] = "OK_STOP_FAIL_STOP";
 })(Flow = exports.Flow || (exports.Flow = {}));
 exports.default = { Flow };

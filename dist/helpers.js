@@ -37,6 +37,10 @@ exports.flows = {
         text: "stop on success, revert on fail",
         value: "6",
     },
+    OK_STOP_FAIL_STOP: {
+        text: "stop on success, revert on fail",
+        value: "7",
+    },
 };
 function instanceOfParams(objectOrArray) {
     if (Array.isArray(objectOrArray)) {

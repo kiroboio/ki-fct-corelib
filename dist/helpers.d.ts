@@ -32,6 +32,10 @@ export declare const flows: {
         text: string;
         value: string;
     };
+    OK_STOP_FAIL_STOP: {
+        text: string;
+        value: string;
+    };
 };
 export declare const getTypesArray: (params: Params[]) => number[];
 export declare const getTypedHashes: (params: Params[], typedData: {

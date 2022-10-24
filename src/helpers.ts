@@ -36,6 +36,10 @@ export const flows = {
     text: "stop on success, revert on fail",
     value: "6",
   },
+  OK_STOP_FAIL_STOP: {
+    text: "stop on success, revert on fail",
+    value: "7",
+  },
 };
 
 function instanceOfParams(objectOrArray: any): objectOrArray is Params | Params[] {

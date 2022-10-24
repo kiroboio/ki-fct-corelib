@@ -5,7 +5,8 @@ export declare enum Flow {
     OK_REVERT_FAIL_CONT = "OK_REVERT_FAIL_CONT",
     OK_REVERT_FAIL_STOP = "OK_REVERT_FAIL_STOP",
     OK_STOP_FAIL_CONT = "OK_STOP_FAIL_CONT",
-    OK_STOP_FAIL_REVERT = "OK_STOP_FAIL_REVERT"
+    OK_STOP_FAIL_REVERT = "OK_STOP_FAIL_REVERT",
+    OK_STOP_FAIL_STOP = "OK_STOP_FAIL_STOP"
 }
 declare const _default: {
     Flow: typeof Flow;
