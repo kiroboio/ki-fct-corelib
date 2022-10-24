@@ -331,7 +331,7 @@ class BatchMultiSigCall {
             return {
                 ...acc,
                 [`transaction_${index + 1}`]: {
-                    meta: {
+                    call: {
                         call_index: index + 1,
                         payer_index: index + 1,
                         from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
@@ -397,7 +397,7 @@ class BatchMultiSigCall {
                     { name: "salt", type: "bytes32" },
                 ],
                 BatchMultiSigCall: [
-                    { name: "fct", type: "FCT" },
+                    { name: "meta", type: "Meta" },
                     { name: "limits", type: "Limits" },
                     ...primaryType,
                     ...this.calls.map((_, index) => ({
@@ -405,7 +405,7 @@ class BatchMultiSigCall {
                         type: `transaction${index + 1}`,
                     })),
                 ],
-                FCT: [
+                Meta: [
                     { name: "name", type: "string" },
                     { name: "builder", type: "address" },
                     { name: "selector", type: "bytes4" },
@@ -424,9 +424,9 @@ class BatchMultiSigCall {
                 ...this.calls.reduce((acc, call, index) => ({
                     ...acc,
                     [`transaction${index + 1}`]: call.validator
-                        ? [{ name: "meta", type: "Transaction" }, ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params)]
+                        ? [{ name: "call", type: "Call" }, ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params)]
                         : [
-                            { name: "meta", type: "Transaction" },
+                            { name: "call", type: "Call" },
                             ...(call.params || []).map((param) => ({
                                 name: param.name,
                                 type: param.type,
@@ -434,7 +434,7 @@ class BatchMultiSigCall {
                         ],
                 }), {}),
                 ...additionalTypes,
-                Transaction: [
+                Call: [
                     { name: "call_index", type: "uint16" },
                     { name: "payer_index", type: "uint16" },
                     { name: "from", type: "address" },
@@ -453,7 +453,7 @@ class BatchMultiSigCall {
             primaryType: "BatchMultiSigCall",
             domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_Controller),
             message: {
-                fct: {
+                meta: {
                     name: this.options.name || "",
                     builder: this.options.builder,
                     selector: this.batchMultiSigSelector,

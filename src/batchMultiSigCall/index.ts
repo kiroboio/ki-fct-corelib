@@ -407,7 +407,7 @@ export class BatchMultiSigCall {
       return {
         ...acc,
         [`transaction_${index + 1}`]: {
-          meta: {
+          call: {
             call_index: index + 1,
             payer_index: index + 1,
             from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
@@ -477,7 +477,7 @@ export class BatchMultiSigCall {
           { name: "salt", type: "bytes32" },
         ],
         BatchMultiSigCall: [
-          { name: "fct", type: "FCT" },
+          { name: "meta", type: "Meta" },
           { name: "limits", type: "Limits" },
           ...primaryType,
           ...this.calls.map((_, index) => ({
@@ -485,7 +485,7 @@ export class BatchMultiSigCall {
             type: `transaction${index + 1}`,
           })),
         ],
-        FCT: [
+        Meta: [
           { name: "name", type: "string" },
           { name: "builder", type: "address" },
           { name: "selector", type: "bytes4" },
@@ -505,9 +505,9 @@ export class BatchMultiSigCall {
           (acc: object, call: IMSCallInput, index: number) => ({
             ...acc,
             [`transaction${index + 1}`]: call.validator
-              ? [{ name: "meta", type: "Transaction" }, ...getValidatorFunctionData(call.validator, call.params)]
+              ? [{ name: "call", type: "Call" }, ...getValidatorFunctionData(call.validator, call.params)]
               : [
-                  { name: "meta", type: "Transaction" },
+                  { name: "call", type: "Call" },
                   ...(call.params || []).map((param: Params) => ({
                     name: param.name,
                     type: param.type,
@@ -517,7 +517,7 @@ export class BatchMultiSigCall {
           {}
         ),
         ...additionalTypes,
-        Transaction: [
+        Call: [
           { name: "call_index", type: "uint16" },
           { name: "payer_index", type: "uint16" },
           { name: "from", type: "address" },
@@ -536,7 +536,7 @@ export class BatchMultiSigCall {
       primaryType: "BatchMultiSigCall",
       domain: await getTypedDataDomain(this.FCT_Controller),
       message: {
-        fct: {
+        meta: {
           name: this.options.name || "",
           builder: this.options.builder,
           selector: this.batchMultiSigSelector,
