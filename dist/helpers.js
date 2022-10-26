@@ -198,14 +198,13 @@ const getTypeHash = (typedData) => {
 exports.getTypeHash = getTypeHash;
 // Get Typed Data domain for EIP712
 const getTypedDataDomain = async (factoryProxy) => {
-    const enc = new TextEncoder();
     const chainId = await factoryProxy.CHAIN_ID();
     return {
         name: await factoryProxy.NAME(),
         version: await factoryProxy.VERSION(),
         chainId: chainId.toNumber(),
         verifyingContract: factoryProxy.address,
-        salt: new TextEncoder().encode(await factoryProxy.UID()).buffer,
+        salt: await factoryProxy.UID(),
     };
 };
 exports.getTypedDataDomain = getTypedDataDomain;

@@ -15,7 +15,7 @@ export interface TypedDataDomain {
     version: string;
     chainId: number;
     verifyingContract: string;
-    salt: ArrayBuffer;
+    salt: string;
 }
 export interface TypedDataMessageTransaction {
     call: {
@@ -66,7 +66,7 @@ export interface BatchMultiSigCallTypedData {
     types: TypedDataTypes;
     primaryType: string;
     domain: TypedDataDomain;
-    message: Record<string, unknown>;
+    message: TypedDataMessageOptions | Record<string, TypedDataMessageTransaction>;
 }
 export interface IBatchMultiSigCallFCT {
     typeHash: string;
