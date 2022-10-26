@@ -1,6 +1,12 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { BigNumber, ethers, utils } from "ethers";
-import { BatchMultiSigCallTypedData, MSCall, TypedDataLimits, TypedDataMeta } from "./batchMultiSigCall/interfaces";
+import {
+  BatchMultiSigCallTypedData,
+  MSCall,
+  TypedDataLimits,
+  TypedDataMeta,
+  TypedDataTypes,
+} from "./batchMultiSigCall/interfaces";
 import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 
@@ -54,8 +60,8 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
   try {
     const signatureString = utils.joinSignature(signature);
-    const address = recoverTypedSignature<SignTypedDataVersion.V4, any>({
-      data: typedData as unknown as TypedMessage<any>,
+    const address = recoverTypedSignature<SignTypedDataVersion.V4, TypedDataTypes>({
+      data: typedData as unknown as TypedMessage<TypedDataTypes>,
       version: SignTypedDataVersion.V4,
       signature: signatureString,
     });

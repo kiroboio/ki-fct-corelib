@@ -14,6 +14,7 @@ import {
   IWithPlugin,
   IBatchMultiSigCallFCT,
   BatchMultiSigCallTypedData,
+  TypedDataMessageTransaction,
 } from "./interfaces";
 import {
   getSessionId,
@@ -329,7 +330,7 @@ export class BatchMultiSigCall {
 
     for (const [index, call] of fct.mcall.entries()) {
       const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
-      const { call: meta } = typedData.message[`transaction_${index + 1}`];
+      const { call: meta } = typedData.message[`transaction_${index + 1}`] as TypedDataMessageTransaction;
 
       const decodedParams = new AbiCoder().decode(
         dataTypes.map((type) => `${type.type} ${type.name}`),

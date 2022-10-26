@@ -68,13 +68,11 @@ export interface TypedDataMessageOptions {
   };
 }
 
-type TypedDataMessage = TypedDataMessageOptions | (TypedDataMessageTransaction & { [key: string]: string | string[] });
-
 export interface BatchMultiSigCallTypedData {
   types: TypedDataTypes;
   primaryType: string;
   domain: TypedDataDomain;
-  message: TypedDataMessage;
+  message: TypedDataMessageOptions | Record<string, TypedDataMessageTransaction>;
 }
 
 export interface IBatchMultiSigCallFCT {

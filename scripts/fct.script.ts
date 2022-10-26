@@ -1,10 +1,11 @@
 import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
-import { TypedDataUtils } from "ethers-eip712";
 import fs from "fs";
 import { ERC20, PureValidator } from "@kirobo/ki-eth-fct-provider-ts";
 import { Flow } from "../src/constants";
+import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
+import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 
 dotenv.config();
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -103,10 +104,11 @@ async function main() {
 
   const FCT = await batchMultiSigCall.exportFCT();
 
-  const messageDigest = TypedDataUtils.encodeDigest(FCT.typedData);
-  const signingKey = new ethers.utils.SigningKey("0x" + key);
-  const signature = signingKey.signDigest(messageDigest);
-  signature.v = parseInt(`0x${signature.v.toString(16)}`);
+  const signature = signTypedData({
+    data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
+    privateKey: Buffer.from(key, "hex"),
+    version: SignTypedDataVersion.V4,
+  });
 
   const signedFCT = {
     ...FCT,

@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { TypedData, TypedDataTypes } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
-import { IMSCallInput } from "./batchMultiSigCall/interfaces";
+import { IMSCallInput, TypedDataDomain } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 export declare const flows: {
     OK_CONT_FAIL_REVERT: {
@@ -63,13 +63,7 @@ export declare const manageCallFlags: (flags: Partial<MultiCallFlags>) => string
 export declare const manageCallFlagsV2: (flow: Flow | string, jump: number) => string;
 export declare const getMethodInterface: (call: Partial<MethodParamsInterface>) => string;
 export declare const getTypeHash: (typedData: TypedData) => string;
-export declare const getTypedDataDomain: (factoryProxy: ethers.Contract) => Promise<{
-    name: string;
-    version: string;
-    chainId: number;
-    verifyingContract: string;
-    salt: string;
-}>;
+export declare const getTypedDataDomain: (factoryProxy: ethers.Contract) => Promise<TypedDataDomain>;
 export declare const getEncodedMethodParams: (call: Partial<MethodParamsInterface>, withFunction?: boolean) => string;
 export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {
     name: string;

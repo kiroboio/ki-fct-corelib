@@ -220,12 +220,12 @@ const FCT = {
         builder: "0x0000000000000000000000000000000000000000",
         selector: "0xb91c650e",
         version: "0x010101",
-        random_id: "0xc1df06",
+        random_id: "0x5c396b",
         eip712: true,
       },
       limits: {
-        valid_from: "1666770163",
-        expires_at: "1667637763",
+        valid_from: "1666772849",
+        expires_at: "1667640449",
         gas_price_limit: "100000000000",
         purgeable: false,
         blockable: true,
@@ -295,7 +295,7 @@ const FCT = {
   },
   builder: "0x0000000000000000000000000000000000000000",
   typeHash: "0x36765bd19b0e0dbe642f489e356088cf44829e9aa579be0afaf25053c54c9dff",
-  sessionId: "0xc1df060001010103e8000000010063662203006358e4f3000000174876e8000d",
+  sessionId: "0x5c396b0001010103e8000000010063662c81006358ef71000000174876e8000d",
   nameHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   mcall: [
     {
@@ -336,16 +336,7 @@ const FCT = {
     },
   ],
   signatures: [
-    {
-      r: "0x2eaa08c49ad35d20398437f3eca922383bf147f20c2675745cab653ae542882e",
-      s: "0x52b3e508c9620380a279195d758d2cc37ea2cc56020553b9b40d79378566d75b",
-      _vs: "0xd2b3e508c9620380a279195d758d2cc37ea2cc56020553b9b40d79378566d75b",
-      recoveryParam: 1,
-      v: 28,
-      yParityAndS: "0xd2b3e508c9620380a279195d758d2cc37ea2cc56020553b9b40d79378566d75b",
-      compact:
-        "0x2eaa08c49ad35d20398437f3eca922383bf147f20c2675745cab653ae542882ed2b3e508c9620380a279195d758d2cc37ea2cc56020553b9b40d79378566d75b",
-    },
+    "0x69cac892f84ee5352ad6f7861182e54516f359a3bb46dc24cbd828b0594b34bc08e9a90ecb07004d5ea2d847a12f708db574c0475d12c64c163770a6d0ff5cb21b",
   ],
   variables: [],
   externalSigners: [],
@@ -356,7 +347,7 @@ describe("Test utils", () => {
     const address = utils.recoverAddressFromEIP712(FCT.typedData, FCT.signatures[0]);
 
     console.log("address", address);
-    console.log("address should be", "0x4f631612941F710db646B8290dB097bFB8657dC2");
+    console.log("address should be", "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586");
   });
 
   it("Should get message hash", async () => {

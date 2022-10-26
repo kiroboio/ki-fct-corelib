@@ -4,7 +4,7 @@ import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import ValidatorABI from "./abi/validator.abi.json";
-import { IMSCallInput } from "./batchMultiSigCall/interfaces";
+import { IMSCallInput, TypedDataDomain } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
 
 export const flows = {
@@ -219,15 +219,7 @@ export const getTypeHash = (typedData: TypedData): string => {
 };
 
 // Get Typed Data domain for EIP712
-export const getTypedDataDomain = async (
-  factoryProxy: ethers.Contract
-): Promise<{
-  name: string;
-  version: string;
-  chainId: number;
-  verifyingContract: string;
-  salt: string;
-}> => {
+export const getTypedDataDomain = async (factoryProxy: ethers.Contract): Promise<TypedDataDomain> => {
   const chainId = await factoryProxy.CHAIN_ID();
   return {
     name: await factoryProxy.NAME(),
