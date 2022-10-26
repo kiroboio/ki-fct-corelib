@@ -4,21 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ethers_1 = require("ethers");
-const ethers_eip712_1 = require("ethers-eip712");
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
+const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const transactionValidator = async (transactionValidatorInterface) => {
     try {
         const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
         const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
-        const gas = await actuatorContract.estimateGas.activateForFree(callData);
-        // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
-        // const tx = await signer.sendTransaction({
-        //   to: actuatorContractAddress,
-        //   data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-        // });
-        // const receipt = await tx.wait();
+        let gas;
+        if (activateForFree) {
+            gas = await actuatorContract.estimateGas.activateForFree(callData);
+        }
+        else {
+            gas = await actuatorContract.estimateGas.activate(callData);
+        }
         // Add 15% to gasUsed value
         const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
         return {
@@ -37,19 +37,25 @@ const transactionValidator = async (transactionValidatorInterface) => {
 };
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {
-        const messageHash = ethers_1.ethers.utils.arrayify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
-        return ethers_1.ethers.utils.recoverAddress(messageHash, signature);
+        const signatureString = ethers_1.utils.joinSignature(signature);
+        const address = (0, eth_sig_util_1.recoverTypedSignature)({
+            data: typedData,
+            version: eth_sig_util_1.SignTypedDataVersion.V4,
+            signature: signatureString,
+        });
+        return address;
     }
     catch (e) {
         return null;
     }
 };
+// TODO: Check if this is the right way to get FCT Message hash
 const getFCTMessageHash = (typedData) => {
-    return ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.encodeDigest(typedData));
+    return ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.encodeData(typedData.primaryType, typedData.message, typedData.types, eth_sig_util_1.SignTypedDataVersion.V4));
 };
 const validateFCT = (FCT, softValidation = false) => {
     const limits = FCT.typedData.message.limits;
-    const fctData = FCT.typedData.message.fct;
+    const fctData = FCT.typedData.message.meta;
     const currentDate = new Date().getTime() / 1000;
     const validFrom = parseInt(limits.valid_from);
     const expiresAt = parseInt(limits.expires_at);

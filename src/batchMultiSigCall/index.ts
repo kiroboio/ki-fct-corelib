@@ -1,11 +1,20 @@
 import { BigNumber, ethers } from "ethers";
-import { TypedData, TypedDataUtils } from "ethers-eip712";
+import { AbiCoder, id } from "ethers/lib/utils";
+import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params, Variable } from "../interfaces";
-import { IMSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
+import {
+  IMSCallInput,
+  MSCall,
+  MSCallOptions,
+  IWithPlugin,
+  IBatchMultiSigCallFCT,
+  BatchMultiSigCallTypedData,
+} from "./interfaces";
 import {
   getSessionId,
   handleData,
@@ -17,9 +26,7 @@ import {
   manageCallId,
   parseSessionID,
 } from "./helpers";
-import { AbiCoder, id } from "ethers/lib/utils";
 import { Flow } from "../constants";
-import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 import variables from "../variables";
 
 function getDate(days: number = 0) {
@@ -270,14 +277,7 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<{
-    typedData: TypedData;
-    typeHash: string;
-    builder: string;
-    sessionId: string;
-    nameHash: string;
-    mcall: MSCall[];
-  }> {
+  public async exportFCT(): Promise<IBatchMultiSigCallFCT> {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
@@ -287,12 +287,17 @@ export class BatchMultiSigCall {
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";
 
-    const typedData: TypedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
+    const typedData: BatchMultiSigCallTypedData = await this.createTypedData(
+      additionalTypes,
+      typedHashes,
+      salt,
+      version
+    );
 
     const sessionId: string = getSessionId(salt, this.options);
 
     const mcall: MSCall[] = this.calls.map((call, index) => ({
-      typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
+      typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: this.handleValue(call),
@@ -302,14 +307,14 @@ export class BatchMultiSigCall {
       data: handleData(call),
       types: handleTypes(call),
       typedHashes: typedHashes
-        ? typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, hash)))
+        ? typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
         : [],
     }));
 
     return {
       typedData,
       builder: this.options.builder,
-      typeHash: ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
+      typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
       sessionId,
       nameHash: id(this.options.name || ""),
       mcall, // This is where are the MSCall[] are returned
@@ -324,7 +329,7 @@ export class BatchMultiSigCall {
 
     for (const [index, call] of fct.mcall.entries()) {
       const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
-      const { meta } = typedData.message[`transaction_${index + 1}`];
+      const { call: meta } = typedData.message[`transaction_${index + 1}`];
 
       const decodedParams = new AbiCoder().decode(
         dataTypes.map((type) => `${type.type} ${type.name}`),
@@ -377,7 +382,7 @@ export class BatchMultiSigCall {
     typedHashes: string[],
     salt: string,
     version: string
-  ): Promise<TypedData> {
+  ): Promise<BatchMultiSigCallTypedData> {
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
@@ -467,7 +472,7 @@ export class BatchMultiSigCall {
       primaryType.push({ name: "multisig", type: "Multisig" });
     }
 
-    const typedData = {
+    const typedData: BatchMultiSigCallTypedData = {
       types: {
         EIP712Domain: [
           { name: "name", type: "string" },

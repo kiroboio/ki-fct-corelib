@@ -66,7 +66,7 @@ async function main() {
     },
   });
 
-  const greaterThan = new PureValidator.validate.GreaterThan({
+  const greaterThan = new PureValidator.actions.GreaterThan({
     chainId: 1,
     initParams: {
       to: data[chainId].PureValidator,

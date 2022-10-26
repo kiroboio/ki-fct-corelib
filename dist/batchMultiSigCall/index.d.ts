@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
-import { TypedData } from "ethers-eip712";
-import { IMSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { IMSCallInput, MSCall, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
     private FCT_BatchMultiSigCall;
@@ -30,14 +29,7 @@ export declare class BatchMultiSigCall {
     createMultiple(calls: (IMSCallInput | IWithPlugin)[]): Promise<IMSCallInput[]>;
     getCall(index: number): IMSCallInput;
     get length(): number;
-    exportFCT(): Promise<{
-        typedData: TypedData;
-        typeHash: string;
-        builder: string;
-        sessionId: string;
-        nameHash: string;
-        mcall: MSCall[];
-    }>;
+    exportFCT(): Promise<IBatchMultiSigCallFCT>;
     importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error>;
     private createTypedData;
     private getParams;

@@ -1,13 +1,12 @@
-import util from "util";
 import { BatchMultiSigCall } from "./index";
 import { ethers } from "ethers";
-import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
+import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import variables from "../variables";
 import { Flow } from "../constants";
 
-const contractAddress = "0xD614c22fb35d1d978053d42C998d0493f06FB440";
-const provider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161");
+const contractAddress = "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd";
+const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
 function getDate(days: number = 0) {
   const result = new Date();
@@ -48,6 +47,7 @@ describe("BatchMultiSigCall", () => {
 
   it("Should create simple ERC20 Transfer FCT", async () => {
     const transfer = new ERC20.actions.Transfer({
+      chainId: 5,
       initParams: {
         to: "0xfeab457d95d9990b7eb6c943c839258245541754",
         methodParams: {
@@ -73,21 +73,8 @@ describe("BatchMultiSigCall", () => {
   });
 
   it("Should create ERC20 Transfer, ERC20 Balance Of and Aave V2 deposit FCT", async () => {
-    const plugins = getPlugins({});
-
-    const AaveDeposit = plugins.find((p) => p.name === "AAVE_deposit");
-
-    const transfer = new ERC20.actions.Transfer({
-      initParams: {
-        to: "0xfeab457d95d9990b7eb6c943c839258245541754",
-        methodParams: {
-          amount: "1000000000000000000",
-          recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-        },
-      },
-    });
-
     const balanceOf = new ERC20.getters.BalanceOf({
+      chainId: 5,
       initParams: {
         to: "0xfeab457d95d9990b7eb6c943c839258245541754",
         methodParams: {
@@ -96,7 +83,8 @@ describe("BatchMultiSigCall", () => {
       },
     });
 
-    const deposit = new AaveDeposit.plugin({
+    const deposit = new AaveV2.actions.Deposit({
+      chainId: 5,
       initParams: {
         to: "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9",
         methodParams: {
@@ -115,8 +103,8 @@ describe("BatchMultiSigCall", () => {
         toENS: "@token.kiro.eth",
         method: "transfer",
         params: [
-          { name: "to", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
-          { name: "token_amount", type: "uint256", value: "20" },
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", value: "20" },
         ],
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         options: {
@@ -140,13 +128,11 @@ describe("BatchMultiSigCall", () => {
 
     const FCT = await batchMultiSigCall.exportFCT();
 
-    console.log(util.inspect(FCT, false, null, true));
-
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-    expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
-    expect(FCT.typedData.message["transaction_1"].meta.jump_on_success).to.eq(2);
+    expect(FCT.typedData.message["transaction_1"].amount).to.eq("20");
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(2);
 
     expect(FCT.typedData.message["transaction_2"].owner).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
 
@@ -200,8 +186,8 @@ describe("BatchMultiSigCall", () => {
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-    expect(FCT.typedData.message["transaction_1"].meta.jump_on_success).to.eq(2);
-    expect(FCT.typedData.message["transaction_1"].meta.jump_on_fail).to.eq(1);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(2);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
 
     expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");

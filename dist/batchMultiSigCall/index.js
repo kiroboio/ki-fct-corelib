@@ -5,15 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
-const ethers_eip712_1 = require("ethers-eip712");
+const utils_1 = require("ethers/lib/utils");
+const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
-const utils_1 = require("ethers/lib/utils");
 const constants_1 = require("../constants");
-const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const variables_1 = __importDefault(require("../variables"));
 function getDate(days = 0) {
     const result = new Date();
@@ -240,7 +240,7 @@ class BatchMultiSigCall {
         const typedData = await this.createTypedData(additionalTypes, typedHashes, salt, version);
         const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
         const mcall = this.calls.map((call, index) => ({
-            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, `transaction${index + 1}`)),
+            typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
             ensHash: (0, helpers_2.handleEnsHash)(call),
             functionSignature: (0, helpers_2.handleFunctionSignature)(call),
             value: this.handleValue(call),
@@ -250,13 +250,13 @@ class BatchMultiSigCall {
             data: (0, helpers_2.handleData)(call),
             types: (0, helpers_2.handleTypes)(call),
             typedHashes: typedHashes
-                ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, hash)))
+                ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
                 : [],
         }));
         return {
             typedData,
             builder: this.options.builder,
-            typeHash: ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType)),
+            typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
             sessionId,
             nameHash: (0, utils_1.id)(this.options.name || ""),
             mcall, // This is where are the MSCall[] are returned
@@ -269,7 +269,7 @@ class BatchMultiSigCall {
         const typedData = fct.typedData;
         for (const [index, call] of fct.mcall.entries()) {
             const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
-            const { meta } = typedData.message[`transaction_${index + 1}`];
+            const { call: meta } = typedData.message[`transaction_${index + 1}`];
             const decodedParams = new utils_1.AbiCoder().decode(dataTypes.map((type) => `${type.type} ${type.name}`), call.data);
             const params = dataTypes.map((t) => ({
                 name: t.name,

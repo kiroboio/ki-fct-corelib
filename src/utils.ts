@@ -1,26 +1,11 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { ethers, utils } from "ethers";
-import { TypedData, TypedDataUtils } from "ethers-eip712";
-import { MSCall } from "./batchMultiSigCall/interfaces";
+import { BigNumber, ethers, utils } from "ethers";
+import { BatchMultiSigCallTypedData, MSCall, TypedDataLimits, TypedDataMeta } from "./batchMultiSigCall/interfaces";
 import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
-interface IFCTTypedData extends TypedData {
-  message: {
-    limits: {
-      valid_from: string;
-      expires_at: string;
-      gas_price_limit: string;
-      purgeable: boolean;
-      cancelable: boolean;
-    };
-    fct: {
-      eip712: boolean;
-      builder: string;
-    };
-  };
-}
+import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 
 interface IFCT {
-  typedData: IFCTTypedData;
+  typedData: BatchMultiSigCallTypedData;
   mcall: MSCall[];
 }
 
@@ -42,16 +27,12 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
-    const gas = await actuatorContract.estimateGas.activateForFree(callData);
-
-    // const actuatorContract = new ethers.utils.Interface(FCTActuatorABI);
-
-    // const tx = await signer.sendTransaction({
-    //   to: actuatorContractAddress,
-    //   data: actuatorContract.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [callData]),
-    // });
-
-    // const receipt = await tx.wait();
+    let gas: BigNumber;
+    if (activateForFree) {
+      gas = await actuatorContract.estimateGas.activateForFree(callData);
+    } else {
+      gas = await actuatorContract.estimateGas.activate(callData);
+    }
 
     // Add 15% to gasUsed value
     const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
@@ -70,22 +51,36 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
   }
 };
 
-const recoverAddressFromEIP712 = (typedData: TypedData, signature: SignatureLike): string | null => {
+const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
   try {
-    const messageHash = ethers.utils.arrayify(TypedDataUtils.encodeDigest(typedData));
-    return ethers.utils.recoverAddress(messageHash, signature);
+    const signatureString = utils.joinSignature(signature);
+    const address = recoverTypedSignature<SignTypedDataVersion.V4, any>({
+      data: typedData as unknown as TypedMessage<any>,
+      version: SignTypedDataVersion.V4,
+      signature: signatureString,
+    });
+
+    return address;
   } catch (e) {
     return null;
   }
 };
 
-const getFCTMessageHash = (typedData: TypedData) => {
-  return ethers.utils.hexlify(TypedDataUtils.encodeDigest(typedData));
+// TODO: Check if this is the right way to get FCT Message hash
+const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
+  return ethers.utils.hexlify(
+    TypedDataUtils.encodeData(
+      typedData.primaryType,
+      typedData.message as Record<string, unknown>,
+      typedData.types,
+      SignTypedDataVersion.V4
+    )
+  );
 };
 
 const validateFCT = (FCT: IFCT, softValidation: boolean = false) => {
-  const limits = FCT.typedData.message.limits;
-  const fctData = FCT.typedData.message.fct;
+  const limits = FCT.typedData.message.limits as TypedDataLimits;
+  const fctData = FCT.typedData.message.meta as TypedDataMeta;
 
   const currentDate = new Date().getTime() / 1000;
   const validFrom = parseInt(limits.valid_from);

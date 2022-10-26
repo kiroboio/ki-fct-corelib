@@ -1,23 +1,7 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { TypedData } from "ethers-eip712";
-import { MSCall } from "./batchMultiSigCall/interfaces";
-interface IFCTTypedData extends TypedData {
-    message: {
-        limits: {
-            valid_from: string;
-            expires_at: string;
-            gas_price_limit: string;
-            purgeable: boolean;
-            cancelable: boolean;
-        };
-        fct: {
-            eip712: boolean;
-            builder: string;
-        };
-    };
-}
+import { BatchMultiSigCallTypedData, MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCT {
-    typedData: IFCTTypedData;
+    typedData: BatchMultiSigCallTypedData;
     mcall: MSCall[];
 }
 interface ITxValidator {
@@ -28,7 +12,7 @@ interface ITxValidator {
     activateForFree: boolean;
 }
 declare const _default: {
-    getFCTMessageHash: (typedData: TypedData) => string;
+    getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;
     validateFCT: (FCT: IFCT, softValidation?: boolean) => {
         getOptions: () => {
             valid_from: string;
@@ -39,7 +23,7 @@ declare const _default: {
         getFCTMessageHash: () => string;
         getSigners: () => string[];
     };
-    recoverAddressFromEIP712: (typedData: TypedData, signature: SignatureLike) => string;
+    recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string;
     getVariablesAsBytes32: (variables: string[]) => string[];
     transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
         isValid: boolean;

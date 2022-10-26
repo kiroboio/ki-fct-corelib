@@ -6,8 +6,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
-    "test:utils": "mocha test/utils.test.js --timeout 10000",
-    "test:decode": "mocha test/decode.test.js",
     "build": "tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct-get": "ts-node scripts/fct_get.script.ts",
@@ -35,6 +33,7 @@
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
     "@uniswap/v2-core": "github:kiroboio/uniswapv2-solc0.8",
+    "@uniswap/v3-periphery": "1.4.1",
     "chai": "^4.3.6",
     "dotenv": "^16.0.2",
     "eslint": "^8.23.0",
@@ -53,7 +52,8 @@
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "@kirobo/ki-eth-fct-provider-ts": "github:kiroboio/ki-eth-fct-provider-ts#develop",
+    "@kirobo/ki-eth-fct-provider-ts": "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop",
+    "@metamask/eth-sig-util": "^5.0.0",
     "ethers": "^5.6.9",
     "ethers-eip712": "^0.2.0"
   }
