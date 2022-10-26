@@ -59,6 +59,7 @@ const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;
 const TYPE_BYTES = 3000;
 const TYPE_ARRAY = 4000;
+const TYPE_ARRAY_WITH_LENGTH = 5000;
 const typeValue = (param) => {
     // return [];
     // If type is an array
@@ -69,7 +70,8 @@ const typeValue = (param) => {
         }
         const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
         const insideType = typeValue(parameter);
-        return [TYPE_ARRAY, ...insideType];
+        const type = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
+        return [type, ...insideType];
     }
     // If type is a string
     if (param.type === "string") {
