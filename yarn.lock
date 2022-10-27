@@ -712,39 +712,6 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
-  version "1.1.0"
-  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#38c77cb2b85a6645f7e45175daf09265edd7206d"
-  dependencies:
-    "@babel/runtime" "^7.17.0"
-    "@chainlink/contracts" "^0.5.1"
-    "@sushiswap/sdk" "^5.0.0-canary.116"
-    "@uniswap/router-sdk" "^1.0.3"
-    "@uniswap/sdk-core" "^3.0.1"
-    "@uniswap/smart-order-router" "^2.5.26"
-    "@uniswap/token-lists" "^1.0.0-beta.27"
-    "@uniswap/v2-periphery" "^1.1.0-beta.0"
-    "@uniswap/v2-sdk" "^3.0.1"
-    "@uniswap/v3-core" "1.0.0"
-    "@uniswap/v3-periphery" "1.0.0"
-    "@uniswap/v3-sdk" "^3.8.2"
-    "@web3-react/types" "8.0.17-beta.0"
-    abi-decoder "^2.4.0"
-    ajv "^6.12.3"
-    cids "^1.0.0"
-    dotenv "^16.0.1"
-    ethers "^5.6.9"
-    immer "^9.0.6"
-    jsbi "^3.1.4"
-    make-plural "^7.0.0"
-    multicodec "^3.0.1"
-    multihashes "^4.0.2"
-    polished "^3.3.2"
-    rebass "^4.0.7"
-    simple-sushiswap-sdk "^1.0.2"
-    simple-uniswap-sdk "^3.7.0"
-    web3-utils "^1.8.0"
-
 "@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop_without_deps":
   version "1.1.0"
   resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#0fec89ef95b68318d9cb448960e237fca7226063"
@@ -1048,9 +1015,9 @@
     "@nomicfoundation/solidity-analyzer-win32-x64-msvc" "0.1.0"
 
 "@nomiclabs/hardhat-ethers@^2.1.1":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.2.0.tgz#f55ace2752d0effcf583e754960e9fa89fbe12cd"
-  integrity sha512-kKCW7xawuD/lw69Yr1yqUUrF0IKmnLNGf+pTVbJ/ctHaRcPrwKI0EPkO1RNXBHlOOZkv6v4DK2PPvq0lL2ykig==
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.2.1.tgz#8057b43566a0e41abeb8142064a3c0d3f23dca86"
+  integrity sha512-RHWYwnxryWR8hzRmU4Jm/q4gzvXpetUOJ4OPlwH2YARcDB+j79+yAYCwO0lN1SUOb4++oOTJEe6AWLEc42LIvg==
 
 "@nomiclabs/hardhat-truffle5@^2.0.6":
   version "2.0.7"
@@ -1266,7 +1233,6 @@
     which "^2.0.2"
 
 "@openzeppelin/contracts-v0.7@npm:@openzeppelin/contracts@v3.4.2", "@openzeppelin/contracts@^3.4.2":
-  name "@openzeppelin/contracts-v0.7"
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.2.tgz#d81f786fda2871d1eb8a8c5a73e455753ba53527"
   integrity sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==
@@ -2000,7 +1966,12 @@
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.0.tgz#e0fab91a7d53e8cafb5326ae4ca18351116b0844"
   integrity sha512-BJiXrBGnN8mti7saW49MXwxDBRFiWemGetE58q8zgfnPPzQKq55ADltEILqOt6VFZ22kVeVKbF8gVd8aY3l7pA==
 
-"@uniswap/v2-core@1.0.1", "@uniswap/v2-core@github:kiroboio/uniswapv2-solc0.8":
+"@uniswap/v2-core@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
+  integrity sha512-MtybtkUPSyysqLY2U210NBDeCHX+ltHt3oADGdjqoThZaFRDKwM6k1Nb3F0A3hk5hwuQvytFWhrWHOEq6nVJ8Q==
+
+"@uniswap/v2-core@github:kiroboio/uniswapv2-solc0.8":
   version "1.0.1"
   resolved "https://codeload.github.com/kiroboio/uniswapv2-solc0.8/tar.gz/c286d2d12bf89d1a691552e72cb9b3339cd0db5f"
 
@@ -5152,9 +5123,9 @@ hardhat-watcher@^2.1.1:
     chokidar "^3.5.3"
 
 hardhat@^2.10.1:
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.0.tgz#51e59f1ff4991bcb66d1a380ea807e6c15fcac34"
-  integrity sha512-mNJFbVG479HwOzxiaLxobyvED2M1aEAuPPYhEo1+88yicMDSTrU2JIS7vV+V0GSNQKaDoiHCmV6bcKjiljT/dQ==
+  version "2.12.1"
+  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.1.tgz#28b0d7979b55eba379e7de5246240c121c399357"
+  integrity sha512-ihqYoaAKMceVWRcc3VddftFM7Q4/WL5Xan8nrklfDRwwST0W1rWWEE8SrxGikW58IJdREsC/HXVHs0zKfYpiCA==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@metamask/eth-sig-util" "^4.0.0"
@@ -6025,9 +5996,9 @@ keyv@^3.0.0:
 
 "ki-fct-corelib@github:kiroboio/ki-fct-corelib":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/kiroboio/ki-fct-corelib.git#cd571023a8ee7ffb68f3c1ffeef282fc2f900353"
+  resolved "git+ssh://git@github.com/kiroboio/ki-fct-corelib.git#ef53e83e155be6fcd1719079d40e72de737abfb8"
   dependencies:
-    "@kirobo/ki-eth-fct-provider-ts" "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop"
+    "@kirobo/ki-eth-fct-provider-ts" "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop_without_deps"
     "@metamask/eth-sig-util" "^5.0.0"
     ethers "^5.6.9"
     ethers-eip712 "^0.2.0"
