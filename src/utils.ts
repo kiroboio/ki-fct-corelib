@@ -74,13 +74,9 @@ const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signatu
 
 // TODO: Check if this is the right way to get FCT Message hash
 const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
+  // Return FCT Message hash
   return ethers.utils.hexlify(
-    TypedDataUtils.encodeData(
-      typedData.primaryType,
-      typedData.message as Record<string, unknown>,
-      typedData.types,
-      SignTypedDataVersion.V4
-    )
+    TypedDataUtils.eip712Hash(typedData as unknown as TypedMessage<TypedDataTypes>, SignTypedDataVersion.V4)
   );
 };
 
