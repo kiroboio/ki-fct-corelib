@@ -115,9 +115,11 @@ async function main() {
     version: SignTypedDataVersion.V4,
   });
 
+  const splitSignature = ethers.utils.splitSignature(signature);
+
   const signedFCT = {
     ...FCT,
-    signatures: [signature],
+    signatures: [splitSignature],
     variables: [],
     builder: ZERO_ADDRESS,
     externalSigners: [],
