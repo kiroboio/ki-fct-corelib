@@ -60,6 +60,15 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
+"@chainlink/contracts@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.5.1.tgz#68e7447ba8c1eccfbb760bacc93aced2eef60945"
+  integrity sha512-3PDBJ38Sd6Ml9h7FNK/tZQti+kTCdXUq1qzE6E59CnlzycsV9ElPvf2hTvs9Mi9C6pEx2Mmw9yhZMfBktYUInQ==
+  dependencies:
+    "@eth-optimism/contracts" "^0.5.21"
+    "@openzeppelin/contracts" "^4.3.3"
+    "@openzeppelin/contracts-v0.7" "npm:@openzeppelin/contracts@v3.4.2"
+
 "@colors/colors@1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
@@ -237,6 +246,37 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@eth-optimism/contracts@^0.5.21":
+  version "0.5.37"
+  resolved "https://registry.yarnpkg.com/@eth-optimism/contracts/-/contracts-0.5.37.tgz#3aaca1ca1f49ef895d4165cc7bf29c8d1f5b0f56"
+  integrity sha512-HbNUUDIM1dUAM0hWPfGp3l9/Zte40zi8QhVbUSIwdYRA7jG7cZgbteqavrjW8wwFqxkWX9IrtA0KAR7pNlSAIQ==
+  dependencies:
+    "@eth-optimism/core-utils" "0.10.1"
+    "@ethersproject/abstract-provider" "^5.7.0"
+    "@ethersproject/abstract-signer" "^5.7.0"
+
+"@eth-optimism/core-utils@0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@eth-optimism/core-utils/-/core-utils-0.10.1.tgz#44515fbca627532a24c6fd433395f00be8525832"
+  integrity sha512-IJvG5UtYvyz6An9QdohlCLoeB3NBFxx2lRJKlPzvYYlfugUNNCHsajRIWIwJTcPRRma0WPd46JUsKACLJDdNrA==
+  dependencies:
+    "@ethersproject/abi" "^5.7.0"
+    "@ethersproject/abstract-provider" "^5.7.0"
+    "@ethersproject/address" "^5.7.0"
+    "@ethersproject/bignumber" "^5.7.0"
+    "@ethersproject/bytes" "^5.7.0"
+    "@ethersproject/constants" "^5.7.0"
+    "@ethersproject/contracts" "^5.7.0"
+    "@ethersproject/hash" "^5.7.0"
+    "@ethersproject/keccak256" "^5.7.0"
+    "@ethersproject/properties" "^5.7.0"
+    "@ethersproject/providers" "^5.7.0"
+    "@ethersproject/rlp" "^5.7.0"
+    "@ethersproject/transactions" "^5.7.0"
+    "@ethersproject/web" "^5.7.0"
+    bufio "^1.0.7"
+    chai "^4.3.4"
+
 "@ethereumjs/common@^2.5.0", "@ethereumjs/common@^2.6.4":
   version "2.6.5"
   resolved "https://registry.yarnpkg.com/@ethereumjs/common/-/common-2.6.5.tgz#0a75a22a046272579d91919cb12d84f2756e8d30"
@@ -355,7 +395,7 @@
   dependencies:
     "@ethersproject/bignumber" "^5.7.0"
 
-"@ethersproject/contracts@5.7.0", "@ethersproject/contracts@^5.4.0":
+"@ethersproject/contracts@5.7.0", "@ethersproject/contracts@^5.4.0", "@ethersproject/contracts@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/contracts/-/contracts-5.7.0.tgz#c305e775abd07e48aa590e1a877ed5c316f8bd1e"
   integrity sha512-5GJbzEU3X+d33CdfPhcyS+z8MzsTrBGk/sc+G+59+tPa9yFkl6HQ9D6L0QMgNTA9q8dT0XKxxkyp883XsQvbbg==
@@ -467,7 +507,7 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.0.10", "@ethersproject/providers@^5.4.0":
+"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.0.10", "@ethersproject/providers@^5.4.0", "@ethersproject/providers@^5.7.0":
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.2.tgz#f8b1a4f275d7ce58cf0a2eec222269a08beb18cb"
   integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
@@ -672,12 +712,12 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kirobo/ki-eth-fct-provider-ts@github:kiroboio/ki-eth-fct-provider-ts#develop":
+"@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
   version "1.1.0"
-  uid "60becfda08ab9c3e4728ab5126a9e69cc7ff0fcc"
-  resolved "git+ssh://git@github.com/kiroboio/ki-eth-fct-provider-ts.git#60becfda08ab9c3e4728ab5126a9e69cc7ff0fcc"
+  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#38c77cb2b85a6645f7e45175daf09265edd7206d"
   dependencies:
     "@babel/runtime" "^7.17.0"
+    "@chainlink/contracts" "^0.5.1"
     "@sushiswap/sdk" "^5.0.0-canary.116"
     "@uniswap/router-sdk" "^1.0.3"
     "@uniswap/sdk-core" "^3.0.1"
@@ -685,6 +725,8 @@
     "@uniswap/token-lists" "^1.0.0-beta.27"
     "@uniswap/v2-periphery" "^1.1.0-beta.0"
     "@uniswap/v2-sdk" "^3.0.1"
+    "@uniswap/v3-core" "1.0.0"
+    "@uniswap/v3-periphery" "1.0.0"
     "@uniswap/v3-sdk" "^3.8.2"
     "@web3-react/types" "8.0.17-beta.0"
     abi-decoder "^2.4.0"
@@ -703,11 +745,12 @@
     simple-uniswap-sdk "^3.7.0"
     web3-utils "^1.8.0"
 
-"@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
+"@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop_without_deps":
   version "1.1.0"
-  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#60becfda08ab9c3e4728ab5126a9e69cc7ff0fcc"
+  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#0fec89ef95b68318d9cb448960e237fca7226063"
   dependencies:
     "@babel/runtime" "^7.17.0"
+    "@chainlink/contracts" "^0.5.1"
     "@sushiswap/sdk" "^5.0.0-canary.116"
     "@uniswap/router-sdk" "^1.0.3"
     "@uniswap/sdk-core" "^3.0.1"
@@ -715,6 +758,8 @@
     "@uniswap/token-lists" "^1.0.0-beta.27"
     "@uniswap/v2-periphery" "^1.1.0-beta.0"
     "@uniswap/v2-sdk" "^3.0.1"
+    "@uniswap/v3-core" "1.0.0"
+    "@uniswap/v3-periphery" "1.0.0"
     "@uniswap/v3-sdk" "^3.8.2"
     "@web3-react/types" "8.0.17-beta.0"
     abi-decoder "^2.4.0"
@@ -1220,6 +1265,12 @@
     read-package-json-fast "^2.0.3"
     which "^2.0.2"
 
+"@openzeppelin/contracts-v0.7@npm:@openzeppelin/contracts@v3.4.2", "@openzeppelin/contracts@^3.4.2":
+  name "@openzeppelin/contracts-v0.7"
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.2.tgz#d81f786fda2871d1eb8a8c5a73e455753ba53527"
+  integrity sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==
+
 "@openzeppelin/contracts@3.4.1-solc-0.7-2":
   version "3.4.1-solc-0.7-2"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.1-solc-0.7-2.tgz#371c67ebffe50f551c3146a9eec5fe6ffe862e92"
@@ -1230,10 +1281,10 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.2-solc-0.7.tgz#38f4dbab672631034076ccdf2f3201fab1726635"
   integrity sha512-W6QmqgkADuFcTLzHL8vVoNBtkwjvQRpYIAom7KiUNoLKghyx3FgH0GBjt8NRvigV1ZmMOBllvE1By1C+bi8WpA==
 
-"@openzeppelin/contracts@^3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.2.tgz#d81f786fda2871d1eb8a8c5a73e455753ba53527"
-  integrity sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==
+"@openzeppelin/contracts@^4.3.3":
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.7.3.tgz#939534757a81f8d69cc854c7692805684ff3111e"
+  integrity sha512-dGRS0agJzu8ybo44pCIf3xBaPQN/65AIXNgK8+4gzKd5kbvlqyxryUYVLJv7fK98Seyd2hDZzVEHSWAh0Bt1Yw==
 
 "@scure/base@~1.1.0":
   version "1.1.1"
@@ -1499,10 +1550,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@truffle/abi-utils@^0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@truffle/abi-utils/-/abi-utils-0.3.3.tgz#4484489b160ad35aa0716427c73de10ebed40146"
-  integrity sha512-/KpaaPi0daffnwLhFulMtwdQ7YfZZtj24J34kZJi7OQw9x0dSNSskGFTU5SEv9d3fOfHNYqCevsqtv1zek0+zg==
+"@truffle/abi-utils@^0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@truffle/abi-utils/-/abi-utils-0.3.4.tgz#004ec7211cbc2117cf173522107ffaf162b0fa0a"
+  integrity sha512-cgFwIEugsRdh/NnLJ5ZKDeShkRx3dz1tl/XgFxChuvMjJ9ymlIB8ixSIRuIXP0jlvOs0O8rNJWEjEnUdW5G/VQ==
   dependencies:
     change-case "3.0.2"
     fast-check "3.1.1"
@@ -1513,12 +1564,12 @@
   resolved "https://registry.yarnpkg.com/@truffle/blockchain-utils/-/blockchain-utils-0.1.4.tgz#1365b88c3d2922a066d947e93748f09b0fac2e93"
   integrity sha512-HegAo5A8UX9vE8dtceBRgCY207gOb9wj54c8mNOOWHcFpkyJz7kZYGo44As6Imh10/0hD2j7vHQ56Jf+uszJ3A==
 
-"@truffle/codec@^0.14.7":
-  version "0.14.7"
-  resolved "https://registry.yarnpkg.com/@truffle/codec/-/codec-0.14.7.tgz#2f7d2916f428be5da7a82559356c8570898e5cd9"
-  integrity sha512-qEbnghn/q3+hKoaRIlXfcdty0jhA1CcvWxjCgwOxEBVOGEBazjentyCzTGkrxyL9I4q1VDqk5Bmxl8umotzRTg==
+"@truffle/codec@^0.14.8":
+  version "0.14.8"
+  resolved "https://registry.yarnpkg.com/@truffle/codec/-/codec-0.14.8.tgz#c6ab4307215280571daecfe85f82c971ebabc3c1"
+  integrity sha512-UWBV4H7hN16oUAvcDib3fFt0HK3+AfUXibVSM9nCSbvzHUBlBLhsBt74ae7xbJIz8HHjTMgUt4CWKEGDNN+fTQ==
   dependencies:
-    "@truffle/abi-utils" "^0.3.3"
+    "@truffle/abi-utils" "^0.3.4"
     "@truffle/compile-common" "^0.9.0"
     big.js "^6.0.3"
     bn.js "^5.1.3"
@@ -1546,11 +1597,11 @@
     debug "^4.3.1"
 
 "@truffle/debug-utils@^6.0.22":
-  version "6.0.37"
-  resolved "https://registry.yarnpkg.com/@truffle/debug-utils/-/debug-utils-6.0.37.tgz#840f64fdf5cd4dcecf81cdd70ea2dc0b1f4ac598"
-  integrity sha512-KGJB91Yn2WEwU6/dxCa7a6nt+f6zZzvZ7P+vYnTFvCtUafvBsxpV/3XwxjmWrk53aZEFh6uLB2XSss25vAzV2g==
+  version "6.0.38"
+  resolved "https://registry.yarnpkg.com/@truffle/debug-utils/-/debug-utils-6.0.38.tgz#704a7f00d12f29987de4bc57eb41b92e8cc6cbb0"
+  integrity sha512-QwPy/kBJgGAejLbj4Ko+mgFEYGx9yJi3EWMVGqr1mgP63XcTK3QA9i+oBExdQI/ZlvZ16b0aIkjpH+hnfQbGqA==
   dependencies:
-    "@truffle/codec" "^0.14.7"
+    "@truffle/codec" "^0.14.8"
     "@trufflesuite/chromafi" "^3.0.0"
     bn.js "^5.1.3"
     chalk "^2.4.2"
@@ -1694,9 +1745,9 @@
   integrity sha512-Z61JK7DKDtdKTWwLeElSEBcWGRLY8g95ic5FoQqI9CMx0ns/Ghep3B4DfcEimiKMvtamNVULVNKEsiwV3aQmXw==
 
 "@types/node@*":
-  version "18.11.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.5.tgz#1bc94cf2f9ab5fe33353bc7c79c797dcc5325bef"
-  integrity sha512-3JRwhbjI+cHLAkUorhf8RnqUbFXajvzX4q6fMn5JwkgtuwfYtRQYI3u4V92vI6NJuTsbBQWWh3RZjFsuevyMGQ==
+  version "18.11.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.7.tgz#8ccef136f240770c1379d50100796a6952f01f94"
+  integrity sha512-LhFTglglr63mNXUSRYD8A+ZAIu5sFqNJ4Y2fPuY7UlrySJH87rRRlhtVmMHplmfk5WkoJGmDjE9oiTfyX94CpQ==
 
 "@types/node@^12.12.6":
   version "12.20.55"
@@ -1735,9 +1786,9 @@
   integrity sha512-giB9gzDeiCeloIXDgzFBCgjj1k4WxcDrZtGl6h1IqmUPlxF+Nx8Ve+96QCyDZ/HseB/uvDsKbpib9hU5cU53pw==
 
 "@types/semver@^7.3.12":
-  version "7.3.12"
-  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.12.tgz#920447fdd78d76b19de0438b7f60df3c4a80bf1c"
-  integrity sha512-WwA1MW0++RfXmCr12xeYOOC5baSC9mSb0ZqCquFzKhcoF4TvHu5MKOuXsncgZcpVFhB1pXd5hZmM0ryAoCp12A==
+  version "7.3.13"
+  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.13.tgz#da4bfd73f49bd541d28920ab0e2bf0ee80f71c91"
+  integrity sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==
 
 "@types/sinon-chai@^3.2.3":
   version "3.2.8"
@@ -1949,12 +2000,7 @@
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.0.tgz#e0fab91a7d53e8cafb5326ae4ca18351116b0844"
   integrity sha512-BJiXrBGnN8mti7saW49MXwxDBRFiWemGetE58q8zgfnPPzQKq55ADltEILqOt6VFZ22kVeVKbF8gVd8aY3l7pA==
 
-"@uniswap/v2-core@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
-  integrity sha512-MtybtkUPSyysqLY2U210NBDeCHX+ltHt3oADGdjqoThZaFRDKwM6k1Nb3F0A3hk5hwuQvytFWhrWHOEq6nVJ8Q==
-
-"@uniswap/v2-core@github:kiroboio/uniswapv2-solc0.8":
+"@uniswap/v2-core@1.0.1", "@uniswap/v2-core@github:kiroboio/uniswapv2-solc0.8":
   version "1.0.1"
   resolved "https://codeload.github.com/kiroboio/uniswapv2-solc0.8/tar.gz/c286d2d12bf89d1a691552e72cb9b3339cd0db5f"
 
@@ -1982,6 +2028,17 @@
   resolved "https://registry.yarnpkg.com/@uniswap/v3-core/-/v3-core-1.0.0.tgz#6c24adacc4c25dceee0ba3ca142b35adbd7e359d"
   integrity sha512-kSC4djMGKMHj7sLMYVnn61k9nu+lHjMIxgg9CDQT+s2QYLoA56GbSK9Oxr+qJXzzygbkrmuY6cwgP6cW2JXPFA==
 
+"@uniswap/v3-periphery@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.0.0.tgz#8e789dcd70bdd06e01e21dd75372dc76ab38ea47"
+  integrity sha512-kRqUrjnyh+X1wJdSENPDFr9sjRVebv2KyLtfqDOPij0dXJ69GspFU2qrZXjouc6LYdkWG7x3fagiTlw0eGniYQ==
+  dependencies:
+    "@openzeppelin/contracts" "3.4.1-solc-0.7-2"
+    "@uniswap/lib" "^4.0.1-alpha"
+    "@uniswap/v2-core" "1.0.1"
+    "@uniswap/v3-core" "1.0.0"
+    base64-sol "1.0.1"
+
 "@uniswap/v3-periphery@1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.3.0.tgz#37f0a1ef6025221722e50e9f3f2009c2d5d6e4ec"
@@ -2007,9 +2064,9 @@
     hardhat-watcher "^2.1.1"
 
 "@uniswap/v3-periphery@^1.0.1", "@uniswap/v3-periphery@^1.1.1":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.4.2.tgz#4ecf7d93db975c385a2cadb0d79a7a9e7f956c83"
-  integrity sha512-V7rGquOu/C11082nkWb/NkQ5Qpd6Softrjf398EtpQe7wIfOasgq8fJEk1JMBQXBpYjmZNDMdh9AV0Bgag01zw==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.4.3.tgz#a6da4632dbd46b139cc13a410e4ec09ad22bd19f"
+  integrity sha512-80c+wtVzl5JJT8UQskxVYYG3oZb4pkhY0zDe0ab/RX4+8f9+W5d8wI4BT0wLB0wFQTSnbW+QdBSpkHA/vRyGBA==
   dependencies:
     "@openzeppelin/contracts" "3.4.2-solc-0.7"
     "@uniswap/lib" "^4.0.1-alpha"
@@ -2746,6 +2803,11 @@ bufferutil@^4.0.1:
   dependencies:
     node-gyp-build "^4.3.0"
 
+bufio@^1.0.7:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/bufio/-/bufio-1.1.3.tgz#7f8e524fd719ced2caa563a09d50550f283f745f"
+  integrity sha512-W0ydG8t+ST+drUpEwl1N+dU9Ije06g8+43CLtvEIzfKo9nPFLXbKqDYE2XSg4w6RugsBcCj7pEU7jOpBC6BqrA==
+
 builtins@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/builtins/-/builtins-5.0.1.tgz#87f6db9ab0458be728564fa81d876d8d74552fa9"
@@ -2901,7 +2963,7 @@ cbor@^5.2.0:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
 
-chai@^4.2.0, chai@^4.3.6:
+chai@^4.2.0, chai@^4.3.4, chai@^4.3.6:
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.6.tgz#ffe4ba2d9fa9d6680cc0b370adae709ec9011e9c"
   integrity sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==
@@ -4734,9 +4796,9 @@ functions-have-names@^1.2.2:
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
 ganache@^7.0.5:
-  version "7.4.4"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.4.4.tgz#af1bb7e85cde010c8d05186ab952a69df970dfa2"
-  integrity sha512-wC5XZB7ttHXc4rYfAq8+ieOZZajlsTdWsWievtQNjiuxcrIkqPqSwAZK6IP5mbooe/HSp3bDGJhXW5EHVd2G9w==
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.5.0.tgz#f7a36050b6ff85e5557d6511ddca470a0a40f37c"
+  integrity sha512-afNTJYBEaFrLPRrn7eUxH39TgnrffvHn/4T6THzQrc3rpfe4DOxw2nY2XEQxfsq1t4OqKSXtxomzyo26RZiOzw==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.10"
     "@types/bn.js" "^5.1.0"
@@ -5264,9 +5326,9 @@ hosted-git-info@^2.1.4:
   integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 hosted-git-info@^5.0.0, hosted-git-info@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-5.1.0.tgz#9786123f92ef3627f24abc3f15c20d98ec4a6594"
-  integrity sha512-Ek+QmMEqZF8XrbFdwoDjSbm7rT23pCgEMOJmz6GPk/s4yH//RQfNPArhIxbguNxROq/+5lNBwCDHMhA903Kx1Q==
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-5.2.0.tgz#744defae076ebf05c19e38ea0f8788f2750e92df"
+  integrity sha512-y5aljBDICf0OFQecausUdWGZbLxSaFc012tdP4xe4GcFMeYUrOptSGaTZ21gvIsPUSe1/K9EVKLYwBOSEOPirw==
   dependencies:
     lru-cache "^7.5.1"
 
@@ -5943,7 +6005,7 @@ keyv@^3.0.0:
 
 "ki-eth-contracts@github:kiroboio/ki-eth-contracts#develop":
   version "1.0.0"
-  resolved "https://codeload.github.com/kiroboio/ki-eth-contracts/tar.gz/41b227266e23dea52417d70e21580691f44fb00e"
+  resolved "https://codeload.github.com/kiroboio/ki-eth-contracts/tar.gz/baf3dc0c6933f1a48396993775871de9c3f4fa92"
   dependencies:
     "@nomiclabs/hardhat-waffle" "^2.0.3"
     "@uniswap/lib" "^4.0.1-alpha"
@@ -5963,9 +6025,10 @@ keyv@^3.0.0:
 
 "ki-fct-corelib@github:kiroboio/ki-fct-corelib":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/kiroboio/ki-fct-corelib.git#5e82785b7a5d34c2798178d7a366549a4ab17ed7"
+  resolved "git+ssh://git@github.com/kiroboio/ki-fct-corelib.git#cd571023a8ee7ffb68f3c1ffeef282fc2f900353"
   dependencies:
-    "@kirobo/ki-eth-fct-provider-ts" "github:kiroboio/ki-eth-fct-provider-ts#develop"
+    "@kirobo/ki-eth-fct-provider-ts" "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop"
+    "@metamask/eth-sig-util" "^5.0.0"
     ethers "^5.6.9"
     ethers-eip712 "^0.2.0"
 
@@ -6438,7 +6501,7 @@ minimalistic-crypto-utils@^1.0.1:
   resolved "https://registry.yarnpkg.com/minimalistic-crypto-utils/-/minimalistic-crypto-utils-1.0.1.tgz#f6c00c1c0b082246e5c4d99dfb8c7c083b2b582a"
   integrity sha512-JIYlbt6g8i5jKfJ3xz7rF0LXmv2TkDxBLUkiBeZ7bAx4GnnNMr8xFpGnOxn6GhTEHx3SjRrZEoU+j04prX1ktg==
 
-"minimatch@2 || 3", minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
+"minimatch@2 || 3", minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
   integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
@@ -7239,7 +7302,7 @@ opener@^1.5.2:
 
 "openzeppelin-solidity@https://github.com/OpenZeppelin/openzeppelin-contracts.git":
   version "4.7.0"
-  resolved "https://github.com/OpenZeppelin/openzeppelin-contracts.git#25fe191202c44c762bc2a933913e21b37200f0e9"
+  resolved "https://github.com/OpenZeppelin/openzeppelin-contracts.git#36951d58386b9fee81b237e6c6626c9115ccef3a"
 
 optionator@^0.8.1:
   version "0.8.3"
@@ -7886,11 +7949,11 @@ rechoir@^0.6.2:
     resolve "^1.1.6"
 
 recursive-readdir@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/recursive-readdir/-/recursive-readdir-2.2.2.tgz#9946fb3274e1628de6e36b2f6714953b4845094f"
-  integrity sha512-nRCcW9Sj7NuZwa2XvH9co8NPeXUBhZP7CRKJtU+cS6PW9FpCIFoI5ib0NT1ZrbNuPoRy0ylyCaUL8Gih4LSyFg==
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/recursive-readdir/-/recursive-readdir-2.2.3.tgz#e726f328c0d69153bcabd5c322d3195252379372"
+  integrity sha512-8HrF5ZsXk5FAH9dgsx3BlUer73nIhuj+9OrQwEbLTPOBzGkL1lsFCR01am+v+0m2Cmbs1nP12hLDl5FA7EszKA==
   dependencies:
-    minimatch "3.0.4"
+    minimatch "^3.0.5"
 
 reflect-metadata@^0.1.13:
   version "0.1.13"
