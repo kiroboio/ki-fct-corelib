@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
-const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+// import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
@@ -45,46 +45,6 @@ class BatchMultiSigCall {
             const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
             const activateId = "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
             return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [activateId, signedFCT, purgedFCT]);
-        };
-        // End of options
-        //
-        //
-        // Plugin functions
-        this.getPlugin = async (dataOrIndex) => {
-            const { chainId } = await this.provider.getNetwork();
-            if (typeof dataOrIndex === "number") {
-                const call = this.getCall(dataOrIndex);
-                if ((0, helpers_2.instanceOfVariable)(call.to)) {
-                    throw new Error("To value cannot be a variable");
-                }
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId });
-                const methodParams = call.params.reduce((acc, param) => {
-                    return { ...acc, [param.name]: param.value };
-                }, {});
-                const plugin = new pluginData.plugin({
-                    chainId,
-                    initParams: {
-                        to: call.to,
-                        methodParams,
-                    },
-                });
-                return plugin;
-            }
-            else {
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
-                return pluginData.plugin;
-            }
-        };
-        this.getPluginClass = async (index) => {
-            const call = this.getCall(index);
-            if ((0, helpers_2.instanceOfVariable)(call.to)) {
-                throw new Error("To value cannot be a variable");
-            }
-            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId: 1 });
-            return pluginData;
-        };
-        this.getAllPlugins = () => {
-            return (0, ki_eth_fct_provider_ts_1.getPlugins)({});
         };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
@@ -184,6 +144,45 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
+    // End of options
+    //
+    //
+    // Plugin functions
+    // public getPlugin = async (dataOrIndex: MSCall | number): Promise<any> => {
+    //   const { chainId } = await this.provider.getNetwork();
+    //   if (typeof dataOrIndex === "number") {
+    //     const call = this.getCall(dataOrIndex);
+    //     if (instanceOfVariable(call.to)) {
+    //       throw new Error("To value cannot be a variable");
+    //     }
+    //     const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId });
+    //     const methodParams = call.params.reduce((acc, param) => {
+    //       return { ...acc, [param.name]: param.value };
+    //     }, {});
+    //     const plugin = new pluginData.plugin({
+    //       chainId,
+    //       initParams: {
+    //         to: call.to,
+    //         methodParams,
+    //       },
+    //     });
+    //     return plugin;
+    //   } else {
+    //     const pluginData = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
+    //     return pluginData.plugin;
+    //   }
+    // };
+    // public getPluginClass = async (index: number): Promise<any> => {
+    //   const call = this.getCall(index);
+    //   if (instanceOfVariable(call.to)) {
+    //     throw new Error("To value cannot be a variable");
+    //   }
+    //   const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId: 1 });
+    //   return pluginData;
+    // };
+    // public getAllPlugins = (): { name: string; description?: string; plugin: Plugin }[] => {
+    //   return getPlugins({});
+    // };
     // End of plugin functions
     //
     //
