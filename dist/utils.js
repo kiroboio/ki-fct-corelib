@@ -51,7 +51,8 @@ const recoverAddressFromEIP712 = (typedData, signature) => {
 };
 // TODO: Check if this is the right way to get FCT Message hash
 const getFCTMessageHash = (typedData) => {
-    return ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.encodeData(typedData.primaryType, typedData.message, typedData.types, eth_sig_util_1.SignTypedDataVersion.V4));
+    // Return FCT Message hash
+    return ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.eip712Hash(typedData, eth_sig_util_1.SignTypedDataVersion.V4));
 };
 const validateFCT = (FCT, softValidation = false) => {
     const limits = FCT.typedData.message.limits;
