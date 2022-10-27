@@ -30,11 +30,16 @@ const data = {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
   },
   5: {
-    FCT_Controller: "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd",
+    FCT_BatchMultiSig: "0x146787DB1cA71dd4000dF2B3a7F6835f5F860Fd6",
+    FCT_Controller: "0x4543Ef757d245A45118EafBD13e8df9cD56Db4c2",
     USDC: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
     KIRO: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     PureValidator: "0x1716898d72BE098F4828B435a3918cBFda562Efc",
     PureSafeMath: "0x850c7E3eBf05d0A617DAe4beE14A4A5C03CAb9da",
+    Actuator: "0x04540d48AB0817e65679788507cc1AECf1d20C6a",
+    RecoveryWallet: "0x55A75186a5D54Ec9918d5b979F458ffb1Fdaa365",
+    RecoveryWalletCore: "0x7aD7C72b34b5Fa67eE9737537E8ecF0e5a5750Cc",
+    RecoveryOracle: "0xCa292B5770FDD9d2D6A89334A93346584AE5af14",
     rpcUrl: "https://eth-goerli.public.blastapi.io",
   },
 };
