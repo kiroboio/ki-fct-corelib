@@ -75,6 +75,8 @@ export interface IBatchMultiSigCallFCT {
     nameHash: string;
     mcall: MSCall[];
     builder: string;
+    variables: string[];
+    externalSigners: string[];
 }
 export interface IMSCallInput {
     nodeId: string;

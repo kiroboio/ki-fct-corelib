@@ -23,7 +23,7 @@ function addHours(numOfHours: number, date = new Date()) {
 }
 
 const chainId = 5;
-const wallet = "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586";
+const wallet = process.env.WALLET as string;
 
 const data = {
   1: {

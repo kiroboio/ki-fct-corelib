@@ -259,7 +259,9 @@ class BatchMultiSigCall {
             typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
             sessionId,
             nameHash: (0, utils_1.id)(this.options.name || ""),
-            mcall, // This is where are the MSCall[] are returned
+            mcall,
+            variables: [],
+            externalSigners: [],
         };
     }
     async importFCT(fct) {

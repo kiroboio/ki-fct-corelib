@@ -318,7 +318,9 @@ export class BatchMultiSigCall {
       typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
       sessionId,
       nameHash: id(this.options.name || ""),
-      mcall, // This is where are the MSCall[] are returned
+      mcall,
+      variables: [],
+      externalSigners: [],
     };
   }
 
