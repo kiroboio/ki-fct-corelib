@@ -102,6 +102,7 @@ async function main() {
       nodeId: "2",
       options: {
         flow: Flow.OK_CONT_FAIL_REVERT,
+        falseMeansFail: true,
       },
     },
     { plugin: transfer, from: vault, nodeId: "3" },

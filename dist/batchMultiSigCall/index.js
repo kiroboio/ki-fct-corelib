@@ -28,7 +28,7 @@ const FDBackBase = "0xFDB0000000000000000000000000000000000000";
 const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, }) {
-        this.batchMultiSigSelector = "0xb91c650e";
+        this.batchMultiSigSelector = "0x07eefcb4";
         this.calls = [];
         this.options = {
             maxGasPrice: "100000000000",
@@ -39,12 +39,19 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getCalldataForActuator = async (actuatorAddress, signedFCT, purgedFCT) => {
+        // actuatorAddress: string, signedFCT: object, purgedFCT: string
+        this.getCalldataForActuator = async ({ actuatorAddress, signedFCT, purgedFCT, investor, activator, }) => {
             const version = "010101";
             const actuator = new ethers_1.ethers.Contract(actuatorAddress, FCT_Actuator_abi_json_1.default, this.provider);
             const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
             const activateId = "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
-            return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [activateId, signedFCT, purgedFCT]);
+            return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+                activateId,
+                signedFCT,
+                purgedFCT,
+                investor,
+                activator,
+            ]);
         };
         // End of options
         //
@@ -344,6 +351,7 @@ class BatchMultiSigCall {
                         view_only: call.viewOnly || false,
                         permissions: 0,
                         flow_control: flow,
+                        returned_false_means_fail: options.falseMeansFail || false,
                         jump_on_success: jumpOnSuccess,
                         jump_on_fail: jumpOnFail,
                         method_interface: (0, helpers_2.handleMethodInterface)(call),
@@ -447,6 +455,7 @@ class BatchMultiSigCall {
                     { name: "view_only", type: "bool" },
                     { name: "permissions", type: "uint16" },
                     { name: "flow_control", type: "string" },
+                    { name: "returned_false_means_fail", type: "bool" },
                     { name: "jump_on_success", type: "uint16" },
                     { name: "jump_on_fail", type: "uint16" },
                     { name: "method_interface", type: "string" },
