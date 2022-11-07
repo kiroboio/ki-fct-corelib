@@ -191,6 +191,10 @@
           "type": "string"
         },
         {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
           "name": "jump_on_success",
           "type": "uint16"
         },
@@ -209,21 +213,21 @@
       "name": "FCT Controller",
       "version": "1",
       "chainId": 5,
-      "verifyingContract": "0x4543Ef757d245A45118EafBD13e8df9cD56Db4c2",
-      "salt": "0x0100f66cdc4e0965851800004543ef757d245a45118eafbd13e8df9cd56db4c2"
+      "verifyingContract": "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
+      "salt": "0x010005823bfbd16d6bde00001332e1a702dac73523708f95827e6b706dae5fd9"
     },
     "message": {
       "meta": {
         "name": "",
         "builder": "0x0000000000000000000000000000000000000000",
-        "selector": "0xb91c650e",
+        "selector": "0x07eefcb4",
         "version": "0x010101",
-        "random_id": "0x3c6d3f",
+        "random_id": "0x454cfa",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1667127959",
-        "expires_at": "1667991959",
+        "valid_from": "1667822744",
+        "expires_at": "1668686744",
         "gas_price_limit": "100000000000",
         "purgeable": false,
         "blockable": true
@@ -245,7 +249,8 @@
           "view_only": true,
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
-          "jump_on_success": 0,
+          "returned_false_means_fail": false,
+          "jump_on_success": 1,
           "jump_on_fail": 0,
           "method_interface": "balanceOf(address)"
         },
@@ -263,6 +268,7 @@
           "view_only": true,
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": true,
           "jump_on_success": 0,
           "jump_on_fail": 0,
           "method_interface": "greaterThan(uint256,uint256)"
@@ -282,6 +288,7 @@
           "view_only": false,
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
           "method_interface": "transfer(address,uint256)"
@@ -292,16 +299,16 @@
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x36765bd19b0e0dbe642f489e356088cf44829e9aa579be0afaf25053c54c9dff",
-  "sessionId": "0x3c6d3f0001010103e80000000100636b899700635e5a97000000174876e8000d",
+  "typeHash": "0xd7a1e90a985ec707325a060ccda82021b737fb80047b592b32bb9f4a8e3887c1",
+  "sessionId": "0x454cfa0001010103e8000000010063762398006368f498000000174876e8000d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
-      "typeHash": "0xad5462360f54de994d2128f030e4f6a95d4f1d0ad88dc7ff6e34399b23dbaa08",
+      "typeHash": "0x606357c0bb4c537e7da67894375daaceefaae6479c14b1cb2159476bc4b9a539",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000000000000000100010000000001",
+      "callId": "0x0000000000000000000000000000000000000000000001000100010000000001",
       "from": "0x9650578EBd1b08f98Af81a84372ECE4B448d7526",
       "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
       "data": "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526",
@@ -309,11 +316,11 @@
       "typedHashes": []
     },
     {
-      "typeHash": "0xd0b81b368ecce289ea62e6b8ff8e2cb2e363fa019bafc0c357c7ad463926665d",
+      "typeHash": "0x712cfa0ecc483e88878e604021e80f7419110270775169f8e57931c506312d2d",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       "functionSignature": "0x48f24ceb1121cd7ee6eb6043b6846778e52613b536a581a2d400f838c2f3557c",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000000000000000200020000000001",
+      "callId": "0x0000000000000000000000000000000000000000000000000200020000000002",
       "from": "0x9650578EBd1b08f98Af81a84372ECE4B448d7526",
       "to": "0x1716898d72BE098F4828B435a3918cBFda562Efc",
       "data": "0x000000000000000000000000fd000000000000000000000000000000000000010000000000000000000000000000000000000000000000008ac7230489e80000",
@@ -321,7 +328,7 @@
       "typedHashes": []
     },
     {
-      "typeHash": "0x4826e4979224e60013e06e605e916f0060b4fef093465d50b9c86ae02daca33a",
+      "typeHash": "0xadfdcef7b929521e2d3ee2fb15e7bc08c8450e958d82d4abc84e52391084dd81",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
       "value": "0",
@@ -333,17 +340,17 @@
       "typedHashes": []
     }
   ],
+  "variables": [],
+  "externalSigners": [],
   "signatures": [
     {
-      "r": "0xa159b61fe124908539c0354a1295dfe685d0fc570942e55efccc0444e074746d",
-      "s": "0x66823563c53644fc2030dd725fd78923ce3952627bd6a25b4b761544a8f86819",
-      "_vs": "0xe6823563c53644fc2030dd725fd78923ce3952627bd6a25b4b761544a8f86819",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xe6823563c53644fc2030dd725fd78923ce3952627bd6a25b4b761544a8f86819",
-      "compact": "0xa159b61fe124908539c0354a1295dfe685d0fc570942e55efccc0444e074746de6823563c53644fc2030dd725fd78923ce3952627bd6a25b4b761544a8f86819"
+      "r": "0x9b720dbbe0a64c1be800b377941c7b6be3349669fd93374a1fff25d5065f1e0e",
+      "s": "0x42d6f9e5fd49cecca70b2a6983a36738e53eba626de96d48cf4a2eba28e3548f",
+      "_vs": "0x42d6f9e5fd49cecca70b2a6983a36738e53eba626de96d48cf4a2eba28e3548f",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x42d6f9e5fd49cecca70b2a6983a36738e53eba626de96d48cf4a2eba28e3548f",
+      "compact": "0x9b720dbbe0a64c1be800b377941c7b6be3349669fd93374a1fff25d5065f1e0e42d6f9e5fd49cecca70b2a6983a36738e53eba626de96d48cf4a2eba28e3548f"
     }
-  ],
-  "variables": [],
-  "externalSigners": []
+  ]
 }

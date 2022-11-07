@@ -91,29 +91,31 @@ const manageCallId = (calls, call, index) => {
         .toString(16)
         .padStart(4, "0");
     const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
-    const flags = `0${call.viewOnly ? "1" : "0"}`;
+    const flags = () => {
+        if (call?.options?.falseMeansFail) {
+            return "02";
+        }
+        if (call?.viewOnly) {
+            return "01";
+        }
+        return "00";
+    };
     let successJump = "0000";
     let failJump = "0000";
     if (call?.options?.jumpOnFail) {
         const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
-        if (nodeIndex === -1) {
-            throw new Error("Jump on fail node not found");
-        }
-        failJump = Number(nodeIndex - index)
+        failJump = Number(nodeIndex - index - 1)
             .toString(16)
             .padStart(4, "0");
     }
     if (call?.options?.jumpOnSuccess) {
         const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnSuccess);
-        if (nodeIndex === -1) {
-            throw new Error("Jump on success node not found");
-        }
-        successJump = Number(nodeIndex - index)
+        successJump = Number(nodeIndex - index - 1)
             .toString(16)
             .padStart(4, "0");
     }
     return ("0x" +
-        `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags}`.padStart(64, "0"));
+        `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
 };
 exports.manageCallId = manageCallId;
 // Deconstructed sessionID

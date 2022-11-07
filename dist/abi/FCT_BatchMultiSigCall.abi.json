@@ -277,6 +277,16 @@
                 "internalType": "bytes32",
                 "name": "purgeFCT",
                 "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "investor",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "activator",
+                "type": "address"
             }
         ],
         "name": "batchMultiSigCall",

@@ -48,7 +48,7 @@ const FDBackBaseBytes = "0xFDB00000000000000000000000000000000000000000000000000
 export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
-  private batchMultiSigSelector: string = "0xb91c650e";
+  private batchMultiSigSelector: string = "0x07eefcb4";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
 
   calls: IMSCallInput[] = [];
@@ -81,8 +81,21 @@ export class BatchMultiSigCall {
   }
 
   // Helpers
+  // actuatorAddress: string, signedFCT: object, purgedFCT: string
 
-  public getCalldataForActuator = async (actuatorAddress: string, signedFCT: object, purgedFCT: string) => {
+  public getCalldataForActuator = async ({
+    actuatorAddress,
+    signedFCT,
+    purgedFCT,
+    investor,
+    activator,
+  }: {
+    actuatorAddress: string;
+    signedFCT: object;
+    purgedFCT: string;
+    investor: string;
+    activator: string;
+  }) => {
     const version = "010101";
     const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.provider);
     const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
@@ -90,7 +103,13 @@ export class BatchMultiSigCall {
     const activateId =
       "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
 
-    return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [activateId, signedFCT, purgedFCT]);
+    return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+      activateId,
+      signedFCT,
+      purgedFCT,
+      investor,
+      activator,
+    ]);
   };
 
   // Variables
@@ -404,12 +423,34 @@ export class BatchMultiSigCall {
 
       if (options.jumpOnSuccess) {
         const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-        jumpOnSuccess = jumpOnSuccessIndex - index;
+
+        if (jumpOnSuccessIndex === -1) {
+          throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
+        }
+
+        if (jumpOnSuccessIndex <= index) {
+          throw new Error(
+            `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
+          );
+        }
+
+        jumpOnSuccess = jumpOnSuccessIndex - index - 1;
       }
 
       if (options.jumpOnFail) {
         const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-        jumpOnFail = jumpOnFailIndex - index;
+
+        if (jumpOnFailIndex === -1) {
+          throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
+        }
+
+        if (jumpOnFailIndex <= index) {
+          throw new Error(
+            `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
+          );
+        }
+
+        jumpOnFail = jumpOnFailIndex - index - 1;
       }
 
       return {
@@ -426,6 +467,7 @@ export class BatchMultiSigCall {
             view_only: call.viewOnly || false,
             permissions: 0,
             flow_control: flow,
+            returned_false_means_fail: options.falseMeansFail || false,
             jump_on_success: jumpOnSuccess,
             jump_on_fail: jumpOnFail,
             method_interface: handleMethodInterface(call),
@@ -536,6 +578,7 @@ export class BatchMultiSigCall {
           { name: "view_only", type: "bool" },
           { name: "permissions", type: "uint16" },
           { name: "flow_control", type: "string" },
+          { name: "returned_false_means_fail", type: "bool" },
           { name: "jump_on_success", type: "uint16" },
           { name: "jump_on_fail", type: "uint16" },
           { name: "method_interface", type: "string" },

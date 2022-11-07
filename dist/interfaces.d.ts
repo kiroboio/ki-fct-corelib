@@ -62,6 +62,7 @@ export interface CallOptions {
     flow?: Flow;
     jumpOnSuccess?: string;
     jumpOnFail?: string;
+    falseMeansFail?: boolean;
 }
 export interface MultiCallBase {
     method?: string;
