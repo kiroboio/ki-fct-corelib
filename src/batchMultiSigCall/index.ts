@@ -423,12 +423,34 @@ export class BatchMultiSigCall {
 
       if (options.jumpOnSuccess) {
         const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-        jumpOnSuccess = jumpOnSuccessIndex - index;
+
+        if (jumpOnSuccessIndex === -1) {
+          throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
+        }
+
+        if (jumpOnSuccessIndex <= index) {
+          throw new Error(
+            `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
+          );
+        }
+
+        jumpOnSuccess = jumpOnSuccessIndex - index - 1;
       }
 
       if (options.jumpOnFail) {
         const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-        jumpOnFail = jumpOnFailIndex - index;
+
+        if (jumpOnFailIndex === -1) {
+          throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
+        }
+
+        if (jumpOnFailIndex <= index) {
+          throw new Error(
+            `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
+          );
+        }
+
+        jumpOnFail = jumpOnFailIndex - index - 1;
       }
 
       return {

@@ -95,7 +95,15 @@ async function main() {
   });
 
   await batchMultiSigCall.createMultiple([
-    { plugin: balanceOf, from: vault, nodeId: "1" },
+    {
+      plugin: balanceOf,
+      from: vault,
+      nodeId: "1",
+      options: {
+        jumpOnSuccess: "3",
+        jumpOnFail: "2",
+      },
+    },
     {
       plugin: greaterThan,
       from: vault,
