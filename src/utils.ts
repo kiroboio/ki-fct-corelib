@@ -35,9 +35,9 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
 
     let gas: BigNumber;
     if (activateForFree) {
-      gas = await actuatorContract.estimateGas.activateForFree(callData);
+      gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address);
     } else {
-      gas = await actuatorContract.estimateGas.activate(callData);
+      gas = await actuatorContract.estimateGas.activate(callData, signer.address);
     }
 
     // Add 15% to gasUsed value
