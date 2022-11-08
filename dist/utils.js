@@ -14,10 +14,10 @@ const transactionValidator = async (transactionValidatorInterface) => {
         const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
         let gas;
         if (activateForFree) {
-            gas = await actuatorContract.estimateGas.activateForFree(callData);
+            gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address);
         }
         else {
-            gas = await actuatorContract.estimateGas.activate(callData);
+            gas = await actuatorContract.estimateGas.activate(callData, signer.address);
         }
         // Add 15% to gasUsed value
         const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
