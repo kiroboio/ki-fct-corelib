@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
+    "test:utils": "mocha -r ts-node/register src/tests/*.test.ts --timeout 10000",
     "build": "tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct-get": "ts-node scripts/fct_get.script.ts",

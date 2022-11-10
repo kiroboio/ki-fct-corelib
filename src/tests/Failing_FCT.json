@@ -1,0 +1,279 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "BatchMultiSigCall": [
+        {
+          "name": "meta",
+          "type": "Meta"
+        },
+        {
+          "name": "limits",
+          "type": "Limits"
+        },
+        {
+          "name": "transaction_1",
+          "type": "transaction1"
+        },
+        {
+          "name": "transaction_2",
+          "type": "transaction2"
+        }
+      ],
+      "Meta": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "builder",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "version",
+          "type": "bytes3"
+        },
+        {
+          "name": "random_id",
+          "type": "bytes3"
+        },
+        {
+          "name": "eip712",
+          "type": "bool"
+        }
+      ],
+      "Limits": [
+        {
+          "name": "valid_from",
+          "type": "uint40"
+        },
+        {
+          "name": "expires_at",
+          "type": "uint40"
+        },
+        {
+          "name": "gas_price_limit",
+          "type": "uint64"
+        },
+        {
+          "name": "purgeable",
+          "type": "bool"
+        },
+        {
+          "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "transaction1": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "transaction2": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "Call": [
+        {
+          "name": "call_index",
+          "type": "uint16"
+        },
+        {
+          "name": "payer_index",
+          "type": "uint16"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "to_ens",
+          "type": "string"
+        },
+        {
+          "name": "eth_value",
+          "type": "uint256"
+        },
+        {
+          "name": "gas_limit",
+          "type": "uint32"
+        },
+        {
+          "name": "view_only",
+          "type": "bool"
+        },
+        {
+          "name": "permissions",
+          "type": "uint16"
+        },
+        {
+          "name": "flow_control",
+          "type": "string"
+        },
+        {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
+          "name": "jump_on_success",
+          "type": "uint16"
+        },
+        {
+          "name": "jump_on_fail",
+          "type": "uint16"
+        },
+        {
+          "name": "method_interface",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
+      "salt": "0x010005823bfbd16d6bde00001332e1a702dac73523708f95827e6b706dae5fd9"
+    },
+    "message": {
+      "meta": {
+        "name": "Draft#2",
+        "builder": "0xa5F98a0e2586399be8C21c9995a981617D4318F5",
+        "selector": "0x07eefcb4",
+        "version": "0x010101",
+        "random_id": "0x037157",
+        "eip712": true
+      },
+      "limits": {
+        "valid_from": "1667944800",
+        "expires_at": "1668635999",
+        "gas_price_limit": "100000000000",
+        "purgeable": false,
+        "blockable": true
+      },
+      "transaction_1": {
+        "call": {
+          "call_index": 1,
+          "payer_index": 1,
+          "from": "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": 0,
+          "view_only": true,
+          "permissions": 0,
+          "flow_control": "continue on success, continue on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "balanceOfaddress"
+        },
+        "owner": "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31"
+      },
+      "transaction_2": {
+        "call": {
+          "call_index": 2,
+          "payer_index": 2,
+          "from": "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": 0,
+          "view_only": false,
+          "permissions": 0,
+          "flow_control": "continue on success, continue on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "transferaddress,uint256"
+        },
+        "recipient": "0xa5F98a0e2586399be8C21c9995a981617D4318F5",
+        "amount": "10000000000000000000"
+      }
+    }
+  },
+  "builder": "0xa5F98a0e2586399be8C21c9995a981617D4318F5",
+  "typeHash": "0x380683c14ce760f4c828d745da8313db45313cd1c9f3a08b6ee258555d2f63da",
+  "sessionId": "0x037157000101010000000000000063755d5f00636ad160000000174876e8000c",
+  "nameHash": "0xdc2182cf8946592c674550c69f6d00b514cd4d59e9a0e34134603dc54a82d2fa",
+  "mcall": [
+    {
+      "typeHash": "0x606357c0bb4c537e7da67894375daaceefaae6479c14b1cb2159476bc4b9a539",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000200000000000100010000000001",
+      "from": "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000e306d6d0e668944d417302dd5b1df51c0242ac31",
+      "types": [],
+      "typedHashes": []
+    },
+    {
+      "typeHash": "0x935cd9328b1d424a3b823b8a30a86c1c170bfb6df78e24a4501cc4900db9b18a",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000200000000000200020000000000",
+      "from": "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000a5f98a0e2586399be8c21c9995a981617d4318f50000000000000000000000000000000000000000000000008ac7230489e80000",
+      "types": [],
+      "typedHashes": []
+    }
+  ],
+  "variables": [],
+  "externalSigners": [],
+  "signatures": [
+    {
+      "r": "0xd05a28afcf241036dd074044d65fc9041e62288c0596196d117610914d03f2d3",
+      "s": "0x600a79040db43452e730a7a7997bc3ba81c9ab2e42456be93da22fc54f510b8d",
+      "v": 27
+    }
+  ]
+}

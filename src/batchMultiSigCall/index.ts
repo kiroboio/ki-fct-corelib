@@ -198,36 +198,29 @@ export class BatchMultiSigCall {
   //
   // Plugin functions
 
-  public getPlugin = async (dataOrIndex: MSCall | number): Promise<any> => {
+  public getPlugin = async (index: number): Promise<Plugin> => {
     const { chainId } = await this.provider.getNetwork();
+    const call = this.getCall(index);
 
-    if (typeof dataOrIndex === "number") {
-      const call = this.getCall(dataOrIndex);
-
-      if (instanceOfVariable(call.to)) {
-        throw new Error("To value cannot be a variable");
-      }
-
-      const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId });
-
-      const methodParams = call.params.reduce((acc, param) => {
-        return { ...acc, [param.name]: param.value };
-      }, {});
-
-      const plugin = new pluginData.plugin({
-        chainId,
-        initParams: {
-          to: call.to,
-          methodParams,
-        },
-      });
-
-      return plugin;
-    } else {
-      const pluginData = getPlugin({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
-
-      return pluginData.plugin;
+    if (instanceOfVariable(call.to)) {
+      throw new Error("To value cannot be a variable");
     }
+
+    const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId });
+
+    const methodParams = call.params.reduce((acc, param) => {
+      return { ...acc, [param.name]: param.value };
+    }, {});
+
+    const plugin = new pluginData.plugin({
+      chainId,
+      initParams: {
+        to: call.to,
+        methodParams,
+      },
+    });
+
+    return plugin;
   };
 
   public getPluginClass = async (index: number): Promise<any> => {
