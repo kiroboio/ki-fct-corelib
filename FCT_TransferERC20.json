@@ -33,10 +33,6 @@
           "type": "Limits"
         },
         {
-          "name": "recurrency",
-          "type": "Recurrency"
-        },
-        {
           "name": "transaction_1",
           "type": "transaction1"
         }
@@ -89,28 +85,18 @@
           "type": "bool"
         }
       ],
-      "Recurrency": [
-        {
-          "name": "max_repeats",
-          "type": "uint16"
-        },
-        {
-          "name": "chill_time",
-          "type": "uint32"
-        },
-        {
-          "name": "accumetable",
-          "type": "bool"
-        }
-      ],
       "transaction1": [
         {
           "name": "call",
           "type": "Call"
         },
         {
-          "name": "owner",
+          "name": "recipient",
           "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
         }
       ],
       "Call": [
@@ -183,59 +169,55 @@
     "message": {
       "meta": {
         "name": "",
-        "builder": "0x0000000000000000000000000000000000000000",
+        "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
         "selector": "0x07eefcb4",
         "version": "0x010101",
-        "random_id": "0x360c06",
+        "random_id": "0x6a0f75",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1668327628",
-        "expires_at": "1669191628",
-        "gas_price_limit": "100000000000",
+        "valid_from": "1668332898",
+        "expires_at": "1669196898",
+        "gas_price_limit": "3000000000",
         "purgeable": false,
         "blockable": true
-      },
-      "recurrency": {
-        "max_repeats": "1000",
-        "chill_time": "1",
-        "accumetable": true
       },
       "transaction_1": {
         "call": {
           "call_index": 1,
           "payer_index": 1,
-          "from": "0x9650578EBd1b08f98Af81a84372ECE4B448d7526",
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
           "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
           "to_ens": "",
           "eth_value": "0",
           "gas_limit": 0,
-          "view_only": true,
+          "view_only": false,
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "balanceOf(address)"
+          "method_interface": "transfer(address,uint256)"
         },
-        "owner": "0x9650578EBd1b08f98Af81a84372ECE4B448d7526"
+        "recipient": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+        "amount": "1000000000000000000"
       }
     }
   },
-  "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x16b0bafb454e9c7673d7872b3d21d9d61e91aadb3aeed6a3fe8d4c20494ad127",
-  "sessionId": "0x360c060001010103e80000000100637dd7cc006370a8cc000000174876e8000d",
+  "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+  "typeHash": "0x7e3f338d1ade4189706acac2a35fb6d65215efc96c9afb9bc0ca56752856ce88",
+  "sessionId": "0x6a0f750001010100000000000000637dec62006370bd6200000000b2d05e000c",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
-      "typeHash": "0x606357c0bb4c537e7da67894375daaceefaae6479c14b1cb2159476bc4b9a539",
+      "typeHash": "0xe4b778b600829b2c4acaf4d21fc22f6ca9c088490c671a2c5c0dc5b9386513a5",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
+      "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000000000000000100010000000001",
-      "from": "0x9650578EBd1b08f98Af81a84372ECE4B448d7526",
+      "callId": "0x0000000000000000000000000000000000000000000000000100010000000000",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
       "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
-      "data": "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526",
+      "data": "0x000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd300000000000000000000000000000000000000000000000000de0b6b3a7640000",
       "types": [],
       "typedHashes": []
     }
@@ -244,13 +226,13 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0x9bef120963821339b67e8fa4a45f4c835e866cf84114f490134a32e61eff6388",
-      "s": "0x6bb0ed7cb77530761cf7f0799bef63686273d9fa6eef45b35124722058bca97b",
-      "_vs": "0x6bb0ed7cb77530761cf7f0799bef63686273d9fa6eef45b35124722058bca97b",
+      "r": "0xd1a27ae071dbb738db6b241adb9d5c408b6541b7760947171be4023f6c38640e",
+      "s": "0x1fe38a343509f99dc20f8a3f91d9afd63efcf81bbe9415b526c11c0802f5b092",
+      "_vs": "0x1fe38a343509f99dc20f8a3f91d9afd63efcf81bbe9415b526c11c0802f5b092",
       "recoveryParam": 0,
       "v": 27,
-      "yParityAndS": "0x6bb0ed7cb77530761cf7f0799bef63686273d9fa6eef45b35124722058bca97b",
-      "compact": "0x9bef120963821339b67e8fa4a45f4c835e866cf84114f490134a32e61eff63886bb0ed7cb77530761cf7f0799bef63686273d9fa6eef45b35124722058bca97b"
+      "yParityAndS": "0x1fe38a343509f99dc20f8a3f91d9afd63efcf81bbe9415b526c11c0802f5b092",
+      "compact": "0xd1a27ae071dbb738db6b241adb9d5c408b6541b7760947171be4023f6c38640e1fe38a343509f99dc20f8a3f91d9afd63efcf81bbe9415b526c11c0802f5b092"
     }
   ]
 }
