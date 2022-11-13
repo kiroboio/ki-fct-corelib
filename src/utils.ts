@@ -32,6 +32,8 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers.Wallet(actuatorPrivateKey, provider);
 
+    console.log("Signer", signer.address);
+
     const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
     let gas: BigNumber;
