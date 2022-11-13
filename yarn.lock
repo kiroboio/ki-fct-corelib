@@ -6592,7 +6592,7 @@
     "ethereumjs-wallet" "0.6.5"
     "web3" "1.2.11"
 
-"ganache@^7.0.5":
+"ganache@^7.0.5", "ganache@^7.5.0":
   "integrity" "sha512-afNTJYBEaFrLPRrn7eUxH39TgnrffvHn/4T6THzQrc3rpfe4DOxw2nY2XEQxfsq1t4OqKSXtxomzyo26RZiOzw=="
   "resolved" "https://registry.npmjs.org/ganache/-/ganache-7.5.0.tgz"
   "version" "7.5.0"

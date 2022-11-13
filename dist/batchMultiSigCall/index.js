@@ -57,30 +57,24 @@ class BatchMultiSigCall {
         //
         //
         // Plugin functions
-        this.getPlugin = async (dataOrIndex) => {
+        this.getPlugin = async (index) => {
             const { chainId } = await this.provider.getNetwork();
-            if (typeof dataOrIndex === "number") {
-                const call = this.getCall(dataOrIndex);
-                if ((0, helpers_2.instanceOfVariable)(call.to)) {
-                    throw new Error("To value cannot be a variable");
-                }
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId });
-                const methodParams = call.params.reduce((acc, param) => {
-                    return { ...acc, [param.name]: param.value };
-                }, {});
-                const plugin = new pluginData.plugin({
-                    chainId,
-                    initParams: {
-                        to: call.to,
-                        methodParams,
-                    },
-                });
-                return plugin;
+            const call = this.getCall(index);
+            if ((0, helpers_2.instanceOfVariable)(call.to)) {
+                throw new Error("To value cannot be a variable");
             }
-            else {
-                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: dataOrIndex.functionSignature, address: dataOrIndex.to, chainId });
-                return pluginData.plugin;
-            }
+            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId });
+            const methodParams = call.params.reduce((acc, param) => {
+                return { ...acc, [param.name]: param.value };
+            }, {});
+            const plugin = new pluginData.plugin({
+                chainId,
+                initParams: {
+                    to: call.to,
+                    methodParams,
+                },
+            });
+            return plugin;
         };
         this.getPluginClass = async (index) => {
             const call = this.getCall(index);

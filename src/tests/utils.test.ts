@@ -1,4 +1,5 @@
 import utils from "../utils";
+import FailingFCT from "./Failing_FCT.json";
 
 const FCT = {
   typedData: {
@@ -344,10 +345,10 @@ const FCT = {
 
 describe("Test utils", () => {
   it("Should get address from signature", async () => {
-    const address = utils.recoverAddressFromEIP712(FCT.typedData, FCT.signatures[0]);
+    const address = utils.recoverAddressFromEIP712(FailingFCT.typedData, FailingFCT.signatures[0]);
 
-    console.log("address", address);
-    console.log("address should be", "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586");
+    console.log("address          ", address);
+    console.log("address should be", "0xe306d6D0E668944d417302Dd5B1DF51c0242Ac31");
   });
 
   it("Should get message hash", async () => {

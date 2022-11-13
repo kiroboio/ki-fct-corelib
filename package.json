@@ -6,9 +6,11 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
+    "test:utils": "mocha -r ts-node/register src/tests/*.test.ts --timeout 10000",
     "build": "tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct-get": "ts-node scripts/fct_get.script.ts",
+    "fct-execute": "ts-node scripts/fct_execute.script.ts",
     "lint": "eslint  --ext .js,.ts ."
   },
   "repository": {
@@ -52,6 +54,7 @@
     "@kirobo/ki-eth-fct-provider-ts": "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop",
     "@metamask/eth-sig-util": "^5.0.0",
     "ethers": "^5.6.9",
-    "ethers-eip712": "^0.2.0"
+    "ethers-eip712": "^0.2.0",
+    "ganache": "^7.5.0"
   }
 }

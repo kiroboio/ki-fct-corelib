@@ -1,42 +1,14 @@
 [
-    {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
+    { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "fctId",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "caller",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "fctIndex",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "callIndex",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "meta",
-                "type": "uint256"
-            }
+            { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" },
+            { "indexed": true, "internalType": "bytes32", "name": "msggsageHash", "type": "bytes32" },
+            { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "fctIndex", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "callIndex", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "meta", "type": "uint256" }
         ],
         "name": "FCTE_CallFailed",
         "type": "event"
@@ -44,36 +16,12 @@
     {
         "anonymous": false,
         "inputs": [
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "fctId",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "caller",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "fctIndex",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "callIndex",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "meta",
-                "type": "uint256"
-            }
+            { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" },
+            { "indexed": true, "internalType": "bytes32", "name": "messageHash", "type": "bytes32" },
+            { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "fctIndex", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "callIndex", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "meta", "type": "uint256" }
         ],
         "name": "FCTE_CallSucceed",
         "type": "event"
@@ -81,58 +29,26 @@
     {
         "inputs": [],
         "name": "BATCH_MULTI_SIG_CALL_ID",
-        "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
         "name": "VERSION",
-        "outputs": [
-            {
-                "internalType": "bytes3",
-                "name": "",
-                "type": "bytes3"
-            }
-        ],
+        "outputs": [{ "internalType": "bytes3", "name": "", "type": "bytes3" }],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "data",
-                "type": "bytes"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "types",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "bytes32[]",
-                "name": "typedHashes",
-                "type": "bytes32[]"
-            },
+            { "internalType": "bytes", "name": "data", "type": "bytes" },
+            { "internalType": "uint256[]", "name": "types", "type": "uint256[]" },
+            { "internalType": "bytes32[]", "name": "typedHashes", "type": "bytes32[]" },
             {
                 "components": [
-                    {
-                        "internalType": "uint256",
-                        "name": "data",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "types",
-                        "type": "uint256"
-                    }
+                    { "internalType": "uint256", "name": "data", "type": "uint256" },
+                    { "internalType": "uint256", "name": "types", "type": "uint256" }
                 ],
                 "internalType": "struct FCT_BatchMultiSig.Offset",
                 "name": "offset",
@@ -140,97 +56,31 @@
             }
         ],
         "name": "abiToEIP712",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "res",
-                "type": "bytes"
-            }
-        ],
+        "outputs": [{ "internalType": "bytes", "name": "res", "type": "bytes" }],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "version",
-                "type": "bytes32"
-            },
+            { "internalType": "bytes32", "name": "version", "type": "bytes32" },
             {
                 "components": [
-                    {
-                        "internalType": "bytes32",
-                        "name": "typeHash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "sessionId",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "bytes32",
-                        "name": "nameHash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "builder",
-                        "type": "address"
-                    },
+                    { "internalType": "bytes32", "name": "typeHash", "type": "bytes32" },
+                    { "internalType": "uint256", "name": "sessionId", "type": "uint256" },
+                    { "internalType": "bytes32", "name": "nameHash", "type": "bytes32" },
+                    { "internalType": "address", "name": "builder", "type": "address" },
                     {
                         "components": [
-                            {
-                                "internalType": "bytes32",
-                                "name": "typeHash",
-                                "type": "bytes32"
-                            },
-                            {
-                                "internalType": "bytes32",
-                                "name": "ensHash",
-                                "type": "bytes32"
-                            },
-                            {
-                                "internalType": "bytes32",
-                                "name": "functionSignature",
-                                "type": "bytes32"
-                            },
-                            {
-                                "internalType": "uint256",
-                                "name": "value",
-                                "type": "uint256"
-                            },
-                            {
-                                "internalType": "uint256",
-                                "name": "callId",
-                                "type": "uint256"
-                            },
-                            {
-                                "internalType": "address",
-                                "name": "from",
-                                "type": "address"
-                            },
-                            {
-                                "internalType": "address",
-                                "name": "to",
-                                "type": "address"
-                            },
-                            {
-                                "internalType": "bytes",
-                                "name": "data",
-                                "type": "bytes"
-                            },
-                            {
-                                "internalType": "uint256[]",
-                                "name": "types",
-                                "type": "uint256[]"
-                            },
-                            {
-                                "internalType": "bytes32[]",
-                                "name": "typedHashes",
-                                "type": "bytes32[]"
-                            }
+                            { "internalType": "bytes32", "name": "typeHash", "type": "bytes32" },
+                            { "internalType": "bytes32", "name": "ensHash", "type": "bytes32" },
+                            { "internalType": "bytes32", "name": "functionSignature", "type": "bytes32" },
+                            { "internalType": "uint256", "name": "value", "type": "uint256" },
+                            { "internalType": "uint256", "name": "callId", "type": "uint256" },
+                            { "internalType": "address", "name": "from", "type": "address" },
+                            { "internalType": "address", "name": "to", "type": "address" },
+                            { "internalType": "bytes", "name": "data", "type": "bytes" },
+                            { "internalType": "uint256[]", "name": "types", "type": "uint256[]" },
+                            { "internalType": "bytes32[]", "name": "typedHashes", "type": "bytes32[]" }
                         ],
                         "internalType": "struct FCT_BatchMultiSig.MSCall[]",
                         "name": "mcall",
@@ -238,86 +88,34 @@
                     },
                     {
                         "components": [
-                            {
-                                "internalType": "bytes32",
-                                "name": "r",
-                                "type": "bytes32"
-                            },
-                            {
-                                "internalType": "bytes32",
-                                "name": "s",
-                                "type": "bytes32"
-                            },
-                            {
-                                "internalType": "uint8",
-                                "name": "v",
-                                "type": "uint8"
-                            }
+                            { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+                            { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+                            { "internalType": "uint8", "name": "v", "type": "uint8" }
                         ],
                         "internalType": "struct FCT_BatchMultiSig.Signature[]",
                         "name": "signatures",
                         "type": "tuple[]"
                     },
-                    {
-                        "internalType": "bytes32[]",
-                        "name": "variables",
-                        "type": "bytes32[]"
-                    },
-                    {
-                        "internalType": "address[]",
-                        "name": "externalSigners",
-                        "type": "address[]"
-                    }
+                    { "internalType": "bytes32[]", "name": "variables", "type": "bytes32[]" },
+                    { "internalType": "address[]", "name": "externalSigners", "type": "address[]" }
                 ],
                 "internalType": "struct FCT_BatchMultiSig.MSCalls",
                 "name": "tr",
                 "type": "tuple"
             },
-            {
-                "internalType": "bytes32",
-                "name": "purgeFCT",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "investor",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "activator",
-                "type": "address"
-            }
+            { "internalType": "bytes32", "name": "purgeFCT", "type": "bytes32" },
+            { "internalType": "address", "name": "investor", "type": "address" },
+            { "internalType": "address", "name": "activator", "type": "address" }
         ],
         "name": "batchMultiSigCall",
         "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "name",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "builder",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "maxGasPrice",
-                "type": "uint256"
-            },
+            { "internalType": "bytes32", "name": "name", "type": "bytes32" },
+            { "internalType": "address", "name": "builder", "type": "address" },
+            { "internalType": "uint256", "name": "maxGasPrice", "type": "uint256" },
             {
                 "components": [
-                    {
-                        "internalType": "address",
-                        "name": "payer",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint88",
-                        "name": "gas",
-                        "type": "uint88"
-                    }
+                    { "internalType": "address", "name": "payer", "type": "address" },
+                    { "internalType": "uint88", "name": "gas", "type": "uint88" }
                 ],
                 "internalType": "struct MReturn[]",
                 "name": "rt",
@@ -330,13 +128,7 @@
     {
         "inputs": [],
         "name": "getIDs",
-        "outputs": [
-            {
-                "internalType": "bytes32[]",
-                "name": "res",
-                "type": "bytes32[]"
-            }
-        ],
+        "outputs": [{ "internalType": "bytes32[]", "name": "res", "type": "bytes32[]" }],
         "stateMutability": "pure",
         "type": "function"
     }
