@@ -1,4 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
+import { BigNumber } from "ethers";
 import { BatchMultiSigCallTypedData, MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCT {
     typedData: BatchMultiSigCallTypedData;
@@ -29,6 +30,12 @@ declare const _default: {
         isValid: boolean;
         gasUsed: number;
         error: any;
+    }>;
+    feeCalculator: (transactionValidatorInterface: ITxValidator) => Promise<{
+        fee: BigNumber;
+        limit: string;
+        maxFeePerGas: string;
+        maxPriorityFeePerGas: string;
     }>;
 };
 export default _default;

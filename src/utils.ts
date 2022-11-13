@@ -1,5 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, ethers, Transaction, utils } from "ethers";
 import {
   BatchMultiSigCallTypedData,
   MSCall,
@@ -9,6 +9,7 @@ import {
 } from "./batchMultiSigCall/interfaces";
 import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import ganache from "ganache";
 
 interface IFCT {
   typedData: BatchMultiSigCallTypedData;
@@ -55,6 +56,48 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
       error: err.reason,
     };
   }
+};
+
+const feeCalculator = async (transactionValidatorInterface: ITxValidator) => {
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
+    transactionValidatorInterface;
+  const provider = new ethers.providers.Web3Provider(
+    ganache.provider({
+      chain: {
+        chainId: 5,
+      },
+      fork: {
+        url: rpcUrl,
+      },
+    })
+  );
+
+  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+
+  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+
+  let tx: Transaction;
+  if (activateForFree) {
+    tx = await actuatorContract.activateForFree(callData, signer.address);
+  } else {
+    tx = await actuatorContract.activate(callData, signer.address, {
+      gasLimit: 10000000,
+    });
+  }
+  try {
+    //@ts-ignore
+    await tx.wait();
+    console.log(tx);
+  } catch (err) {
+    console.log(err);
+  }
+
+  return {
+    fee: tx.gasPrice,
+    limit: tx.gasLimit.toString(),
+    maxFeePerGas: tx.maxFeePerGas.toString(),
+    maxPriorityFeePerGas: tx.maxPriorityFeePerGas.toString(),
+  };
 };
 
 const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
@@ -142,4 +185,5 @@ export default {
   recoverAddressFromEIP712,
   getVariablesAsBytes32,
   transactionValidator,
+  feeCalculator,
 };
