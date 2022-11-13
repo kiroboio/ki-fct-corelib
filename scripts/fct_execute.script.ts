@@ -33,10 +33,6 @@ async function main() {
     contractAddress: data[chainId].FCT_Controller,
   });
 
-  const decodeAddress = utils.recoverAddressFromEIP712(FCT.typedData, FCT.signatures[0]);
-
-  console.log(decodeAddress);
-
   // Zero bytes
   const bytes = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
