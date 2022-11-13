@@ -1,5 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BigNumber, ethers, Transaction, utils } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import {
   BatchMultiSigCallTypedData,
   MSCall,
@@ -9,7 +9,6 @@ import {
 } from "./batchMultiSigCall/interfaces";
 import FCTActuatorABI from "./abi/FCT_Actuator.abi.json";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
-import ganache from "ganache";
 
 interface IFCT {
   typedData: BatchMultiSigCallTypedData;
@@ -24,15 +23,13 @@ interface ITxValidator {
   activateForFree: boolean;
 }
 
-const transactionValidator = async (transactionValidatorInterface: ITxValidator) => {
+const transactionValidator = async (transactionValidatorInterface: ITxValidator, pureGas: boolean) => {
   try {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
       transactionValidatorInterface;
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-
-    console.log("Signer", signer.address);
 
     const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
@@ -44,7 +41,7 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
     }
 
     // Add 15% to gasUsed value
-    const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
+    const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
 
     return {
       isValid: true,
@@ -60,45 +57,36 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator)
   }
 };
 
-const feeCalculator = async (transactionValidatorInterface: ITxValidator) => {
+const feeCalculator = async (transactionValidatorInterface: ITxValidator, fctGasPrice: string) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
     transactionValidatorInterface;
-  const provider = new ethers.providers.Web3Provider(
-    ganache.provider({
-      chain: {
-        chainId: 5,
-      },
-      fork: {
-        url: rpcUrl,
-      },
-    })
-  );
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+  const { gasUsed } = await transactionValidator(transactionValidatorInterface, true);
 
-  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+  const feeData = await provider.getFeeData();
 
-  let tx: Transaction;
-  if (activateForFree) {
-    tx = await actuatorContract.activateForFree(callData, signer.address);
-  } else {
-    tx = await actuatorContract.activate(callData, signer.address, {
-      gasLimit: 10000000,
-    });
-  }
-  try {
-    //@ts-ignore
-    await tx.wait();
-    console.log(tx);
-  } catch (err) {
-    console.log(err);
-  }
+  const txPrice = feeData.lastBaseFeePerGas.add(feeData.maxPriorityFeePerGas);
+  const txFee = txPrice.mul(gasUsed);
+  const txFeeFctPrice = BigNumber.from(fctGasPrice).mul(gasUsed);
+
+  console.log(txFee.toString(), txFeeFctPrice.toString());
+
+  // 10% of the txfee
+  const bonus = txFeeFctPrice.div(10);
+  console.log(bonus.toString());
+
+  const bonusOfGasPriceDif = txFeeFctPrice.sub(txFee).div(2); // 50%
+  console.log(bonusOfGasPriceDif.toString());
+
+  const actuatorAmount = txFee.add(bonus.add(bonusOfGasPriceDif).mul(6).div(10)).toString();
+  const builderAmount = bonus.add(bonusOfGasPriceDif).mul(2).div(10).toString();
 
   return {
-    fee: tx.gasPrice,
-    limit: tx.gasLimit.toString(),
-    maxFeePerGas: tx.maxFeePerGas.toString(),
-    maxPriorityFeePerGas: tx.maxPriorityFeePerGas.toString(),
+    txFee: utils.formatEther(txFee).toString(),
+    totalAmount: utils.formatEther(txFee.add(bonus).add(bonusOfGasPriceDif)).toString(),
+    actuatorAmount: utils.formatEther(actuatorAmount).toString(),
+    builderAmount: utils.formatEther(builderAmount).toString(),
   };
 };
 
