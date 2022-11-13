@@ -2,8 +2,7 @@ import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { ERC20, PureValidator } from "@kirobo/ki-eth-fct-provider-ts";
-import { Flow } from "../src/constants";
+import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 
@@ -72,48 +71,48 @@ async function main() {
     },
   });
 
-  const greaterThan = new PureValidator.actions.GreaterThan({
-    chainId: 1,
-    initParams: {
-      to: data[chainId].PureValidator,
-      methodParams: {
-        value1: balanceOf.output.params.balance.getOutputVariable("1"),
-        value2: ethers.utils.parseUnits("10", 18).toString(),
-      },
-    },
-  });
+  // const greaterThan = new PureValidator.actions.GreaterThan({
+  //   chainId: 1,
+  //   initParams: {
+  //     to: data[chainId].PureValidator,
+  //     methodParams: {
+  //       value1: balanceOf.output.params.balance.getOutputVariable("1"),
+  //       value2: ethers.utils.parseUnits("10", 18).toString(),
+  //     },
+  //   },
+  // });
 
-  const transfer = new ERC20.actions.Transfer({
-    chainId: 1,
-    initParams: {
-      to: data[chainId].KIRO,
-      methodParams: {
-        recipient: wallet,
-        amount: ethers.utils.parseUnits("6", 18).toString(),
-      },
-    },
-  });
+  // const transfer = new ERC20.actions.Transfer({
+  //   chainId: 1,
+  //   initParams: {
+  //     to: data[chainId].KIRO,
+  //     methodParams: {
+  //       recipient: wallet,
+  //       amount: ethers.utils.parseUnits("6", 18).toString(),
+  //     },
+  //   },
+  // });
 
   await batchMultiSigCall.createMultiple([
     {
       plugin: balanceOf,
       from: vault,
       nodeId: "1",
-      options: {
-        jumpOnSuccess: "3",
-        jumpOnFail: "2",
-      },
+      // options: {
+      // jumpOnSuccess: "3",
+      // jumpOnFail: "2",
+      // },
     },
-    {
-      plugin: greaterThan,
-      from: vault,
-      nodeId: "2",
-      options: {
-        flow: Flow.OK_CONT_FAIL_REVERT,
-        falseMeansFail: true,
-      },
-    },
-    { plugin: transfer, from: vault, nodeId: "3" },
+    // {
+    //   plugin: greaterThan,
+    //   from: vault,
+    //   nodeId: "2",
+    //   options: {
+    //     flow: Flow.OK_CONT_FAIL_REVERT,
+    //     falseMeansFail: true,
+    //   },
+    // },
+    // { plugin: transfer, from: vault, nodeId: "3" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
