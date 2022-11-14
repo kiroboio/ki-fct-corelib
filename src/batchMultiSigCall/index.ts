@@ -4,7 +4,6 @@ import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { Params, Variable } from "../interfaces";
 import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
 import {
@@ -84,25 +83,18 @@ export class BatchMultiSigCall {
   // actuatorAddress: string, signedFCT: object, purgedFCT: string
 
   public getCalldataForActuator = async ({
-    actuatorAddress,
     signedFCT,
     purgedFCT,
     investor,
     activator,
+    activateId,
   }: {
-    actuatorAddress: string;
     signedFCT: object;
     purgedFCT: string;
     investor: string;
     activator: string;
+    activateId: string;
   }) => {
-    const version = "010101";
-    const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, this.provider);
-    const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
-
-    const activateId =
-      "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
-
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
       activateId,
       signedFCT,
