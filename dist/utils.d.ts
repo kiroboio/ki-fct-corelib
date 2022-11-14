@@ -1,5 +1,4 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BigNumber } from "ethers";
 import { BatchMultiSigCallTypedData, MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCT {
     typedData: BatchMultiSigCallTypedData;
@@ -26,16 +25,10 @@ declare const _default: {
     };
     recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string;
     getVariablesAsBytes32: (variables: string[]) => string[];
-    transactionValidator: (transactionValidatorInterface: ITxValidator) => Promise<{
+    transactionValidator: (transactionValidatorInterface: ITxValidator, pureGas?: boolean) => Promise<{
         isValid: boolean;
         gasUsed: number;
         error: any;
-    }>;
-    feeCalculator: (transactionValidatorInterface: ITxValidator) => Promise<{
-        fee: BigNumber;
-        limit: string;
-        maxFeePerGas: string;
-        maxPriorityFeePerGas: string;
     }>;
 };
 export default _default;

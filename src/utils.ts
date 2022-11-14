@@ -23,7 +23,7 @@ interface ITxValidator {
   activateForFree: boolean;
 }
 
-const transactionValidator = async (transactionValidatorInterface: ITxValidator, pureGas: boolean) => {
+const transactionValidator = async (transactionValidatorInterface: ITxValidator, pureGas = false) => {
   try {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
       transactionValidatorInterface;
@@ -55,39 +55,6 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator,
       error: err.reason,
     };
   }
-};
-
-const feeCalculator = async (transactionValidatorInterface: ITxValidator, fctGasPrice: string) => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
-    transactionValidatorInterface;
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-
-  const { gasUsed } = await transactionValidator(transactionValidatorInterface, true);
-
-  const feeData = await provider.getFeeData();
-
-  const txPrice = feeData.lastBaseFeePerGas.add(feeData.maxPriorityFeePerGas);
-  const txFee = txPrice.mul(gasUsed);
-  const txFeeFctPrice = BigNumber.from(fctGasPrice).mul(gasUsed);
-
-  console.log(txFee.toString(), txFeeFctPrice.toString());
-
-  // 10% of the txfee
-  const bonus = txFeeFctPrice.div(10);
-  console.log(bonus.toString());
-
-  const bonusOfGasPriceDif = txFeeFctPrice.sub(txFee).div(2); // 50%
-  console.log(bonusOfGasPriceDif.toString());
-
-  const actuatorAmount = txFee.add(bonus.add(bonusOfGasPriceDif).mul(6).div(10)).toString();
-  const builderAmount = bonus.add(bonusOfGasPriceDif).mul(2).div(10).toString();
-
-  return {
-    txFee: utils.formatEther(txFee).toString(),
-    totalAmount: utils.formatEther(txFee.add(bonus).add(bonusOfGasPriceDif)).toString(),
-    actuatorAmount: utils.formatEther(actuatorAmount).toString(),
-    builderAmount: utils.formatEther(builderAmount).toString(),
-  };
 };
 
 const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
@@ -175,5 +142,4 @@ export default {
   recoverAddressFromEIP712,
   getVariablesAsBytes32,
   transactionValidator,
-  feeCalculator,
 };

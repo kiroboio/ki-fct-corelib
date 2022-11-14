@@ -10,7 +10,6 @@ const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
-const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const constants_1 = require("../constants");
@@ -40,11 +39,7 @@ class BatchMultiSigCall {
         };
         // Helpers
         // actuatorAddress: string, signedFCT: object, purgedFCT: string
-        this.getCalldataForActuator = async ({ actuatorAddress, signedFCT, purgedFCT, investor, activator, }) => {
-            const version = "010101";
-            const actuator = new ethers_1.ethers.Contract(actuatorAddress, FCT_Actuator_abi_json_1.default, this.provider);
-            const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
-            const activateId = "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+        this.getCalldataForActuator = async ({ signedFCT, purgedFCT, investor, activator, activateId, }) => {
             return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
                 activateId,
                 signedFCT,
