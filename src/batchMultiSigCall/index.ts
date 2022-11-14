@@ -66,10 +66,19 @@ export class BatchMultiSigCall {
     options,
   }: {
     provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-    contractAddress: string;
+    contractAddress?: string;
     options?: Partial<MSCallOptions>;
   }) {
-    this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);
+    if (contractAddress) {
+      this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);
+    } else {
+      this.FCT_Controller = new ethers.Contract(
+        "0x0000000000000000000000000000000000000000",
+        FCT_ControllerABI,
+        provider
+      );
+    }
+
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     this.provider = provider;
 

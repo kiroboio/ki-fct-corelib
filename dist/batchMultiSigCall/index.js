@@ -105,7 +105,12 @@ class BatchMultiSigCall {
             // Else it is a variable
             return this.getVariable(call.value, "uint256");
         };
-        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
+        if (contractAddress) {
+            this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress, FCT_Controller_abi_json_1.default, provider);
+        }
+        else {
+            this.FCT_Controller = new ethers_1.ethers.Contract("0x0000000000000000000000000000000000000000", FCT_Controller_abi_json_1.default, provider);
+        }
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.provider = provider;
         this.options = {
