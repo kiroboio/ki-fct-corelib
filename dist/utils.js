@@ -6,13 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const ganache_1 = __importDefault(require("ganache"));
-const transactionValidator = async (transactionValidatorInterface) => {
+const transactionValidator = async (transactionValidatorInterface, pureGas = false) => {
     try {
         const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-        console.log("Signer", signer.address);
         const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
         let gas;
         if (activateForFree) {
@@ -22,7 +20,7 @@ const transactionValidator = async (transactionValidatorInterface) => {
             gas = await actuatorContract.estimateGas.activate(callData, signer.address);
         }
         // Add 15% to gasUsed value
-        const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.15);
+        const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
         return {
             isValid: true,
             gasUsed,
@@ -36,42 +34,6 @@ const transactionValidator = async (transactionValidatorInterface) => {
             error: err.reason,
         };
     }
-};
-const feeCalculator = async (transactionValidatorInterface) => {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
-    const provider = new ethers_1.ethers.providers.Web3Provider(ganache_1.default.provider({
-        chain: {
-            chainId: 5,
-        },
-        fork: {
-            url: rpcUrl,
-        },
-    }));
-    const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-    const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
-    let tx;
-    if (activateForFree) {
-        tx = await actuatorContract.activateForFree(callData, signer.address);
-    }
-    else {
-        tx = await actuatorContract.activate(callData, signer.address, {
-            gasLimit: 10000000,
-        });
-    }
-    try {
-        //@ts-ignore
-        await tx.wait();
-        console.log(tx);
-    }
-    catch (err) {
-        console.log(err);
-    }
-    return {
-        fee: tx.gasPrice,
-        limit: tx.gasLimit.toString(),
-        maxFeePerGas: tx.maxFeePerGas.toString(),
-        maxPriorityFeePerGas: tx.maxPriorityFeePerGas.toString(),
-    };
 };
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {
@@ -145,5 +107,4 @@ exports.default = {
     recoverAddressFromEIP712,
     getVariablesAsBytes32,
     transactionValidator,
-    feeCalculator,
 };
