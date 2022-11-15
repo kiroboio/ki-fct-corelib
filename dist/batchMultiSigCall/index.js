@@ -58,25 +58,33 @@ class BatchMultiSigCall {
             if ((0, helpers_2.instanceOfVariable)(call.to)) {
                 throw new Error("To value cannot be a variable");
             }
-            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId });
-            const methodParams = call.params.reduce((acc, param) => {
-                return { ...acc, [param.name]: param.value };
-            }, {});
+            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
+                signature: (0, helpers_2.handleFunctionSignature)(call),
+                address: call.to,
+                chainId: chainId.toString(),
+            });
             const plugin = new pluginData.plugin({
-                chainId,
-                initParams: {
-                    to: call.to,
-                    methodParams,
-                },
+                chainId: chainId.toString(),
+            });
+            plugin.input.set({
+                to: call.to,
+                methodParams: call.params.reduce((acc, param) => {
+                    return { ...acc, [param.name]: param.value };
+                }, {}),
             });
             return plugin;
         };
         this.getPluginClass = async (index) => {
+            const { chainId } = await this.provider.getNetwork();
             const call = this.getCall(index);
             if ((0, helpers_2.instanceOfVariable)(call.to)) {
                 throw new Error("To value cannot be a variable");
             }
-            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({ signature: (0, helpers_2.handleFunctionSignature)(call), address: call.to, chainId: 1 });
+            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
+                signature: (0, helpers_2.handleFunctionSignature)(call),
+                address: call.to,
+                chainId: chainId.toString(),
+            });
             return pluginData;
         };
         this.getAllPlugins = () => {

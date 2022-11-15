@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { AbiCoder, id } from "ethers/lib/utils";
-import { getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId, getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -203,7 +203,7 @@ export class BatchMultiSigCall {
   //
   // Plugin functions
 
-  public getPlugin = async (index: number): Promise<Plugin> => {
+  public getPlugin = async (index: number): Promise<any> => {
     const { chainId } = await this.provider.getNetwork();
     const call = this.getCall(index);
 
@@ -211,31 +211,39 @@ export class BatchMultiSigCall {
       throw new Error("To value cannot be a variable");
     }
 
-    const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId });
-
-    const methodParams = call.params.reduce((acc, param) => {
-      return { ...acc, [param.name]: param.value };
-    }, {});
+    const pluginData = getPlugin({
+      signature: handleFunctionSignature(call),
+      address: call.to,
+      chainId: chainId.toString() as ChainId,
+    });
 
     const plugin = new pluginData.plugin({
-      chainId,
-      initParams: {
-        to: call.to,
-        methodParams,
-      },
+      chainId: chainId.toString() as ChainId,
+    });
+
+    plugin.input.set({
+      to: call.to,
+      methodParams: call.params.reduce((acc, param) => {
+        return { ...acc, [param.name]: param.value };
+      }, {}),
     });
 
     return plugin;
   };
 
   public getPluginClass = async (index: number): Promise<any> => {
+    const { chainId } = await this.provider.getNetwork();
     const call = this.getCall(index);
 
     if (instanceOfVariable(call.to)) {
       throw new Error("To value cannot be a variable");
     }
 
-    const pluginData = getPlugin({ signature: handleFunctionSignature(call), address: call.to, chainId: 1 });
+    const pluginData = getPlugin({
+      signature: handleFunctionSignature(call),
+      address: call.to,
+      chainId: chainId.toString() as ChainId,
+    });
 
     return pluginData;
   };
