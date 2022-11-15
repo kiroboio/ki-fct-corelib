@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 import { BatchMultiSigCall, ethers, utils } from "../src/index";
 import FCT from "../FCT_TransferERC20.json";
+import FCTActuatorABI from "../src/abi/FCT_Actuator.abi.json";
+
 import data from "./scriptData";
 
 dotenv.config();
@@ -19,21 +21,20 @@ async function main() {
   // Zero bytes
   const bytes = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
+  const version = "010101";
+  const actuator = new ethers.Contract(data[chainId].Actuator, FCTActuatorABI, this.provider);
+  const nonce = BigInt(await actuator.s_nonces(this.batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
+
+  const activateId =
+    "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+
   const calldata = await batchMultiSigCall.getCalldataForActuator({
-    actuatorAddress: data[chainId].Actuator,
     signedFCT: FCT,
     activator: process.env.ACTIVATOR as string,
     investor: ZERO_ADDRESS,
     purgedFCT: bytes,
+    activateId,
   });
-
-  const gas = await provider.estimateGas({
-    to: "0xdc31ee1784292379fbb2964b3b9c4124d8f89c60",
-    from: "0x57668cab869c1c99ff5b1749aa9e80d645effa4e",
-    data: "0xa9059cbb00000000000000000000000057668cab869c1c99ff5b1749aa9e80d645effa4e0000000000000000000000000000000000000000000000008ac7230489e80000",
-  });
-
-  console.log("Gas", gas.toString());
 
   const txData = await utils.transactionValidator({
     rpcUrl: data[chainId].rpcUrl,
