@@ -190,6 +190,10 @@ export class BatchMultiSigCall {
       }
     }
 
+    if (options.builder !== undefined && !ethers.utils.isAddress(options.builder)) {
+      throw new Error("Builder must be a valid address");
+    }
+
     this.options = { ...this.options, ...options };
     return this.options;
   }
@@ -583,7 +587,7 @@ export class BatchMultiSigCall {
       message: {
         meta: {
           name: this.options.name || "",
-          builder: this.options.builder,
+          builder: this.options.builder || "0x0000000000000000000000000000000000000000",
           selector: this.batchMultiSigSelector,
           version,
           random_id: `0x${salt}`,

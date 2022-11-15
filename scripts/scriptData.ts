@@ -1,6 +1,11 @@
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
 const data = {
   1: {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    rpcUrl: process.env.RPC_URL_MAINNET as string,
   },
   5: {
     FCT_BatchMultiSig: "0xCcA37A30bF97909E76084cFf7B81869A4E9EBA53",
