@@ -30,7 +30,7 @@ export declare class BatchMultiSigCall {
     createMultiple(calls: (IMSCallInput | IWithPlugin)[]): Promise<IMSCallInput[]>;
     getCall(index: number): IMSCallInput;
     get length(): number;
-    exportFCT(): Promise<IBatchMultiSigCallFCT | Error>;
+    exportFCT(): Promise<IBatchMultiSigCallFCT>;
     importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error>;
     private createTypedData;
     private getParams;

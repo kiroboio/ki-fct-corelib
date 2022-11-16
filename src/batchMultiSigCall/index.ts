@@ -305,7 +305,7 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<IBatchMultiSigCallFCT | Error> {
+  public async exportFCT(): Promise<IBatchMultiSigCallFCT> {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
