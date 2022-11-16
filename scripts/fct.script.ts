@@ -32,14 +32,15 @@ async function main() {
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
     contractAddress: data[chainId].FCT_Controller,
-    options: {
-      maxGasPrice: "3000000000",
-      expiresAt: getDate(10),
-      // recurrency: {
-      //   accumetable: true,
-      //   maxRepeats: "1000",
-      //   chillTime: "1",
-      // },
+  });
+
+  batchMultiSigCall.setOptions({
+    maxGasPrice: "3000000000",
+    expiresAt: getDate(10),
+    recurrency: {
+      accumetable: true,
+      maxRepeats: "1000",
+      chillTime: "1",
     },
   });
 

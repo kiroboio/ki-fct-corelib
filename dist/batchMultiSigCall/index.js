@@ -119,10 +119,9 @@ class BatchMultiSigCall {
         }
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.provider = provider;
-        this.options = {
-            ...this.options,
-            ...options,
-        };
+        if (options) {
+            this.setOptions(options);
+        }
     }
     // Variables
     getVariable(variable, type) {

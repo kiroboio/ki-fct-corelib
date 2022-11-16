@@ -82,10 +82,9 @@ export class BatchMultiSigCall {
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     this.provider = provider;
 
-    this.options = {
-      ...this.options,
-      ...options,
-    };
+    if (options) {
+      this.setOptions(options);
+    }
   }
 
   // Helpers
