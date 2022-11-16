@@ -266,6 +266,9 @@ class BatchMultiSigCall {
                 ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
                 : [],
         }));
+        if (this.options.builder) {
+            ethers_1.utils.getAddress(this.options.builder);
+        }
         return {
             typedData,
             builder: this.options.builder || "0x0000000000000000000000000000000000000000",

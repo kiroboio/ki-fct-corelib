@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, id } from "ethers/lib/utils";
 import { ChainId, getPlugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
@@ -305,7 +305,7 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<IBatchMultiSigCallFCT> {
+  public async exportFCT(): Promise<IBatchMultiSigCallFCT | Error> {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
@@ -338,6 +338,10 @@ export class BatchMultiSigCall {
         ? typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
         : [],
     }));
+
+    if (this.options.builder) {
+      utils.getAddress(this.options.builder);
+    }
 
     return {
       typedData,
