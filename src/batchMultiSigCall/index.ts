@@ -340,7 +340,7 @@ export class BatchMultiSigCall {
     }));
 
     if (this.options.builder) {
-      utils.getAddress(this.options.builder);
+      utils.isAddress(this.options.builder);
     }
 
     return {

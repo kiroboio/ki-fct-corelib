@@ -267,7 +267,7 @@ class BatchMultiSigCall {
                 : [],
         }));
         if (this.options.builder) {
-            ethers_1.utils.getAddress(this.options.builder);
+            ethers_1.utils.isAddress(this.options.builder);
         }
         return {
             typedData,
