@@ -61,9 +61,10 @@ class BatchMultiSigCall {
             const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
                 signature: (0, helpers_2.handleFunctionSignature)(call),
                 address: call.to,
-                chainId: chainId.toString(),
+                chainId: "1",
             });
-            const plugin = new pluginData.plugin({
+            const pluginClass = pluginData.plugin;
+            const plugin = new pluginClass({
                 chainId: chainId.toString(),
             });
             plugin.input.set({
@@ -86,9 +87,6 @@ class BatchMultiSigCall {
                 chainId: chainId.toString(),
             });
             return pluginData;
-        };
-        this.getAllPlugins = () => {
-            return (0, ki_eth_fct_provider_ts_1.getPlugins)({});
         };
         this.handleTo = (call) => {
             // If call is a validator method, return validator address as to address
@@ -196,6 +194,9 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
+    // public getAllPlugins = () => {
+    //   return getPlugins({});
+    // };
     // End of plugin functions
     //
     //
@@ -265,9 +266,12 @@ class BatchMultiSigCall {
                 ? typedHashes.map((hash) => ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
                 : [],
         }));
+        if (this.options.builder) {
+            ethers_1.utils.getAddress(this.options.builder);
+        }
         return {
             typedData,
-            builder: this.options.builder,
+            builder: this.options.builder || "0x0000000000000000000000000000000000000000",
             typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
             sessionId,
             nameHash: (0, utils_1.id)(this.options.name || ""),

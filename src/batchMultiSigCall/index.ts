@@ -1,6 +1,6 @@
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, id } from "ethers/lib/utils";
-import { ChainId, getPlugin, getPlugins, Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId, getPlugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -203,7 +203,7 @@ export class BatchMultiSigCall {
   //
   // Plugin functions
 
-  public getPlugin = async (index: number): Promise<any> => {
+  public getPlugin = async (index: number): Promise<PluginInstance> => {
     const { chainId } = await this.provider.getNetwork();
     const call = this.getCall(index);
 
@@ -214,12 +214,14 @@ export class BatchMultiSigCall {
     const pluginData = getPlugin({
       signature: handleFunctionSignature(call),
       address: call.to,
-      chainId: chainId.toString() as ChainId,
+      chainId: "1",
     });
 
-    const plugin = new pluginData.plugin({
+    const pluginClass = pluginData.plugin as any;
+
+    const plugin = new pluginClass({
       chainId: chainId.toString() as ChainId,
-    });
+    }) as PluginInstance;
 
     plugin.input.set({
       to: call.to,
@@ -248,9 +250,9 @@ export class BatchMultiSigCall {
     return pluginData;
   };
 
-  public getAllPlugins = (): { name: string; description?: string; plugin: Plugin }[] => {
-    return getPlugins({});
-  };
+  // public getAllPlugins = () => {
+  //   return getPlugins({});
+  // };
 
   // End of plugin functions
   //
@@ -303,7 +305,7 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  public async exportFCT(): Promise<IBatchMultiSigCallFCT> {
+  public async exportFCT(): Promise<IBatchMultiSigCallFCT | Error> {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
@@ -337,9 +339,13 @@ export class BatchMultiSigCall {
         : [],
     }));
 
+    if (this.options.builder) {
+      utils.getAddress(this.options.builder);
+    }
+
     return {
       typedData,
-      builder: this.options.builder,
+      builder: this.options.builder || "0x0000000000000000000000000000000000000000",
       typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
       sessionId,
       nameHash: id(this.options.name || ""),
