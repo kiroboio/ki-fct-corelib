@@ -709,7 +709,7 @@
 
 "@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
   version "1.1.0"
-  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#e0b2223377ca5088d3708f256f203bd54eb0e1c1"
+  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#1c707684de266fa0503ae990a8254179fce0055c"
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@chainlink/contracts" "^0.5.1"
@@ -1224,6 +1224,7 @@
     which "^2.0.2"
 
 "@openzeppelin/contracts-v0.7@npm:@openzeppelin/contracts@v3.4.2", "@openzeppelin/contracts@^3.4.2":
+  name "@openzeppelin/contracts-v0.7"
   version "3.4.2"
   resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-3.4.2.tgz"
   integrity sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==

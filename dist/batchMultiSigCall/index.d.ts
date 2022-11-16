@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Plugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { IMSCallInput, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./interfaces";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
@@ -24,13 +24,8 @@ export declare class BatchMultiSigCall {
     private getOutputVariable;
     private getExternalVariable;
     setOptions(options: Partial<MSCallOptions>): MSCallOptions;
-    getPlugin: (index: number) => Promise<any>;
+    getPlugin: (index: number) => Promise<PluginInstance>;
     getPluginClass: (index: number) => Promise<any>;
-    getAllPlugins: () => {
-        name: string;
-        description?: string;
-        plugin: Plugin;
-    }[];
     create(callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]>;
     createMultiple(calls: (IMSCallInput | IWithPlugin)[]): Promise<IMSCallInput[]>;
     getCall(index: number): IMSCallInput;
