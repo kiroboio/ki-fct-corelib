@@ -33,8 +33,6 @@ async function main() {
     provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
     contractAddress: data[chainId].FCT_Controller,
     options: {
-      builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
-      // validFrom: addHours(0.66),
       maxGasPrice: "3000000000",
       expiresAt: getDate(10),
       // recurrency: {
@@ -67,7 +65,7 @@ async function main() {
   // });
 
   const transfer = new ERC20.actions.Transfer({
-    chainId: 1,
+    chainId: "1",
     initParams: {
       to: data[chainId].KIRO,
       methodParams: {
@@ -76,6 +74,8 @@ async function main() {
       },
     },
   });
+
+  console.log("options", batchMultiSigCall.options);
 
   await batchMultiSigCall.createMultiple([
     // {
@@ -113,8 +113,6 @@ async function main() {
     ...FCT,
     signatures: [splitSignature],
     variables: [],
-    // builder: ZERO_ADDRESS,
-    builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
     externalSigners: [],
   };
 
