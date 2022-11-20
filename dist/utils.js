@@ -10,14 +10,19 @@ const transactionValidator = async (transactionValidatorInterface, pureGas = fal
     try {
         const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+        const gasPrice = await provider.getGasPrice();
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
         const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
         let gas;
         if (activateForFree) {
-            gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address);
+            gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
+                gasPrice,
+            });
         }
         else {
-            gas = await actuatorContract.estimateGas.activate(callData, signer.address);
+            gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
+                gasPrice,
+            });
         }
         // Add 15% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
