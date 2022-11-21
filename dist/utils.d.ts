@@ -28,6 +28,7 @@ declare const _default: {
     transactionValidator: (transactionValidatorInterface: ITxValidator, pureGas?: boolean) => Promise<{
         isValid: boolean;
         gasUsed: number;
+        gasPrice: number;
         error: any;
     }>;
 };

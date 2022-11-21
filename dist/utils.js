@@ -7,12 +7,12 @@ const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const transactionValidator = async (transactionValidatorInterface, pureGas = false) => {
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
+    const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+    const gasPrice = await provider.getGasPrice();
+    const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
+    const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     try {
-        const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
-        const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-        const gasPrice = await provider.getGasPrice();
-        const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-        const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
         let gas;
         if (activateForFree) {
             gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
@@ -29,6 +29,7 @@ const transactionValidator = async (transactionValidatorInterface, pureGas = fal
         return {
             isValid: true,
             gasUsed,
+            gasPrice: gasPrice.toNumber(),
             error: null,
         };
     }
@@ -36,6 +37,7 @@ const transactionValidator = async (transactionValidatorInterface, pureGas = fal
         return {
             isValid: false,
             gasUsed: 0,
+            gasPrice: gasPrice.toNumber(),
             error: err.reason,
         };
     }
