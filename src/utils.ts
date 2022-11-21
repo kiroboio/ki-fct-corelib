@@ -24,16 +24,16 @@ interface ITxValidator {
 }
 
 const transactionValidator = async (transactionValidatorInterface: ITxValidator, pureGas = false) => {
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
+    transactionValidatorInterface;
+
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const gasPrice = await provider.getGasPrice();
+  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+
+  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+
   try {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
-      transactionValidatorInterface;
-
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    const gasPrice = await provider.getGasPrice();
-    const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-
-    const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
-
     let gas: BigNumber;
     if (activateForFree) {
       gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
@@ -51,12 +51,14 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator,
     return {
       isValid: true,
       gasUsed,
+      gasPrice: gasPrice.toNumber(),
       error: null,
     };
   } catch (err: any) {
     return {
       isValid: false,
       gasUsed: 0,
+      gasPrice: gasPrice.toNumber(),
       error: err.reason,
     };
   }
