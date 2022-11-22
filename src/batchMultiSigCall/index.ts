@@ -17,6 +17,7 @@ import {
 import {
   getSessionId,
   getTxEIP712Types,
+  getUsedStructTypes,
   handleData,
   handleEnsHash,
   handleFunctionSignature,
@@ -314,23 +315,28 @@ export class BatchMultiSigCall {
 
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";
-    const { typedData, structTypeKeys } = await this.createTypedData(salt, version);
+    const typedData = await this.createTypedData(salt, version);
     const sessionId: string = getSessionId(salt, this.options);
 
-    const mcall = this.calls.map((call, index) => ({
-      typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: handleEnsHash(call),
-      functionSignature: handleFunctionSignature(call),
-      value: this.handleValue(call),
-      callId: manageCallId(this.calls, call, index),
-      from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
-      to: this.handleTo(call),
-      data: handleData(call),
-      types: handleTypes(call),
-      typedHashes: structTypeKeys
-        ? structTypeKeys.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
-        : [],
-    }));
+    const mcall = this.calls.map((call, index) => {
+      const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
+
+      return {
+        typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+        ensHash: handleEnsHash(call),
+        functionSignature: handleFunctionSignature(call),
+        value: this.handleValue(call),
+        callId: manageCallId(this.calls, call, index),
+        from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
+        to: this.handleTo(call),
+        data: handleData(call),
+        types: handleTypes(call),
+        typedHashes:
+          usedTypeStructs.length > 0
+            ? usedTypeStructs.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
+            : [],
+      };
+    });
 
     return {
       typedData,
@@ -400,10 +406,7 @@ export class BatchMultiSigCall {
   //
   // Helpers functions
 
-  private async createTypedData(
-    salt: string,
-    version: string
-  ): Promise<{ typedData: BatchMultiSigCallTypedData; structTypeKeys: string[] }> {
+  private async createTypedData(salt: string, version: string): Promise<BatchMultiSigCallTypedData> {
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
@@ -517,7 +520,6 @@ export class BatchMultiSigCall {
     }
 
     const { structTypes, txTypes } = getTxEIP712Types(this.calls);
-    const structTypeKeys = Object.keys(structTypes);
 
     const typedData: BatchMultiSigCallTypedData = {
       types: {
@@ -594,7 +596,7 @@ export class BatchMultiSigCall {
         ...typedDataMessage,
       },
     };
-    return { typedData, structTypeKeys };
+    return typedData;
   }
 
   private getParamsFromCall(call: IMSCallInput) {

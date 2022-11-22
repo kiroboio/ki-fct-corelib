@@ -393,3 +393,15 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     structTypes,
   };
 };
+
+export const getUsedStructTypes = (typedData: TypedData, typeName: string) => {
+  const mainType = typedData.types[typeName];
+
+  const usedStructTypes: string[] = mainType.reduce<string[]>((acc, item) => {
+    if (item.type.includes("Struct")) {
+      return [...acc, item.type, ...getUsedStructTypes(typedData, item.type)];
+    }
+    return acc;
+  }, []);
+  return usedStructTypes;
+};
