@@ -5,10 +5,9 @@ import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { Params, Variable } from "../interfaces";
-import { getTypedDataDomain, createValidatorTxData, flows, getValidatorFunctionData } from "../helpers";
+import { getTypedDataDomain, createValidatorTxData, flows } from "../helpers";
 import {
   IMSCallInput,
-  MSCall,
   MSCallOptions,
   IWithPlugin,
   IBatchMultiSigCallFCT,
@@ -17,6 +16,7 @@ import {
 } from "./interfaces";
 import {
   getSessionId,
+  getTxEIP712Types,
   handleData,
   handleEnsHash,
   handleFunctionSignature,
@@ -88,7 +88,6 @@ export class BatchMultiSigCall {
   }
 
   // Helpers
-  // actuatorAddress: string, signedFCT: object, purgedFCT: string
 
   public getCalldataForActuator = async ({
     signedFCT,
@@ -308,22 +307,17 @@ export class BatchMultiSigCall {
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
-    const typedHashes: string[] = [];
-    const additionalTypes = {};
+
+    if (this.options.builder) {
+      utils.isAddress(this.options.builder);
+    }
 
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version: string = "0x010101";
-
-    const typedData: BatchMultiSigCallTypedData = await this.createTypedData(
-      additionalTypes,
-      typedHashes,
-      salt,
-      version
-    );
-
+    const { typedData, structTypeKeys } = await this.createTypedData(salt, version);
     const sessionId: string = getSessionId(salt, this.options);
 
-    const mcall: MSCall[] = this.calls.map((call, index) => ({
+    const mcall = this.calls.map((call, index) => ({
       typeHash: ethers.utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
@@ -333,14 +327,10 @@ export class BatchMultiSigCall {
       to: this.handleTo(call),
       data: handleData(call),
       types: handleTypes(call),
-      typedHashes: typedHashes
-        ? typedHashes.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
+      typedHashes: structTypeKeys
+        ? structTypeKeys.map((hash) => ethers.utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
         : [],
     }));
-
-    if (this.options.builder) {
-      utils.isAddress(this.options.builder);
-    }
 
     return {
       typedData,
@@ -411,18 +401,16 @@ export class BatchMultiSigCall {
   // Helpers functions
 
   private async createTypedData(
-    additionalTypes: object,
-    typedHashes: string[],
     salt: string,
     version: string
-  ): Promise<BatchMultiSigCallTypedData> {
+  ): Promise<{ typedData: BatchMultiSigCallTypedData; structTypeKeys: string[] }> {
     // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
       let paramsData = {};
       if (call.params) {
-        this.verifyParams(call.params, additionalTypes, typedHashes);
-        paramsData = this.getParams(call);
+        this.verifyParams(call.params);
+        paramsData = this.getParamsFromCall(call);
       }
 
       const options = call.options || {};
@@ -528,6 +516,9 @@ export class BatchMultiSigCall {
       primaryType.push({ name: "multisig", type: "Multisig" });
     }
 
+    const { structTypes, txTypes } = getTxEIP712Types(this.calls);
+    const structTypeKeys = Object.keys(structTypes);
+
     const typedData: BatchMultiSigCallTypedData = {
       types: {
         EIP712Domain: [
@@ -562,22 +553,8 @@ export class BatchMultiSigCall {
           { name: "blockable", type: "bool" },
         ],
         ...optionalTypes,
-        ...this.calls.reduce(
-          (acc: object, call: IMSCallInput, index: number) => ({
-            ...acc,
-            [`transaction${index + 1}`]: call.validator
-              ? [{ name: "call", type: "Call" }, ...getValidatorFunctionData(call.validator, call.params)]
-              : [
-                  { name: "call", type: "Call" },
-                  ...(call.params || []).map((param: Params) => ({
-                    name: param.name,
-                    type: param.type,
-                  })),
-                ],
-          }),
-          {}
-        ),
-        ...additionalTypes,
+        ...txTypes,
+        ...structTypes,
         Call: [
           { name: "call_index", type: "uint16" },
           { name: "payer_index", type: "uint16" },
@@ -617,10 +594,10 @@ export class BatchMultiSigCall {
         ...typedDataMessage,
       },
     };
-    return typedData;
+    return { typedData, structTypeKeys };
   }
 
-  private getParams(call: IMSCallInput) {
+  private getParamsFromCall(call: IMSCallInput) {
     // If call has parameters
     if (call.params) {
       // If mcall is a validation call
@@ -633,74 +610,58 @@ export class BatchMultiSigCall {
 
         return createValidatorTxData(call);
       }
+      const getParams = (params: Params[]) => {
+        return {
+          ...params.reduce((acc, param) => {
+            let value: any;
 
-      return {
-        ...call.params.reduce((acc, param) => {
-          let value: any;
-
-          // If parameter is a custom type (struct)
-          if (param.customType) {
-            // If parameter is an array of custom types
-            if (param.type.lastIndexOf("[") > 0) {
-              const valueArray = param.value as Params[][];
-              value = valueArray.map((item) =>
-                item.reduce((acc, item2) => {
-                  return { ...acc, [item2.name]: item2.value };
-                }, {})
-              );
+            // If parameter is a custom type (struct)
+            if (param.customType || param.type.includes("tuple")) {
+              // If parameter is an array of custom types
+              if (param.type.lastIndexOf("[") > 0) {
+                const valueArray = param.value as Params[][];
+                value = valueArray.map((item) => getParams(item));
+              } else {
+                // If parameter is a custom type
+                const valueArray = param.value as Params[];
+                value = getParams(valueArray);
+              }
             } else {
-              // If parameter is a custom type
-              const valueArray = param.value as Params[];
-              value = valueArray.reduce((acc, item) => {
-                return { ...acc, [item.name]: item.value };
-              }, {});
+              value = param.value;
             }
-          } else {
-            value = param.value;
-          }
-          return {
-            ...acc,
-            [param.name]: value,
-          };
-        }, {}),
+            return {
+              ...acc,
+              [param.name]: value,
+            };
+          }, {}),
+        };
       };
+
+      return getParams(call.params);
     }
     return {};
   }
 
-  private verifyParams(params: Params[], additionalTypes: object, typedHashes: string[]) {
-    params.forEach((param) => {
+  private verifyParams(params: Params[]) {
+    params.forEach((param: Params) => {
       // If parameter is a variable
+
       if (instanceOfVariable(param.value)) {
         param.value = this.getVariable(param.value, param.type);
       }
 
-      if (param.customType) {
-        if (additionalTypes[param.type]) {
-          return;
-        }
+      if (param.customType || param.type.includes("tuple")) {
         if (param.type.lastIndexOf("[") > 0) {
-          const type = param.type.slice(0, param.type.lastIndexOf("["));
-          typedHashes.push(type);
-
           for (const parameter of param.value as Params[][]) {
-            this.verifyParams(parameter as Params[], additionalTypes, typedHashes);
+            this.verifyParams(parameter as Params[]);
           }
-
-          const arrayValue = param.value[0] as Params[];
-          additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
         } else {
-          const type = param.type;
-          typedHashes.push(type);
-
-          this.verifyParams(param.value as Params[], additionalTypes, typedHashes);
-
-          const arrayValue = param.value as Params[];
-          additionalTypes[type] = arrayValue.map((item) => ({ name: item.name, type: item.type }));
+          this.verifyParams(param.value as Params[]);
         }
       }
     });
   }
+
   private handleTo = (call: IMSCallInput) => {
     // If call is a validator method, return validator address as to address
     if (call.validator) {

@@ -133,3 +133,11 @@ export interface IInput {
 export interface IOutput {
     get(): unknown;
 }
+export interface EIP712CustomType {
+    callIndex: number;
+    innerIndexes: number[];
+    types: {
+        name: string;
+        type: string;
+    }[];
+}

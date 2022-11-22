@@ -64,7 +64,7 @@ const typeValue = (param) => {
     // return [];
     // If type is an array
     if (param.type.lastIndexOf("[") > 0) {
-        if (param.customType) {
+        if (param.customType || param.type.includes("tuple")) {
             const value = param.value;
             return [TYPE_ARRAY, value.length, ...(0, exports.getTypesArray)(param.value[0])];
         }
@@ -82,7 +82,7 @@ const typeValue = (param) => {
         return [TYPE_BYTES];
     }
     // If param is custom struct
-    if (param.customType) {
+    if (param.customType || param.type.includes("tuple")) {
         const values = param.value;
         return [
             values.length,
@@ -176,19 +176,20 @@ const manageCallFlagsV2 = (flow, jump) => {
 exports.manageCallFlagsV2 = manageCallFlagsV2;
 // From method and params create tuple
 const getMethodInterface = (call) => {
-    const params = call.params.map((item) => {
-        if (instanceOfParams(item.value)) {
-            if (Array.isArray(item.value[0])) {
-                const value = item.value[0];
-                return `(${value.map((val) => val.type).join(",")})[]`;
+    const getParamsType = (param) => {
+        if (instanceOfParams(param.value)) {
+            if (Array.isArray(param.value[0])) {
+                const value = param.value[0];
+                return `(${value.map(getParamsType).join(",")})[]`;
             }
             else {
-                const value = item.value;
-                return `(${value.map((val) => val.type).join(",")})`;
+                const value = param.value;
+                return `(${value.map(getParamsType).join(",")})`;
             }
         }
-        return item.type;
-    });
+        return param.type;
+    };
+    const params = call.params.map(getParamsType);
     return `${call.method}(${params})`;
 };
 exports.getMethodInterface = getMethodInterface;
@@ -218,8 +219,8 @@ const getEncodedMethodParams = (call, withFunction) => {
         const iface = new ethers_1.ethers.utils.Interface(ABI);
         return iface.encodeFunctionData(call.method, call.params.map((item) => item.value));
     }
-    const types = call.params.map((param) => {
-        if (param.customType) {
+    const getType = (param) => {
+        if (param.customType || param.type.includes("tuple")) {
             let value;
             let isArray = false;
             if (param.type.lastIndexOf("[") > 0) {
@@ -229,29 +230,27 @@ const getEncodedMethodParams = (call, withFunction) => {
             else {
                 value = param.value;
             }
-            return `(${value.map((val) => val.type).join(",")})${isArray ? "[]" : ""}`;
+            return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
         }
         return param.type;
-    });
-    const values = call.params.map((param) => {
-        if (param.customType) {
+    };
+    const getValues = (param) => {
+        if (param.customType || param.type.includes("tuple")) {
             let value;
             if (param.type.lastIndexOf("[") > 0) {
                 value = param.value;
                 return value.reduce((acc, val) => {
-                    return [...acc, val.map((item) => item.value)];
+                    return [...acc, val.map(getValues)];
                 }, []);
             }
             else {
                 value = param.value;
-                return value.reduce((acc, val) => {
-                    return [...acc, val.value];
-                }, []);
+                return value.map(getValues);
             }
         }
         return param.value;
-    });
-    return utils_1.defaultAbiCoder.encode(types, values);
+    };
+    return utils_1.defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
 const generateTxType = (item) => {
