@@ -8,6 +8,7 @@ import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
 
 dotenv.config();
+// eslint-disable-next-line
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 function getDate(days: number = 0) {
@@ -16,6 +17,7 @@ function getDate(days: number = 0) {
   return Number(result.getTime() / 1000).toFixed();
 }
 
+// eslint-disable-next-line
 function addHours(numOfHours: number, date = new Date()) {
   date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
 
