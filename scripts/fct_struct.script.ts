@@ -81,8 +81,19 @@ async function main() {
                   value: [
                     {
                       name: "random1",
-                      type: "uint256",
-                      value: "1",
+                      type: "tuple",
+                      value: [
+                        {
+                          name: "random122",
+                          type: "uint256",
+                          value: "1",
+                        },
+                        {
+                          name: "random123",
+                          type: "uint256",
+                          value: "2",
+                        },
+                      ],
                     },
                     {
                       name: "random2",
