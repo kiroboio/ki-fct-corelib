@@ -5,6 +5,7 @@ import fs from "fs";
 import data from "./scriptData";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
+import { utils } from "../src/index";
 
 dotenv.config();
 
@@ -17,6 +18,13 @@ function getDate(days: number = 0) {
 const chainId = 5;
 
 async function main() {
+  const gases = await utils.getGasPriceEstimations({
+    rpcUrl: process.env.RPC_URL_MAINNET as string,
+    historicalBlocks: 20,
+  });
+
+  console.log(gases);
+
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
 

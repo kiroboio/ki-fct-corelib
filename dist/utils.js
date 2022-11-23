@@ -6,38 +6,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("./abi/FCT_Actuator.abi.json"));
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const transactionValidator = async (transactionValidatorInterface, pureGas = false) => {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = transactionValidatorInterface;
+const transactionValidator = async (txVal, pureGas = false) => {
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-    const gasPrice = await provider.getGasPrice();
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
+    const gasPriceEstimates = await getGasPriceEstimations({
+        rpcUrl,
+        historicalBlocks: 20,
+    });
+    const gasPriceEIP1559 = gasPriceEstimates[txVal.gasPriority || "average"];
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     try {
         let gas;
         if (activateForFree) {
             gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-                gasPrice,
+                ...gasPriceEIP1559,
             });
         }
         else {
             gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-                gasPrice,
+                ...gasPriceEIP1559,
             });
         }
         // Add 15% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
         return {
             isValid: true,
-            gasUsed,
-            gasPrice: gasPrice.toNumber(),
+            txData: { gas: gasUsed, ...gasPriceEIP1559, type: 2 },
             error: null,
         };
     }
     catch (err) {
         return {
             isValid: false,
-            gasUsed: 0,
-            gasPrice: gasPrice.toNumber(),
+            txData: { gas: 0, ...gasPriceEIP1559, type: 2 },
             error: err.reason,
         };
     }
@@ -56,7 +58,6 @@ const recoverAddressFromEIP712 = (typedData, signature) => {
         return null;
     }
 };
-// TODO: Check if this is the right way to get FCT Message hash
 const getFCTMessageHash = (typedData) => {
     // Return FCT Message hash
     return ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.eip712Hash(typedData, eth_sig_util_1.SignTypedDataVersion.V4));
@@ -108,10 +109,62 @@ const getVariablesAsBytes32 = (variables) => {
         return `0x${Number(v).toString(16).padStart(64, "0")}`;
     });
 };
+const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }) => {
+    function avg(arr) {
+        const sum = arr.reduce((a, v) => a + v);
+        return Math.round(sum / arr.length);
+    }
+    // POST request
+    const res = await fetch(rpcUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "eth_feeHistory",
+            params: [historicalBlocks, "latest", [25, 50, 75]],
+            id: 1,
+        }),
+    });
+    const { result } = await res.json();
+    let blockNum = parseInt(result.oldestBlock, 16);
+    let index = 0;
+    const blocks = [];
+    while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
+        blocks.push({
+            number: blockNum,
+            baseFeePerGas: Number(result.baseFeePerGas[index]),
+            gasUsedRatio: Number(result.gasUsedRatio[index]),
+            priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+        });
+        blockNum += 1;
+        index += 1;
+    }
+    const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
+    const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
+    const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+    const baseFeePerGas = Number(result.baseFeePerGas[historicalBlocks]);
+    return {
+        slow: {
+            maxFeePerGas: slow + baseFeePerGas,
+            priorityFeePerGas: slow,
+        },
+        average: {
+            maxFeePerGas: average + baseFeePerGas,
+            priorityFeePerGas: average,
+        },
+        fast: {
+            maxFeePerGas: fast + baseFeePerGas,
+            priorityFeePerGas: fast,
+        },
+    };
+};
 exports.default = {
     getFCTMessageHash,
     validateFCT,
     recoverAddressFromEIP712,
     getVariablesAsBytes32,
     transactionValidator,
+    getGasPriceEstimations,
 };

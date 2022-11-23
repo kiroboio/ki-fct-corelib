@@ -249,10 +249,6 @@ export class BatchMultiSigCall {
     return pluginData;
   };
 
-  // public getAllPlugins = () => {
-  //   return getPlugins({});
-  // };
-
   // End of plugin functions
   //
   //

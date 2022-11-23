@@ -192,9 +192,6 @@ class BatchMultiSigCall {
         this.options = { ...this.options, ...options };
         return this.options;
     }
-    // public getAllPlugins = () => {
-    //   return getPlugins({});
-    // };
     // End of plugin functions
     //
     //
@@ -249,22 +246,25 @@ class BatchMultiSigCall {
         }
         const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
         const version = "0x010101";
-        const { typedData, structTypeKeys } = await this.createTypedData(salt, version);
+        const typedData = await this.createTypedData(salt, version);
         const sessionId = (0, helpers_2.getSessionId)(salt, this.options);
-        const mcall = this.calls.map((call, index) => ({
-            typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-            ensHash: (0, helpers_2.handleEnsHash)(call),
-            functionSignature: (0, helpers_2.handleFunctionSignature)(call),
-            value: this.handleValue(call),
-            callId: (0, helpers_2.manageCallId)(this.calls, call, index),
-            from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
-            to: this.handleTo(call),
-            data: (0, helpers_2.handleData)(call),
-            types: (0, helpers_2.handleTypes)(call),
-            typedHashes: structTypeKeys
-                ? structTypeKeys.map((hash) => ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
-                : [],
-        }));
+        const mcall = this.calls.map((call, index) => {
+            const usedTypeStructs = (0, helpers_2.getUsedStructTypes)(typedData, `transaction${index + 1}`);
+            return {
+                typeHash: ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+                ensHash: (0, helpers_2.handleEnsHash)(call),
+                functionSignature: (0, helpers_2.handleFunctionSignature)(call),
+                value: this.handleValue(call),
+                callId: (0, helpers_2.manageCallId)(this.calls, call, index),
+                from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
+                to: this.handleTo(call),
+                data: (0, helpers_2.handleData)(call),
+                types: (0, helpers_2.handleTypes)(call),
+                typedHashes: usedTypeStructs.length > 0
+                    ? usedTypeStructs.map((hash) => ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
+                    : [],
+            };
+        });
         return {
             typedData,
             builder: this.options.builder || "0x0000000000000000000000000000000000000000",
@@ -415,7 +415,6 @@ class BatchMultiSigCall {
             primaryType.push({ name: "multisig", type: "Multisig" });
         }
         const { structTypes, txTypes } = (0, helpers_2.getTxEIP712Types)(this.calls);
-        const structTypeKeys = Object.keys(structTypes);
         const typedData = {
             types: {
                 EIP712Domain: [
@@ -491,7 +490,7 @@ class BatchMultiSigCall {
                 ...typedDataMessage,
             },
         };
-        return { typedData, structTypeKeys };
+        return typedData;
     }
     getParamsFromCall(call) {
         // If call has parameters

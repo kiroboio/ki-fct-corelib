@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTxEIP712Types = exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.instanceOfVariable = void 0;
+exports.getUsedStructTypes = exports.getTxEIP712Types = exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = exports.manageFlow = exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = exports.instanceOfVariable = void 0;
 const ethers_1 = require("ethers");
 const helpers_1 = require("../helpers");
 const constants_1 = require("../constants");
@@ -340,3 +340,14 @@ const getTxEIP712Types = (calls) => {
     };
 };
 exports.getTxEIP712Types = getTxEIP712Types;
+const getUsedStructTypes = (typedData, typeName) => {
+    const mainType = typedData.types[typeName];
+    const usedStructTypes = mainType.reduce((acc, item) => {
+        if (item.type.includes("Struct")) {
+            return [...acc, item.type, ...(0, exports.getUsedStructTypes)(typedData, item.type)];
+        }
+        return acc;
+    }, []);
+    return usedStructTypes;
+};
+exports.getUsedStructTypes = getUsedStructTypes;

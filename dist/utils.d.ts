@@ -10,6 +10,7 @@ interface ITxValidator {
     actuatorPrivateKey: string;
     actuatorContractAddress: string;
     activateForFree: boolean;
+    gasPriority?: "slow" | "average" | "fast";
 }
 declare const _default: {
     getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;
@@ -25,11 +26,42 @@ declare const _default: {
     };
     recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string;
     getVariablesAsBytes32: (variables: string[]) => string[];
-    transactionValidator: (transactionValidatorInterface: ITxValidator, pureGas?: boolean) => Promise<{
+    transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<{
         isValid: boolean;
-        gasUsed: number;
-        gasPrice: number;
+        txData: {
+            type: number;
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+            gas: number;
+        } | {
+            type: number;
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+            gas: number;
+        } | {
+            type: number;
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+            gas: number;
+        };
         error: any;
+    }>;
+    getGasPriceEstimations: ({ rpcUrl, historicalBlocks }: {
+        rpcUrl: string;
+        historicalBlocks: number;
+    }) => Promise<{
+        slow: {
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+        };
+        average: {
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+        };
+        fast: {
+            maxFeePerGas: number;
+            priorityFeePerGas: number;
+        };
     }>;
 };
 export default _default;
