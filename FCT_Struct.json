@@ -1,0 +1,555 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "BatchMultiSigCall": [
+        {
+          "name": "meta",
+          "type": "Meta"
+        },
+        {
+          "name": "limits",
+          "type": "Limits"
+        },
+        {
+          "name": "recurrency",
+          "type": "Recurrency"
+        },
+        {
+          "name": "transaction_1",
+          "type": "transaction1"
+        },
+        {
+          "name": "transaction_2",
+          "type": "transaction2"
+        }
+      ],
+      "Meta": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "builder",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "version",
+          "type": "bytes3"
+        },
+        {
+          "name": "random_id",
+          "type": "bytes3"
+        },
+        {
+          "name": "eip712",
+          "type": "bool"
+        }
+      ],
+      "Limits": [
+        {
+          "name": "valid_from",
+          "type": "uint40"
+        },
+        {
+          "name": "expires_at",
+          "type": "uint40"
+        },
+        {
+          "name": "gas_price_limit",
+          "type": "uint64"
+        },
+        {
+          "name": "purgeable",
+          "type": "bool"
+        },
+        {
+          "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "Recurrency": [
+        {
+          "name": "max_repeats",
+          "type": "uint16"
+        },
+        {
+          "name": "chill_time",
+          "type": "uint32"
+        },
+        {
+          "name": "accumetable",
+          "type": "bool"
+        }
+      ],
+      "transaction1": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "data",
+          "type": "Struct1"
+        },
+        {
+          "name": "otherData",
+          "type": "Struct5"
+        }
+      ],
+      "transaction2": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "data",
+          "type": "Struct7"
+        },
+        {
+          "name": "otherData",
+          "type": "Struct10"
+        }
+      ],
+      "Struct1": [
+        {
+          "name": "firstname",
+          "type": "string"
+        },
+        {
+          "name": "lastname",
+          "type": "string"
+        },
+        {
+          "name": "dateOfBirth",
+          "type": "Struct2"
+        }
+      ],
+      "Struct2": [
+        {
+          "name": "year",
+          "type": "uint256"
+        },
+        {
+          "name": "month",
+          "type": "uint256"
+        },
+        {
+          "name": "day",
+          "type": "uint256"
+        },
+        {
+          "name": "random",
+          "type": "Struct3"
+        }
+      ],
+      "Struct3": [
+        {
+          "name": "random1",
+          "type": "Struct4"
+        },
+        {
+          "name": "random2",
+          "type": "uint256"
+        }
+      ],
+      "Struct4": [
+        {
+          "name": "random122",
+          "type": "uint256"
+        },
+        {
+          "name": "random123",
+          "type": "uint256"
+        }
+      ],
+      "Struct5": [
+        {
+          "name": "firstname",
+          "type": "string"
+        },
+        {
+          "name": "lastname",
+          "type": "string"
+        },
+        {
+          "name": "middleName",
+          "type": "string"
+        },
+        {
+          "name": "nationality",
+          "type": "Struct6"
+        }
+      ],
+      "Struct6": [
+        {
+          "name": "country",
+          "type": "string"
+        },
+        {
+          "name": "city",
+          "type": "string"
+        }
+      ],
+      "Struct7": [
+        {
+          "name": "firstname",
+          "type": "string"
+        },
+        {
+          "name": "lastname",
+          "type": "string"
+        },
+        {
+          "name": "dateOfBirth",
+          "type": "Struct8"
+        }
+      ],
+      "Struct8": [
+        {
+          "name": "year",
+          "type": "uint256"
+        },
+        {
+          "name": "month",
+          "type": "uint256"
+        },
+        {
+          "name": "day",
+          "type": "uint256"
+        },
+        {
+          "name": "random",
+          "type": "Struct9"
+        }
+      ],
+      "Struct9": [
+        {
+          "name": "random1",
+          "type": "uint256"
+        },
+        {
+          "name": "random2",
+          "type": "uint256"
+        }
+      ],
+      "Struct10": [
+        {
+          "name": "firstname",
+          "type": "string"
+        },
+        {
+          "name": "lastname",
+          "type": "string"
+        },
+        {
+          "name": "middleName",
+          "type": "string"
+        },
+        {
+          "name": "nationality",
+          "type": "Struct11"
+        }
+      ],
+      "Struct11": [
+        {
+          "name": "country",
+          "type": "string"
+        },
+        {
+          "name": "city",
+          "type": "string"
+        }
+      ],
+      "Call": [
+        {
+          "name": "call_index",
+          "type": "uint16"
+        },
+        {
+          "name": "payer_index",
+          "type": "uint16"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "to_ens",
+          "type": "string"
+        },
+        {
+          "name": "eth_value",
+          "type": "uint256"
+        },
+        {
+          "name": "gas_limit",
+          "type": "uint32"
+        },
+        {
+          "name": "view_only",
+          "type": "bool"
+        },
+        {
+          "name": "permissions",
+          "type": "uint16"
+        },
+        {
+          "name": "flow_control",
+          "type": "string"
+        },
+        {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
+          "name": "jump_on_success",
+          "type": "uint16"
+        },
+        {
+          "name": "jump_on_fail",
+          "type": "uint16"
+        },
+        {
+          "name": "method_interface",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x4dEe9936B9E90cD8851134b760054f4a0df482aE",
+      "salt": "0x0100b06f49f49717096500004dee9936b9e90cd8851134b760054f4a0df482ae"
+    },
+    "message": {
+      "meta": {
+        "name": "",
+        "builder": "0x0000000000000000000000000000000000000000",
+        "selector": "0x07eefcb4",
+        "version": "0x010101",
+        "random_id": "0xa5b70e",
+        "eip712": true
+      },
+      "limits": {
+        "valid_from": "1669215019",
+        "expires_at": "1670079019",
+        "gas_price_limit": "3000000000",
+        "purgeable": false,
+        "blockable": true
+      },
+      "recurrency": {
+        "max_repeats": "1000",
+        "chill_time": "1",
+        "accumetable": true
+      },
+      "transaction_1": {
+        "call": {
+          "call_index": 1,
+          "payer_index": 1,
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": 0,
+          "view_only": false,
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "transfer((string,string,(uint256,uint256,uint256,((uint256,uint256),uint256))),(string,string,string,(string,string)))"
+        },
+        "data": {
+          "firstname": "John",
+          "lastname": "Doe",
+          "dateOfBirth": {
+            "year": "1990",
+            "month": "1",
+            "day": "1",
+            "random": {
+              "random1": {
+                "random122": "1",
+                "random123": "2"
+              },
+              "random2": "2"
+            }
+          }
+        },
+        "otherData": {
+          "firstname": "John",
+          "lastname": "Doe",
+          "middleName": "Doe",
+          "nationality": {
+            "country": "Sweden",
+            "city": "Stockholm"
+          }
+        }
+      },
+      "transaction_2": {
+        "call": {
+          "call_index": 2,
+          "payer_index": 2,
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": 0,
+          "view_only": false,
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "transfer((string,string,(uint256,uint256,uint256,(uint256,uint256))),(string,string,string,(string,string)))"
+        },
+        "data": {
+          "firstname": "John",
+          "lastname": "Doe",
+          "dateOfBirth": {
+            "year": "1990",
+            "month": "1",
+            "day": "1",
+            "random": {
+              "random1": "1",
+              "random2": "2"
+            }
+          }
+        },
+        "otherData": {
+          "firstname": "John",
+          "lastname": "Doe",
+          "middleName": "Doe",
+          "nationality": {
+            "country": "Sweden",
+            "city": "Stockholm"
+          }
+        }
+      }
+    }
+  },
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x4e6ed0e81a3a4ba052d9af01f01ef95213123246d81e5316a27c48e70f5b6228",
+  "sessionId": "0xa5b70e0001010103e80000000100638b622b00637e332b00000000b2d05e000d",
+  "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "mcall": [
+    {
+      "typeHash": "0xf32ae2d5b38d4a1cdd3068589fc995e7241ef879ab9ec581fd375ce0ea9f6404",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0xa850fd4825455754b32882d6ff4a183518946c9672ace188c76947374fec9905",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000100010000000000",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000007c60000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000044a6f686e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000044a6f686e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f6500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f65000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000653776564656e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000953746f636b686f6c6d0000000000000000000000000000000000000000000000",
+      "types": [
+        3,
+        2000,
+        2000,
+        4,
+        1000,
+        1000,
+        1000,
+        2,
+        2,
+        1000,
+        1000,
+        1000,
+        4,
+        2000,
+        2000,
+        2000,
+        2,
+        2000,
+        2000
+      ],
+      "typedHashes": [
+        "0xc65263b02e267985a9d8609de990af9a3849b424d1250f26574e1ca272c01a9b",
+        "0x37faf292b2ac5315e77bd8b352a9790bfc743c8744a4af665ebc5d3eb5e01ab1",
+        "0x5db4fcc0898f41c941f7625914e1071b08e5875a60eddab717d5a874e4e25751",
+        "0x02fa421b9720ae1986b74da096ea2c612c63d18a6a9ac9fedb9449531e35cadd",
+        "0xc291013e9385ad628a86350fb83b9fd0204153f694e512dcd7d46dd714347f23",
+        "0x5545e4c61d85119871b57215802464e7dea9cf23c6a3ddf5a53ae39d95c705aa"
+      ]
+    },
+    {
+      "typeHash": "0x1f0bc8011b9d8773b6ccd955b34b13bc1057b101e37fecfdf4ce6ed15379572b",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x499508982b29b0e1c9b7722b830aab6dff35526b7645eba16df3a52b5a000d50",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000200020000000000",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000007c6000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000044a6f686e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000044a6f686e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f6500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003446f65000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000653776564656e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000953746f636b686f6c6d0000000000000000000000000000000000000000000000",
+      "types": [
+        3,
+        2000,
+        2000,
+        4,
+        1000,
+        1000,
+        1000,
+        2,
+        1000,
+        1000,
+        4,
+        2000,
+        2000,
+        2000,
+        2,
+        2000,
+        2000
+      ],
+      "typedHashes": [
+        "0xeb5953d0b8a6828b701f6374a29749b1b89ed1eccec08e7004e679bc434b9c50",
+        "0x05aaeb942d698705902eea21c375441e1465d368b7b0f2426a7ca514f4c30aa8",
+        "0xc278d876a375519d3b77260bb29fb57d67c5e8a54e3640580408c731646f421a",
+        "0x2305a4ea33d8c6bb89f09b184a14cfef8f87bad2896ddfe2bad308d203d17d90",
+        "0x2ad6f5c78ad8f15af207b53832b0fec1b8903ec401876985cbfcb2b0ff702ca4"
+      ]
+    }
+  ],
+  "variables": [],
+  "externalSigners": [],
+  "signatures": [
+    {
+      "r": "0xdc05040af06b8a7e76bb43e6f95fef0436df1c7398e884d07c4283ffe489c846",
+      "s": "0x5c8145b4a5e4353b4efd34ea91738683f7edb000d7d28b32d78f4a9cc40b079c",
+      "_vs": "0xdc8145b4a5e4353b4efd34ea91738683f7edb000d7d28b32d78f4a9cc40b079c",
+      "recoveryParam": 1,
+      "v": 28,
+      "yParityAndS": "0xdc8145b4a5e4353b4efd34ea91738683f7edb000d7d28b32d78f4a9cc40b079c",
+      "compact": "0xdc05040af06b8a7e76bb43e6f95fef0436df1c7398e884d07c4283ffe489c846dc8145b4a5e4353b4efd34ea91738683f7edb000d7d28b32d78f4a9cc40b079c"
+    }
+  ]
+}

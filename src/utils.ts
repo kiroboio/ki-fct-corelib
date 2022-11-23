@@ -21,15 +21,21 @@ interface ITxValidator {
   actuatorPrivateKey: string;
   actuatorContractAddress: string;
   activateForFree: boolean;
+  gasPriority?: "slow" | "average" | "fast";
 }
 
-const transactionValidator = async (transactionValidatorInterface: ITxValidator, pureGas = false) => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } =
-    transactionValidatorInterface;
+const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const gasPrice = await provider.getGasPrice();
+
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+  const gasPriceEstimates = await getGasPriceEstimations({
+    rpcUrl,
+    historicalBlocks: 20,
+  });
+
+  const gasPriceEIP1559 = gasPriceEstimates[txVal.gasPriority || "average"];
 
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
@@ -37,11 +43,11 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator,
     let gas: BigNumber;
     if (activateForFree) {
       gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-        gasPrice,
+        ...gasPriceEIP1559,
       });
     } else {
       gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-        gasPrice,
+        ...gasPriceEIP1559,
       });
     }
 
@@ -50,15 +56,13 @@ const transactionValidator = async (transactionValidatorInterface: ITxValidator,
 
     return {
       isValid: true,
-      gasUsed,
-      gasPrice: gasPrice.toNumber(),
+      txData: { gas: gasUsed, ...gasPriceEIP1559, type: 2 },
       error: null,
     };
   } catch (err: any) {
     return {
       isValid: false,
-      gasUsed: 0,
-      gasPrice: gasPrice.toNumber(),
+      txData: { gas: 0, ...gasPriceEIP1559, type: 2 },
       error: err.reason,
     };
   }
@@ -79,7 +83,6 @@ const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signatu
   }
 };
 
-// TODO: Check if this is the right way to get FCT Message hash
 const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
   // Return FCT Message hash
   return ethers.utils.hexlify(
@@ -143,10 +146,69 @@ const getVariablesAsBytes32 = (variables: string[]) => {
   });
 };
 
+const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }: { rpcUrl: string; historicalBlocks: number }) => {
+  function avg(arr: number[]) {
+    const sum = arr.reduce((a, v) => a + v);
+    return Math.round(sum / arr.length);
+  }
+
+  // POST request
+  const res = await fetch(rpcUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: "eth_feeHistory",
+      params: [historicalBlocks, "latest", [25, 50, 75]],
+      id: 1,
+    }),
+  });
+  const { result } = await res.json();
+
+  let blockNum = parseInt(result.oldestBlock, 16);
+  let index = 0;
+  const blocks = [];
+
+  while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
+    blocks.push({
+      number: blockNum,
+      baseFeePerGas: Number(result.baseFeePerGas[index]),
+      gasUsedRatio: Number(result.gasUsedRatio[index]),
+      priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+    });
+    blockNum += 1;
+    index += 1;
+  }
+
+  const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
+  const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
+  const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+
+  const baseFeePerGas = Number(result.baseFeePerGas[historicalBlocks]);
+
+  return {
+    slow: {
+      maxFeePerGas: slow + baseFeePerGas,
+      priorityFeePerGas: slow,
+    },
+    average: {
+      maxFeePerGas: average + baseFeePerGas,
+      priorityFeePerGas: average,
+    },
+    fast: {
+      maxFeePerGas: fast + baseFeePerGas,
+      priorityFeePerGas: fast,
+    },
+  };
+};
+
 export default {
   getFCTMessageHash,
   validateFCT,
   recoverAddressFromEIP712,
   getVariablesAsBytes32,
   transactionValidator,
+  getGasPriceEstimations,
 };

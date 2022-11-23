@@ -8,11 +8,12 @@ import {
   getTypedHashes,
   getTypesArray,
   getValidatorData,
+  getValidatorFunctionData,
   getValidatorMethodInterface,
 } from "../helpers";
 import { IMSCallInput } from "./interfaces";
 import { Flow } from "../constants";
-import { Variable } from "interfaces";
+import { Params, Variable } from "interfaces";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
@@ -311,4 +312,96 @@ export const parseCallID = (
     payerIndex,
     callIndex,
   };
+};
+
+export const getTxEIP712Types = (calls: IMSCallInput[]) => {
+  const txTypes = {};
+  const structTypes = {};
+  const getTypeCount = () => Object.values(structTypes).length + 1;
+
+  const getStructType = (param: Params, index: number) => {
+    const typeName = `Struct${getTypeCount()}`;
+
+    let paramValue: Params[];
+    if (param.type.lastIndexOf("[") > 0) {
+      paramValue = param.value[0] as Params[];
+    } else {
+      paramValue = param.value as Params[];
+    }
+
+    let customCount = 0;
+    const eip712Type = paramValue.map((item) => {
+      if (item.customType || item.type.includes("tuple")) {
+        // const innerTypeName = getStructType(item, index);
+        ++customCount;
+        const innerTypeName = `Struct${getTypeCount() + customCount}`;
+        return {
+          name: item.name,
+          type: innerTypeName,
+        };
+      }
+      return {
+        name: item.name,
+        type: item.type,
+      };
+    });
+
+    structTypes[typeName] = eip712Type;
+
+    if (param.type.lastIndexOf("[") > 0) {
+      for (const parameter of param.value[0] as Params[]) {
+        if (parameter.customType || parameter.type.includes("tuple")) {
+          getStructType(parameter, index);
+        }
+      }
+    } else {
+      for (const parameter of param.value as Params[]) {
+        if (parameter.customType || parameter.type.includes("tuple")) {
+          getStructType(parameter, index);
+        }
+      }
+    }
+
+    return typeName;
+  };
+
+  calls.forEach((call: IMSCallInput, index: number) => {
+    if (call.validator) {
+      txTypes[`transaction${index + 1}`] = [
+        { name: "call", type: "Call" },
+        ...getValidatorFunctionData(call.validator, call.params),
+      ];
+      return;
+    }
+
+    const values = call.params.map((param: Params) => {
+      if (param.customType || param.type === "tuple") {
+        const type = getStructType(param, index);
+        return { name: param.name, type };
+      }
+      return {
+        name: param.name,
+        type: param.type,
+      };
+    });
+
+    txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+  });
+
+  return {
+    txTypes,
+    structTypes,
+  };
+};
+
+export const getUsedStructTypes = (typedData: TypedData, typeName: string) => {
+  const mainType = typedData.types[typeName];
+
+  const usedStructTypes: string[] = mainType.reduce<string[]>((acc, item) => {
+    if (item.type.includes("Struct")) {
+      return [...acc, item.type, ...getUsedStructTypes(typedData, item.type)];
+    }
+    return acc;
+  }, []);
+  return usedStructTypes;
 };
