@@ -3,7 +3,7 @@
     "module": "commonjs",
     "target": "ES2020",
     "declaration": true,
-    "outDir": "./dist",
+    "outDir": "dist",
     "baseUrl": "src",
     "allowJs": true,
     "lib": ["es2017", "DOM"],
@@ -13,5 +13,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*", "hardhat.config.ts", "./test"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist/**/*"]
 }
