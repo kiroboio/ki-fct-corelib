@@ -112,6 +112,37 @@ export class BatchMultiSigCall {
     ]);
   };
 
+  public estimateGasCost = async () => {
+    const baseFCTCost = 0;
+    const externalVariableCost = 0;
+    const outputVariableCost = 0;
+    const globalVariableCost = 0;
+    const recurrencyCost = 0;
+    const multiSigCost = 0;
+    let callsCost = 0;
+    let callsWithNoGasCost = 0;
+
+    for (const call of this.calls) {
+      if (call.options?.gasLimit || call.options?.gasLimit !== "0") {
+        callsCost += Number(call.options.gasLimit);
+      } else {
+        callsWithNoGasCost++;
+      }
+    }
+
+    return {
+      gas:
+        baseFCTCost +
+        externalVariableCost +
+        outputVariableCost +
+        globalVariableCost +
+        recurrencyCost +
+        multiSigCost +
+        callsCost,
+      callsWithNoGasCost,
+    };
+  };
+
   // Variables
 
   private getVariable(variable: Variable, type: string) {
