@@ -114,7 +114,6 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }) => {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
-    // POST request
     const res = await fetch(rpcUrl, {
         method: "POST",
         headers: {
