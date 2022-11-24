@@ -13,7 +13,8 @@
     "fct:get": "ts-node scripts/fct_get.script.ts",
     "fct:execute": "ts-node scripts/fct_execute.script.ts",
     "estimate": "ts-node scripts/estimate.script.ts",
-    "lint": "eslint  --ext .js,.ts ."
+    "lint": "eslint  --ext .js,.ts .",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "hardhat": "^2.12.2",
     "hardhat-dependency-compiler": "^1.1.3",
+    "husky": "^8.0.2",
     "ki-eth-contracts": "github:kiroboio/ki-eth-contracts#develop",
     "mocha": "^10.1.0",
     "prettier": "^2.7.1",
