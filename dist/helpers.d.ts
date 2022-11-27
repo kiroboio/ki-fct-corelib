@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { TypedData, TypedDataTypes } from "ethers-eip712";
+import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 import { IMSCallInput, TypedDataDomain } from "./batchMultiSigCall/interfaces";
 import { Flow } from "./constants";
@@ -38,9 +38,7 @@ export declare const flows: {
     };
 };
 export declare const getTypesArray: (params: Params[]) => number[];
-export declare const getTypedHashes: (params: Params[], typedData: {
-    types: TypedDataTypes;
-}) => string[];
+export declare const getTypedHashes: (params: Params[], typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>) => string[];
 export declare const getSessionIdDetails: (call: BatchCallBase, defaultFlags: Partial<BatchFlags>, smallFlags: boolean) => {
     group: string;
     nonce: string;
@@ -62,7 +60,7 @@ export declare const getFlags: (flags: Partial<BatchFlags>, small: boolean) => s
 export declare const manageCallFlags: (flags: Partial<MultiCallFlags>) => string;
 export declare const manageCallFlagsV2: (flow: Flow | string, jump: number) => string;
 export declare const getMethodInterface: (call: Partial<MethodParamsInterface>) => string;
-export declare const getTypeHash: (typedData: TypedData) => string;
+export declare const getTypeHash: (typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>) => string;
 export declare const getTypedDataDomain: (factoryProxy: ethers.Contract) => Promise<TypedDataDomain>;
 export declare const getEncodedMethodParams: (call: Partial<MethodParamsInterface>, withFunction?: boolean) => string;
 export declare const generateTxType: (item: Partial<MethodParamsInterface>) => {

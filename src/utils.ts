@@ -1,4 +1,4 @@
-import { SignatureLike } from "@ethersproject/bytes";
+import { Signature } from "@ethersproject/bytes";
 import { BigNumber, ethers, utils } from "ethers";
 import {
   BatchMultiSigCallTypedData,
@@ -37,12 +37,12 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
         maxFeePerGas: number;
         maxPriorityFeePerGas: number;
       }
-    | { gasPrice: BigNumber } = txVal.eip1559
+    | { gasPrice: number } = txVal.eip1559
     ? await getGasPriceEstimations({
         rpcUrl,
         historicalBlocks: 20,
       })[txVal.gasPriority || "average"]
-    : { gasPrice: await provider.getGasPrice() };
+    : { gasPrice: (await provider.getGasPrice()).toNumber() };
 
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
@@ -75,7 +75,7 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   }
 };
 
-const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
+const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: Signature): string | null => {
   try {
     const signatureString = utils.joinSignature(signature);
     const address = recoverTypedSignature<SignTypedDataVersion.V4, TypedDataTypes>({

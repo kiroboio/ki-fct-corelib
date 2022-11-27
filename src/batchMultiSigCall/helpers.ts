@@ -14,6 +14,7 @@ import {
 import { IMSCallInput } from "./interfaces";
 import { Flow } from "../constants";
 import { Params, Variable } from "interfaces";
+import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
 
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
@@ -67,7 +68,10 @@ export const handleTypes = (call: IMSCallInput) => {
   return [];
 };
 
-export const handleTypedHashes = (call: IMSCallInput, typedData: TypedData) => {
+export const handleTypedHashes = (
+  call: IMSCallInput,
+  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
+) => {
   if (call.params) {
     return getTypedHashes(call.params, typedData);
   }

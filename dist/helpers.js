@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createValidatorTxData = exports.getValidatorData = exports.getValidatorMethodInterface = exports.getValidatorFunctionData = exports.getParamsOffset = exports.getParamsLength = exports.generateTxType = exports.getEncodedMethodParams = exports.getTypedDataDomain = exports.getTypeHash = exports.getMethodInterface = exports.manageCallFlagsV2 = exports.manageCallFlags = exports.getFlags = exports.getSessionIdDetails = exports.getTypedHashes = exports.getTypesArray = exports.flows = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
-const ethers_eip712_1 = require("ethers-eip712");
+const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const validator_abi_json_1 = __importDefault(require("./abi/validator.abi.json"));
 exports.flows = {
     OK_CONT_FAIL_REVERT: {
@@ -107,7 +107,7 @@ const getTypedHashes = (params, typedData) => {
     return params.reduce((acc, item) => {
         if (item.customType) {
             const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
-            return [...acc, ethers_1.ethers.utils.hexlify(ethers_1.ethers.utils.hexlify(ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, type)))];
+            return [...acc, ethers_1.ethers.utils.hexlify(ethers_1.ethers.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(type, typedData.types)))];
         }
         return acc;
     }, []);
@@ -195,7 +195,7 @@ const getMethodInterface = (call) => {
 exports.getMethodInterface = getMethodInterface;
 // Get typehash from typedData
 const getTypeHash = (typedData) => {
-    const m2 = ethers_eip712_1.TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
+    const m2 = eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types);
     return ethers_1.ethers.utils.hexZeroPad(ethers_1.ethers.utils.hexlify(m2), 32);
 };
 exports.getTypeHash = getTypeHash;

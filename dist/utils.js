@@ -15,7 +15,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
             rpcUrl,
             historicalBlocks: 20,
         })[txVal.gasPriority || "average"]
-        : { gasPrice: await provider.getGasPrice() };
+        : { gasPrice: (await provider.getGasPrice()).toNumber() };
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     try {
         let gas;
