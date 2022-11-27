@@ -21,6 +21,7 @@ export interface ITxValidator {
   actuatorPrivateKey: string;
   actuatorContractAddress: string;
   activateForFree: boolean;
+  eip1559?: boolean;
   gasPriority?: "slow" | "average" | "fast";
 }
 
@@ -30,12 +31,18 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-  const gasPriceEstimates = await getGasPriceEstimations({
-    rpcUrl,
-    historicalBlocks: 20,
-  });
 
-  const gasPriceEIP1559 = gasPriceEstimates[txVal.gasPriority || "average"];
+  const gasPrice:
+    | {
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+      }
+    | { gasPrice: BigNumber } = txVal.eip1559
+    ? await getGasPriceEstimations({
+        rpcUrl,
+        historicalBlocks: 20,
+      })[txVal.gasPriority || "average"]
+    : { gasPrice: await provider.getGasPrice() };
 
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
@@ -43,11 +50,11 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
     let gas: BigNumber;
     if (activateForFree) {
       gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-        ...gasPriceEIP1559,
+        ...gasPrice,
       });
     } else {
       gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-        ...gasPriceEIP1559,
+        ...gasPrice,
       });
     }
 
@@ -56,13 +63,13 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
 
     return {
       isValid: true,
-      txData: { gas: gasUsed, ...gasPriceEIP1559, type: 2 },
+      txData: { gas: gasUsed, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
       error: null,
     };
   } catch (err: any) {
     return {
       isValid: false,
-      txData: { gas: 0, ...gasPriceEIP1559, type: 2 },
+      txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
       error: err.reason,
     };
   }
