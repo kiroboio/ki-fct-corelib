@@ -2,7 +2,7 @@ import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { ERC20, getPlugins } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
@@ -30,16 +30,6 @@ const wallet = process.env.WALLET as string;
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
-
-  const plugins = getPlugins({});
-  console.log(
-    plugins
-      .filter((p) => p.name.includes("equal"))
-      .map((p) => {
-        const plugin = new p.plugin({ chainId: "1" });
-        return plugin.name;
-      })
-  );
 
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
