@@ -191,15 +191,15 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }: { rpcUrl: st
   return {
     slow: {
       maxFeePerGas: slow + baseFeePerGas,
-      priorityFeePerGas: slow,
+      maxPriorityFeePerGas: slow,
     },
     average: {
       maxFeePerGas: average + baseFeePerGas,
-      priorityFeePerGas: average,
+      maxPriorityFeePerGas: average,
     },
     fast: {
       maxFeePerGas: fast + baseFeePerGas,
-      priorityFeePerGas: fast,
+      maxPriorityFeePerGas: fast,
     },
   };
 };

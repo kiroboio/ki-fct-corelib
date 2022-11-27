@@ -31,17 +31,17 @@ declare const _default: {
         txData: {
             type: number;
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
             gas: number;
         } | {
             type: number;
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
             gas: number;
         } | {
             type: number;
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
             gas: number;
         };
         error: any;
@@ -52,15 +52,15 @@ declare const _default: {
     }) => Promise<{
         slow: {
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
         };
         average: {
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
         };
         fast: {
             maxFeePerGas: number;
-            priorityFeePerGas: number;
+            maxPriorityFeePerGas: number;
         };
     }>;
 };
