@@ -152,7 +152,6 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }: { rpcUrl: st
     return Math.round(sum / arr.length);
   }
 
-  // POST request
   const res = await fetch(rpcUrl, {
     method: "POST",
     headers: {
@@ -176,7 +175,7 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }: { rpcUrl: st
       number: blockNum,
       baseFeePerGas: Number(result.baseFeePerGas[index]),
       gasUsedRatio: Number(result.gasUsedRatio[index]),
-      priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+      priorityFeePerGas: result.reward[index].map((x: string) => Number(x)),
     });
     blockNum += 1;
     index += 1;
