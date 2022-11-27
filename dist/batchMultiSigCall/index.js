@@ -14,6 +14,7 @@ const helpers_1 = require("../helpers");
 const helpers_2 = require("./helpers");
 const constants_1 = require("../constants");
 const variables_1 = __importDefault(require("../variables"));
+// Comment
 function getDate(days = 0) {
     const result = new Date();
     result.setDate(result.getDate() + days);
