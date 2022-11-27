@@ -1,4 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
+import { BigNumber } from "ethers";
 import { BatchMultiSigCallTypedData, MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCT {
     typedData: BatchMultiSigCallTypedData;
@@ -10,6 +11,7 @@ export interface ITxValidator {
     actuatorPrivateKey: string;
     actuatorContractAddress: string;
     activateForFree: boolean;
+    eip1559?: boolean;
     gasPriority?: "slow" | "average" | "fast";
 }
 declare const _default: {
@@ -35,13 +37,7 @@ declare const _default: {
             gas: number;
         } | {
             type: number;
-            maxFeePerGas: number;
-            maxPriorityFeePerGas: number;
-            gas: number;
-        } | {
-            type: number;
-            maxFeePerGas: number;
-            maxPriorityFeePerGas: number;
+            gasPrice: BigNumber;
             gas: number;
         };
         error: any;

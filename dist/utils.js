@@ -10,36 +10,37 @@ const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-    const gasPriceEstimates = await getGasPriceEstimations({
-        rpcUrl,
-        historicalBlocks: 20,
-    });
-    const gasPriceEIP1559 = gasPriceEstimates[txVal.gasPriority || "average"];
+    const gasPrice = txVal.eip1559
+        ? await getGasPriceEstimations({
+            rpcUrl,
+            historicalBlocks: 20,
+        })[txVal.gasPriority || "average"]
+        : { gasPrice: await provider.getGasPrice() };
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     try {
         let gas;
         if (activateForFree) {
             gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-                ...gasPriceEIP1559,
+                ...gasPrice,
             });
         }
         else {
             gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-                ...gasPriceEIP1559,
+                ...gasPrice,
             });
         }
         // Add 15% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
         return {
             isValid: true,
-            txData: { gas: gasUsed, ...gasPriceEIP1559, type: 2 },
+            txData: { gas: gasUsed, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
             error: null,
         };
     }
     catch (err) {
         return {
             isValid: false,
-            txData: { gas: 0, ...gasPriceEIP1559, type: 2 },
+            txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
             error: err.reason,
         };
     }
