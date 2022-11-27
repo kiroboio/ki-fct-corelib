@@ -15,7 +15,7 @@ interface IFCT {
   mcall: MSCall[];
 }
 
-interface ITxValidator {
+export interface ITxValidator {
   rpcUrl: string;
   callData: string;
   actuatorPrivateKey: string;
