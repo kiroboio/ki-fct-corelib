@@ -30,6 +30,8 @@ import {
 import { Flow } from "../constants";
 import variables from "../variables";
 
+// Comment
+
 function getDate(days: number = 0) {
   const result = new Date();
   result.setDate(result.getDate() + days);
