@@ -1022,8 +1022,8 @@
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
 "@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
-  "resolved" "git+ssh://git@github.com/kiroboio/ki-eth-fct-provider-ts.git#1a5a3c909d6ed561c9e0496363e2f782f748422a"
-  "version" "1.1.0"
+  version "1.1.0"
+  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#0de3e389db1d1ee2032d0756ad8340fdff45dec5"
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@chainlink/contracts" "^0.5.1"
