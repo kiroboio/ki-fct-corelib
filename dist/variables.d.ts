@@ -1,5 +1,5 @@
 import { Variable } from "interfaces";
-export declare type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | string;
+export type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | string;
 declare const _default: {
     getBlockNumber: () => Variable;
     getBlockTimestamp: () => Variable;

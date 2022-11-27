@@ -1,6 +1,6 @@
 import { GlobalVariable } from "variables";
 import { Flow } from "./constants";
-export declare type Variable = {
+export type Variable = {
     type: "output";
     id: {
         nodeId: string;

@@ -57,8 +57,6 @@
   "dependencies": {
     "@kirobo/ki-eth-fct-provider-ts": "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop",
     "@metamask/eth-sig-util": "^5.0.2",
-    "ethers": "^5.7.2",
-    "ethers-eip712": "^0.2.0",
-    "ganache": "^7.5.0"
+    "ethers": "^5.7.2"
   }
 }

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
-import { TypedData, TypedDataTypes, TypedDataUtils } from "ethers-eip712";
+import { MessageTypeProperty, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { BatchCallBase, BatchFlags, MethodParamsInterface, MultiCallFlags, Params, Validator } from "./interfaces";
 
 import ValidatorABI from "./abi/validator.abi.json";
@@ -119,11 +119,14 @@ export const getTypesArray = (params: Params[]): number[] => {
   return types.some((item) => item !== TYPE_NATIVE) ? types : [];
 };
 
-export const getTypedHashes = (params: Params[], typedData: { types: TypedDataTypes }): string[] => {
+export const getTypedHashes = (
+  params: Params[],
+  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
+): string[] => {
   return params.reduce((acc, item) => {
     if (item.customType) {
-      const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
-      return [...acc, ethers.utils.hexlify(ethers.utils.hexlify(TypedDataUtils.typeHash(typedData.types, type)))];
+      const type: string = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
+      return [...acc, ethers.utils.hexlify(ethers.utils.hexlify(TypedDataUtils.hashType(type, typedData.types)))];
     }
     return acc;
   }, []);
@@ -217,8 +220,10 @@ export const getMethodInterface = (call: Partial<MethodParamsInterface>): string
 };
 
 // Get typehash from typedData
-export const getTypeHash = (typedData: TypedData): string => {
-  const m2 = TypedDataUtils.typeHash(typedData.types, typedData.primaryType);
+export const getTypeHash = (
+  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
+): string => {
+  const m2 = TypedDataUtils.hashType(typedData.primaryType, typedData.types);
   return ethers.utils.hexZeroPad(ethers.utils.hexlify(m2), 32);
 };
 

@@ -2,7 +2,6 @@ import { BatchMultiSigCall } from "./index";
 import { ethers } from "ethers";
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
-import variables from "../variables";
 import { Flow } from "../constants";
 
 const contractAddress = "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd";
@@ -167,16 +166,6 @@ describe("BatchMultiSigCall", () => {
         params: [
           { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
           { name: "amount", type: "uint256", value: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
-        ],
-      },
-      {
-        nodeId: "node3",
-        to: variables.useMinerAddress(),
-        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-        method: "transfer",
-        params: [
-          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
-          { name: "amount", type: "uint256", value: "100" },
         ],
       },
     ]);
