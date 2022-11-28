@@ -6,3 +6,4 @@ export * from "@kirobo/ki-eth-fct-provider-ts";
 export { BatchMultiSigCall } from "./batchMultiSigCall";
 export { utils, constants, variables };
 export type { ITxValidator } from "./utils";
+export * from "./batchMultiSigCall/interfaces";

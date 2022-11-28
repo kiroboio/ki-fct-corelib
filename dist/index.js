@@ -29,3 +29,4 @@ exports.variables = variables_1.default;
 __exportStar(require("@kirobo/ki-eth-fct-provider-ts"), exports);
 var batchMultiSigCall_1 = require("./batchMultiSigCall");
 Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: function () { return batchMultiSigCall_1.BatchMultiSigCall; } });
+__exportStar(require("./batchMultiSigCall/interfaces"), exports);
