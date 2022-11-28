@@ -17,7 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.variables = exports.constants = exports.utils = exports.BatchMultiSigCall = exports.ethers = void 0;
+exports.BatchMultiSigCall = exports.variables = exports.constants = exports.utils = exports.ethers = void 0;
 var ethers_1 = require("ethers");
 Object.defineProperty(exports, "ethers", { enumerable: true, get: function () { return ethers_1.ethers; } });
 const utils_1 = __importDefault(require("./utils"));
