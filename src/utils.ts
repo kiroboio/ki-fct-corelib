@@ -15,7 +15,7 @@ interface IFCT {
   mcall: MSCall[];
 }
 
-export interface ITxValidator {
+interface ITxValidator {
   rpcUrl: string;
   callData: string;
   actuatorPrivateKey: string;
@@ -209,6 +209,8 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks }: { rpcUrl: st
     },
   };
 };
+
+export type { IFCT, ITxValidator };
 
 export default {
   getFCTMessageHash,
