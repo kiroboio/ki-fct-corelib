@@ -11,10 +11,10 @@ const transactionValidator = async (txVal, pureGas = false) => {
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
     const gasPrice = txVal.eip1559
-        ? await getGasPriceEstimations({
+        ? (await getGasPriceEstimations({
             rpcUrl,
             historicalBlocks: 20,
-        })[txVal.gasPriority || "average"]
+        }))[txVal.gasPriority || "average"]
         : { gasPrice: (await provider.getGasPrice()).toNumber() };
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     try {

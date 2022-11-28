@@ -38,10 +38,12 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
         maxPriorityFeePerGas: number;
       }
     | { gasPrice: number } = txVal.eip1559
-    ? await getGasPriceEstimations({
-        rpcUrl,
-        historicalBlocks: 20,
-      })[txVal.gasPriority || "average"]
+    ? (
+        await getGasPriceEstimations({
+          rpcUrl,
+          historicalBlocks: 20,
+        })
+      )[txVal.gasPriority || "average"]
     : { gasPrice: (await provider.getGasPrice()).toNumber() };
 
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
