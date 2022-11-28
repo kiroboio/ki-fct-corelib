@@ -1,4 +1,4 @@
-import { Signature } from "@ethersproject/bytes";
+import { SignatureLike } from "@ethersproject/bytes";
 import { BigNumber, ethers, utils } from "ethers";
 import {
   BatchMultiSigCallTypedData,
@@ -75,7 +75,7 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   }
 };
 
-const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: Signature): string | null => {
+const recoverAddressFromEIP712 = (typedData: BatchMultiSigCallTypedData, signature: SignatureLike): string | null => {
   try {
     const signatureString = utils.joinSignature(signature);
     const address = recoverTypedSignature<SignTypedDataVersion.V4, TypedDataTypes>({
