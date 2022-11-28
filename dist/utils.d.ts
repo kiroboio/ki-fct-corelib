@@ -4,7 +4,7 @@ interface IFCT {
     typedData: BatchMultiSigCallTypedData;
     mcall: MSCall[];
 }
-export interface ITxValidator {
+interface ITxValidator {
     rpcUrl: string;
     callData: string;
     actuatorPrivateKey: string;
@@ -13,6 +13,7 @@ export interface ITxValidator {
     eip1559?: boolean;
     gasPriority?: "slow" | "average" | "fast";
 }
+export type { IFCT, ITxValidator };
 declare const _default: {
     getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;
     validateFCT: (FCT: IFCT, softValidation?: boolean) => {
