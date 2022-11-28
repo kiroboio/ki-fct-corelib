@@ -1,4 +1,4 @@
-import { Signature } from "@ethersproject/bytes";
+import { SignatureLike } from "@ethersproject/bytes";
 import { BatchMultiSigCallTypedData, MSCall } from "./batchMultiSigCall/interfaces";
 interface IFCT {
     typedData: BatchMultiSigCallTypedData;
@@ -26,7 +26,7 @@ declare const _default: {
         getFCTMessageHash: () => string;
         getSigners: () => string[];
     };
-    recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: Signature) => string;
+    recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string;
     getVariablesAsBytes32: (variables: string[]) => string[];
     transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<{
         isValid: boolean;
