@@ -25,6 +25,8 @@ interface ITxValidator {
   gasPriority?: "slow" | "average" | "fast";
 }
 
+type GasPrice = { maxFeePerGas: number; maxPriorityFeePerGas: number } | { gasPrice: number };
+
 const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
 
@@ -32,12 +34,7 @@ const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
 
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
 
-  const gasPrice:
-    | {
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-      }
-    | { gasPrice: number } = txVal.eip1559
+  const gasPrice: GasPrice = txVal.eip1559
     ? (
         await getGasPriceEstimations({
           rpcUrl,
