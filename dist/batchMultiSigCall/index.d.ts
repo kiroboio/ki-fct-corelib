@@ -13,12 +13,11 @@ export declare class BatchMultiSigCall {
         contractAddress?: string;
         options?: Partial<MSCallOptions>;
     });
-    getCalldataForActuator: ({ signedFCT, purgedFCT, investor, activator, activateId, }: {
+    getCalldataForActuator: ({ signedFCT, purgedFCT, investor, activator, }: {
         signedFCT: object;
         purgedFCT: string;
         investor: string;
         activator: string;
-        activateId: string;
     }) => Promise<string>;
     private getVariable;
     private getOutputVariable;

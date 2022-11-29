@@ -62,7 +62,6 @@
     },
     {
         "inputs": [
-            { "internalType": "bytes32", "name": "version", "type": "bytes32" },
             {
                 "components": [
                     { "internalType": "bytes32", "name": "typeHash", "type": "bytes32" },
