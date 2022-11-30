@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv";
 import { BatchMultiSigCall, ethers, utils } from "../src/index";
 import FCT from "../FCT_TransferERC20.json";
-import FCTActuatorABI from "../src/abi/FCT_Actuator.abi.json";
 
 import data from "./scriptData";
 
@@ -10,30 +9,23 @@ dotenv.config();
 const chainId = 5;
 const wallet = process.env.WALLET as string;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+// Zero bytes
+const bytes = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 async function main() {
-  const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
-  const batchMultiSigSelector: string = "0x07eefcb4";
   const batchMultiSigCall = new BatchMultiSigCall({
     provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
     contractAddress: data[chainId].FCT_Controller,
   });
 
-  // Zero bytes
-  const bytes = "0x0000000000000000000000000000000000000000000000000000000000000000";
-
   const version = "010101";
-  const actuator = new ethers.Contract(data[chainId].Actuator, FCTActuatorABI, provider);
-  const nonce = BigInt(await actuator.s_nonces(batchMultiSigSelector + version.slice(0, 2).padEnd(56, "0")));
-
-  const activateId =
-    "0x" + version + "0".repeat(34) + (nonce + BigInt("1")).toString(16).padStart(16, "0") + "0".repeat(8);
+  const activateId = `0x${version}`.padEnd(66, "0");
 
   const calldata = await batchMultiSigCall.getCalldataForActuator({
     signedFCT: FCT,
     activator: process.env.ACTIVATOR as string,
     investor: ZERO_ADDRESS,
-    purgedFCT: bytes,
+    purgedFCT: "0x".padEnd(66, "0"),
     activateId,
   });
 

@@ -2,7 +2,7 @@ import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
@@ -66,6 +66,12 @@ async function main() {
   //     },
   //   },
   // });
+
+  const swap = new Uniswap.actions.UniswapV2SwapExactETHForTokens({
+    chainId: "1",
+  });
+
+  console.log(swap.input.params.methodParams.path.options);
 
   const transfer = new ERC20.actions.Transfer({
     chainId: "1",
