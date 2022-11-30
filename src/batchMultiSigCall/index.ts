@@ -97,16 +97,16 @@ export class BatchMultiSigCall {
     purgedFCT,
     investor,
     activator,
-    activateId,
+    version,
   }: {
     signedFCT: object;
     purgedFCT: string;
     investor: string;
     activator: string;
-    activateId: string;
+    version: string;
   }) => {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
-      activateId,
+      `0x${version}`.padEnd(66, "0"),
       signedFCT,
       purgedFCT,
       investor,
