@@ -1,6 +1,5 @@
 import { utils } from "ethers";
-import { TypedData } from "ethers-eip712";
-import { MSCallOptions } from "./interfaces";
+import { BatchMultiSigCallTypedData, MSCallOptions } from "./interfaces";
 import {
   flows,
   getEncodedMethodParams,
@@ -398,7 +397,7 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
   };
 };
 
-export const getUsedStructTypes = (typedData: TypedData, typeName: string) => {
+export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeName: string) => {
   const mainType = typedData.types[typeName];
 
   const usedStructTypes: string[] = mainType.reduce<string[]>((acc, item) => {

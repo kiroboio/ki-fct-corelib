@@ -1,5 +1,4 @@
-import { TypedData } from "ethers-eip712";
-import { MSCallOptions } from "./interfaces";
+import { BatchMultiSigCallTypedData, MSCallOptions } from "./interfaces";
 import { IMSCallInput } from "./interfaces";
 import { Flow } from "../constants";
 import { Variable } from "interfaces";
@@ -31,4 +30,4 @@ export declare const getTxEIP712Types: (calls: IMSCallInput[]) => {
     txTypes: {};
     structTypes: {};
 };
-export declare const getUsedStructTypes: (typedData: TypedData, typeName: string) => string[];
+export declare const getUsedStructTypes: (typedData: BatchMultiSigCallTypedData, typeName: string) => string[];

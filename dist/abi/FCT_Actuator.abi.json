@@ -15,10 +15,12 @@
             { "indexed": true, "internalType": "address", "name": "activator", "type": "address" },
             { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" },
             { "indexed": false, "internalType": "address", "name": "builder", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "usersBase", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "usersFees", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "activatorPayment", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "builderPayment", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "calcGas", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "gasPrice", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
         ],
         "name": "FCTE_Activated",
@@ -65,8 +67,7 @@
             { "indexed": false, "internalType": "uint256", "name": "call", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "fees", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "builderPayment", "type": "uint256" },
-            { "indexed": false, "internalType": "uint256", "name": "activatorPayment", "type": "uint256" },
-            { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+            { "indexed": false, "internalType": "uint256", "name": "activatorPayment", "type": "uint256" }
         ],
         "name": "FCTE_CallPayment",
         "type": "event"
@@ -79,6 +80,7 @@
             { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" },
             { "indexed": false, "internalType": "uint256", "name": "activatorFees", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "calcGas", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "gasPrice", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
         ],
         "name": "FCTE_ForFreeActivated",
@@ -145,6 +147,17 @@
         "anonymous": false,
         "inputs": [
             { "indexed": true, "internalType": "address", "name": "by", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "activator", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "price", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+        ],
+        "name": "FCTE_KiroPriceUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "by", "type": "address" },
             { "indexed": false, "internalType": "uint256", "name": "timeLength", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
         ],
@@ -201,6 +214,7 @@
             { "indexed": false, "internalType": "uint256", "name": "activatorFees", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "builderPayement", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "calcGas", "type": "uint256" },
+            { "indexed": false, "internalType": "uint256", "name": "gasPrice", "type": "uint256" },
             { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
         ],
         "name": "FCTE_NoPayerActivated",
@@ -286,6 +300,20 @@
     {
         "inputs": [],
         "name": "DEFAULT_ADMIN_ROLE",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "MANAGER_ADMIN_ROLE",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "MANAGER_ROLE",
         "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
         "stateMutability": "view",
         "type": "function"
@@ -466,6 +494,21 @@
         "type": "function"
     },
     {
+        "inputs": [
+            { "internalType": "address", "name": "", "type": "address" },
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "name": "s_activation_approvals",
+        "outputs": [
+            { "internalType": "bool", "name": "activate", "type": "bool" },
+            { "internalType": "bool", "name": "activateBatch", "type": "bool" },
+            { "internalType": "bool", "name": "activateForFree", "type": "bool" },
+            { "internalType": "bool", "name": "activateForFreeBatch", "type": "bool" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
         "name": "s_balances",
         "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -538,13 +581,6 @@
     {
         "inputs": [],
         "name": "s_minStaking",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-        "name": "s_nonces",
         "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
         "stateMutability": "view",
         "type": "function"
