@@ -39,9 +39,9 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getCalldataForActuator = async ({ signedFCT, purgedFCT, investor, activator, activateId, }) => {
+        this.getCalldataForActuator = async ({ signedFCT, purgedFCT, investor, activator, version, }) => {
             return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
-                activateId,
+                `0x${version}`.padEnd(66, "0"),
                 signedFCT,
                 purgedFCT,
                 investor,
