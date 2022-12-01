@@ -19,14 +19,13 @@ async function main() {
   });
 
   const version = "010101";
-  const activateId = `0x${version}`.padEnd(66, "0");
 
   const calldata = await batchMultiSigCall.getCalldataForActuator({
     signedFCT: FCT,
     activator: process.env.ACTIVATOR as string,
     investor: ZERO_ADDRESS,
     purgedFCT: "0x".padEnd(66, "0"),
-    activateId,
+    version,
   });
 
   const txData = await utils.transactionValidator({
