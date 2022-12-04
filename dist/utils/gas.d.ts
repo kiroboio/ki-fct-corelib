@@ -43,4 +43,4 @@ export declare const getKIROPayment: ({ fct, callData, batchMultiSigCallAddress,
     actuatorAddress: string;
     rpcUrl: string;
     gasPrice: number;
-}) => Promise<any>;
+}) => Promise<string>;
