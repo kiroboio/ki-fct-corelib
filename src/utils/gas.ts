@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import { GasPrice, IFCT, ITxValidator } from "./types";
+import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 import { TypedDataLimits } from "batchMultiSigCall/interfaces";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
@@ -13,7 +13,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
-  const gasPrice: GasPrice = txVal.eip1559
+  const gasPrice = txVal.eip1559
     ? (
         await getGasPriceEstimations({
           rpcUrl,
@@ -37,11 +37,19 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
     // Add 15% to gasUsed value
     const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
 
-    return {
-      isValid: true,
-      txData: { gas: gasUsed, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
-      error: null,
-    };
+    if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
+      return {
+        isValid: true,
+        txData: { gas: gasUsed, ...(gasPrice as EIP1559GasPrice), type: 2 },
+        error: null,
+      };
+    } else {
+      return {
+        isValid: true,
+        txData: { gas: gasUsed, ...(gasPrice as LegacyGasPrice), type: 1 },
+        error: null,
+      };
+    }
   } catch (err: any) {
     return {
       isValid: false,
