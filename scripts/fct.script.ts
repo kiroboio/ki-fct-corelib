@@ -2,10 +2,11 @@ import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
+import { utils } from "../src/index";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -67,12 +68,6 @@ async function main() {
   //   },
   // });
 
-  const swap = new Uniswap.actions.UniswapV2SwapExactETHForTokens({
-    chainId: "1",
-  });
-
-  console.log(swap.input.params.methodParams.path.options);
-
   const transfer = new ERC20.actions.Transfer({
     chainId: "1",
     initParams: {
@@ -83,8 +78,6 @@ async function main() {
       },
     },
   });
-
-  console.log("options", batchMultiSigCall.options);
 
   await batchMultiSigCall.createMultiple([
     // {
@@ -124,6 +117,25 @@ async function main() {
     variables: [],
     externalSigners: [],
   };
+
+  const version = "010101";
+
+  const callData = await batchMultiSigCall.getCalldataForActuator({
+    signedFCT,
+    activator: process.env.ACTIVATOR as string,
+    investor: ZERO_ADDRESS,
+    purgedFCT: "0x".padEnd(66, "0"),
+    version,
+  });
+
+  const gasEstimation = await utils.getFCTGasEstimation({
+    fct: signedFCT,
+    callData,
+    rpcUrl: data[chainId].rpcUrl,
+    batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
+  });
+
+  console.log("gasEstimation", gasEstimation);
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
