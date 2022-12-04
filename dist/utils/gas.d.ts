@@ -36,11 +36,12 @@ export declare const getFCTGasEstimation: ({ fct, callData, batchMultiSigCallAdd
     batchMultiSigCallAddress: string;
     rpcUrl: string;
 }) => Promise<string>;
-export declare const getKIROPayment: ({ fct, callData, batchMultiSigCallAddress, actuatorAddress, rpcUrl, gasPrice, }: {
+export declare const getKIROPayment: ({ fct, callData, batchMultiSigCallAddress, kiroPrice, ethPrice, rpcUrl, gasPrice, }: {
     fct: IFCT;
     callData: string;
     batchMultiSigCallAddress: string;
-    actuatorAddress: string;
+    kiroPrice: string;
+    ethPrice: string;
     rpcUrl: string;
     gasPrice: number;
 }) => Promise<string>;
