@@ -170,7 +170,7 @@ const getKIROPayment = async ({ fct, callData, batchMultiSigCallAddress, actuato
     const feeGasCost = new bignumber_js_1.default(gas).times(priceDif);
     const bonusPrice = await actuator.getAmountOfKiroForGivenEth(feeGasCost.toString());
     const total = basePrice.plus(bonusPrice);
-    return total.toString();
+    return new bignumber_js_1.default(total.toString()).shiftedBy(-18).toString();
 };
 exports.getKIROPayment = getKIROPayment;
 // const getRequiredKIRO = async ({

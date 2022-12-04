@@ -230,7 +230,7 @@ export const getKIROPayment = async ({
   const bonusPrice = await actuator.getAmountOfKiroForGivenEth(feeGasCost.toString());
 
   const total = basePrice.plus(bonusPrice);
-  return total.toString();
+  return new BigNumber(total.toString()).shiftedBy(-18).toString();
 };
 
 // const getRequiredKIRO = async ({
