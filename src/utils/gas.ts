@@ -203,34 +203,39 @@ export const getKIROPayment = async ({
   fct,
   callData,
   batchMultiSigCallAddress,
-  actuatorAddress,
+  kiroPrice,
+  ethPrice,
   rpcUrl,
   gasPrice,
 }: {
   fct: IFCT;
   callData: string;
   batchMultiSigCallAddress: string;
-  actuatorAddress: string;
+  kiroPrice: string;
+  ethPrice: string;
   rpcUrl: string;
   gasPrice: number;
 }) => {
-  const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, new ethers.providers.JsonRpcProvider(rpcUrl));
-
   const gas = await getFCTGasEstimation({ fct, batchMultiSigCallAddress, rpcUrl, callData });
   const gasPriceFormatted = utils.formatUnits(gasPrice, "gwei");
 
-  const baseGasCost = new BigNumber(gas).times(gasPriceFormatted);
-  const basePrice = await actuator.getAmountOfKiroForGivenEth(baseGasCost.toString());
+  const baseGasCost = new BigNumber(gas).times(gasPriceFormatted).shiftedBy(-9);
 
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = utils.formatUnits(limits.gas_price_limit, "gwei");
 
   const priceDif = new BigNumber(maxGasPrice).minus(gasPriceFormatted);
   const feeGasCost = new BigNumber(gas).times(priceDif);
-  const bonusPrice = await actuator.getAmountOfKiroForGivenEth(feeGasCost.toString());
 
-  const total = basePrice.plus(bonusPrice);
-  return new BigNumber(total.toString()).shiftedBy(-18).toString();
+  const totalCost = baseGasCost.plus(feeGasCost);
+
+  // Get USD Value of totalCost
+  const totalCostUSD = totalCost.times(ethPrice);
+
+  // Get KIRO Value of totalCostUSD
+  const totalCostKIRO = totalCostUSD.div(kiroPrice);
+
+  return totalCostKIRO.toString();
 };
 
 // const getRequiredKIRO = async ({
