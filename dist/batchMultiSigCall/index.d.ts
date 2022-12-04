@@ -6,12 +6,14 @@ export declare class BatchMultiSigCall {
     private FCT_BatchMultiSigCall;
     private batchMultiSigSelector;
     private provider;
+    private chainId;
     calls: IMSCallInput[];
     options: MSCallOptions;
-    constructor({ provider, contractAddress, options, }: {
+    constructor({ provider, contractAddress, options, chainId, }: {
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
         contractAddress?: string;
         options?: Partial<MSCallOptions>;
+        chainId: number;
     });
     getCalldataForActuator: ({ signedFCT, purgedFCT, investor, activator, version, }: {
         signedFCT: object;
@@ -31,7 +33,7 @@ export declare class BatchMultiSigCall {
     getCall(index: number): IMSCallInput;
     get length(): number;
     exportFCT(): Promise<IBatchMultiSigCallFCT>;
-    importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error>;
+    importFCT(fct: IBatchMultiSigCallFCT): IMSCallInput[];
     private createTypedData;
     private getParamsFromCall;
     private verifyParams;

@@ -52,6 +52,7 @@ export class BatchMultiSigCall {
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
   private batchMultiSigSelector: string = "0x07eefcb4";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+  private chainId: number;
 
   calls: IMSCallInput[] = [];
   options: MSCallOptions = {
@@ -67,10 +68,12 @@ export class BatchMultiSigCall {
     provider,
     contractAddress,
     options,
+    chainId,
   }: {
     provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
     contractAddress?: string;
     options?: Partial<MSCallOptions>;
+    chainId: number;
   }) {
     if (contractAddress) {
       this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);
@@ -80,6 +83,10 @@ export class BatchMultiSigCall {
         FCT_ControllerABI,
         provider
       );
+    }
+
+    if (chainId) {
+      this.chainId = chainId;
     }
 
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
@@ -205,7 +212,14 @@ export class BatchMultiSigCall {
   // Plugin functions
 
   public getPlugin = async (index: number): Promise<PluginInstance> => {
-    const { chainId } = await this.provider.getNetwork();
+    let chainId: number;
+
+    if (this.chainId) {
+      chainId = this.chainId;
+    } else {
+      const data = await this.provider.getNetwork();
+      chainId = data.chainId;
+    }
     const call = this.getCall(index);
 
     if (instanceOfVariable(call.to)) {
@@ -348,7 +362,7 @@ export class BatchMultiSigCall {
     };
   }
 
-  public async importFCT(fct: IBatchMultiSigCallFCT): Promise<IMSCallInput[] | Error> {
+  public importFCT(fct: IBatchMultiSigCallFCT): IMSCallInput[] {
     // Here we import FCT and add all the data inside BatchMultiSigCall
     const options = parseSessionID(fct.sessionId, fct.builder);
     this.setOptions(options);

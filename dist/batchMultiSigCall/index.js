@@ -27,7 +27,7 @@ const FDBaseBytes = "0xFD0000000000000000000000000000000000000000000000000000000
 const FDBackBase = "0xFDB0000000000000000000000000000000000000";
 const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
 class BatchMultiSigCall {
-    constructor({ provider, contractAddress, options, }) {
+    constructor({ provider, contractAddress, options, chainId, }) {
         this.batchMultiSigSelector = "0x07eefcb4";
         this.calls = [];
         this.options = {
@@ -53,7 +53,14 @@ class BatchMultiSigCall {
         //
         // Plugin functions
         this.getPlugin = async (index) => {
-            const { chainId } = await this.provider.getNetwork();
+            let chainId;
+            if (this.chainId) {
+                chainId = this.chainId;
+            }
+            else {
+                const data = await this.provider.getNetwork();
+                chainId = data.chainId;
+            }
             const call = this.getCall(index);
             if ((0, helpers_2.instanceOfVariable)(call.to)) {
                 throw new Error("To value cannot be a variable");
@@ -116,6 +123,9 @@ class BatchMultiSigCall {
         }
         else {
             this.FCT_Controller = new ethers_1.ethers.Contract("0x0000000000000000000000000000000000000000", FCT_Controller_abi_json_1.default, provider);
+        }
+        if (chainId) {
+            this.chainId = chainId;
         }
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.provider = provider;
@@ -277,7 +287,7 @@ class BatchMultiSigCall {
             externalSigners: [],
         };
     }
-    async importFCT(fct) {
+    importFCT(fct) {
         // Here we import FCT and add all the data inside BatchMultiSigCall
         const options = (0, helpers_2.parseSessionID)(fct.sessionId, fct.builder);
         this.setOptions(options);
