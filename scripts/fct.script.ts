@@ -137,6 +137,14 @@ async function main() {
 
   console.log("gasEstimation", gasEstimation);
 
+  const hadshashda = await utils.getRequiredKIRO({
+    fct: signedFCT,
+    rpcUrl: data[chainId].rpcUrl,
+    batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
+  });
+
+  console.log("hadshashda", hadshashda);
+
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
 

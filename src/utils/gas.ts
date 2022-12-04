@@ -1,9 +1,10 @@
-import { BigNumber as BigNumberEthers, ethers } from "ethers";
+import { BigNumber as BigNumberEthers, ethers, utils } from "ethers";
 import BigNumber from "bignumber.js";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { GasPrice, IFCT, ITxValidator } from "./types";
+import { TypedDataLimits } from "batchMultiSigCall/interfaces";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
@@ -197,3 +198,100 @@ export const getFCTGasEstimation = async ({
   //     totalGas.toNumber()
   //   );
 };
+
+export const getKIROPayment = async ({
+  fct,
+  callData,
+  batchMultiSigCallAddress,
+  actuatorAddress,
+  rpcUrl,
+  gasPrice,
+}: {
+  fct: IFCT;
+  callData: string;
+  batchMultiSigCallAddress: string;
+  actuatorAddress: string;
+  rpcUrl: string;
+  gasPrice: number;
+}) => {
+  const actuator = new ethers.Contract(actuatorAddress, FCTActuatorABI, new ethers.providers.JsonRpcProvider(rpcUrl));
+
+  const gas = await getFCTGasEstimation({ fct, batchMultiSigCallAddress, rpcUrl, callData });
+  const gasPriceFormatted = utils.formatUnits(gasPrice, "gwei");
+
+  const baseGasCost = new BigNumber(gas).times(gasPriceFormatted);
+  const basePrice = await actuator.getAmountOfKiroForGivenEth(baseGasCost.toString());
+
+  const limits = fct.typedData.message.limits as TypedDataLimits;
+  const maxGasPrice = utils.formatUnits(limits.gas_price_limit, "gwei");
+
+  const priceDif = new BigNumber(maxGasPrice).minus(gasPriceFormatted);
+  const feeGasCost = new BigNumber(gas).times(priceDif);
+  const bonusPrice = await actuator.getAmountOfKiroForGivenEth(feeGasCost.toString());
+
+  const total = basePrice.plus(bonusPrice);
+  return total.toString();
+};
+
+// const getRequiredKIRO = async ({
+//   fct,
+//   batchMultiSigCallAddress,
+//   rpcUrl,
+// }: {
+//   fct: IFCT;
+//   batchMultiSigCallAddress: string;
+//   rpcUrl: string;
+// }) => {
+//   const batchMultiSigCallContract = new ethers.Contract(
+//     batchMultiSigCallAddress,
+//     BatchMultiSigCallABI,
+//     new ethers.providers.JsonRpcProvider(rpcUrl)
+//   );
+
+//   const calcMemory = (input: number) => {
+//     return input * 3 + (input * input) / 512;
+//   };
+
+//   const FCTOverhead = 135500;
+//   const callOverhead = 16370;
+//   const payers = {};
+
+//   const commonGasPerCall = FCTOverhead / fct.mcall.length + callOverhead;
+//   for (const call of fct.mcall) {
+//     const dataLength = call.data.length / 2;
+
+//     const callDataString = call.data.slice(2);
+//     const callDataArray = callDataString.split("");
+//     const totalCallDataCost = callDataArray.reduce((accumulator, item) => {
+//       if (item === "0") return accumulator + 4;
+//       else return accumulator + 16;
+//     }, 0);
+
+//     const nonZero = callDataArray.reduce((accumulator, item) => {
+//       if (item !== "0") return accumulator + 1;
+//       else return accumulator + 0;
+//     }, 0);
+
+//     const gasForCall = await batchMultiSigCallContract.estimateGas.abiToEIP712(
+//       call.data,
+//       call.types,
+//       call.typedHashes,
+//       { data: 0, types: 0 }
+//     );
+
+//     const gas = new BigNumber(totalCallDataCost)
+//       .plus(calcMemory(dataLength))
+//       .minus(calcMemory(nonZero))
+//       .plus((dataLength * 600) / 32)
+//       .plus(gasForCall.toString())
+//       .plus(commonGasPerCall);
+
+//     if (payers[call.from]) {
+//       payers[call.from] = new BigNumber(payers[call.from]).plus(gas).toString();
+//     } else {
+//       payers[call.from] = gas.toString();
+//     }
+//   }
+
+//   return payers;
+// };
