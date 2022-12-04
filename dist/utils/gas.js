@@ -33,11 +33,20 @@ const transactionValidator = async (txVal, pureGas = false) => {
         }
         // Add 15% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
-        return {
-            isValid: true,
-            txData: { gas: gasUsed, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
-            error: null,
-        };
+        if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
+            return {
+                isValid: true,
+                txData: { gas: gasUsed, ...gasPrice, type: 2 },
+                error: null,
+            };
+        }
+        else {
+            return {
+                isValid: true,
+                txData: { gas: gasUsed, ...gasPrice, type: 1 },
+                error: null,
+            };
+        }
     }
     catch (err) {
         return {

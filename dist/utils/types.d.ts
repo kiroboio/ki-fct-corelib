@@ -12,9 +12,11 @@ export interface ITxValidator {
     eip1559?: boolean;
     gasPriority?: "slow" | "average" | "fast";
 }
-export type GasPrice = {
+export interface EIP1559GasPrice {
     maxFeePerGas: number;
     maxPriorityFeePerGas: number;
-} | {
+}
+export interface LegacyGasPrice {
     gasPrice: number;
-};
+}
+export type GasPrice = EIP1559GasPrice | LegacyGasPrice;
