@@ -1,13 +1,12 @@
 export { ethers } from "ethers";
+export * from "@kirobo/ki-eth-fct-provider-ts";
 
-import utils from "./utils";
+import * as utils from "./utils";
 import constants from "./constants";
 import variables from "./variables";
 export { utils, constants, variables };
 
-export * from "@kirobo/ki-eth-fct-provider-ts";
-
 export { BatchMultiSigCall } from "./batchMultiSigCall";
 
-export type { ITxValidator } from "./utils";
+export * from "./utils/types";
 export * from "./batchMultiSigCall/interfaces";
