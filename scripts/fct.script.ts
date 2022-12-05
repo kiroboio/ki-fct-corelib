@@ -140,7 +140,7 @@ async function main() {
   const hadshashda = await utils.getKIROPayment({
     fct: signedFCT,
     kiroPriceInETH: "38270821632831754769812",
-    gasPrice: 1275004198,
+    gasPrice: 1580000096,
     gasLimit: 462109,
   });
 
