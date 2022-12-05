@@ -176,35 +176,19 @@ export const getFCTGasEstimation = async ({
     }
   }
 
+  // Overhead calculation
+  // FCTOverhead + (totalCallDataCost - mcallTotalCost) +
+
   const gasEstimation = new BigNumber(FCTOverhead)
     .plus(new BigNumber(callOverhead).times(numOfCalls))
     .plus(totalCallDataCost)
     .plus(calcMemory(dataLength))
-    .plus(calcMemory(nonZero))
+    .minus(calcMemory(nonZero))
     .plus(new BigNumber(dataLength).times(600).div(32))
     .plus(totalGas)
     .times(1.1); // Add 10% as a buffer
 
   return gasEstimation.toString();
-
-  //   const gasEstimation = BigNumberEthers.from(FCTOverhead)
-  //     .add(callOverhead * numOfCalls)
-  //     .add(totalCallDataCost)
-  //     .add(calcMemory(dataLength))
-  //     .sub(calcMemory(nonZero))
-  //     .add(BigNumberEthers.from(dataLength * 600).div(32))
-  //     .add(totalGas)
-  //     .mul(1.1);
-
-  //   return (
-  //     FCTOverhead +
-  //     callOverhead * numOfCalls +
-  //     totalCallDataCost +
-  //     calcMemory(dataLength) -
-  //     calcMemory(nonZero) +
-  //     (dataLength * 600) / 32 +
-  //     totalGas.toNumber()
-  //   );
 };
 
 export const getKIROPayment = async ({

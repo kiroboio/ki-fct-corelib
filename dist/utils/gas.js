@@ -139,32 +139,17 @@ const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rp
             totalGas = totalGas.plus(gasForCall.toString());
         }
     }
+    // Overhead calculation
+    // FCTOverhead + (totalCallDataCost - mcallTotalCost) +
     const gasEstimation = new bignumber_js_1.default(FCTOverhead)
         .plus(new bignumber_js_1.default(callOverhead).times(numOfCalls))
         .plus(totalCallDataCost)
         .plus(calcMemory(dataLength))
-        .plus(calcMemory(nonZero))
+        .minus(calcMemory(nonZero))
         .plus(new bignumber_js_1.default(dataLength).times(600).div(32))
         .plus(totalGas)
         .times(1.1); // Add 10% as a buffer
     return gasEstimation.toString();
-    //   const gasEstimation = BigNumberEthers.from(FCTOverhead)
-    //     .add(callOverhead * numOfCalls)
-    //     .add(totalCallDataCost)
-    //     .add(calcMemory(dataLength))
-    //     .sub(calcMemory(nonZero))
-    //     .add(BigNumberEthers.from(dataLength * 600).div(32))
-    //     .add(totalGas)
-    //     .mul(1.1);
-    //   return (
-    //     FCTOverhead +
-    //     callOverhead * numOfCalls +
-    //     totalCallDataCost +
-    //     calcMemory(dataLength) -
-    //     calcMemory(nonZero) +
-    //     (dataLength * 600) / 32 +
-    //     totalGas.toNumber()
-    //   );
 };
 exports.getFCTGasEstimation = getFCTGasEstimation;
 const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
