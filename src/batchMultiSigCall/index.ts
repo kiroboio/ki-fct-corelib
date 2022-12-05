@@ -73,7 +73,7 @@ export class BatchMultiSigCall {
     provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
     contractAddress?: string;
     options?: Partial<MSCallOptions>;
-    chainId: number;
+    chainId?: number;
   }) {
     if (contractAddress) {
       this.FCT_Controller = new ethers.Contract(contractAddress, FCT_ControllerABI, provider);

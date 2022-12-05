@@ -13,7 +13,7 @@ export declare class BatchMultiSigCall {
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
         contractAddress?: string;
         options?: Partial<MSCallOptions>;
-        chainId: number;
+        chainId?: number;
     });
     getCalldataForActuator: ({ signedFCT, purgedFCT, investor, activator, version, }: {
         signedFCT: object;
