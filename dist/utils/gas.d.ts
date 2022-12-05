@@ -45,3 +45,11 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gasLimit,
     vault: any;
     amount: string;
 }>;
+export declare const getFCTCostInKIRO: ({ fct, callData, batchMultiSigCallAddress, gasPrice, kiroPriceInETH, rpcUrl, }: {
+    fct: IFCT;
+    callData: string;
+    batchMultiSigCallAddress: string;
+    gasPrice: number;
+    kiroPriceInETH: string;
+    rpcUrl: string;
+}) => Promise<string>;
