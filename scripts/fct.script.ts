@@ -137,10 +137,11 @@ async function main() {
 
   console.log("gasEstimation", gasEstimation);
 
-  const hadshashda = await utils.getRequiredKIRO({
+  const hadshashda = await utils.getKIROPayment({
     fct: signedFCT,
-    rpcUrl: data[chainId].rpcUrl,
-    batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
+    kiroPriceInETH: "38270821632831754769812",
+    gasPrice: 1275004198,
+    gasLimit: 462109,
   });
 
   console.log("hadshashda", hadshashda);

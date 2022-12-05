@@ -151,12 +151,12 @@ export const getFCTGasEstimation = async ({
   const callDataArray = callDataString.split("");
   const totalCallDataCost = callDataArray.reduce((accumulator, item) => {
     if (item === "0") return accumulator + 4;
-    else return accumulator + 16;
+    return accumulator + 16;
   }, 21000);
 
   const nonZero = callDataArray.reduce((accumulator, item) => {
     if (item !== "0") return accumulator + 1;
-    else return accumulator + 0;
+    return accumulator + 0;
   }, 0);
 
   const dataLength =
@@ -177,7 +177,11 @@ export const getFCTGasEstimation = async ({
   }
 
   // Overhead calculation
-  // FCTOverhead + (totalCallDataCost - mcallTotalCost) +
+  // FCTOverhead +
+  // (totalCallDataCost - mcallTotalCost) +
+  // (dataLength - mcallDataTotalLength) -
+  // nonZero +
+  // (new BigNumber(dataLength).times(600).div(32) - new BigNumber(mcallDataTotalLength).times(600).div(32)) / mcall.length
 
   const gasEstimation = new BigNumber(FCTOverhead)
     .plus(new BigNumber(callOverhead).times(numOfCalls))
@@ -191,6 +195,11 @@ export const getFCTGasEstimation = async ({
   return gasEstimation.toString();
 };
 
+// 38270821632831754769812 - kiro price
+// 1275004198 - max fee
+// 462109 - gas
+
+// 34.910655705373187788
 export const getKIROPayment = async ({
   fct,
   kiroPriceInETH,
@@ -210,10 +219,11 @@ export const getKIROPayment = async ({
   const baseGasCost = new BigNumber(gas).times(gasPriceFormatted).shiftedBy(-9);
 
   const limits = fct.typedData.message.limits as TypedDataLimits;
-  const maxGasPrice = utils.formatUnits(limits.gas_price_limit, "gwei");
+  const maxGasPrice = limits.gas_price_limit;
 
-  const priceDif = new BigNumber(maxGasPrice).minus(gasPriceFormatted);
-  const feeGasCost = new BigNumber(gas).times(priceDif);
+  const effectiveGasPrice = (gasPrice * (10000 + 1000) + (Number(maxGasPrice) - gasPrice) * 5000) / 10000 / 1e9;
+
+  const feeGasCost = new BigNumber(gas).times(new BigNumber(effectiveGasPrice).minus(gasPriceFormatted)).shiftedBy(-9);
 
   const totalCost = baseGasCost.plus(feeGasCost);
 
@@ -224,6 +234,61 @@ export const getKIROPayment = async ({
     vault,
     amount: kiroCost.toString(),
   };
+};
+
+const getRequiredKIRO = async ({
+  fct,
+  callData,
+  batchMultiSigCallAddress,
+  rpcUrl,
+}: {
+  fct: IFCT;
+  callData: string;
+  batchMultiSigCallAddress: string;
+  rpcUrl: string;
+}) => {
+  const FCTOverhead = 135500;
+  const callOverhead = 16370;
+  const numOfCalls = fct.mcall.length;
+  const actuator = new ethers.utils.Interface(FCTActuatorABI);
+  const batchMultiSigCallContract = new ethers.Contract(
+    batchMultiSigCallAddress,
+    BatchMultiSigCallABI,
+    new ethers.providers.JsonRpcProvider(rpcUrl)
+  );
+
+  // Overhead calculation
+  // FCTOverhead +
+  // (totalCallDataCost - mcallTotalCost) +
+  // (dataLength - mcallDataTotalLength) -
+  // nonZero +
+  // (new BigNumber(dataLength).times(600).div(32) - new BigNumber(mcallDataTotalLength).times(600).div(32)) / mcall.length
+
+  const calcMemory = (input: number) => {
+    return input * 3 + (input * input) / 512;
+  };
+
+  const callDataCostReducer = (accumulator, item) => {
+    if (item === "0") return accumulator + 4;
+    return accumulator + 16;
+  };
+
+  const nonZeroReducer = (accumulator, item) => {
+    if (item !== "0") return accumulator + 1;
+    return accumulator + 0;
+  };
+
+  const dataLength =
+    actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
+
+  const mcallTotalCost = 0;
+
+  for (const call of fct.mcall) {
+    const encodedMcall = utils.defaultAbiCoder.encode(
+      ["bytes32", "bytes32", "bytes32", "uint256", "uint256", "address", "address", "bytes", "uint256[]", "bytes32[]"],
+      [call.data]
+    );
+  }
 };
 
 // const getRequiredKIRO = async ({
