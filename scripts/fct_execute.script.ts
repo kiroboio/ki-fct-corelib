@@ -34,6 +34,7 @@ async function main() {
     actuatorPrivateKey: process.env.ACTIVATOR_PRIVATE_KEY as string,
     actuatorContractAddress: data[chainId].Actuator,
     activateForFree: false,
+    eip1559: true,
   });
 
   // const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
