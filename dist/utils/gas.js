@@ -161,16 +161,20 @@ exports.getFCTGasEstimation = getFCTGasEstimation;
 // 34.910655705373187788
 const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
-    const gas = gasLimit;
+    const gas = BigInt(gasLimit);
     const gasPriceFormatted = ethers_1.utils.formatUnits(gasPrice, "gwei");
-    const baseGasCost = new bignumber_js_1.default(gas).times(gasPriceFormatted).shiftedBy(-9);
+    const baseGasCost = (BigInt(gas) * BigInt(gasPriceFormatted)) / BigInt(1e9);
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
-    const effectiveGasPrice = (gasPrice * (10000 + 1000) + (Number(maxGasPrice) - gasPrice) * 5000) / 10000 / 1e9;
-    const feeGasCost = new bignumber_js_1.default(gas).times(new bignumber_js_1.default(effectiveGasPrice).minus(gasPriceFormatted)).shiftedBy(-9);
-    const totalCost = baseGasCost.plus(feeGasCost);
-    const normalisedKiroPriceInETH = new bignumber_js_1.default(kiroPriceInETH).shiftedBy(-18);
-    const kiroCost = totalCost.times(normalisedKiroPriceInETH);
+    // 1000 - baseFee
+    // 5000 - bonusFee
+    const effectiveGasPrice = (BigInt(gasPrice) * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * BigInt(5000)) /
+        BigInt(10000) /
+        BigInt(1e9);
+    const feeGasCost = (BigInt(gas) * (effectiveGasPrice - BigInt(gasPriceFormatted))) / BigInt(1e9);
+    const totalCost = baseGasCost + feeGasCost;
+    const normalisedKiroPriceInETH = BigInt(kiroPriceInETH) / BigInt(1e18);
+    const kiroCost = totalCost * normalisedKiroPriceInETH;
     return {
         vault,
         amount: kiroCost.toString(),
@@ -198,7 +202,6 @@ const getFCTCostInKIRO = async ({ fct, callData, batchMultiSigCallAddress, gasPr
         return accumulator + 0;
     }, 0);
     const dataLength = actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
-    // let totalCallGas = new BigNumber(0);
     let totalCallGas = BigInt(0);
     for (const call of fct.mcall) {
         if (call.types.length > 0) {
