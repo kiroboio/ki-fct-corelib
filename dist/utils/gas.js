@@ -167,9 +167,8 @@ const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rp
     //   );
 };
 exports.getFCTGasEstimation = getFCTGasEstimation;
-const getKIROPayment = async ({ fct, kiroPrice, ethPrice, gasPrice, gasLimit, }) => {
+const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
-    // const gas = await getFCTGasEstimation({ fct, batchMultiSigCallAddress, rpcUrl, callData });
     const gas = gasLimit;
     const gasPriceFormatted = ethers_1.utils.formatUnits(gasPrice, "gwei");
     const baseGasCost = new bignumber_js_1.default(gas).times(gasPriceFormatted).shiftedBy(-9);
@@ -178,13 +177,11 @@ const getKIROPayment = async ({ fct, kiroPrice, ethPrice, gasPrice, gasLimit, })
     const priceDif = new bignumber_js_1.default(maxGasPrice).minus(gasPriceFormatted);
     const feeGasCost = new bignumber_js_1.default(gas).times(priceDif);
     const totalCost = baseGasCost.plus(feeGasCost);
-    // Get USD Value of totalCost
-    const totalCostUSD = totalCost.times(ethPrice);
-    // Get KIRO Value of totalCostUSD
-    const totalCostKIRO = totalCostUSD.div(kiroPrice);
+    const normalisedKiroPriceInETH = new bignumber_js_1.default(kiroPriceInETH).shiftedBy(-18);
+    const kiroCost = totalCost.times(normalisedKiroPriceInETH);
     return {
         vault,
-        amount: totalCostKIRO.toString(),
+        amount: kiroCost.toString(),
     };
 };
 exports.getKIROPayment = getKIROPayment;
