@@ -1,4 +1,4 @@
-import { BigNumber as BigNumberEthers, ethers, utils } from "ethers";
+import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import BigNumber from "bignumber.js";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
@@ -215,9 +215,13 @@ export const getKIROPayment = async ({
   const vault = fct.typedData.message["transaction_1"].call.from;
 
   const gas = BigInt(gasLimit);
-  const gasPriceFormatted = utils.formatUnits(gasPrice, "gwei");
+  const gasPriceFormatted = BigInt(gasPrice);
 
-  const baseGasCost = (BigInt(gas) * BigInt(gasPriceFormatted)) / BigInt(1e9);
+  console.log("gas", gas.toString());
+  console.log("gasPriceFormatted", Number(gasPriceFormatted) / 1e9);
+
+  const baseGasCost = gas * gasPriceFormatted;
+  console.log("baseGasCost", baseGasCost);
 
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = limits.gas_price_limit;
@@ -226,16 +230,14 @@ export const getKIROPayment = async ({
   // 5000 - bonusFee
 
   const effectiveGasPrice =
-    (BigInt(gasPrice) * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * BigInt(5000)) /
-    BigInt(10000) /
-    BigInt(1e9);
+    (gasPriceFormatted * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - gasPriceFormatted) * BigInt(5000)) /
+    BigInt(10000);
 
-  const feeGasCost = (BigInt(gas) * (effectiveGasPrice - BigInt(gasPriceFormatted))) / BigInt(1e9);
-
+  const feeGasCost = gas * (effectiveGasPrice - gasPriceFormatted);
   const totalCost = baseGasCost + feeGasCost;
 
-  const normalisedKiroPriceInETH = BigInt(kiroPriceInETH) / BigInt(1e18);
-  const kiroCost = totalCost * normalisedKiroPriceInETH;
+  const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
+  const kiroCost = Number(totalCost * normalisedKiroPriceInETH) / 1e36;
 
   return {
     vault,
