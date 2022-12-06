@@ -162,19 +162,21 @@ exports.getFCTGasEstimation = getFCTGasEstimation;
 const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
     const gas = BigInt(gasLimit);
-    const gasPriceFormatted = ethers_1.utils.formatUnits(gasPrice, "gwei");
-    const baseGasCost = (BigInt(gas) * BigInt(gasPriceFormatted)) / BigInt(1e9);
+    const gasPriceFormatted = BigInt(gasPrice);
+    console.log("gas", gas.toString());
+    console.log("gasPriceFormatted", Number(gasPriceFormatted) / 1e9);
+    const baseGasCost = gas * gasPriceFormatted;
+    console.log("baseGasCost", baseGasCost);
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
     // 1000 - baseFee
     // 5000 - bonusFee
-    const effectiveGasPrice = (BigInt(gasPrice) * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * BigInt(5000)) /
-        BigInt(10000) /
-        BigInt(1e9);
-    const feeGasCost = (BigInt(gas) * (effectiveGasPrice - BigInt(gasPriceFormatted))) / BigInt(1e9);
+    const effectiveGasPrice = (gasPriceFormatted * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - gasPriceFormatted) * BigInt(5000)) /
+        BigInt(10000);
+    const feeGasCost = gas * (effectiveGasPrice - gasPriceFormatted);
     const totalCost = baseGasCost + feeGasCost;
-    const normalisedKiroPriceInETH = BigInt(kiroPriceInETH) / BigInt(1e18);
-    const kiroCost = totalCost * normalisedKiroPriceInETH;
+    const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
+    const kiroCost = Number(totalCost * normalisedKiroPriceInETH) / 1e36;
     return {
         vault,
         amount: kiroCost.toString(),
