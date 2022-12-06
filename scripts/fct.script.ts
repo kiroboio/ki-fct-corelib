@@ -7,6 +7,7 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
 import { utils } from "../src/index";
+import util from "util";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -80,15 +81,18 @@ async function main() {
   });
 
   await batchMultiSigCall.createMultiple([
-    // {
-    //   plugin: balanceOf,
-    //   from: vault,
-    //   nodeId: "1",
-    //   // options: {
-    //   // jumpOnSuccess: "3",
-    //   // jumpOnFail: "2",
-    //   // },
-    // },
+    {
+      from: vault,
+      nodeId: "1",
+      value: "100",
+      params: [],
+      to: data[chainId].KIRO,
+
+      // options: {
+      // jumpOnSuccess: "3",
+      // jumpOnFail: "2",
+      // },
+    },
     // {
     //   plugin: greaterThan,
     //   from: vault,
@@ -102,6 +106,8 @@ async function main() {
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
+
+  console.log(util.inspect(FCT, false, null, true));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,

@@ -8,7 +8,7 @@ const ethers_1 = require("ethers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
-const helpers_1 = require("batchMultiSigCall/helpers");
+const helpers_1 = require("../batchMultiSigCall/helpers");
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
