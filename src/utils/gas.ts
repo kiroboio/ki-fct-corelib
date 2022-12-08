@@ -35,8 +35,8 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
       });
     }
 
-    // Add 15% to gasUsed value
-    const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.15);
+    // Add 20% to gasUsed value
+    const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
 
     if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
       return {
