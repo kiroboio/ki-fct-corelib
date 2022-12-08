@@ -1,5 +1,5 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
-import { CallOptions, IPlugin, Params, Validator, Variable } from "../interfaces";
+import { CallOptions, IPluginCall, Param, Validator, Variable } from "../interfaces";
 
 export interface TypedDataTypes {
   EIP712Domain: MessageTypeProperty[];
@@ -91,7 +91,7 @@ export interface IMSCallInput {
   value?: string | Variable;
   to: string | Variable;
   from: string | Variable;
-  params?: Params[];
+  params?: Param[];
   method?: string;
   toENS?: string;
   validator?: Validator;
@@ -134,7 +134,9 @@ export interface MSCallOptions {
 
 export interface IWithPlugin {
   nodeId: string;
-  plugin: IPlugin;
+  plugin: {
+    create(): Promise<IPluginCall | undefined>;
+  };
   from: string;
   options?: CallOptions;
 }

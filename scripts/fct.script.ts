@@ -2,7 +2,7 @@ import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
@@ -69,6 +69,19 @@ async function main() {
   //   },
   // });
 
+  const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
+    chainId: "1",
+  });
+
+  swap.input.set({
+    methodParams: {
+      amountIn: "1000",
+      amountOutMin: "1",
+      path: [data[chainId].KIRO, data[chainId].USDC],
+      to: vault,
+    },
+  });
+
   const transfer = new ERC20.actions.Transfer({
     chainId: "1",
     initParams: {
@@ -102,10 +115,14 @@ async function main() {
     //     falseMeansFail: true,
     //   },
     // },
+    { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
+
+  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  console.log("requiredApprovals", requiredApprovals);
 
   console.log(util.inspect(FCT, false, null, true));
 

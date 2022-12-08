@@ -217,11 +217,7 @@ export const getKIROPayment = async ({
   const gas = BigInt(gasLimit);
   const gasPriceFormatted = BigInt(gasPrice);
 
-  console.log("gas", gas.toString());
-  console.log("gasPriceFormatted", Number(gasPriceFormatted) / 1e9);
-
   const baseGasCost = gas * gasPriceFormatted;
-  console.log("baseGasCost", baseGasCost);
 
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = limits.gas_price_limit;
