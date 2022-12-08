@@ -110,7 +110,14 @@ export class BatchMultiSigCall {
     ]);
   };
 
-  public getAllRequiredApprovals = async () => {
+  public getAllRequiredApprovals = async (): Promise<
+    {
+      amount: string;
+      to: string;
+      spender: string;
+      from: string;
+    }[]
+  > => {
     let requiredApprovals: {
       to: string | undefined;
       spender: string | undefined;
