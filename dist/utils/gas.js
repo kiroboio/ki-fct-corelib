@@ -163,10 +163,7 @@ const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
     const gas = BigInt(gasLimit);
     const gasPriceFormatted = BigInt(gasPrice);
-    console.log("gas", gas.toString());
-    console.log("gasPriceFormatted", Number(gasPriceFormatted) / 1e9);
     const baseGasCost = gas * gasPriceFormatted;
-    console.log("baseGasCost", baseGasCost);
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
     // 1000 - baseFee
