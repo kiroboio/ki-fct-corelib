@@ -1,81 +1,5 @@
-import { utils } from "ethers";
-import { BatchMultiSigCallTypedData, MSCallOptions } from "./interfaces";
-import {
-  flows,
-  getEncodedMethodParams,
-  getMethodInterface,
-  getTypedHashes,
-  getTypesArray,
-  getValidatorData,
-  getValidatorFunctionData,
-  getValidatorMethodInterface,
-} from "../helpers";
-import { IMSCallInput } from "./interfaces";
-import { Flow } from "../constants";
-import { Params, Variable } from "interfaces";
-import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
-
-const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
-
-export const instanceOfVariable = (object: any): object is Variable => {
-  return typeof object === "object" && "type" in object && "id" in object;
-};
-
-export const handleMethodInterface = (call: IMSCallInput): string => {
-  // If call is not a ETH transfer
-  if (call.method) {
-    // If call is a validation call
-    if (call.validator) {
-      return getValidatorMethodInterface(call.validator);
-    }
-
-    // Else it's a standard method interface
-    return getMethodInterface(call);
-  }
-
-  // Else it's a ETH transfer
-  return "";
-};
-
-export const handleFunctionSignature = (call: IMSCallInput) => {
-  if (call.method) {
-    const value = call.validator ? getValidatorMethodInterface(call.validator) : getMethodInterface(call);
-    return utils.id(value);
-  }
-  return nullValue;
-};
-
-export const handleEnsHash = (call: IMSCallInput) => {
-  if (call.toENS) {
-    return utils.id(call.toENS);
-  }
-  return nullValue;
-};
-
-export const handleData = (call: IMSCallInput) => {
-  if (call.validator) {
-    return getValidatorData(call, true);
-  }
-
-  return getEncodedMethodParams(call);
-};
-
-export const handleTypes = (call: IMSCallInput) => {
-  if (call.params) {
-    return getTypesArray(call.params);
-  }
-  return [];
-};
-
-export const handleTypedHashes = (
-  call: IMSCallInput,
-  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
-) => {
-  if (call.params) {
-    return getTypedHashes(call.params, typedData);
-  }
-  return [];
-};
+import { IMSCallInput, MSCallOptions } from "batchMultiSigCall/interfaces";
+import { Flow, flows } from "../../constants";
 
 export const manageFlow = (call: IMSCallInput) => {
   // const jump = (call.options && call.options.jump) || 0;
@@ -175,8 +99,8 @@ export const getSessionId = (salt: string, options: MSCallOptions): string => {
   const chillTime = options.recurrency
     ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
     : "00000000";
-  const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff"; // TODO: Date right now + 30 days
-  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000"; // TODO: Date right now
+  const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff";
+  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000";
   const maxGasPrice = options.maxGasPrice
     ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
     : "00000005D21DBA00"; // 25 Gwei
@@ -315,96 +239,4 @@ export const parseCallID = (
     payerIndex,
     callIndex,
   };
-};
-
-export const getTxEIP712Types = (calls: IMSCallInput[]) => {
-  const txTypes = {};
-  const structTypes = {};
-  const getTypeCount = () => Object.values(structTypes).length + 1;
-
-  const getStructType = (param: Params, index: number) => {
-    const typeName = `Struct${getTypeCount()}`;
-
-    let paramValue: Params[];
-    if (param.type.lastIndexOf("[") > 0) {
-      paramValue = param.value[0] as Params[];
-    } else {
-      paramValue = param.value as Params[];
-    }
-
-    let customCount = 0;
-    const eip712Type = paramValue.map((item) => {
-      if (item.customType || item.type.includes("tuple")) {
-        // const innerTypeName = getStructType(item, index);
-        ++customCount;
-        const innerTypeName = `Struct${getTypeCount() + customCount}`;
-        return {
-          name: item.name,
-          type: innerTypeName,
-        };
-      }
-      return {
-        name: item.name,
-        type: item.type,
-      };
-    });
-
-    structTypes[typeName] = eip712Type;
-
-    if (param.type.lastIndexOf("[") > 0) {
-      for (const parameter of param.value[0] as Params[]) {
-        if (parameter.customType || parameter.type.includes("tuple")) {
-          getStructType(parameter, index);
-        }
-      }
-    } else {
-      for (const parameter of param.value as Params[]) {
-        if (parameter.customType || parameter.type.includes("tuple")) {
-          getStructType(parameter, index);
-        }
-      }
-    }
-
-    return typeName;
-  };
-
-  calls.forEach((call: IMSCallInput, index: number) => {
-    if (call.validator) {
-      txTypes[`transaction${index + 1}`] = [
-        { name: "call", type: "Call" },
-        ...getValidatorFunctionData(call.validator, call.params),
-      ];
-      return;
-    }
-
-    const values = call.params.map((param: Params) => {
-      if (param.customType || param.type === "tuple") {
-        const type = getStructType(param, index);
-        return { name: param.name, type };
-      }
-      return {
-        name: param.name,
-        type: param.type,
-      };
-    });
-
-    txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
-  });
-
-  return {
-    txTypes,
-    structTypes,
-  };
-};
-
-export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeName: string) => {
-  const mainType = typedData.types[typeName];
-
-  const usedStructTypes: string[] = mainType.reduce<string[]>((acc, item) => {
-    if (item.type.includes("Struct")) {
-      return [...acc, item.type, ...getUsedStructTypes(typedData, item.type)];
-    }
-    return acc;
-  }, []);
-  return usedStructTypes;
 };

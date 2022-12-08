@@ -13,16 +13,16 @@ export type Variable = {
     type: "global";
     id: GlobalVariable;
 };
-export interface Params {
+export interface Param {
     name: string;
     type: string;
-    value?: boolean | string | string[] | Params[] | Params[][] | Variable;
+    value?: boolean | string | string[] | Param[] | Param[][] | Variable;
     customType?: boolean;
 }
 export interface DecodeTx {
     encodedMessage: string;
     encodedDetails: string;
-    params?: Params[];
+    params?: Param[];
 }
 export interface BatchFlags {
     viewOnly: boolean;
@@ -40,7 +40,7 @@ export interface MultiCallFlags {
 }
 export interface MethodParamsInterface {
     method: string;
-    params: Params[];
+    params: Param[];
     validator?: Validator;
     to?: string | Variable;
 }
@@ -66,7 +66,7 @@ export interface CallOptions {
 }
 export interface MultiCallBase {
     method?: string;
-    params?: Params[];
+    params?: Param[];
     gasLimit?: number;
     flags?: Partial<MultiCallFlags>;
 }
@@ -77,13 +77,10 @@ export interface Validator {
     };
     validatorAddress: string;
 }
-export interface IPlugin {
-    create: () => Promise<IPluginCall | undefined>;
-}
 export interface IPluginCall {
     value?: string;
     to: string;
     method: string;
-    params: Params[];
+    params: Param[];
     viewOnly?: boolean;
 }

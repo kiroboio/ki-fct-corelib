@@ -5,6 +5,7 @@ dotenv.config();
 const data = {
   1: {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    KIRO: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137",
     rpcUrl: process.env.RPC_URL_MAINNET as string,
   },
   5: {

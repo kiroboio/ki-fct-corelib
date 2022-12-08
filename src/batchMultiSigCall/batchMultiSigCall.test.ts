@@ -4,7 +4,7 @@ import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import { Flow } from "../constants";
 
-const contractAddress = "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd";
+const contractAddress = "0xBc0ED9A150D9b50BaA2dC3d350D0d59E69daeBD9";
 const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
 function getDate(days: number = 0) {
@@ -46,7 +46,7 @@ describe("BatchMultiSigCall", () => {
 
   it("Should create simple ERC20 Transfer FCT", async () => {
     const transfer = new ERC20.actions.Transfer({
-      chainId: 5,
+      chainId: "5",
       initParams: {
         to: "0xfeab457d95d9990b7eb6c943c839258245541754",
         methodParams: {
@@ -73,7 +73,7 @@ describe("BatchMultiSigCall", () => {
 
   it("Should create ERC20 Transfer, ERC20 Balance Of and Aave V2 deposit FCT", async () => {
     const balanceOf = new ERC20.getters.BalanceOf({
-      chainId: 5,
+      chainId: "5",
       initParams: {
         to: "0xfeab457d95d9990b7eb6c943c839258245541754",
         methodParams: {
@@ -83,7 +83,7 @@ describe("BatchMultiSigCall", () => {
     });
 
     const deposit = new AaveV2.actions.Deposit({
-      chainId: 5,
+      chainId: "5",
       initParams: {
         to: "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9",
         methodParams: {
@@ -146,7 +146,7 @@ describe("BatchMultiSigCall", () => {
       provider,
     });
 
-    const calls = await batchMultiSigCall.createMultiple([
+    await batchMultiSigCall.createMultiple([
       {
         nodeId: "node1",
         to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
