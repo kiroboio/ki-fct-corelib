@@ -43,6 +43,10 @@
         {
           "name": "transaction_2",
           "type": "transaction2"
+        },
+        {
+          "name": "transaction_3",
+          "type": "transaction3"
         }
       ],
       "Meta": [
@@ -114,6 +118,32 @@
         }
       ],
       "transaction2": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256"
+        },
+        {
+          "name": "amountOutMin",
+          "type": "uint256"
+        },
+        {
+          "name": "path",
+          "type": "address[]"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "deadline",
+          "type": "uint256"
+        }
+      ],
+      "transaction3": [
         {
           "name": "call",
           "type": "Call"
@@ -200,12 +230,12 @@
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0x07eefcb4",
         "version": "0x010101",
-        "random_id": "0x560697",
+        "random_id": "0xad4326",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1670337684",
-        "expires_at": "1671201684",
+        "valid_from": "1670497392",
+        "expires_at": "1671361392",
         "gas_price_limit": "3000000000",
         "purgeable": false,
         "blockable": true
@@ -238,6 +268,32 @@
           "call_index": 2,
           "payer_index": 2,
           "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+          "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": 0,
+          "view_only": false,
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "swapExactTokensForETH(uint256,uint256,address[],address,uint256)"
+        },
+        "amountIn": "1000",
+        "amountOutMin": "1",
+        "path": [
+          "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557"
+        ],
+        "to": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+        "deadline": "0xFB0B000000000000000000000000000000000000"
+      },
+      "transaction_3": {
+        "call": {
+          "call_index": 3,
+          "payer_index": 3,
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
           "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
           "to_ens": "",
           "eth_value": "0",
@@ -256,8 +312,8 @@
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0xd09e9078ffe22c5e562ab53db5eaac021339be1cf26649d7f762318eed9ac861",
-  "sessionId": "0x5606970001010103e80000000100639c839400638f549400000000b2d05e000d",
+  "typeHash": "0x334c3984cd2701cb1490e2ea50c27313ea369aa1f10c0dcbe0e190e9fb9f4eb4",
+  "sessionId": "0xad43260001010103e80000000100639ef370006391c47000000000b2d05e000d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
@@ -273,11 +329,30 @@
       "typedHashes": []
     },
     {
-      "typeHash": "0x935cd9328b1d424a3b823b8a30a86c1c170bfb6df78e24a4501cc4900db9b18a",
+      "typeHash": "0x759a4a657303485d4dd38669da602dacca85ed31f0432bea373768f63006b5d1",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x18cbafe5fb6ab7d2558a55ccc138a3172aa304c3a08214c1ab07223dcb9e7f8e",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000200020000000000",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+      "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+      "data": "0x00000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000003357338ea477ff139170cf85c9a4063dfc03fc9000000000000000000000000fb0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d0000000000000000000000002f3a40a3db8a7e3d09b0adfefbce4f6f81927557",
+      "types": [
+        1000,
+        1000,
+        4000,
+        1000,
+        1000,
+        1000
+      ],
+      "typedHashes": []
+    },
+    {
+      "typeHash": "0xadfdcef7b929521e2d3ee2fb15e7bc08c8450e958d82d4abc84e52391084dd81",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000000000000000200020000000000",
+      "callId": "0x0000000000000000000000000000000000000000000000000300030000000000",
       "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
       "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
       "data": "0x000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd300000000000000000000000000000000000000000000000000de0b6b3a7640000",
@@ -289,13 +364,13 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xd897030db0cf8cb30943c7e5cffdbe736b126f0fae9c4199f84d5c4dff20763b",
-      "s": "0x0eb3a77bc2bb2188f9b779689f034d18a36a784b8c9722936568843ca7b243bb",
-      "_vs": "0x8eb3a77bc2bb2188f9b779689f034d18a36a784b8c9722936568843ca7b243bb",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0x8eb3a77bc2bb2188f9b779689f034d18a36a784b8c9722936568843ca7b243bb",
-      "compact": "0xd897030db0cf8cb30943c7e5cffdbe736b126f0fae9c4199f84d5c4dff20763b8eb3a77bc2bb2188f9b779689f034d18a36a784b8c9722936568843ca7b243bb"
+      "r": "0x4ff49c73d2e1d0daa2fc05726dbc98d003f5e767c509663e99704d60fe9011f0",
+      "s": "0x2fe5b5e4baa7a9a2e9df91e83dc3104602efd90fc595f764d01e810cecec8bf8",
+      "_vs": "0x2fe5b5e4baa7a9a2e9df91e83dc3104602efd90fc595f764d01e810cecec8bf8",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x2fe5b5e4baa7a9a2e9df91e83dc3104602efd90fc595f764d01e810cecec8bf8",
+      "compact": "0x4ff49c73d2e1d0daa2fc05726dbc98d003f5e767c509663e99704d60fe9011f02fe5b5e4baa7a9a2e9df91e83dc3104602efd90fc595f764d01e810cecec8bf8"
     }
   ]
 }

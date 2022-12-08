@@ -1,4 +1,4 @@
-import { Variable } from "interfaces";
+import { Variable } from "../interfaces";
 
 export type GlobalVariable =
   | "blockNumber"
@@ -33,7 +33,7 @@ const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 //   return (indexOfPreviousBlock - 1).toString(16).padStart(BLOCK_HASH.length, BLOCK_HASH);
 // };
 
-const globalVariables = {
+export const globalVariables = {
   blockNumber: BLOCK_NUMBER,
   blockTimestamp: BLOCK_TIMESTAMP,
   gasPrice: GAS_PRICE,
@@ -44,23 +44,11 @@ const globalVariables = {
   engineAddress: ENGINE_ADDRESS,
 };
 
-const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
-const getBlockTimestamp = (): Variable => ({ type: "global", id: "blockTimestamp" });
-const getGasPrice = (): Variable => ({ type: "global", id: "gasPrice" });
-const getMinerAddress = (): Variable => ({ type: "global", id: "minerAddress" });
-const getOriginAddress = (): Variable => ({ type: "global", id: "originAddress" });
-const getInvestorAddress = (): Variable => ({ type: "global", id: "investorAddress" });
-const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
-const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
-
-export default {
-  getBlockNumber,
-  getBlockTimestamp,
-  getGasPrice,
-  getMinerAddress,
-  getOriginAddress,
-  getInvestorAddress,
-  getActivatorAddress,
-  getEngineAddress,
-  globalVariables,
-};
+export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
+export const getBlockTimestamp = (): Variable => ({ type: "global", id: "blockTimestamp" });
+export const getGasPrice = (): Variable => ({ type: "global", id: "gasPrice" });
+export const getMinerAddress = (): Variable => ({ type: "global", id: "minerAddress" });
+export const getOriginAddress = (): Variable => ({ type: "global", id: "originAddress" });
+export const getInvestorAddress = (): Variable => ({ type: "global", id: "investorAddress" });
+export const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
+export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
