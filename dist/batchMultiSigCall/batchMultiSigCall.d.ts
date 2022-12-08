@@ -24,8 +24,8 @@ export declare class BatchMultiSigCall {
     }) => Promise<string>;
     getAllRequiredApprovals: () => Promise<{
         amount: string;
-        to: string | undefined;
-        spender: string | undefined;
+        to: string;
+        spender: string;
         from: string;
     }[]>;
     private getVariable;
