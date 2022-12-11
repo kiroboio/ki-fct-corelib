@@ -458,7 +458,6 @@ class BatchMultiSigCall {
                 await this.create(callInput);
             }
             catch (e) {
-                console.log(e);
                 if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
                     throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
                 }
