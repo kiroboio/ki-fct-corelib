@@ -87,6 +87,7 @@ async function main() {
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
+  console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,

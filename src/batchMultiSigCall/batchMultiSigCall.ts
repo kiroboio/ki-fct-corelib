@@ -502,7 +502,7 @@ export class BatchMultiSigCall {
 
     const manageData = (obj: object, log = false) => {
       return Object.entries(obj).reduce((acc, [key, value]) => {
-        console.log(key, value);
+        // console.log(key, value);
         if (isNaN(parseFloat(key))) {
           if (arrayKeys.includes(key)) {
             return {
