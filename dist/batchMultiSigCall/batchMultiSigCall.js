@@ -379,7 +379,7 @@ class BatchMultiSigCall {
         const arrayKeys = ["signatures", "mcall"];
         const manageData = (obj, log = false) => {
             return Object.entries(obj).reduce((acc, [key, value]) => {
-                console.log(key, value);
+                // console.log(key, value);
                 if (isNaN(parseFloat(key))) {
                     if (arrayKeys.includes(key)) {
                         return {
