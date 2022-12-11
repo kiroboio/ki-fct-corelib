@@ -6,10 +6,10 @@ export declare const getSessionId: (salt: string, options: MSCallOptions) => str
 export declare const parseSessionID: (sessionId: string, builder: string) => MSCallOptions;
 export declare const parseCallID: (callId: string) => {
     options: {
-        gasLimit: number;
+        gasLimit: string;
         flow: Flow;
-        jumpOnSuccess: number;
-        jumpOnFail: number;
+        jumpOnSuccess?: string;
+        jumpOnFail?: string;
     };
     viewOnly: boolean;
     permissions: string;
