@@ -81,7 +81,6 @@ async function main() {
       params: [],
       to: data[chainId].KIRO,
     },
-
     { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
   ]);
@@ -114,10 +113,6 @@ async function main() {
     version,
   });
 
-  // Decode calldata
-  const decoded = batchMultiSigCall.decodeFCT(callData);
-  console.log(util.inspect(decoded, false, null, true /* enable colors */));
-
   const gasEstimation = await utils.getFCTGasEstimation({
     fct: signedFCT,
     callData,
@@ -127,14 +122,22 @@ async function main() {
 
   console.log("gasEstimation", gasEstimation);
 
-  const hadshashda = await utils.getKIROPayment({
+  const kiroPayment = await utils.getKIROPayment({
     fct: signedFCT,
     kiroPriceInETH: "38270821632831754769812",
     gasPrice: 1580000096,
     gasLimit: 462109,
   });
 
-  console.log("hadshashda", hadshashda);
+  console.log("kiroPayment", kiroPayment);
+
+  // Import decoded calldata
+  const newBatchMultiSigCall = new BatchMultiSigCall({
+    provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
+    contractAddress: data[chainId].FCT_Controller,
+  });
+  const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
+  console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
