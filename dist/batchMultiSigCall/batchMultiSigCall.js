@@ -28,7 +28,7 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getCalldataForActuator = async ({ signedFCT, purgedFCT, investor, activator, version, }) => {
+        this.getCalldataForActuator = ({ signedFCT, purgedFCT, investor, activator, version, }) => {
             return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
                 `0x${version}`.padEnd(66, "0"),
                 signedFCT,
@@ -105,11 +105,11 @@ class BatchMultiSigCall {
         this.getPlugin = async (index) => {
             let chainId;
             if (this.chainId) {
-                chainId = this.chainId;
+                chainId = this.chainId.toString();
             }
             else {
                 const data = await this.provider.getNetwork();
-                chainId = data.chainId;
+                chainId = data.chainId.toString();
             }
             const call = this.getCall(index);
             if ((0, helpers_1.instanceOfVariable)(call.to)) {
@@ -118,7 +118,7 @@ class BatchMultiSigCall {
             const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
                 signature: (0, helpers_3.handleFunctionSignature)(call),
                 address: call.to,
-                chainId: "1",
+                chainId: chainId,
             });
             const pluginClass = pluginData.plugin;
             const plugin = new pluginClass({
@@ -371,6 +371,46 @@ class BatchMultiSigCall {
             this.create(callInput);
         }
         return this.calls;
+    }
+    decodeFCT(calldata) {
+        const ABI = FCT_BatchMultiSigCall_abi_json_1.default;
+        const iface = new ethers_1.ethers.utils.Interface(ABI);
+        const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
+        const arrayKeys = ["signatures", "mcall"];
+        const manageData = (obj, log = false) => {
+            return Object.entries(obj).reduce((acc, [key, value]) => {
+                console.log(key, value);
+                if (isNaN(parseFloat(key))) {
+                    if (arrayKeys.includes(key)) {
+                        return {
+                            ...acc,
+                            [key]: value.map((sign) => manageData(sign, true)),
+                        };
+                    }
+                    return {
+                        ...acc,
+                        [key]: ethers_1.BigNumber.isBigNumber(value) ? value.toHexString() : value,
+                    };
+                }
+                return acc;
+            }, {});
+        };
+        return {
+            version: decoded[0],
+            tr: manageData(decoded[1]),
+            // tr: Object.entries(decoded.tr).reduce((acc, [key, value]) => {
+            //   if (isNaN(parseFloat(key))) {
+            //     return {
+            //       ...acc,
+            //       [key]: value,
+            //     };
+            //   }
+            //   return acc;
+            // }, {}),
+            purgeFCT: decoded[2],
+            investor: decoded[3],
+            builder: decoded[4],
+        };
     }
     // End of main FCT functions
     //
