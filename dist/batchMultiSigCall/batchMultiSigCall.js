@@ -105,11 +105,11 @@ class BatchMultiSigCall {
         this.getPlugin = async (index) => {
             let chainId;
             if (this.chainId) {
-                chainId = this.chainId;
+                chainId = this.chainId.toString();
             }
             else {
                 const data = await this.provider.getNetwork();
-                chainId = data.chainId;
+                chainId = data.chainId.toString();
             }
             const call = this.getCall(index);
             if ((0, helpers_1.instanceOfVariable)(call.to)) {
@@ -118,7 +118,7 @@ class BatchMultiSigCall {
             const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
                 signature: (0, helpers_3.handleFunctionSignature)(call),
                 address: call.to,
-                chainId: "1",
+                chainId: chainId,
             });
             const pluginClass = pluginData.plugin;
             const plugin = new pluginClass({
