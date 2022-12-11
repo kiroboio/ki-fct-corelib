@@ -8,6 +8,7 @@ import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import data from "./scriptData";
 import { utils } from "../src/index";
 import util from "util";
+// import util from "util";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -48,27 +49,6 @@ async function main() {
     },
   });
 
-  // const balanceOf = new ERC20.getters.BalanceOf({
-  //   chainId: 1,
-  //   initParams: {
-  //     to: data[chainId].KIRO,
-  //     methodParams: {
-  //       owner: vault,
-  //     },
-  //   },
-  // });
-
-  // const greaterThan = new PureValidator.actions.GreaterThan({
-  //   chainId: 1,
-  //   initParams: {
-  //     to: data[chainId].PureValidator,
-  //     methodParams: {
-  //       value1: balanceOf.output.params.balance.getOutputVariable("1"),
-  //       value2: ethers.utils.parseUnits("10", 18).toString(),
-  //     },
-  //   },
-  // });
-
   const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
     chainId: "1",
   });
@@ -100,31 +80,13 @@ async function main() {
       value: "100",
       params: [],
       to: data[chainId].KIRO,
-
-      // options: {
-      // jumpOnSuccess: "3",
-      // jumpOnFail: "2",
-      // },
     },
-    // {
-    //   plugin: greaterThan,
-    //   from: vault,
-    //   nodeId: "2",
-    //   options: {
-    //     flow: Flow.OK_CONT_FAIL_REVERT,
-    //     falseMeansFail: true,
-    //   },
-    // },
+
     { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
-
-  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log("requiredApprovals", requiredApprovals);
-
-  console.log(util.inspect(FCT, false, null, true));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -143,13 +105,17 @@ async function main() {
 
   const version = "010101";
 
-  const callData = await batchMultiSigCall.getCalldataForActuator({
+  const callData = batchMultiSigCall.getCalldataForActuator({
     signedFCT,
     activator: process.env.ACTIVATOR as string,
     investor: ZERO_ADDRESS,
     purgedFCT: "0x".padEnd(66, "0"),
     version,
   });
+
+  // Decode calldata
+  const decoded = batchMultiSigCall.decodeFCT(callData);
+  console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
   const gasEstimation = await utils.getFCTGasEstimation({
     fct: signedFCT,
