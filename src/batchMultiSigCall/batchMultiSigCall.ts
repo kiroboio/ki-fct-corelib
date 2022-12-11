@@ -291,13 +291,13 @@ export class BatchMultiSigCall {
   // Plugin functions
 
   public getPlugin = async (index: number): Promise<PluginInstance> => {
-    let chainId: number;
+    let chainId: string;
 
     if (this.chainId) {
-      chainId = this.chainId;
+      chainId = this.chainId.toString();
     } else {
       const data = await this.provider.getNetwork();
-      chainId = data.chainId;
+      chainId = data.chainId.toString();
     }
     const call = this.getCall(index);
 
@@ -308,7 +308,7 @@ export class BatchMultiSigCall {
     const pluginData = getPlugin({
       signature: handleFunctionSignature(call),
       address: call.to,
-      chainId: "1",
+      chainId: chainId as ChainId,
     });
 
     const pluginClass = pluginData.plugin as any;
