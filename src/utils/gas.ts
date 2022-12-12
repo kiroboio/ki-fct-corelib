@@ -52,6 +52,9 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
       };
     }
   } catch (err: any) {
+    if (err.reason === "processing response error") {
+      throw err;
+    }
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
