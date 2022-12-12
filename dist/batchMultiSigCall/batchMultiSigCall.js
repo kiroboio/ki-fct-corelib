@@ -386,7 +386,7 @@ class BatchMultiSigCall {
         const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
         const arrayKeys = ["signatures", "mcall"];
         const objectKeys = ["tr"];
-        const manageData = (obj) => {
+        const getFCT = (obj) => {
             return Object.entries(obj).reduce((acc, [key, value]) => {
                 if (!isNaN(parseFloat(key))) {
                     return acc;
@@ -394,13 +394,13 @@ class BatchMultiSigCall {
                 if (arrayKeys.includes(key)) {
                     return {
                         ...acc,
-                        [key]: value.map((sign) => manageData(sign)),
+                        [key]: value.map((sign) => getFCT(sign)),
                     };
                 }
                 if (objectKeys.includes(key)) {
                     return {
                         ...acc,
-                        [key]: manageData(value),
+                        [key]: getFCT(value),
                     };
                 }
                 if (key === "callId" || key === "sessionId") {
@@ -421,7 +421,7 @@ class BatchMultiSigCall {
                 };
             }, {});
         };
-        const decodedFCT = manageData(decoded);
+        const decodedFCT = getFCT(decoded);
         const FCTOptions = (0, helpers_3.parseSessionID)(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
         this.setOptions(FCTOptions);
         for (const [index, call] of decodedFCT.tr.mcall.entries()) {

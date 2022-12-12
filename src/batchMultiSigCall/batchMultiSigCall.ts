@@ -511,7 +511,7 @@ export class BatchMultiSigCall {
     const arrayKeys = ["signatures", "mcall"];
     const objectKeys = ["tr"];
 
-    const manageData = (obj: object) => {
+    const getFCT = (obj: object) => {
       return Object.entries(obj).reduce((acc, [key, value]) => {
         if (!isNaN(parseFloat(key))) {
           return acc;
@@ -520,14 +520,14 @@ export class BatchMultiSigCall {
         if (arrayKeys.includes(key)) {
           return {
             ...acc,
-            [key]: value.map((sign) => manageData(sign)),
+            [key]: value.map((sign) => getFCT(sign)),
           };
         }
 
         if (objectKeys.includes(key)) {
           return {
             ...acc,
-            [key]: manageData(value),
+            [key]: getFCT(value),
           };
         }
 
@@ -558,7 +558,7 @@ export class BatchMultiSigCall {
       purgeFCT: string;
       investor: string;
       activator: string;
-    } = manageData(decoded);
+    } = getFCT(decoded);
 
     const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
     this.setOptions(FCTOptions);
