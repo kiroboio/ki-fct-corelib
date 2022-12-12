@@ -112,12 +112,13 @@ export class BatchMultiSigCall {
   };
 
   public getAllRequiredApprovals = async (): Promise<
-    {
-      amount: string;
-      to: string;
-      spender: string;
-      from: string;
-    }[]
+    | {
+        currentAmount: string;
+        requiredAmount: string;
+        token: string;
+        spender: string;
+        from: string;
+      }[]
   > => {
     let requiredApprovals: {
       to: string | undefined;
@@ -125,6 +126,10 @@ export class BatchMultiSigCall {
       amount: string | undefined;
       from: string;
     }[] = [];
+    if (!this.provider) {
+      throw new Error("No provider set");
+    }
+
     const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString()) as ChainId;
 
     for (const call of this.calls) {
@@ -186,17 +191,16 @@ export class BatchMultiSigCall {
 
     const [, returnData]: [string, string[]] = await multiCallContract.callStatic.aggregate(calls);
 
-    const approvals = returnData
-      .map((data, index) => {
-        const decoded = new ethers.utils.AbiCoder().decode(["uint256"], data);
-        return {
-          ...requiredApprovals[index],
-          amount: BigNumber.from(requiredApprovals[index].amount).sub(decoded[0]).toString(),
-        };
-      })
-      .filter((approval) => {
-        return BigNumber.from(approval.amount).gt(0);
-      });
+    const approvals = returnData.map((data, index) => {
+      const decoded = utils.defaultAbiCoder.decode(["uint256"], data);
+      return {
+        token: requiredApprovals[index].to,
+        spender: requiredApprovals[index].spender,
+        requiredAmount: requiredApprovals[index].amount,
+        currentAmount: (decoded[0] as BigNumber).toString(),
+        from: requiredApprovals[index].from,
+      };
+    });
 
     return approvals;
   };
