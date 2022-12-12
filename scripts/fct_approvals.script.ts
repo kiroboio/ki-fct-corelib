@@ -80,7 +80,7 @@ async function main() {
   ]);
 
   const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log("requiredApprovals", requiredApprovals);
+  console.log(requiredApprovals);
 }
 
 main().catch((error) => {
