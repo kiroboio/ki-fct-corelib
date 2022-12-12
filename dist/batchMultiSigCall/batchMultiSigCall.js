@@ -68,37 +68,19 @@ class BatchMultiSigCall {
                             .filter((approval) => {
                             return Object.values(approval).every((value) => typeof value !== "undefined");
                         })
-                            .map((approval) => ({
-                            ...approval,
-                            from: call.from,
-                        }));
+                            .map((approval) => {
+                            return {
+                                token: approval.to,
+                                spender: approval.spender,
+                                requiredAmount: approval.amount,
+                                from: call.from,
+                            };
+                        });
                         requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
                     }
                 }
             }
-            const multiCallContract = new ethers_1.ethers.Contract(constants_1.multicallContracts[chainId], [
-                "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-            ], this.provider);
-            const calls = requiredApprovals.map((approval) => {
-                return {
-                    target: approval.to,
-                    callData: new ethers_1.ethers.utils.Interface([
-                        "function allowance(address owner, address spender) view returns (uint256)",
-                    ]).encodeFunctionData("allowance", [approval.from, approval.spender]),
-                };
-            });
-            const [, returnData] = await multiCallContract.callStatic.aggregate(calls);
-            const approvals = returnData.map((data, index) => {
-                const decoded = ethers_1.utils.defaultAbiCoder.decode(["uint256"], data);
-                return {
-                    token: requiredApprovals[index].to,
-                    spender: requiredApprovals[index].spender,
-                    requiredAmount: requiredApprovals[index].amount,
-                    currentAmount: decoded[0].toString(),
-                    from: requiredApprovals[index].from,
-                };
-            });
-            return approvals;
+            return requiredApprovals;
         };
         // End of options
         //

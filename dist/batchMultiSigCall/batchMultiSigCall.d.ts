@@ -23,7 +23,6 @@ export declare class BatchMultiSigCall {
         version: string;
     }) => string;
     getAllRequiredApprovals: () => Promise<{
-        currentAmount: string;
         requiredAmount: string;
         token: string;
         spender: string;
