@@ -27,6 +27,7 @@ import {
   handleTypes,
   manageCallId,
   parseSessionID,
+  parseCallID,
 } from "./helpers";
 import {
   FCBase,
@@ -88,7 +89,7 @@ export class BatchMultiSigCall {
 
   // Helpers
 
-  public getCalldataForActuator = async ({
+  public getCalldataForActuator = ({
     signedFCT,
     purgedFCT,
     investor,
@@ -100,7 +101,7 @@ export class BatchMultiSigCall {
     investor: string;
     activator: string;
     version: string;
-  }) => {
+  }): string => {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
       `0x${version}`.padEnd(66, "0"),
       signedFCT,
@@ -487,6 +488,143 @@ export class BatchMultiSigCall {
       };
 
       this.create(callInput);
+    }
+
+    return this.calls;
+  }
+
+  public async importEncodedFCT(calldata: string) {
+    const ABI = FCTBatchMultiSigCallABI;
+    const iface = new ethers.utils.Interface(ABI);
+
+    let chainId: ChainId;
+
+    if (this.chainId) {
+      chainId = this.chainId.toString() as ChainId;
+    } else {
+      const data = await this.provider.getNetwork();
+      chainId = data.chainId.toString() as ChainId;
+    }
+
+    const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
+
+    const arrayKeys = ["signatures", "mcall"];
+    const objectKeys = ["tr"];
+
+    const getFCT = (obj: object) => {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
+        if (!isNaN(parseFloat(key))) {
+          return acc;
+        }
+
+        if (arrayKeys.includes(key)) {
+          return {
+            ...acc,
+            [key]: value.map((sign) => getFCT(sign)),
+          };
+        }
+
+        if (objectKeys.includes(key)) {
+          return {
+            ...acc,
+            [key]: getFCT(value),
+          };
+        }
+
+        if (key === "callId" || key === "sessionId") {
+          return {
+            ...acc,
+            [key]: "0x" + value.toHexString().slice(2).padStart(64, "0"),
+          };
+        }
+
+        if (key === "types") {
+          return {
+            ...acc,
+            [key]: value.map((type) => type.toString()),
+          };
+        }
+
+        return {
+          ...acc,
+          [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
+        };
+      }, {});
+    };
+
+    const decodedFCT: {
+      version: string;
+      tr: Omit<IBatchMultiSigCallFCT, "typedData">;
+      purgeFCT: string;
+      investor: string;
+      activator: string;
+    } = getFCT(decoded);
+
+    const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+    this.setOptions(FCTOptions);
+
+    for (const [index, call] of decodedFCT.tr.mcall.entries()) {
+      try {
+        const pluginData = getPlugin({
+          address: call.to,
+          chainId,
+          signature: call.functionSignature,
+        });
+
+        const plugin = new pluginData.plugin({
+          chainId,
+        });
+
+        const params = plugin.methodParams;
+
+        const decodedParams =
+          params.length > 0
+            ? new AbiCoder().decode(
+                params.map((type) => `${type.type} ${type.name}`),
+                call.data
+              )
+            : [];
+
+        plugin.input.set({
+          to: call.to,
+          value: parseInt(call.value, 16).toString(),
+          methodParams: params.reduce((acc, param) => {
+            const getValue = (value: any) => {
+              const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+              if (BigNumber.isBigNumber(value)) {
+                const hexString = value.toHexString();
+                if (variables.some((v) => hexString.startsWith(v))) {
+                  return hexString;
+                }
+
+                return value.toString();
+              }
+
+              return value;
+            };
+
+            const value = getValue(decodedParams[param.name]);
+
+            return { ...acc, [param.name]: value };
+          }, {}),
+        });
+
+        const { options } = parseCallID(call.callId);
+
+        const callInput: IWithPlugin = {
+          nodeId: `node${index + 1}`,
+          plugin,
+          from: call.from,
+          options,
+        };
+
+        await this.create(callInput);
+      } catch (e) {
+        if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
+          throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
+        }
+        throw new Error(`Plugin not found for call at index ${index}`);
+      }
     }
 
     return this.calls;

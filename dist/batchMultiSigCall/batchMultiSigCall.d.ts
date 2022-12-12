@@ -21,7 +21,7 @@ export declare class BatchMultiSigCall {
         investor: string;
         activator: string;
         version: string;
-    }) => Promise<string>;
+    }) => string;
     getAllRequiredApprovals: () => Promise<{
         amount: string;
         to: string;
@@ -40,6 +40,7 @@ export declare class BatchMultiSigCall {
     get length(): number;
     exportFCT(): Promise<IBatchMultiSigCallFCT>;
     importFCT(fct: IBatchMultiSigCallFCT): IMSCallInput[];
+    importEncodedFCT(calldata: string): Promise<IMSCallInput[]>;
     private createTypedData;
     private getParamsFromCall;
     private verifyParams;

@@ -201,10 +201,10 @@ export const parseCallID = (
   callId: string
 ): {
   options: {
-    gasLimit: number;
+    gasLimit: string;
     flow: Flow;
-    jumpOnSuccess: number;
-    jumpOnFail: number;
+    jumpOnSuccess?: string;
+    jumpOnFail?: string;
   };
   viewOnly: boolean;
   permissions: string;
@@ -217,7 +217,7 @@ export const parseCallID = (
   const jumpOnSuccess = parseInt(callId.slice(12, 16), 16);
   const payerIndex = parseInt(callId.slice(16, 20), 16);
   const callIndex = parseInt(callId.slice(20, 24), 16);
-  const gasLimit = parseInt(callId.slice(24, 32), 16);
+  const gasLimit = parseInt(callId.slice(24, 32), 16).toString();
   const flags = parseInt(callId.slice(32, 34), 16);
 
   const getFlow = () => {
@@ -227,13 +227,16 @@ export const parseCallID = (
     return Flow[flow[0]];
   };
 
+  const options = {
+    gasLimit,
+    flow: getFlow(),
+  };
+
+  if (jumpOnFail) options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
+  if (jumpOnSuccess) options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
+
   return {
-    options: {
-      flow: getFlow(),
-      jumpOnFail,
-      jumpOnSuccess,
-      gasLimit,
-    },
+    options,
     viewOnly: flags === 1,
     permissions,
     payerIndex,
