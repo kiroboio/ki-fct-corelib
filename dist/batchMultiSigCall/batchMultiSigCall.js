@@ -28,7 +28,7 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getCalldataForActuator = async ({ signedFCT, purgedFCT, investor, activator, version, }) => {
+        this.getCalldataForActuator = ({ signedFCT, purgedFCT, investor, activator, version, }) => {
             return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
                 `0x${version}`.padEnd(66, "0"),
                 signedFCT,
@@ -369,6 +369,109 @@ class BatchMultiSigCall {
                 },
             };
             this.create(callInput);
+        }
+        return this.calls;
+    }
+    async importEncodedFCT(calldata) {
+        const ABI = FCT_BatchMultiSigCall_abi_json_1.default;
+        const iface = new ethers_1.ethers.utils.Interface(ABI);
+        let chainId;
+        if (this.chainId) {
+            chainId = this.chainId.toString();
+        }
+        else {
+            const data = await this.provider.getNetwork();
+            chainId = data.chainId.toString();
+        }
+        const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
+        const arrayKeys = ["signatures", "mcall"];
+        const objectKeys = ["tr"];
+        const getFCT = (obj) => {
+            return Object.entries(obj).reduce((acc, [key, value]) => {
+                if (!isNaN(parseFloat(key))) {
+                    return acc;
+                }
+                if (arrayKeys.includes(key)) {
+                    return {
+                        ...acc,
+                        [key]: value.map((sign) => getFCT(sign)),
+                    };
+                }
+                if (objectKeys.includes(key)) {
+                    return {
+                        ...acc,
+                        [key]: getFCT(value),
+                    };
+                }
+                if (key === "callId" || key === "sessionId") {
+                    return {
+                        ...acc,
+                        [key]: "0x" + value.toHexString().slice(2).padStart(64, "0"),
+                    };
+                }
+                if (key === "types") {
+                    return {
+                        ...acc,
+                        [key]: value.map((type) => type.toString()),
+                    };
+                }
+                return {
+                    ...acc,
+                    [key]: ethers_1.BigNumber.isBigNumber(value) ? value.toHexString() : value,
+                };
+            }, {});
+        };
+        const decodedFCT = getFCT(decoded);
+        const FCTOptions = (0, helpers_3.parseSessionID)(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+        this.setOptions(FCTOptions);
+        for (const [index, call] of decodedFCT.tr.mcall.entries()) {
+            try {
+                const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
+                    address: call.to,
+                    chainId,
+                    signature: call.functionSignature,
+                });
+                const plugin = new pluginData.plugin({
+                    chainId,
+                });
+                const params = plugin.methodParams;
+                const decodedParams = params.length > 0
+                    ? new utils_1.AbiCoder().decode(params.map((type) => `${type.type} ${type.name}`), call.data)
+                    : [];
+                plugin.input.set({
+                    to: call.to,
+                    value: parseInt(call.value, 16).toString(),
+                    methodParams: params.reduce((acc, param) => {
+                        const getValue = (value) => {
+                            const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+                            if (ethers_1.BigNumber.isBigNumber(value)) {
+                                const hexString = value.toHexString();
+                                if (variables.some((v) => hexString.startsWith(v))) {
+                                    return hexString;
+                                }
+                                return value.toString();
+                            }
+                            return value;
+                        };
+                        const value = getValue(decodedParams[param.name]);
+                        return { ...acc, [param.name]: value };
+                    }, {}),
+                });
+                const { options } = (0, helpers_3.parseCallID)(call.callId);
+                const callInput = {
+                    nodeId: `node${index + 1}`,
+                    plugin,
+                    from: call.from,
+                    options,
+                };
+                await this.create(callInput);
+            }
+            catch (e) {
+                if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
+                    throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
+                }
+                throw new Error(`Plugin not found for call at index ${index}`);
+            }
         }
         return this.calls;
     }
