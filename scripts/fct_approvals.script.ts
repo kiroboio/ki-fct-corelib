@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import data from "./scriptData";
+import { utils } from "../src";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -80,7 +81,14 @@ async function main() {
   ]);
 
   const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log(requiredApprovals);
+  console.log("approvals from core lib", requiredApprovals);
+
+  const approvals = await utils.fetchCurrentApprovals({
+    provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
+    data: requiredApprovals,
+  });
+
+  console.log("approvals from utils", approvals);
 }
 
 main().catch((error) => {

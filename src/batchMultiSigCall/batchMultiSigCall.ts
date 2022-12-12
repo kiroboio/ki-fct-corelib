@@ -29,17 +29,7 @@ import {
   parseSessionID,
   parseCallID,
 } from "./helpers";
-import {
-  FCBase,
-  FCBaseBytes,
-  FDBackBase,
-  FDBackBaseBytes,
-  FDBase,
-  FDBaseBytes,
-  Flow,
-  flows,
-  multicallContracts,
-} from "../constants";
+import { FCBase, FCBaseBytes, FDBackBase, FDBackBaseBytes, FDBase, FDBaseBytes, Flow, flows } from "../constants";
 
 export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
@@ -112,18 +102,17 @@ export class BatchMultiSigCall {
   };
 
   public getAllRequiredApprovals = async (): Promise<
-    | {
-        currentAmount: string;
-        requiredAmount: string;
-        token: string;
-        spender: string;
-        from: string;
-      }[]
+    {
+      requiredAmount: string;
+      token: string;
+      spender: string;
+      from: string;
+    }[]
   > => {
     let requiredApprovals: {
-      to: string | undefined;
+      token: string | undefined;
       spender: string | undefined;
-      amount: string | undefined;
+      requiredAmount: string | undefined;
       from: string;
     }[] = [];
     if (!this.provider) {
@@ -162,47 +151,21 @@ export class BatchMultiSigCall {
             .filter((approval) => {
               return Object.values(approval).every((value) => typeof value !== "undefined");
             })
-            .map((approval) => ({
-              ...approval,
-              from: call.from as string,
-            }));
+            .map((approval) => {
+              return {
+                token: approval.to,
+                spender: approval.spender,
+                requiredAmount: approval.amount,
+                from: call.from as string,
+              };
+            });
 
           requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
         }
       }
     }
 
-    const multiCallContract = new ethers.Contract(
-      multicallContracts[chainId],
-      [
-        "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-      ],
-      this.provider
-    );
-
-    const calls = requiredApprovals.map((approval) => {
-      return {
-        target: approval.to,
-        callData: new ethers.utils.Interface([
-          "function allowance(address owner, address spender) view returns (uint256)",
-        ]).encodeFunctionData("allowance", [approval.from, approval.spender]),
-      };
-    });
-
-    const [, returnData]: [string, string[]] = await multiCallContract.callStatic.aggregate(calls);
-
-    const approvals = returnData.map((data, index) => {
-      const decoded = utils.defaultAbiCoder.decode(["uint256"], data);
-      return {
-        token: requiredApprovals[index].to,
-        spender: requiredApprovals[index].spender,
-        requiredAmount: requiredApprovals[index].amount,
-        currentAmount: (decoded[0] as BigNumber).toString(),
-        from: requiredApprovals[index].from,
-      };
-    });
-
-    return approvals;
+    return requiredApprovals;
   };
 
   // Variables
