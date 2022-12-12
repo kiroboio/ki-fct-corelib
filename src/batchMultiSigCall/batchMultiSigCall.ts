@@ -589,9 +589,22 @@ export class BatchMultiSigCall {
           to: call.to,
           value: parseInt(call.value, 16).toString(),
           methodParams: params.reduce((acc, param) => {
-            const value = BigNumber.isBigNumber(decodedParams[param.name])
-              ? decodedParams[param.name].toString()
-              : decodedParams[param.name];
+            const getValue = (value: any) => {
+              const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+              if (BigNumber.isBigNumber(value)) {
+                const hexString = value.toHexString();
+                if (variables.some((v) => hexString.startsWith(v))) {
+                  return hexString;
+                }
+
+                return value.toString();
+              }
+
+              return value;
+            };
+
+            const value = getValue(decodedParams[param.name]);
+
             return { ...acc, [param.name]: value };
           }, {}),
         });
