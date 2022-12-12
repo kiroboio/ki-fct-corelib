@@ -27,7 +27,7 @@ function addHours(numOfHours: number, date = new Date()) {
   return Number(date.getTime() / 1000).toFixed();
 }
 
-const chainId = 5;
+const chainId = "5";
 const wallet = process.env.WALLET as string;
 
 async function main() {
@@ -50,7 +50,7 @@ async function main() {
   });
 
   const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
-    chainId: "1",
+    chainId,
   });
 
   swap.input.set({
@@ -63,7 +63,7 @@ async function main() {
   });
 
   const transfer = new ERC20.actions.Transfer({
-    chainId: "1",
+    chainId,
     initParams: {
       to: data[chainId].KIRO,
       methodParams: {
@@ -73,7 +73,18 @@ async function main() {
     },
   });
 
+  const balanceOf = new ERC20.getters.BalanceOf({
+    chainId,
+    initParams: {
+      to: data[chainId].KIRO,
+      methodParams: {
+        owner: wallet,
+      },
+    },
+  });
+
   await batchMultiSigCall.createMultiple([
+    { plugin: balanceOf, from: vault, nodeId: "0" },
     {
       from: vault,
       nodeId: "1",
@@ -84,6 +95,9 @@ async function main() {
     { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
   ]);
+
+  const plugin = await batchMultiSigCall.getPlugin(0);
+  console.log("plugin", plugin);
 
   const FCT = await batchMultiSigCall.exportFCT();
 

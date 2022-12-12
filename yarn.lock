@@ -722,7 +722,7 @@
 
 "@kirobo/ki-eth-fct-provider-ts@https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop":
   version "1.1.0"
-  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#94616f834475835335029365943a1f556f08f3fc"
+  resolved "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#76ac2f787fcd94c0185f5d10ad43a9049bfd3f7b"
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@chainlink/contracts" "^0.5.1"
