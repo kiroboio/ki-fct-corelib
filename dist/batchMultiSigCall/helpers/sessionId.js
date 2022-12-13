@@ -24,7 +24,6 @@ const manageCallId = (calls, call, index) => {
     // 4 - Call index
     // 8 - Gas limit
     // 2 - Flags
-    // 0x0000000000000000000000000000000000000200010000000100010000000000
     const permissions = "0000";
     const flow = call?.options?.flow ? Number(constants_1.flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
     const payerIndex = Number(index + 1)
@@ -35,13 +34,11 @@ const manageCallId = (calls, call, index) => {
         .padStart(4, "0");
     const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
     const flags = () => {
-        if (call?.options?.falseMeansFail) {
-            return "02";
-        }
-        if (call?.viewOnly) {
-            return "01";
-        }
-        return "00";
+        console.log("callType options", call?.options?.callType, call?.options?.falseMeansFail);
+        const callType = call?.options?.callType ? constants_1.CALL_TYPE[call.options.callType] : constants_1.CALL_TYPE.ACTION;
+        const falseMeansFail = call?.options?.falseMeansFail ? 2 : 0;
+        console.log("call type", callType, "false means fail", falseMeansFail);
+        return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
     };
     let successJump = "0000";
     let failJump = "0000";

@@ -77,6 +77,13 @@ export interface IBatchMultiSigCallFCT {
     builder: string;
     variables: string[];
     externalSigners: string[];
+    computed: {
+        variable: string;
+        add: string;
+        sub: string;
+        mul: string;
+        div: string;
+    }[];
 }
 export interface IMSCallInput {
     nodeId: string;
@@ -87,7 +94,6 @@ export interface IMSCallInput {
     method?: string;
     toENS?: string;
     validator?: Validator;
-    viewOnly?: boolean;
     options?: CallOptions;
 }
 export interface MSCall {

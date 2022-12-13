@@ -9,3 +9,13 @@ export declare const FDBase = "0xFD00000000000000000000000000000000000000";
 export declare const FDBaseBytes = "0xFD00000000000000000000000000000000000000000000000000000000000000";
 export declare const FDBackBase = "0xFDB0000000000000000000000000000000000000";
 export declare const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000000000000000000000";
+export declare const CALL_TYPE: {
+    ACTION: string;
+    VIEW_ONLY: string;
+    LIBRARY: string;
+};
+export declare const CALL_TYPE_MSG: {
+    ACTION: string;
+    VIEW_ONLY: string;
+    LIBRARY: string;
+};
