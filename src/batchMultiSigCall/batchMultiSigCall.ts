@@ -44,7 +44,7 @@ import {
 export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
-  private batchMultiSigSelector: string = "0x07eefcb4";
+  private batchMultiSigSelector: string = "0x2409a934";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
   private chainId: number;
 
