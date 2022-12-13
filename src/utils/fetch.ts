@@ -8,7 +8,7 @@ export const fetchCurrentApprovals = async ({
 }: {
   rpcUrl?: string;
   provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-  data: { token: string; from: string; spender: string }[];
+  data: { token: string; from: string; spender: string; requiredAmount?: string }[];
 }) => {
   if (!provider) {
     if (!rpcUrl) {
@@ -45,11 +45,10 @@ export const fetchCurrentApprovals = async ({
 
   const approvals = returnData.map((appr, index) => {
     const decoded = utils.defaultAbiCoder.decode(["uint256"], appr);
+
     return {
-      token: data[index].token,
-      spender: data[index].spender,
+      ...data[index],
       value: (decoded[0] as BigNumber).toString(),
-      from: data[index].from,
     };
   });
 

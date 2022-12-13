@@ -6,10 +6,12 @@ export declare const fetchCurrentApprovals: ({ rpcUrl, provider, data, }: {
         token: string;
         from: string;
         spender: string;
+        requiredAmount?: string;
     }[];
 }) => Promise<{
-    token: string;
-    spender: string;
     value: string;
+    token: string;
     from: string;
+    spender: string;
+    requiredAmount?: string;
 }[]>;

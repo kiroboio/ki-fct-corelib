@@ -29,10 +29,8 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
     const approvals = returnData.map((appr, index) => {
         const decoded = ethers_1.utils.defaultAbiCoder.decode(["uint256"], appr);
         return {
-            token: data[index].token,
-            spender: data[index].spender,
+            ...data[index],
             value: decoded[0].toString(),
-            from: data[index].from,
         };
     });
     return approvals;
