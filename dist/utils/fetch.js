@@ -31,7 +31,7 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
         return {
             token: data[index].token,
             spender: data[index].spender,
-            amount: decoded[0].toString(),
+            value: decoded[0].toString(),
             from: data[index].from,
         };
     });

@@ -48,7 +48,7 @@ export const fetchCurrentApprovals = async ({
     return {
       token: data[index].token,
       spender: data[index].spender,
-      amount: (decoded[0] as BigNumber).toString(),
+      value: (decoded[0] as BigNumber).toString(),
       from: data[index].from,
     };
   });
