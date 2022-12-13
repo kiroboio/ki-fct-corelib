@@ -7,7 +7,6 @@
     "baseUrl": "src",
     "allowJs": true,
     "lib": ["es2017", "DOM"],
-    "rootDir": "src",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true

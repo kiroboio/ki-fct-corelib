@@ -39,11 +39,8 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
 
   const flags = () => {
-    console.log("callType options", call?.options?.callType, call?.options?.falseMeansFail);
     const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;
     const falseMeansFail = call?.options?.falseMeansFail ? 2 : 0;
-
-    console.log("call type", callType, "false means fail", falseMeansFail);
 
     return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
   };
