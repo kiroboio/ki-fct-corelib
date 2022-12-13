@@ -1,5 +1,5 @@
 import { GlobalVariable } from "variables";
-import { Flow } from "./constants";
+import { CALL_TYPE, Flow } from "./constants";
 
 export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
@@ -59,12 +59,14 @@ export interface BatchCallBase {
   flags?: Partial<BatchFlags>;
 }
 
+export type CallType = keyof typeof CALL_TYPE;
 export interface CallOptions {
   gasLimit?: string;
   flow?: Flow;
   jumpOnSuccess?: string;
   jumpOnFail?: string;
   falseMeansFail?: boolean;
+  callType?: CallType;
 }
 
 export interface MultiCallBase {
