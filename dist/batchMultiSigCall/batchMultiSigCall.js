@@ -314,6 +314,7 @@ class BatchMultiSigCall {
             mcall,
             variables: [],
             externalSigners: [],
+            computed: [],
         };
     }
     importFCT(fct) {
@@ -344,7 +345,7 @@ class BatchMultiSigCall {
                 method: meta.method_interface.split("(")[0],
                 params,
                 toENS: meta.to_ens,
-                viewOnly: meta.view_only,
+                // viewOnly: meta.view_only,
                 options: {
                     gasLimit: meta.gas_limit,
                     jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
@@ -503,12 +504,12 @@ class BatchMultiSigCall {
                     call: {
                         call_index: index + 1,
                         payer_index: index + 1,
+                        call_type: call.options?.callType ? constants_1.CALL_TYPE_MSG[call.options.callType] : constants_1.CALL_TYPE_MSG.ACTION,
                         from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
                         to: this.handleTo(call),
                         to_ens: call.toENS || "",
                         eth_value: this.handleValue(call),
                         gas_limit: gasLimit,
-                        view_only: call.viewOnly || false,
                         permissions: 0,
                         flow_control: flow,
                         returned_false_means_fail: options.falseMeansFail || false,
@@ -597,12 +598,12 @@ class BatchMultiSigCall {
                 Call: [
                     { name: "call_index", type: "uint16" },
                     { name: "payer_index", type: "uint16" },
+                    { name: "call_type", type: "string" },
                     { name: "from", type: "address" },
                     { name: "to", type: "address" },
                     { name: "to_ens", type: "string" },
                     { name: "eth_value", type: "uint256" },
                     { name: "gas_limit", type: "uint32" },
-                    { name: "view_only", type: "bool" },
                     { name: "permissions", type: "uint16" },
                     { name: "flow_control", type: "string" },
                     { name: "returned_false_means_fail", type: "bool" },

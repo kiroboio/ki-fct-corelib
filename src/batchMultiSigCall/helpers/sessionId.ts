@@ -1,5 +1,5 @@
 import { IMSCallInput, MSCallOptions } from "batchMultiSigCall/interfaces";
-import { Flow, flows } from "../../constants";
+import { CALL_TYPE, Flow, flows } from "../../constants";
 
 export const manageFlow = (call: IMSCallInput) => {
   // const jump = (call.options && call.options.jump) || 0;
@@ -27,8 +27,6 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   // 8 - Gas limit
   // 2 - Flags
 
-  // 0x0000000000000000000000000000000000000200010000000100010000000000
-
   const permissions = "0000";
   const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
 
@@ -41,13 +39,10 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
 
   const flags = () => {
-    if (call?.options?.falseMeansFail) {
-      return "02";
-    }
-    if (call?.viewOnly) {
-      return "01";
-    }
-    return "00";
+    const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;
+    const falseMeansFail = call?.options?.falseMeansFail ? 2 : 0;
+
+    return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
   };
 
   let successJump = "0000";

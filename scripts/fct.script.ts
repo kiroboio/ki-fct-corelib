@@ -80,12 +80,17 @@ async function main() {
       value: "100",
       params: [],
       to: data[chainId].KIRO,
+      options: {
+        callType: "LIBRARY",
+        falseMeansFail: true,
+      },
     },
     { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
+  console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -131,12 +136,12 @@ async function main() {
   console.log("kiroPayment", kiroPayment);
 
   // Import decoded calldata
-  const newBatchMultiSigCall = new BatchMultiSigCall({
-    provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
-    contractAddress: data[chainId].FCT_Controller,
-  });
-  const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
-  console.log(util.inspect(decoded, false, null, true /* enable colors */));
+  // const newBatchMultiSigCall = new BatchMultiSigCall({
+  //   provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
+  //   contractAddress: data[chainId].FCT_Controller,
+  // });
+  // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
+  // console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
