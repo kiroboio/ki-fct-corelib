@@ -39,8 +39,8 @@ class BatchMultiSigCall {
         };
         this.getAllRequiredApprovals = async () => {
             let requiredApprovals = [];
-            if (!this.provider) {
-                throw new Error("No provider set");
+            if (!this.chainId && !this.provider) {
+                throw new Error("No chainId or provider has been provided");
             }
             const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString());
             for (const call of this.calls) {
