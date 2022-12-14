@@ -1,4 +1,4 @@
-import utils from "../utils";
+import { utils } from "../index";
 import FailingFCT from "./Failing_FCT.json";
 
 const FCT = {

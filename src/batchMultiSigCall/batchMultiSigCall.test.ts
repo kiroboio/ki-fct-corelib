@@ -131,7 +131,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("20");
-    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(2);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
 
     expect(FCT.typedData.message["transaction_2"].owner).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
 
@@ -168,6 +168,20 @@ describe("BatchMultiSigCall", () => {
           { name: "amount", type: "uint256", value: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
         ],
       },
+      {
+        nodeId: "node3",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        toENS: "@token.kiro.eth",
+        method: "transfer",
+        params: [
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", value: "20" },
+        ],
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        options: {
+          flow: Flow.OK_CONT_FAIL_CONT,
+        },
+      },
     ]);
 
     const FCT = await batchMultiSigCall.exportFCT();
@@ -175,13 +189,13 @@ describe("BatchMultiSigCall", () => {
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-    expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(2);
-    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(0);
 
     expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
 
     expect(FCT.typedData.message["transaction_3"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-    expect(FCT.typedData.message["transaction_3"].amount).to.eq("100");
+    expect(FCT.typedData.message["transaction_3"].amount).to.eq("20");
   });
 });
