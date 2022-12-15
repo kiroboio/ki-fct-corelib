@@ -91,7 +91,19 @@
             "type": "tuple[]"
           },
           { "internalType": "bytes32[]", "name": "variables", "type": "bytes32[]" },
-          { "internalType": "address[]", "name": "externalSigners", "type": "address[]" }
+          { "internalType": "address[]", "name": "externalSigners", "type": "address[]" },
+          {
+            "components": [
+              { "internalType": "uint256", "name": "variable", "type": "uint256" },
+              { "internalType": "uint256", "name": "add", "type": "uint256" },
+              { "internalType": "uint256", "name": "sub", "type": "uint256" },
+              { "internalType": "uint256", "name": "mul", "type": "uint256" },
+              { "internalType": "uint256", "name": "div", "type": "uint256" }
+            ],
+            "internalType": "struct FCT_BatchMultiSig.Computed[]",
+            "name": "computed",
+            "type": "tuple[]"
+          }
         ],
         "internalType": "struct FCT_BatchMultiSig.MSCalls",
         "name": "tr",
