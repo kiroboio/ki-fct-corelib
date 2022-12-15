@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUsedStructTypes = exports.getTxEIP712Types = void 0;
+exports.getComputedVariableMessage = exports.getUsedStructTypes = exports.getTxEIP712Types = void 0;
 const helpers_1 = require("../../helpers");
 const getTxEIP712Types = (calls) => {
     const txTypes = {};
@@ -85,3 +85,19 @@ const getUsedStructTypes = (typedData, typeName) => {
     return usedStructTypes;
 };
 exports.getUsedStructTypes = getUsedStructTypes;
+const getComputedVariableMessage = (computedVariables) => {
+    return computedVariables.reduce((acc, item, i) => {
+        return {
+            ...acc,
+            [`computed_${i + 1}`]: {
+                index: (i + 1).toString(),
+                var: item.variable,
+                add: item.add,
+                sub: item.sub,
+                mul: item.mul,
+                div: item.div,
+            },
+        };
+    }, {});
+};
+exports.getComputedVariableMessage = getComputedVariableMessage;

@@ -1,5 +1,5 @@
 import { Contract } from "ethers";
-import { MethodParamsInterface } from "../interfaces";
+import { MethodParamsInterface } from "../types";
 export declare const getTypedDataDomain: (factoryProxy: Contract) => Promise<{
     name: string;
     version: string;

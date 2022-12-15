@@ -4,7 +4,6 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  // 👇️ this may vary depending on how you
-  // name your test files
+
   "exclude": ["src/**/*.test.ts", "hardhat.config.ts", "./test"]
 }

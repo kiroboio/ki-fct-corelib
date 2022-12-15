@@ -1,4 +1,4 @@
-import { Param, Variable } from "../interfaces";
+import { Param, Variable } from "../types";
 
 export const instanceOfVariable = (object: any): object is Variable => {
   return typeof object === "object" && "type" in object && "id" in object;

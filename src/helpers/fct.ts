@@ -1,14 +1,6 @@
 import { Contract } from "ethers";
-import { MethodParamsInterface } from "../interfaces";
+import { MethodParamsInterface } from "../types";
 import { getValidatorFunctionData } from "./validator";
-
-// Get typehash from typedData
-// export const getTypeHash = (
-//   typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
-// ): string => {
-//   const m2 = TypedDataUtils.hashType(typedData.primaryType, typedData.types);
-//   return utils.hexZeroPad(utils.hexlify(m2), 32);
-// };
 
 // Get Typed Data domain for EIP712
 export const getTypedDataDomain = async (

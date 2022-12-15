@@ -5,4 +5,4 @@ export * as constants from "./constants";
 export * as variables from "./variables";
 export { BatchMultiSigCall } from "./batchMultiSigCall";
 export * from "./utils/types";
-export * from "./batchMultiSigCall/interfaces";
+export * from "./batchMultiSigCall/types";

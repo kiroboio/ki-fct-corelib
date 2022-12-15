@@ -39,4 +39,4 @@ var batchMultiSigCall_1 = require("./batchMultiSigCall");
 Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: function () { return batchMultiSigCall_1.BatchMultiSigCall; } });
 // Type exports
 __exportStar(require("./utils/types"), exports);
-__exportStar(require("./batchMultiSigCall/interfaces"), exports);
+__exportStar(require("./batchMultiSigCall/types"), exports);

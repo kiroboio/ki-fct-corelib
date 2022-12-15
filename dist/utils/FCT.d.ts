@@ -1,5 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BatchMultiSigCallTypedData } from "../batchMultiSigCall/interfaces";
+import { BatchMultiSigCallTypedData } from "../batchMultiSigCall/types";
 import { IFCT } from "./types";
 export declare const recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string | null;
 export declare const getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;

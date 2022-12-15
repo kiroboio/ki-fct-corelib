@@ -9,7 +9,11 @@
     "lib": ["es2017", "DOM"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@helpers": ["helpers"],
+      "@types": ["types"]
+    }
   },
   "include": ["src/**/*", "hardhat.config.ts", "./test"],
   "exclude": ["node_modules", "dist/**/*"]

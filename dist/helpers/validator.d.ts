@@ -1,5 +1,5 @@
-import { IMSCallInput } from "../batchMultiSigCall/interfaces";
-import { Validator } from "../interfaces";
+import { IMSCallInput } from "../batchMultiSigCall/types";
+import { Validator } from "../types";
 export declare const getValidatorFunctionData: (validator: Validator, params: any[]) => {
     name: string;
     type: string;
