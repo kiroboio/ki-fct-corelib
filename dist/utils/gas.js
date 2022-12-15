@@ -17,7 +17,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
     const gasPrice = txVal.eip1559
         ? (await (0, exports.getGasPriceEstimations)({
             rpcUrl,
-            historicalBlocks: 20,
+            historicalBlocks: 30,
         }))[txVal.gasPriority || "average"]
         : { gasPrice: (await provider.getGasPrice()).toNumber() };
     try {
@@ -95,7 +95,11 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks, }) => {
     const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
     const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
     const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
-    const baseFeePerGas = Number(result.baseFeePerGas[historicalBlocks]);
+    const baseFeePerGas = Number(result.baseFeePerGas[historicalBlocks - 1]);
+    // Backup version of getting baseFeePerGas
+    // const providerBaseFee = (
+    //   await new ethers.providers.JsonRpcProvider(rpcUrl).getFeeData()
+    // ).lastBaseFeePerGas.toString();
     return {
         slow: {
             maxFeePerGas: slow + baseFeePerGas,
