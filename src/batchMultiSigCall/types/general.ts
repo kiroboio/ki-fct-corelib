@@ -75,10 +75,10 @@ export interface IWithPlugin {
 
 export interface IComputed {
   variable: string | Variable;
-  add: string;
-  sub: string;
-  mul: string;
-  div: string;
+  add?: string;
+  sub?: string;
+  mul?: string;
+  div?: string;
 }
 
 export interface ComputedVariables {

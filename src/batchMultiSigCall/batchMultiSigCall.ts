@@ -205,11 +205,14 @@ export class BatchMultiSigCall {
     }
     if (variable.type === "computed") {
       const length = this.computedVariables.push({
-        ...variable.id,
         variable:
           typeof variable.id.variable === "string"
             ? variable.id.variable
             : this.getVariable(variable.id.variable, type),
+        add: variable.id.add || "",
+        sub: variable.id.sub || "",
+        mul: variable.id.mul || "",
+        div: variable.id.div || "",
       });
       const index = length - 1;
 
