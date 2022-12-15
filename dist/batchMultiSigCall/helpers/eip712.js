@@ -90,7 +90,7 @@ const getComputedVariableMessage = (computedVariables) => {
         return {
             ...acc,
             [`computed_${i + 1}`]: {
-                index: i,
+                index: (i + 1).toString(),
                 var: item.variable,
                 add: item.add,
                 sub: item.sub,

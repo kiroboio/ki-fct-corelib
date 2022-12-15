@@ -41,9 +41,8 @@ export interface Validator {
 }
 
 export interface IPluginCall {
-  value?: string;
-  to: string;
+  value?: string | Variable;
+  to: string | Variable;
   method: string;
   params: Param[];
-  viewOnly?: boolean;
 }
