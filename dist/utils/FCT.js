@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVariablesAsBytes32 = exports.validateFCT = exports.getFCTMessageHash = exports.recoverAddressFromEIP712 = void 0;
-const ethers_1 = require("ethers");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const ethers_1 = require("ethers");
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {
         const signatureString = ethers_1.utils.joinSignature(signature);

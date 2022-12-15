@@ -1,6 +1,6 @@
 import { MessageTypeProperty, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { utils } from "ethers";
-import { Param } from "../interfaces";
+import { Param } from "../types";
 
 const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;

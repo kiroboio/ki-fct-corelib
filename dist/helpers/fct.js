@@ -2,13 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTxType = exports.getTypedDataDomain = void 0;
 const validator_1 = require("./validator");
-// Get typehash from typedData
-// export const getTypeHash = (
-//   typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
-// ): string => {
-//   const m2 = TypedDataUtils.hashType(typedData.primaryType, typedData.types);
-//   return utils.hexZeroPad(utils.hexlify(m2), 32);
-// };
 // Get Typed Data domain for EIP712
 const getTypedDataDomain = async (factoryProxy) => {
     const chainId = await factoryProxy.CHAIN_ID();

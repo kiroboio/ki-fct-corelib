@@ -1,4 +1,4 @@
-import { BatchMultiSigCallTypedData, MSCall } from "batchMultiSigCall/interfaces";
+import { BatchMultiSigCallTypedData, MSCall } from "../batchMultiSigCall/types";
 
 export interface IFCT {
   typedData: BatchMultiSigCallTypedData;

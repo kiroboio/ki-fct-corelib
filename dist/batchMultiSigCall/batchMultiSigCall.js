@@ -18,6 +18,7 @@ const constants_1 = require("../constants");
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, chainId, }) {
         this.batchMultiSigSelector = "0x2409a934";
+        this.computedVariables = [];
         this.calls = [];
         this.options = {
             maxGasPrice: "100000000000",
@@ -179,6 +180,19 @@ class BatchMultiSigCall {
             }
             return globalVariable;
         }
+        if (variable.type === "computed") {
+            const length = this.computedVariables.push({
+                variable: typeof variable.id.variable === "string"
+                    ? variable.id.variable
+                    : this.getVariable(variable.id.variable, type),
+                add: variable.id.add || "",
+                sub: variable.id.sub || "",
+                mul: variable.id.mul || "",
+                div: variable.id.div || "",
+            });
+            const index = length - 1;
+            return this.getComputedVariable(index, type);
+        }
     }
     getOutputVariable(index, innerIndex, type) {
         const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
@@ -211,6 +225,13 @@ class BatchMultiSigCall {
             return outputIndexHex.padStart(constants_1.FCBaseBytes.length, constants_1.FCBaseBytes);
         }
         return outputIndexHex.padStart(constants_1.FCBase.length, constants_1.FCBase);
+    }
+    getComputedVariable(index, type) {
+        const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+        if (type.includes("bytes")) {
+            return outputIndexHex.padStart(constants_1.ComputedBaseBytes.length, constants_1.ComputedBaseBytes);
+        }
+        return outputIndexHex.padStart(constants_1.ComputedBase.length, constants_1.ComputedBase);
     }
     // End of variables
     //
@@ -278,6 +299,7 @@ class BatchMultiSigCall {
         return this.calls.length;
     }
     async exportFCT() {
+        this.computedVariables = [];
         if (this.calls.length === 0) {
             throw new Error("No calls added");
         }
@@ -314,7 +336,7 @@ class BatchMultiSigCall {
             mcall,
             variables: [],
             externalSigners: [],
-            computed: [],
+            computed: this.computedVariables,
         };
     }
     importFCT(fct) {
@@ -465,7 +487,6 @@ class BatchMultiSigCall {
     //
     // Helpers functions
     async createTypedData(salt, version) {
-        // Creates messages from multiCalls array for EIP712 sign
         const typedDataMessage = this.calls.reduce((acc, call, index) => {
             // Update params if variables (FC) or references (FD) are used
             let paramsData = {};
@@ -572,6 +593,10 @@ class BatchMultiSigCall {
                     { name: "meta", type: "Meta" },
                     { name: "limits", type: "Limits" },
                     ...primaryType,
+                    ...this.computedVariables.map((_, index) => ({
+                        name: `computed_${index + 1}`,
+                        type: `Computed`,
+                    })),
                     ...this.calls.map((_, index) => ({
                         name: `transaction_${index + 1}`,
                         type: `transaction${index + 1}`,
@@ -595,6 +620,18 @@ class BatchMultiSigCall {
                 ...optionalTypes,
                 ...txTypes,
                 ...structTypes,
+                ...(this.computedVariables.length > 0
+                    ? {
+                        Computed: [
+                            { name: "index", type: "uint256" },
+                            { name: "var", type: "uint256" },
+                            { name: "add", type: "uint256" },
+                            { name: "sub", type: "uint256" },
+                            { name: "mul", type: "uint256" },
+                            { name: "div", type: "uint256" },
+                        ],
+                    }
+                    : {}),
                 Call: [
                     { name: "call_index", type: "uint16" },
                     { name: "payer_index", type: "uint16" },
@@ -631,6 +668,7 @@ class BatchMultiSigCall {
                     blockable: this.options.blockable,
                 },
                 ...optionalMessage,
+                ...(0, helpers_3.getComputedVariableMessage)(this.computedVariables),
                 ...typedDataMessage,
             },
         };

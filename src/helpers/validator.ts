@@ -1,8 +1,8 @@
-import { IMSCallInput } from "../batchMultiSigCall/interfaces";
+import { IMSCallInput } from "../batchMultiSigCall/types";
 import { utils } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 
-import { Validator } from "../interfaces";
+import { Validator } from "../types";
 import ValidatorABI from "../abi/validator.abi.json";
 import { getEncodedMethodParams, getMethodInterface, getParamsLength } from "./method";
 

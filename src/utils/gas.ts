@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
-import { TypedDataLimits } from "../batchMultiSigCall/interfaces";
+import { TypedDataLimits } from "../batchMultiSigCall/types";
 import { parseCallID } from "../batchMultiSigCall/helpers";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
