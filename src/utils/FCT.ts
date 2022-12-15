@@ -1,7 +1,7 @@
+import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ethers, utils } from "ethers";
 import { BatchMultiSigCallTypedData, TypedDataLimits, TypedDataMeta, TypedDataTypes } from "../batchMultiSigCall/types";
-import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { IFCT } from "./types";
 
 export const recoverAddressFromEIP712 = (

@@ -1,5 +1,5 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
-import { CallOptions, IPluginCall, Param, Validator, Variable } from "types";
+import { CallOptions, IPluginCall, Param, Validator, Variable } from "@types";
 
 export interface TypedDataTypes {
   EIP712Domain: MessageTypeProperty[];
