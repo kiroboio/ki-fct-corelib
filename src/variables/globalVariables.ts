@@ -1,4 +1,4 @@
-import { Variable } from "../interfaces";
+import { Variable } from "../types";
 
 export type GlobalVariable =
   | "blockNumber"

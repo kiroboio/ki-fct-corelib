@@ -5,7 +5,7 @@ import { TypedDataUtils } from "@metamask/eth-sig-util";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { globalVariables } from "../variables";
-import { Param, Variable } from "../interfaces";
+import { Param, Variable } from "../types";
 import { getTypedDataDomain, createValidatorTxData, instanceOfVariable } from "../helpers";
 import { getDate } from "../helpers";
 import {
@@ -15,7 +15,7 @@ import {
   IBatchMultiSigCallFCT,
   BatchMultiSigCallTypedData,
   TypedDataMessageTransaction,
-} from "./interfaces";
+} from "./types";
 import {
   getSessionId,
   getTxEIP712Types,
@@ -48,6 +48,7 @@ export class BatchMultiSigCall {
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
   private chainId: number;
 
+  computedVariables: string[] = [];
   calls: IMSCallInput[] = [];
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default

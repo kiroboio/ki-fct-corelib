@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import fs from "fs";
 import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
-import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
+import { TypedDataTypes } from "../src/batchMultiSigCall/types";
 import data from "./scriptData";
 import { utils } from "../src/index";
 import util from "util";

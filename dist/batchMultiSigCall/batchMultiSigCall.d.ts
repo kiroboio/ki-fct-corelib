@@ -7,6 +7,7 @@ export declare class BatchMultiSigCall {
     private batchMultiSigSelector;
     private provider;
     private chainId;
+    computedVariables: string[];
     calls: IMSCallInput[];
     options: MSCallOptions;
     constructor({ provider, contractAddress, options, chainId, }: {

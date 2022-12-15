@@ -18,6 +18,7 @@ const constants_1 = require("../constants");
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, chainId, }) {
         this.batchMultiSigSelector = "0x2409a934";
+        this.computedVariables = [];
         this.calls = [];
         this.options = {
             maxGasPrice: "100000000000",

@@ -1,6 +1,6 @@
-import { BatchMultiSigCallTypedData, IMSCallInput } from "../interfaces";
+import { BatchMultiSigCallTypedData, IMSCallInput } from "../types";
 import { getValidatorFunctionData } from "../../helpers";
-import { Param } from "../../interfaces";
+import { Param } from "../../types";
 
 export const getTxEIP712Types = (calls: IMSCallInput[]) => {
   const txTypes = {};

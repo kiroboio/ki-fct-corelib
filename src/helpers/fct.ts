@@ -1,5 +1,5 @@
 import { Contract } from "ethers";
-import { MethodParamsInterface } from "../interfaces";
+import { MethodParamsInterface } from "../types";
 import { getValidatorFunctionData } from "./validator";
 
 // Get typehash from typedData
