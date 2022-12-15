@@ -15,6 +15,7 @@ import {
   IBatchMultiSigCallFCT,
   BatchMultiSigCallTypedData,
   TypedDataMessageTransaction,
+  ComputedVariables,
 } from "./types";
 import {
   getSessionId,
@@ -28,9 +29,12 @@ import {
   manageCallId,
   parseSessionID,
   parseCallID,
+  getComputedVariableMessage,
 } from "./helpers";
 import {
   CALL_TYPE_MSG,
+  ComputedBase,
+  ComputedBaseBytes,
   FCBase,
   FCBaseBytes,
   FDBackBase,
@@ -48,7 +52,7 @@ export class BatchMultiSigCall {
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
   private chainId: number;
 
-  computedVariables: string[] = [];
+  private computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
   options: MSCallOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
@@ -180,7 +184,6 @@ export class BatchMultiSigCall {
   };
 
   // Variables
-
   private getVariable(variable: Variable, type: string) {
     if (variable.type === "external") {
       return this.getExternalVariable(variable.id as number, type);
@@ -199,6 +202,18 @@ export class BatchMultiSigCall {
       }
 
       return globalVariable;
+    }
+    if (variable.type === "computed") {
+      const length = this.computedVariables.push({
+        ...variable.id,
+        variable:
+          typeof variable.id.variable === "string"
+            ? variable.id.variable
+            : this.getVariable(variable.id.variable, type),
+      });
+      const index = length - 1;
+
+      return this.getComputedVariable(index, type);
     }
   }
 
@@ -237,6 +252,16 @@ export class BatchMultiSigCall {
     }
 
     return outputIndexHex.padStart(FCBase.length, FCBase);
+  }
+
+  private getComputedVariable(index: number, type: string) {
+    const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+
+    if (type.includes("bytes")) {
+      return outputIndexHex.padStart(ComputedBaseBytes.length, ComputedBaseBytes);
+    }
+
+    return outputIndexHex.padStart(ComputedBase.length, ComputedBase);
   }
 
   // End of variables
@@ -375,6 +400,8 @@ export class BatchMultiSigCall {
   }
 
   public async exportFCT(): Promise<IBatchMultiSigCallFCT> {
+    this.computedVariables = [];
+
     if (this.calls.length === 0) {
       throw new Error("No calls added");
     }
@@ -417,7 +444,7 @@ export class BatchMultiSigCall {
       mcall,
       variables: [],
       externalSigners: [],
-      computed: [],
+      computed: this.computedVariables,
     };
   }
 
@@ -615,7 +642,6 @@ export class BatchMultiSigCall {
   // Helpers functions
 
   private async createTypedData(salt: string, version: string): Promise<BatchMultiSigCallTypedData> {
-    // Creates messages from multiCalls array for EIP712 sign
     const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
       // Update params if variables (FC) or references (FD) are used
       let paramsData = {};
@@ -742,6 +768,10 @@ export class BatchMultiSigCall {
           { name: "meta", type: "Meta" },
           { name: "limits", type: "Limits" },
           ...primaryType,
+          ...this.computedVariables.map((_, index) => ({
+            name: `computed_${index + 1}`,
+            type: `Computed`,
+          })),
           ...this.calls.map((_, index) => ({
             name: `transaction_${index + 1}`,
             type: `transaction${index + 1}`,
@@ -765,6 +795,18 @@ export class BatchMultiSigCall {
         ...optionalTypes,
         ...txTypes,
         ...structTypes,
+        ...(this.computedVariables.length > 0
+          ? {
+              Computed: [
+                { name: "index", type: "uint256" },
+                { name: "var", type: "uint256" },
+                { name: "add", type: "uint256" },
+                { name: "sub", type: "uint256" },
+                { name: "mul", type: "uint256" },
+                { name: "div", type: "uint256" },
+              ],
+            }
+          : {}),
         Call: [
           { name: "call_index", type: "uint16" },
           { name: "payer_index", type: "uint16" },
@@ -801,6 +843,7 @@ export class BatchMultiSigCall {
           blockable: this.options.blockable,
         },
         ...optionalMessage,
+        ...getComputedVariableMessage(this.computedVariables),
         ...typedDataMessage,
       },
     };

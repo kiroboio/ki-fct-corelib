@@ -1,5 +1,4 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
-import { CallOptions, IPluginCall, Param, Validator, Variable } from "@types";
 
 export interface TypedDataTypes {
   EIP712Domain: MessageTypeProperty[];
@@ -73,91 +72,4 @@ export interface BatchMultiSigCallTypedData {
   primaryType: string;
   domain: TypedDataDomain;
   message: TypedDataMessageOptions | Record<string, TypedDataMessageTransaction>;
-}
-
-export interface IBatchMultiSigCallFCT {
-  typeHash: string;
-  typedData: BatchMultiSigCallTypedData;
-  sessionId: string;
-  nameHash: string;
-  mcall: MSCall[];
-  builder: string;
-  variables: string[];
-  externalSigners: string[];
-  computed: {
-    variable: string;
-    add: string;
-    sub: string;
-    mul: string;
-    div: string;
-  }[];
-}
-
-export interface IMSCallInput {
-  nodeId: string;
-  value?: string | Variable;
-  to: string | Variable;
-  from: string | Variable;
-  params?: Param[];
-  method?: string;
-  toENS?: string;
-  validator?: Validator;
-  options?: CallOptions;
-}
-
-export interface MSCall {
-  typeHash: string;
-  ensHash: string;
-  functionSignature: string;
-  value: string;
-  callId: string;
-  from: string;
-  to: string;
-  data: string;
-  types: number[];
-  typedHashes: string[];
-}
-
-export interface MSCallOptions {
-  name?: string;
-  validFrom: string;
-  expiresAt: string;
-  maxGasPrice: string;
-  blockable: boolean;
-  purgeable: boolean;
-  builder: string;
-
-  recurrency?: {
-    maxRepeats?: string;
-    chillTime?: string;
-    accumetable?: boolean;
-  };
-  multisig?: {
-    externalSigners?: string[];
-    minimumApprovals?: number;
-  };
-}
-
-export interface IWithPlugin {
-  nodeId: string;
-  plugin: {
-    create(): Promise<IPluginCall | undefined>;
-  };
-  from: string;
-  options?: CallOptions;
-}
-
-export interface IInput {
-  get(): unknown;
-  set(params: Record<string, any>): boolean;
-}
-
-export interface IOutput {
-  get(): unknown;
-}
-
-export interface EIP712CustomType {
-  callIndex: number;
-  innerIndexes: number[];
-  types: { name: string; type: string }[];
 }

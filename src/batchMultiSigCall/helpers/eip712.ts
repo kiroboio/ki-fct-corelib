@@ -1,4 +1,4 @@
-import { BatchMultiSigCallTypedData, IMSCallInput } from "../types";
+import { BatchMultiSigCallTypedData, ComputedVariables, IMSCallInput } from "../types";
 import { getValidatorFunctionData } from "../../helpers";
 import { Param } from "../../types";
 
@@ -92,4 +92,20 @@ export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeNa
     return acc;
   }, []);
   return usedStructTypes;
+};
+
+export const getComputedVariableMessage = (computedVariables: ComputedVariables[]) => {
+  return computedVariables.reduce((acc, item, i) => {
+    return {
+      ...acc,
+      [`computed_${i + 1}`]: {
+        index: i,
+        var: item.variable,
+        add: item.add,
+        sub: item.sub,
+        mul: item.mul,
+        div: item.div,
+      },
+    };
+  }, {});
 };

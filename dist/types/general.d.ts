@@ -1,5 +1,6 @@
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
+import { IComputed } from "../batchMultiSigCall/types";
 export type Variable = {
     type: "output";
     id: {
@@ -12,6 +13,9 @@ export type Variable = {
 } | {
     type: "global";
     id: GlobalVariable;
+} | {
+    type: "computed";
+    id: IComputed;
 };
 export interface Param {
     name: string;

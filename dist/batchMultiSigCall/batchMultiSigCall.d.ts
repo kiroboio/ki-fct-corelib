@@ -7,7 +7,7 @@ export declare class BatchMultiSigCall {
     private batchMultiSigSelector;
     private provider;
     private chainId;
-    computedVariables: string[];
+    private computedVariables;
     calls: IMSCallInput[];
     options: MSCallOptions;
     constructor({ provider, contractAddress, options, chainId, }: {
@@ -32,6 +32,7 @@ export declare class BatchMultiSigCall {
     private getVariable;
     private getOutputVariable;
     private getExternalVariable;
+    private getComputedVariable;
     setOptions(options: Partial<MSCallOptions>): MSCallOptions;
     getPlugin: (index: number) => Promise<PluginInstance>;
     getPluginClass: (index: number) => Promise<any>;
