@@ -1,4 +1,4 @@
-import { BatchMultiSigCallTypedData, IMSCallInput } from "../interfaces";
+import { BatchMultiSigCallTypedData, IMSCallInput } from "../types";
 export declare const getTxEIP712Types: (calls: IMSCallInput[]) => {
     txTypes: {};
     structTypes: {};

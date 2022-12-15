@@ -1,4 +1,4 @@
-import { Variable } from "../interfaces";
+import { Variable } from "../types";
 export type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | string;
 export declare const globalVariables: {
     blockNumber: string;

@@ -1,4 +1,4 @@
-import { IMSCallInput, MSCallOptions } from "batchMultiSigCall/interfaces";
+import { IMSCallInput, MSCallOptions } from "batchMultiSigCall/types";
 import { Flow } from "../../constants";
 export declare const manageFlow: (call: IMSCallInput) => string;
 export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, index: number) => string;
