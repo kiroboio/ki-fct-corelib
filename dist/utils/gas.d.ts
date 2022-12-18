@@ -11,6 +11,12 @@ export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boole
         gasPrice: number;
         gas: number;
     };
+    prices: {
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+    } | {
+        gasPrice: number;
+    };
     error: any;
 }>;
 export declare const getGasPriceEstimations: ({ rpcUrl, historicalBlocks, }: {

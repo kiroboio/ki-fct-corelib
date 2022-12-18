@@ -43,12 +43,14 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
       return {
         isValid: true,
         txData: { gas: gasUsed, ...(gasPrice as EIP1559GasPrice), type: 2 },
+        prices: gasPrice as EIP1559GasPrice,
         error: null,
       };
     } else {
       return {
         isValid: true,
         txData: { gas: gasUsed, ...(gasPrice as LegacyGasPrice), type: 1 },
+        prices: gasPrice as LegacyGasPrice,
         error: null,
       };
     }
@@ -59,6 +61,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
+      prices: gasPrice,
       error: err.reason,
     };
   }
