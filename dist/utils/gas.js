@@ -39,7 +39,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
             return {
                 isValid: true,
                 txData: { gas: gasUsed, ...gasPrice, type: 2 },
-                prices: { gas: gasUsed, ...gasPrice },
+                prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
                 error: null,
             };
         }
@@ -47,7 +47,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
             return {
                 isValid: true,
                 txData: { gas: gasUsed, ...gasPrice, type: 1 },
-                prices: { gas: gasUsed, ...gasPrice },
+                prices: { gas: gasUsed, gasPrice: gasPrice.gasPrice },
                 error: null,
             };
         }
@@ -59,7 +59,10 @@ const transactionValidator = async (txVal, pureGas = false) => {
         return {
             isValid: false,
             txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
-            prices: gasPrice,
+            prices: {
+                gas: 0,
+                gasPrice: txVal.eip1559 ? gasPrice.maxFeePerGas : gasPrice.gasPrice,
+            },
             error: err.reason,
         };
     }
