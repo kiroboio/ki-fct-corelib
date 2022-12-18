@@ -173,18 +173,18 @@ exports.getFCTGasEstimation = getFCTGasEstimation;
 // 1275004198 - max fee
 // 462109 - gas
 // 34.910655705373187788
-const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gasLimit, }) => {
+const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
-    const gas = BigInt(gasLimit);
+    const gasInt = BigInt(gas);
     const gasPriceFormatted = BigInt(gasPrice);
-    const baseGasCost = gas * gasPriceFormatted;
+    const baseGasCost = gasInt * gasPriceFormatted;
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
     // 1000 - baseFee
     // 5000 - bonusFee
     const effectiveGasPrice = (gasPriceFormatted * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - gasPriceFormatted) * BigInt(5000)) /
         BigInt(10000);
-    const feeGasCost = gas * (effectiveGasPrice - gasPriceFormatted);
+    const feeGasCost = gasInt * (effectiveGasPrice - gasPriceFormatted);
     const totalCost = baseGasCost + feeGasCost;
     const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
     const kiroCost = Number(totalCost * normalisedKiroPriceInETH) / 1e36;
