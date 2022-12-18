@@ -6,6 +6,32 @@ export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boole
         maxFeePerGas: number;
         maxPriorityFeePerGas: number;
         gas: number;
+    };
+    prices: {
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+        gas: number;
+    };
+    error: any;
+} | {
+    isValid: boolean;
+    txData: {
+        type: number;
+        gasPrice: number;
+        gas: number;
+    };
+    prices: {
+        gasPrice: number;
+        gas: number;
+    };
+    error: any;
+} | {
+    isValid: boolean;
+    txData: {
+        type: number;
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+        gas: number;
     } | {
         type: number;
         gasPrice: number;
