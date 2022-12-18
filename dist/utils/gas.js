@@ -39,7 +39,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
             return {
                 isValid: true,
                 txData: { gas: gasUsed, ...gasPrice, type: 2 },
-                prices: gasPrice,
+                prices: { gas: gasUsed, ...gasPrice },
                 error: null,
             };
         }
@@ -47,7 +47,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
             return {
                 isValid: true,
                 txData: { gas: gasUsed, ...gasPrice, type: 1 },
-                prices: gasPrice,
+                prices: { gas: gasUsed, ...gasPrice },
                 error: null,
             };
         }
