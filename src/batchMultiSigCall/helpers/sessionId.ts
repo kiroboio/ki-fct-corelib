@@ -40,7 +40,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
 
   const flags = () => {
     const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;
-    const falseMeansFail = call?.options?.falseMeansFail ? 2 : 0;
+    const falseMeansFail = call?.options?.falseMeansFail ? 4 : 0;
 
     return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
   };

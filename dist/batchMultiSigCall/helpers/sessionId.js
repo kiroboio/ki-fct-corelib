@@ -35,7 +35,7 @@ const manageCallId = (calls, call, index) => {
     const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
     const flags = () => {
         const callType = call?.options?.callType ? constants_1.CALL_TYPE[call.options.callType] : constants_1.CALL_TYPE.ACTION;
-        const falseMeansFail = call?.options?.falseMeansFail ? 2 : 0;
+        const falseMeansFail = call?.options?.falseMeansFail ? 4 : 0;
         return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
     };
     let successJump = "0000";
