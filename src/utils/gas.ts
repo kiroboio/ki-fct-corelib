@@ -1,3 +1,4 @@
+import { getPlugin, ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import BigNumber from "bignumber.js";
 
@@ -146,11 +147,10 @@ export const getFCTGasEstimation = async ({
   const callOverhead = 16370;
   const numOfCalls = fct.mcall.length;
   const actuator = new ethers.utils.Interface(FCTActuatorABI);
-  const batchMultiSigCallContract = new ethers.Contract(
-    batchMultiSigCallAddress,
-    BatchMultiSigCallABI,
-    new ethers.providers.JsonRpcProvider(rpcUrl)
-  );
+
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const batchMultiSigCallContract = new ethers.Contract(batchMultiSigCallAddress, BatchMultiSigCallABI, provider);
+  const chainId = (await provider.getNetwork()).chainId;
 
   const calcMemory = (input: number) => {
     return input * 3 + (input * input) / 512;
@@ -171,7 +171,7 @@ export const getFCTGasEstimation = async ({
   const dataLength =
     actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
 
-  let totalGas = new BigNumber(0);
+  let totalCallGas = new BigNumber(0);
   for (const call of fct.mcall) {
     if (call.types.length > 0) {
       const gasForCall = await batchMultiSigCallContract.estimateGas.abiToEIP712(
@@ -181,16 +181,23 @@ export const getFCTGasEstimation = async ({
         { data: 0, types: 0 }
       );
 
-      totalGas = totalGas.plus(gasForCall.toString());
+      const pluginData = getPlugin({
+        address: call.to,
+        chainId: chainId.toString() as ChainId,
+        signature: call.functionSignature,
+      });
+
+      if (pluginData) {
+        const gasLimit = new pluginData.plugin({ chainId: chainId.toString() as ChainId }).gasLimit;
+
+        if (gasLimit) {
+          totalCallGas = totalCallGas.plus(gasLimit);
+        }
+      }
+
+      totalCallGas = totalCallGas.plus(gasForCall.toString());
     }
   }
-
-  // Overhead calculation
-  // FCTOverhead +
-  // (totalCallDataCost - mcallTotalCost) +
-  // (dataLength - mcallDataTotalLength) -
-  // nonZero +
-  // (new BigNumber(dataLength).times(600).div(32) - new BigNumber(mcallDataTotalLength).times(600).div(32)) / mcall.length
 
   const gasEstimation = new BigNumber(FCTOverhead)
     .plus(new BigNumber(callOverhead).times(numOfCalls))
@@ -198,8 +205,7 @@ export const getFCTGasEstimation = async ({
     .plus(calcMemory(dataLength))
     .minus(calcMemory(nonZero))
     .plus(new BigNumber(dataLength).times(600).div(32))
-    .plus(totalGas)
-    .times(1.1); // Add 10% as a buffer
+    .plus(totalCallGas);
 
   return gasEstimation.toString();
 };

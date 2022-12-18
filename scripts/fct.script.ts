@@ -62,6 +62,8 @@ async function main() {
     },
   });
 
+  swap.input.methodParams.amountIn.set({ value: "1000" });
+
   const transfer = new ERC20.actions.Transfer({
     chainId: "1",
     initParams: {

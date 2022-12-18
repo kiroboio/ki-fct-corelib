@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFCTCostInKIRO = exports.getKIROPayment = exports.getFCTGasEstimation = exports.getGasPriceEstimations = exports.transactionValidator = void 0;
+const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const ethers_1 = require("ethers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
@@ -121,7 +122,9 @@ const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rp
     const callOverhead = 16370;
     const numOfCalls = fct.mcall.length;
     const actuator = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
-    const batchMultiSigCallContract = new ethers_1.ethers.Contract(batchMultiSigCallAddress, FCT_BatchMultiSigCall_abi_json_1.default, new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl));
+    const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+    const batchMultiSigCallContract = new ethers_1.ethers.Contract(batchMultiSigCallAddress, FCT_BatchMultiSigCall_abi_json_1.default, provider);
+    const chainId = (await provider.getNetwork()).chainId;
     const calcMemory = (input) => {
         return input * 3 + (input * input) / 512;
     };
@@ -138,27 +141,31 @@ const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rp
         return accumulator + 0;
     }, 0);
     const dataLength = actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
-    let totalGas = new bignumber_js_1.default(0);
+    let totalCallGas = new bignumber_js_1.default(0);
     for (const call of fct.mcall) {
         if (call.types.length > 0) {
             const gasForCall = await batchMultiSigCallContract.estimateGas.abiToEIP712(call.data, call.types, call.typedHashes, { data: 0, types: 0 });
-            totalGas = totalGas.plus(gasForCall.toString());
+            const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
+                address: call.to,
+                chainId: chainId.toString(),
+                signature: call.functionSignature,
+            });
+            if (pluginData) {
+                const gasLimit = new pluginData.plugin({ chainId: chainId.toString() }).gasLimit;
+                if (gasLimit) {
+                    totalCallGas = totalCallGas.plus(gasLimit);
+                }
+            }
+            totalCallGas = totalCallGas.plus(gasForCall.toString());
         }
     }
-    // Overhead calculation
-    // FCTOverhead +
-    // (totalCallDataCost - mcallTotalCost) +
-    // (dataLength - mcallDataTotalLength) -
-    // nonZero +
-    // (new BigNumber(dataLength).times(600).div(32) - new BigNumber(mcallDataTotalLength).times(600).div(32)) / mcall.length
     const gasEstimation = new bignumber_js_1.default(FCTOverhead)
         .plus(new bignumber_js_1.default(callOverhead).times(numOfCalls))
         .plus(totalCallDataCost)
         .plus(calcMemory(dataLength))
         .minus(calcMemory(nonZero))
         .plus(new bignumber_js_1.default(dataLength).times(600).div(32))
-        .plus(totalGas)
-        .times(1.1); // Add 10% as a buffer
+        .plus(totalCallGas);
     return gasEstimation.toString();
 };
 exports.getFCTGasEstimation = getFCTGasEstimation;
