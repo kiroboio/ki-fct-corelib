@@ -17,6 +17,7 @@ export interface IBatchMultiSigCallFCT {
         div: string;
     }[];
 }
+export type KeysBatchMultiSigCallFCT = keyof IBatchMultiSigCallFCT;
 export interface IMSCallInput {
     nodeId: string;
     value?: string | Variable;
