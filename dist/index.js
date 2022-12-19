@@ -26,18 +26,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BatchMultiSigCall = exports.variables = exports.constants = exports.utils = exports.ethers = void 0;
+exports.BatchMultiSigCall = exports.variables = exports.utils = exports.constants = exports.ethers = void 0;
+__exportStar(require("@kirobo/ki-eth-fct-provider-ts"), exports);
 var ethers_1 = require("ethers");
 Object.defineProperty(exports, "ethers", { enumerable: true, get: function () { return ethers_1.ethers; } });
-__exportStar(require("@kirobo/ki-eth-fct-provider-ts"), exports);
 // Utils exports
-exports.utils = __importStar(require("./utils"));
 exports.constants = __importStar(require("./constants"));
+exports.utils = __importStar(require("./utils"));
 exports.variables = __importStar(require("./variables"));
 // FCT exports
 var batchMultiSigCall_1 = require("./batchMultiSigCall");
 Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: function () { return batchMultiSigCall_1.BatchMultiSigCall; } });
 // Type exports
-__exportStar(require("./utils/types"), exports);
 __exportStar(require("./batchMultiSigCall/types"), exports);
-__exportStar(require("./types/general"), exports);
+__exportStar(require("./types"), exports);
+__exportStar(require("./utils/types"), exports);

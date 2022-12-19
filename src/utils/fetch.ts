@@ -1,5 +1,6 @@
-import { multicallContracts } from "../constants";
 import { BigNumber, ethers, utils } from "ethers";
+
+import { multicallContracts } from "../constants";
 
 export const fetchCurrentApprovals = async ({
   rpcUrl,

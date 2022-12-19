@@ -1,15 +1,16 @@
-import { BatchMultiSigCall } from "../src/batchMultiSigCall";
-import { ethers } from "ethers";
-import * as dotenv from "dotenv";
-import fs from "fs";
-import data from "./scriptData";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
+import * as dotenv from "dotenv";
+import { ethers } from "ethers";
+import fs from "fs";
+
+import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { TypedDataTypes } from "../src/batchMultiSigCall/interfaces";
 import { utils } from "../src/index";
+import data from "./scriptData";
 
 dotenv.config();
 
-function getDate(days: number = 0) {
+function getDate(days = 0) {
   const result = new Date();
   result.setDate(result.getDate() + days);
   return Number(result.getTime() / 1000).toFixed();

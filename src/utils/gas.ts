@@ -1,11 +1,11 @@
-import { getPlugin, ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { BigNumber as BigNumberEthers, ethers } from "ethers";
+import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
+import { BigNumber as BigNumberEthers, ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
+import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;

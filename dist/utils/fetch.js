@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchCurrentApprovals = void 0;
-const constants_1 = require("../constants");
 const ethers_1 = require("ethers");
+const constants_1 = require("../constants");
 const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
     if (!provider) {
         if (!rpcUrl) {

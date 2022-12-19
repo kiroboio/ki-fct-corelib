@@ -1,4 +1,5 @@
 import { Contract } from "ethers";
+
 import { MethodParamsInterface } from "../types";
 import { getValidatorFunctionData } from "./validator";
 

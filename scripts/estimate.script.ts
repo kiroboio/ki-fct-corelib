@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+
 import { ethers, utils } from "../src/index";
 import data from "./scriptData";
 

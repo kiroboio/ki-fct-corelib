@@ -1,9 +1,9 @@
-import { IMSCallInput } from "../batchMultiSigCall/types";
 import { utils } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 
-import { IValidator } from "../types";
 import ValidatorABI from "../abi/validator.abi.json";
+import { IMSCallInput } from "../batchMultiSigCall/types";
+import { IValidator } from "../types";
 import { getEncodedMethodParams, getMethodInterface, getParamsLength } from "./method";
 
 export const getValidatorFunctionData = (validator: IValidator, params: any[]): { name: string; type: string }[] => {

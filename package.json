@@ -15,6 +15,7 @@
     "fct:approvals": "ts-node scripts/fct_approvals.script.ts",
     "estimate": "ts-node scripts/estimate.script.ts",
     "lint": "eslint  --ext .js,.ts .",
+    "lint:fix": "eslint --fix --ext .js,.ts .",
     "prepare": "husky install"
   },
   "repository": {

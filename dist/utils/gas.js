@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exports.transactionValidator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const ethers_1 = require("ethers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
+const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const transactionValidator = async (txVal, pureGas = false) => {

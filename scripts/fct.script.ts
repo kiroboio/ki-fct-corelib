@@ -1,25 +1,23 @@
-import { BatchMultiSigCall } from "../src/batchMultiSigCall";
-import { ethers } from "ethers";
-import * as dotenv from "dotenv";
-import fs from "fs";
 import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
-import { TypedDataTypes } from "../src/batchMultiSigCall/types";
-import data from "./scriptData";
-import { utils } from "../src/index";
+import * as dotenv from "dotenv";
+import { ethers } from "ethers";
+import fs from "fs";
 import util from "util";
+
+import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
+import data from "./scriptData";
 // import util from "util";
 
 dotenv.config();
 // eslint-disable-next-line
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-function getDate(days: number = 0) {
+function getDate(days = 0) {
   const result = new Date();
   result.setDate(result.getDate() + days);
   return Number(result.getTime() / 1000).toFixed();
 }
-
 // eslint-disable-next-line
 function addHours(numOfHours: number, date = new Date()) {
   date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
