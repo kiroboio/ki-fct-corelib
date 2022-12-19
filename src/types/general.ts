@@ -18,7 +18,7 @@ export interface Param {
 export interface MethodParamsInterface {
   method: string;
   params: Param[];
-  validator?: Validator;
+  validator?: IValidator;
   to?: string | Variable;
 }
 
@@ -32,7 +32,7 @@ export interface CallOptions {
   callType?: CallType;
 }
 
-export interface Validator {
+export interface IValidator {
   method: string;
   params: {
     [key: string]: string | Variable;

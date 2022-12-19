@@ -40,3 +40,4 @@ Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: fun
 // Type exports
 __exportStar(require("./utils/types"), exports);
 __exportStar(require("./batchMultiSigCall/types"), exports);
+__exportStar(require("./types/general"), exports);

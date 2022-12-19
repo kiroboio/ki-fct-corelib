@@ -12,3 +12,4 @@ export { BatchMultiSigCall } from "./batchMultiSigCall";
 // Type exports
 export * from "./utils/types";
 export * from "./batchMultiSigCall/types";
+export * from "./types/general";
