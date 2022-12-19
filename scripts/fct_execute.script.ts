@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
-import { BatchMultiSigCall, ethers, utils } from "../src/index";
-import FCT from "../FCT_TransferERC20.json";
 
+import FCT from "../FCT_TransferERC20.json";
+import { BatchMultiSigCall, ethers, utils } from "../src/index";
 import data from "./scriptData";
 
 dotenv.config();

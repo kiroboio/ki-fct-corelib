@@ -1,5 +1,6 @@
 import { utils } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
+
 import { MethodParamsInterface, Param } from "../types";
 import { instanceOfParams } from "./instanceOf";
 

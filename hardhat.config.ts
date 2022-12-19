@@ -2,6 +2,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-ethers";
+
 import { HardhatUserConfig } from "hardhat/types";
 
 // You need to export an object to set up your config

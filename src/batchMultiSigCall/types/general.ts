@@ -1,4 +1,5 @@
 import { CallOptions, IPluginCall, IValidator, Param, Variable } from "@types";
+
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export interface IBatchMultiSigCallFCT {

@@ -1,7 +1,8 @@
-import { BatchMultiSigCall } from "../src/batchMultiSigCall";
-import fs from "fs";
-import { ethers } from "ethers";
 import * as dotenv from "dotenv";
+import { ethers } from "ethers";
+import fs from "fs";
+
+import { BatchMultiSigCall } from "../src/batchMultiSigCall";
 dotenv.config();
 
 const FCT_Controller_Rinkeby = "0xD614c22fb35d1d978053d42C998d0493f06FB440";

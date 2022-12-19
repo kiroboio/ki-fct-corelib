@@ -1,7 +1,8 @@
 import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
 import { IMSCallInput } from "batchMultiSigCall/types";
-import { nullValue } from "../../constants";
 import { utils } from "ethers";
+
+import { nullValue } from "../../constants";
 import {
   getEncodedMethodParams,
   getMethodInterface,

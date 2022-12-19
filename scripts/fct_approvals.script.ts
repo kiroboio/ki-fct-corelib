@@ -1,15 +1,16 @@
-import { BatchMultiSigCall } from "../src/batchMultiSigCall";
-import { ethers } from "ethers";
-import * as dotenv from "dotenv";
 import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
-import data from "./scriptData";
+import * as dotenv from "dotenv";
+import { ethers } from "ethers";
+
 import { utils } from "../src";
+import { BatchMultiSigCall } from "../src/batchMultiSigCall";
+import data from "./scriptData";
 
 dotenv.config();
 // eslint-disable-next-line
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-function getDate(days: number = 0) {
+function getDate(days = 0) {
   const result = new Date();
   result.setDate(result.getDate() + days);
   return Number(result.getTime() / 1000).toFixed();

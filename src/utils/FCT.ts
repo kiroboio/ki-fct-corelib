@@ -1,6 +1,7 @@
-import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { SignatureLike } from "@ethersproject/bytes";
+import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { ethers, utils } from "ethers";
+
 import {
   BatchMultiSigCallTypedData,
   IBatchMultiSigCallFCT,
@@ -34,7 +35,7 @@ export const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
   );
 };
 
-export const validateFCT = (FCT: IBatchMultiSigCallFCT, softValidation: boolean = false) => {
+export const validateFCT = (FCT: IBatchMultiSigCallFCT, softValidation = false) => {
   const listOfKeys = [
     "typeHash",
     "typedData",

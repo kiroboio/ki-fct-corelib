@@ -1,36 +1,10 @@
-import { BigNumber, ethers, utils } from "ethers";
-import { AbiCoder, id } from "ethers/lib/utils";
 import { ChainId, getPlugin, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
+import { BigNumber, ethers, utils } from "ethers";
+import { AbiCoder, id } from "ethers/lib/utils";
+
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import { globalVariables } from "../variables";
-import { Param, Variable } from "../types";
-import { getTypedDataDomain, createValidatorTxData, instanceOfVariable } from "../helpers";
-import { getDate } from "../helpers";
-import {
-  IMSCallInput,
-  MSCallOptions,
-  IWithPlugin,
-  IBatchMultiSigCallFCT,
-  BatchMultiSigCallTypedData,
-  TypedDataMessageTransaction,
-  ComputedVariables,
-} from "./types";
-import {
-  getSessionId,
-  getTxEIP712Types,
-  getUsedStructTypes,
-  handleData,
-  handleEnsHash,
-  handleFunctionSignature,
-  handleMethodInterface,
-  handleTypes,
-  manageCallId,
-  parseSessionID,
-  parseCallID,
-  getComputedVariableMessage,
-} from "./helpers";
+import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import {
   CALL_TYPE_MSG,
   ComputedBase,
@@ -44,11 +18,38 @@ import {
   Flow,
   flows,
 } from "../constants";
+import { createValidatorTxData, getTypedDataDomain, instanceOfVariable } from "../helpers";
+import { getDate } from "../helpers";
+import { Param, Variable } from "../types";
+import { globalVariables } from "../variables";
+import {
+  getComputedVariableMessage,
+  getSessionId,
+  getTxEIP712Types,
+  getUsedStructTypes,
+  handleData,
+  handleEnsHash,
+  handleFunctionSignature,
+  handleMethodInterface,
+  handleTypes,
+  manageCallId,
+  parseCallID,
+  parseSessionID,
+} from "./helpers";
+import {
+  BatchMultiSigCallTypedData,
+  ComputedVariables,
+  IBatchMultiSigCallFCT,
+  IMSCallInput,
+  IWithPlugin,
+  MSCallOptions,
+  TypedDataMessageTransaction,
+} from "./types";
 
 export class BatchMultiSigCall {
   private FCT_Controller: ethers.Contract;
   private FCT_BatchMultiSigCall: ethers.utils.Interface;
-  private batchMultiSigSelector: string = "0x2409a934";
+  private batchMultiSigSelector = "0x2409a934";
   private provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
   private chainId: number;
 
@@ -414,7 +415,7 @@ export class BatchMultiSigCall {
     }
 
     const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    const version: string = "0x010101";
+    const version = "0x010101";
     const typedData = await this.createTypedData(salt, version);
     const sessionId: string = getSessionId(salt, this.options);
 

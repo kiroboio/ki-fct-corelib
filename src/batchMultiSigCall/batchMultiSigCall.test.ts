@@ -1,14 +1,15 @@
-import { BatchMultiSigCall } from "./index";
-import { ethers } from "ethers";
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
-import { Flow } from "../constants";
+import { ethers } from "ethers";
 import util from "util";
+
+import { Flow } from "../constants";
+import { BatchMultiSigCall } from "./index";
 
 const contractAddress = "0xBc0ED9A150D9b50BaA2dC3d350D0d59E69daeBD9";
 const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
-function getDate(days: number = 0) {
+function getDate(days = 0) {
   const result = new Date();
   result.setDate(result.getDate() + days);
   return Number(result.getTime() / 1000).toFixed();

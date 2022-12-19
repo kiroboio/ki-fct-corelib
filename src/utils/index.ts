@@ -1,3 +1,3 @@
 export * from "./FCT";
-export * from "./gas";
 export * from "./fetch";
+export * from "./gas";
