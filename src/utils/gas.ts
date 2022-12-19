@@ -6,7 +6,6 @@ import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
-import { parseCallID } from "../batchMultiSigCall/helpers";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
@@ -253,90 +252,4 @@ export const getKIROPayment = async ({
     vault,
     amount: kiroCost.toString(),
   };
-};
-
-export const getFCTCostInKIRO = async ({
-  fct,
-  callData,
-  batchMultiSigCallAddress,
-  gasPrice,
-  kiroPriceInETH,
-  rpcUrl,
-}: {
-  fct: IFCT;
-  callData: string;
-  batchMultiSigCallAddress: string;
-  gasPrice: number;
-  kiroPriceInETH: string;
-  rpcUrl: string;
-}) => {
-  const FCTOverhead = 135500;
-  const callOverhead = 16370;
-  const actuator = new ethers.utils.Interface(FCTActuatorABI);
-  const batchMultiSigCallContract = new ethers.Contract(
-    batchMultiSigCallAddress,
-    BatchMultiSigCallABI,
-    new ethers.providers.JsonRpcProvider(rpcUrl)
-  );
-
-  const calcMemory = (input: number) => {
-    return input * 3 + (input * input) / 512;
-  };
-
-  const callDataString = callData.slice(2);
-  const callDataArray = callDataString.split("");
-  const totalCallDataCost = callDataArray.reduce((accumulator, item) => {
-    if (item === "0") return accumulator + 4;
-    return accumulator + 16;
-  }, 21000);
-
-  const nonZero = callDataArray.reduce((accumulator, item) => {
-    if (item !== "0") return accumulator + 1;
-    return accumulator + 0;
-  }, 0);
-
-  const dataLength =
-    actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
-
-  let totalCallGas = BigInt(0);
-  for (const call of fct.mcall) {
-    if (call.types.length > 0) {
-      const initGas = BigInt(callOverhead);
-      const gasForCall = await batchMultiSigCallContract.estimateGas.abiToEIP712(
-        call.data,
-        call.types,
-        call.typedHashes,
-        { data: 0, types: 0 }
-      );
-
-      const callId = parseCallID(call.callId);
-      const gasLimit = callId.options.gasLimit;
-
-      totalCallGas = totalCallGas + initGas + BigInt(gasLimit) + BigInt(gasForCall.toString());
-    }
-  }
-
-  // Overhead calculation
-  // FCTOverhead +
-  // (totalCallDataCost - mcallTotalCost) +
-  // (dataLength - mcallDataTotalLength) -
-  // nonZero +
-  // (new BigNumber(dataLength).times(600).div(32) - new BigNumber(mcallDataTotalLength).times(600).div(32)) / mcall.length
-
-  const gasEstimation =
-    BigInt(FCTOverhead) +
-    BigInt(totalCallDataCost) +
-    BigInt(calcMemory(dataLength)) -
-    BigInt(calcMemory(nonZero)) +
-    BigInt((BigInt(dataLength) * BigInt(600)) / BigInt(32)) +
-    BigInt(totalCallGas) * BigInt(1.1);
-
-  // const costInETH = new BigNumber(gasEstimation).times(gasPrice).shiftedBy(-9);
-  const costInETH = (BigInt(gasEstimation) * BigInt(gasPrice)) / BigInt(1e9);
-
-  // Return const in KIRO
-  const normalisedKIROPrice = BigInt(kiroPriceInETH) / BigInt(1e18);
-  const costInKIRO = costInETH * normalisedKIROPrice;
-
-  return costInKIRO.toString();
 };
