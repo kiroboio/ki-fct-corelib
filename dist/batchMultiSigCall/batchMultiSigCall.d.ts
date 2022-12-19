@@ -1,6 +1,6 @@
-import { ethers } from "ethers";
 import { PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
-import { IMSCallInput, MSCallOptions, IWithPlugin, IBatchMultiSigCallFCT } from "./types";
+import { ethers } from "ethers";
+import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, MSCallOptions } from "./types";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
     private FCT_BatchMultiSigCall;

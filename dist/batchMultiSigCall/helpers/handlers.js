@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
-const constants_1 = require("../../constants");
 const ethers_1 = require("ethers");
+const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const handleMethodInterface = (call) => {
     // If call is not a ETH transfer

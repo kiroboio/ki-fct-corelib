@@ -4,17 +4,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
-const ethers_1 = require("ethers");
-const utils_1 = require("ethers/lib/utils");
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
+const ethers_1 = require("ethers");
+const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
-const variables_1 = require("../variables");
+const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
+const constants_1 = require("../constants");
 const helpers_1 = require("../helpers");
 const helpers_2 = require("../helpers");
+const variables_1 = require("../variables");
 const helpers_3 = require("./helpers");
-const constants_1 = require("../constants");
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, chainId, }) {
         this.batchMultiSigSelector = "0x2409a934";

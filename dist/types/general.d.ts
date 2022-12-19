@@ -1,6 +1,6 @@
+import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
-import { IComputed } from "../batchMultiSigCall/types";
 export type Variable = {
     type: "output";
     id: {
