@@ -1,8 +1,13 @@
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ethers, utils } from "ethers";
-import { BatchMultiSigCallTypedData, TypedDataLimits, TypedDataMeta, TypedDataTypes } from "../batchMultiSigCall/types";
-import { IFCT } from "./types";
+import {
+  BatchMultiSigCallTypedData,
+  IBatchMultiSigCallFCT,
+  TypedDataLimits,
+  TypedDataMeta,
+  TypedDataTypes,
+} from "../batchMultiSigCall/types";
 
 export const recoverAddressFromEIP712 = (
   typedData: BatchMultiSigCallTypedData,
@@ -29,7 +34,25 @@ export const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
   );
 };
 
-export const validateFCT = (FCT: IFCT, softValidation: boolean = false) => {
+export const validateFCT = (FCT: IBatchMultiSigCallFCT, softValidation: boolean = false) => {
+  const listOfKeys = [
+    "typeHash",
+    "typedData",
+    "sessionId",
+    "nameHash",
+    "mcall",
+    "builder",
+    "variables",
+    "externalSigners",
+    "computed",
+  ];
+
+  listOfKeys.forEach((key) => {
+    if (FCT[key] === undefined) {
+      throw new Error(`FCT is missing ${key}`);
+    }
+  });
+
   const limits = FCT.typedData.message.limits as TypedDataLimits;
   const fctData = FCT.typedData.message.meta as TypedDataMeta;
 

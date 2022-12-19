@@ -24,6 +24,22 @@ const getFCTMessageHash = (typedData) => {
 };
 exports.getFCTMessageHash = getFCTMessageHash;
 const validateFCT = (FCT, softValidation = false) => {
+    const listOfKeys = [
+        "typeHash",
+        "typedData",
+        "sessionId",
+        "nameHash",
+        "mcall",
+        "builder",
+        "variables",
+        "externalSigners",
+        "computed",
+    ];
+    listOfKeys.forEach((key) => {
+        if (FCT[key] === undefined) {
+            throw new Error(`FCT is missing ${key}`);
+        }
+    });
     const limits = FCT.typedData.message.limits;
     const fctData = FCT.typedData.message.meta;
     const currentDate = new Date().getTime() / 1000;
