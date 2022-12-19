@@ -17,12 +17,12 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
 
   const gasPrice = txVal.eip1559
     ? (
-        await getGasPriceEstimations({
+        await getGasPrices({
           rpcUrl,
-          historicalBlocks: 30,
+          historicalBlocks: 40,
         })
       )[txVal.gasPriority || "average"]
-    : { gasPrice: (await provider.getGasPrice()).toNumber() };
+    : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
 
   try {
     let gas: BigNumberEthers;
@@ -70,13 +70,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
   }
 };
 
-export const getGasPriceEstimations = async ({
-  rpcUrl,
-  historicalBlocks,
-}: {
-  rpcUrl: string;
-  historicalBlocks: number;
-}) => {
+export const getGasPrices = async ({ rpcUrl, historicalBlocks = 25 }: { rpcUrl: string; historicalBlocks: number }) => {
   function avg(arr: number[]) {
     const sum = arr.reduce((a, v) => a + v);
     return Math.round(sum / arr.length);
@@ -138,7 +132,7 @@ export const getGasPriceEstimations = async ({
   };
 };
 
-export const getFCTGasEstimation = async ({
+export const estimateFCTGasCost = async ({
   fct,
   callData,
   batchMultiSigCallAddress,

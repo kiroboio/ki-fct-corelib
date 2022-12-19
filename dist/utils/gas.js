@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFCTCostInKIRO = exports.getKIROPayment = exports.getFCTGasEstimation = exports.getGasPriceEstimations = exports.transactionValidator = void 0;
+exports.getFCTCostInKIRO = exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exports.transactionValidator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const ethers_1 = require("ethers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
@@ -16,11 +16,11 @@ const transactionValidator = async (txVal, pureGas = false) => {
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     const gasPrice = txVal.eip1559
-        ? (await (0, exports.getGasPriceEstimations)({
+        ? (await (0, exports.getGasPrices)({
             rpcUrl,
-            historicalBlocks: 30,
+            historicalBlocks: 40,
         }))[txVal.gasPriority || "average"]
-        : { gasPrice: (await provider.getGasPrice()).toNumber() };
+        : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
     try {
         let gas;
         if (activateForFree) {
@@ -68,7 +68,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks, }) => {
+const getGasPrices = async ({ rpcUrl, historicalBlocks = 25 }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
@@ -122,8 +122,8 @@ const getGasPriceEstimations = async ({ rpcUrl, historicalBlocks, }) => {
         },
     };
 };
-exports.getGasPriceEstimations = getGasPriceEstimations;
-const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }) => {
+exports.getGasPrices = getGasPrices;
+const estimateFCTGasCost = async ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }) => {
     const FCTOverhead = 135500;
     const callOverhead = 16370;
     const numOfCalls = fct.mcall.length;
@@ -174,7 +174,7 @@ const getFCTGasEstimation = async ({ fct, callData, batchMultiSigCallAddress, rp
         .plus(totalCallGas);
     return gasEstimation.toString();
 };
-exports.getFCTGasEstimation = getFCTGasEstimation;
+exports.estimateFCTGasCost = estimateFCTGasCost;
 // 38270821632831754769812 - kiro price
 // 1275004198 - max fee
 // 462109 - gas

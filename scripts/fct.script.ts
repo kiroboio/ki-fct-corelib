@@ -123,7 +123,7 @@ async function main() {
     version,
   });
 
-  const gasEstimation = await utils.getFCTGasEstimation({
+  const gasEstimation = await utils.estimateFCTGasCost({
     fct: signedFCT,
     callData,
     rpcUrl: data[chainId].rpcUrl,

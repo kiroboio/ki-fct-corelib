@@ -4,16 +4,16 @@ import data from "./scriptData";
 
 dotenv.config();
 
-const chainId = 1;
+const chainId = 5;
 const wallet = process.env.WALLET as string;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
 
-  const gas = await utils.getGasPriceEstimations({
+  const gas = await utils.getGasPrices({
     rpcUrl: data[chainId].rpcUrl,
-    historicalBlocks: 20,
+    historicalBlocks: 40,
   });
 
   console.log("Gas", gas);
