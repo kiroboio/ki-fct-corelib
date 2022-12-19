@@ -6,3 +6,4 @@ export * as variables from "./variables";
 export { BatchMultiSigCall } from "./batchMultiSigCall";
 export * from "./utils/types";
 export * from "./batchMultiSigCall/types";
+export * from "./types/general";

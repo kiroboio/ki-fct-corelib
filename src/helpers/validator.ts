@@ -2,11 +2,11 @@ import { IMSCallInput } from "../batchMultiSigCall/types";
 import { utils } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 
-import { Validator } from "../types";
+import { IValidator } from "../types";
 import ValidatorABI from "../abi/validator.abi.json";
 import { getEncodedMethodParams, getMethodInterface, getParamsLength } from "./method";
 
-export const getValidatorFunctionData = (validator: Validator, params: any[]): { name: string; type: string }[] => {
+export const getValidatorFunctionData = (validator: IValidator, params: any[]): { name: string; type: string }[] => {
   const iface = new utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(validator.method);
 
@@ -23,7 +23,7 @@ export const getValidatorFunctionData = (validator: Validator, params: any[]): {
   }, []);
 };
 
-export const getValidatorMethodInterface = (validator: Validator): string => {
+export const getValidatorMethodInterface = (validator: IValidator): string => {
   const iface = new utils.Interface(ValidatorABI);
   const validatorFunction = iface.getFunction(validator.method);
 

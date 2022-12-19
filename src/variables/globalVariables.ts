@@ -8,8 +8,7 @@ export type GlobalVariable =
   | "originAddress"
   | "investorAddress"
   | "activatorAddress"
-  | "engineAddress"
-  | string;
+  | "engineAddress";
 
 const BLOCK_NUMBER = "0xFB0A000000000000000000000000000000000000";
 const BLOCK_TIMESTAMP = "0xFB0B000000000000000000000000000000000000";
