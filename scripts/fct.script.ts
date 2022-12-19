@@ -33,11 +33,15 @@ const wallet = process.env.WALLET as string;
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
+  const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
 
   const batchMultiSigCall = new BatchMultiSigCall({
-    provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
+    provider,
     contractAddress: data[chainId].FCT_Controller,
   });
+
+  const feeData = await provider.getFeeData();
+  console.log(feeData);
 
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
@@ -119,7 +123,7 @@ async function main() {
     version,
   });
 
-  const gasEstimation = await utils.getFCTGasEstimation({
+  const gasEstimation = await utils.estimateFCTGasCost({
     fct: signedFCT,
     callData,
     rpcUrl: data[chainId].rpcUrl,
@@ -132,7 +136,7 @@ async function main() {
     fct: signedFCT,
     kiroPriceInETH: "38270821632831754769812",
     gasPrice: 1580000096,
-    gasLimit: 462109,
+    gas: 462109,
   });
 
   console.log("kiroPayment", kiroPayment);

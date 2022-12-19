@@ -17,7 +17,7 @@ export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boole
     };
     error: any;
 }>;
-export declare const getGasPriceEstimations: ({ rpcUrl, historicalBlocks, }: {
+export declare const getGasPrices: ({ rpcUrl, historicalBlocks }: {
     rpcUrl: string;
     historicalBlocks: number;
 }) => Promise<{
@@ -34,7 +34,7 @@ export declare const getGasPriceEstimations: ({ rpcUrl, historicalBlocks, }: {
         maxPriorityFeePerGas: number;
     };
 }>;
-export declare const getFCTGasEstimation: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
+export declare const estimateFCTGasCost: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
     fct: IFCT;
     callData: string;
     batchMultiSigCallAddress: string;

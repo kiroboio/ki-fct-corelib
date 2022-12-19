@@ -7,6 +7,8 @@ const data = {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     KIRO: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137",
     rpcUrl: process.env.RPC_URL_MAINNET as string,
+    FCT_BatchMultiSig: "0x5b97307aa2CeE069A3999e9FD1236D0C5693322D",
+    FCT_Controller: "0xBc0ED9A150D9b50BaA2dC3d350D0d59E69daeBD9",
   },
   5: {
     FCT_BatchMultiSig: "0x5b97307aa2CeE069A3999e9FD1236D0C5693322D",
