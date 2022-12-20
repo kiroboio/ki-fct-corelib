@@ -42,6 +42,7 @@ import {
   IBatchMultiSigCallFCT,
   IFCTOptions,
   IMSCallInput,
+  IRequiredApproval,
   IWithPlugin,
   TypedDataMessageTransaction,
 } from "./types";
@@ -94,7 +95,6 @@ export class BatchMultiSigCall {
   }
 
   // Helpers
-
   public getCalldataForActuator = ({
     signedFCT,
     purgedFCT,
@@ -117,14 +117,7 @@ export class BatchMultiSigCall {
     ]);
   };
 
-  public getAllRequiredApprovals = async (): Promise<
-    {
-      requiredAmount: string;
-      token: string;
-      spender: string;
-      from: string;
-    }[]
-  > => {
+  public getAllRequiredApprovals = async (): Promise<IRequiredApproval[]> => {
     let requiredApprovals: {
       token: string | undefined;
       spender: string | undefined;

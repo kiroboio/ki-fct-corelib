@@ -1,6 +1,6 @@
 import { PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
-import { IBatchMultiSigCallFCT, IFCTOptions, IMSCallInput, IWithPlugin } from "./types";
+import { IBatchMultiSigCallFCT, IFCTOptions, IMSCallInput, IRequiredApproval, IWithPlugin } from "./types";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
     private FCT_BatchMultiSigCall;
@@ -23,12 +23,7 @@ export declare class BatchMultiSigCall {
         activator: string;
         version: string;
     }) => string;
-    getAllRequiredApprovals: () => Promise<{
-        requiredAmount: string;
-        token: string;
-        spender: string;
-        from: string;
-    }[]>;
+    getAllRequiredApprovals: () => Promise<IRequiredApproval[]>;
     private getVariable;
     private getOutputVariable;
     private getExternalVariable;

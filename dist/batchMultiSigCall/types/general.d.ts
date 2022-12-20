@@ -80,3 +80,9 @@ export interface ComputedVariables {
     mul: string;
     div: string;
 }
+export interface IRequiredApproval {
+    requiredAmount: string;
+    token: string;
+    spender: string;
+    from: string;
+}
