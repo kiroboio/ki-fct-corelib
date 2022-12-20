@@ -14,6 +14,7 @@ const constants_1 = require("../constants");
 const helpers_1 = require("../helpers");
 const helpers_2 = require("../helpers");
 const variables_1 = require("../variables");
+const data_1 = __importDefault(require("./data"));
 const helpers_3 = require("./helpers");
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, chainId, }) {
@@ -153,7 +154,7 @@ class BatchMultiSigCall {
             // Else it is a variable
             return this.getVariable(call.value, "uint256");
         };
-        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || "0x0000000000000000000000000000000000000000", FCT_Controller_abi_json_1.default, provider);
+        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.default[chainId || 1], FCT_Controller_abi_json_1.default, provider);
         if (chainId) {
             this.chainId = chainId;
         }

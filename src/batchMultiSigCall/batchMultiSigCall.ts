@@ -22,6 +22,7 @@ import { createValidatorTxData, getTypedDataDomain, instanceOfVariable } from ".
 import { getDate } from "../helpers";
 import { Param, Variable } from "../types";
 import { globalVariables } from "../variables";
+import FCTControllerAddresses from "./data";
 import {
   getComputedVariableMessage,
   getSessionId,
@@ -77,7 +78,7 @@ export class BatchMultiSigCall {
     chainId?: number;
   }) {
     this.FCT_Controller = new ethers.Contract(
-      contractAddress || "0x0000000000000000000000000000000000000000",
+      contractAddress || FCTControllerAddresses[chainId || 1],
       FCT_ControllerABI,
       provider
     );
