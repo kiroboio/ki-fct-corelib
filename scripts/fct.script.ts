@@ -43,7 +43,7 @@ async function main() {
 
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
-    expiresAt: getDate(10),
+    expiresAt: getDate(1000000),
     recurrency: {
       accumetable: true,
       maxRepeats: "1000",
