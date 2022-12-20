@@ -17,7 +17,6 @@ const transactionValidator = async (txVal, pureGas = false) => {
     const gasPrice = txVal.eip1559
         ? (await (0, exports.getGasPrices)({
             rpcUrl,
-            historicalBlocks: 40,
         }))[txVal.gasPriority || "average"]
         : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
     try {

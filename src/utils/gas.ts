@@ -1,6 +1,7 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
+import { hexlify } from "ethers/lib/utils";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -94,7 +95,7 @@ export const getGasPrices = async ({
     body: JSON.stringify({
       jsonrpc: "2.0",
       method: "eth_feeHistory",
-      params: [historicalBlocks, blockNumber, [5, 15, 30]],
+      params: [historicalBlocks, hexlify(blockNumber), [5, 15, 30]],
       id: 1,
     }),
   });
