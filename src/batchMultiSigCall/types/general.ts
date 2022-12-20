@@ -45,7 +45,7 @@ export interface MSCall {
   typedHashes: string[];
 }
 
-export interface MSCallOptions {
+export interface IFCTOptions {
   name?: string;
   validFrom: string;
   expiresAt: string;
@@ -53,7 +53,6 @@ export interface MSCallOptions {
   blockable: boolean;
   purgeable: boolean;
   builder: string;
-
   recurrency?: {
     maxRepeats?: string;
     chillTime?: string;
@@ -88,4 +87,11 @@ export interface ComputedVariables {
   sub: string;
   mul: string;
   div: string;
+}
+
+export interface IRequiredApproval {
+  requiredAmount: string;
+  token: string;
+  spender: string;
+  from: string;
 }
