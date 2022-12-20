@@ -7,6 +7,7 @@ exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exp
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
+const utils_1 = require("ethers/lib/utils");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const transactionValidator = async (txVal, pureGas = false) => {
@@ -83,7 +84,7 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, }) => {
         body: JSON.stringify({
             jsonrpc: "2.0",
             method: "eth_feeHistory",
-            params: [historicalBlocks, blockNumber, [5, 15, 30]],
+            params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [5, 15, 30]],
             id: 1,
         }),
     });
