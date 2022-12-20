@@ -39,4 +39,53 @@ describe("Utility functions", () => {
       expect(variables).to.deep.eq(result);
     });
   });
+  describe("Fetch functions", () => {
+    it("Should fetch current approvals", async () => {
+      const approvals = await utils.fetchCurrentApprovals({
+        rpcUrl: "https://eth-goerli.public.blastapi.io",
+        data: [
+          {
+            token: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+            from: "0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C",
+            spender: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
+          },
+        ],
+      });
+
+      expect(approvals).to.be.a("array");
+      expect(approvals[0].amount).to.be.a("string");
+      expect(approvals[0].from).to.eq("0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C");
+      expect(approvals[0].spender).to.eq("0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C");
+      expect(approvals[0].token).to.eq("0xba232b47a7ddfccc221916cf08da03a4973d3a1d");
+    });
+  });
+  describe("Gas functions", () => {
+    it("Should get gas prices", async () => {
+      const gasPrices = await utils.getGasPrices({
+        rpcUrl: "https://eth-goerli.public.blastapi.io",
+      });
+
+      expect(gasPrices).to.be.a("object");
+      expect(gasPrices.slow.maxFeePerGas).to.be.a("number");
+      expect(gasPrices.slow.maxPriorityFeePerGas).to.be.a("number");
+
+      expect(gasPrices.average.maxFeePerGas).to.be.a("number");
+      expect(gasPrices.average.maxPriorityFeePerGas).to.be.a("number");
+
+      expect(gasPrices.fast.maxFeePerGas).to.be.a("number");
+      expect(gasPrices.fast.maxPriorityFeePerGas).to.be.a("number");
+    });
+
+    it("Should get KIRO cost of FCT", async () => {
+      const fctCost = await utils.getKIROPayment({
+        fct: FCT,
+        kiroPriceInETH: "38270821632831754769812",
+        gasPrice: 1580000096,
+        gas: 462109,
+      });
+
+      expect(fctCost.amount).to.eq("43.29359365495305");
+      expect(fctCost.vault).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
+    });
+  });
 });

@@ -67,7 +67,7 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPrices = async ({ rpcUrl, historicalBlocks = 25 }) => {
+const getGasPrices = async ({ rpcUrl, historicalBlocks = 25, }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);

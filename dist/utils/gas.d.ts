@@ -17,9 +17,9 @@ export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boole
     };
     error: any;
 }>;
-export declare const getGasPrices: ({ rpcUrl, historicalBlocks }: {
+export declare const getGasPrices: ({ rpcUrl, historicalBlocks, }: {
     rpcUrl: string;
-    historicalBlocks: number;
+    historicalBlocks?: number;
 }) => Promise<{
     slow: {
         maxFeePerGas: number;
