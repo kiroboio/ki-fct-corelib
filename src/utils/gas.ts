@@ -71,7 +71,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
 
 export const getGasPrices = async ({
   rpcUrl,
-  historicalBlocks = 25,
+  historicalBlocks = 10,
 }: {
   rpcUrl: string;
   historicalBlocks?: number;
@@ -81,6 +81,12 @@ export const getGasPrices = async ({
     return Math.round(sum / arr.length);
   }
 
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const latestBlock = await provider.getBlock("latest");
+
+  const baseFee = latestBlock.baseFeePerGas.toString();
+  const blockNumber = latestBlock.number;
+
   const res = await fetch(rpcUrl, {
     method: "POST",
     headers: {
@@ -89,7 +95,7 @@ export const getGasPrices = async ({
     body: JSON.stringify({
       jsonrpc: "2.0",
       method: "eth_feeHistory",
-      params: [historicalBlocks, "latest", [25, 50, 75]],
+      params: [historicalBlocks, blockNumber, [5, 15, 30]],
       id: 1,
     }),
   });
@@ -114,12 +120,7 @@ export const getGasPrices = async ({
   const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
   const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
 
-  const baseFeePerGas = Number(result.baseFeePerGas[historicalBlocks - 1]);
-
-  // Backup version of getting baseFeePerGas
-  // const providerBaseFee = (
-  //   await new ethers.providers.JsonRpcProvider(rpcUrl).getFeeData()
-  // ).lastBaseFeePerGas.toString();
+  const baseFeePerGas = Number(baseFee);
 
   return {
     slow: {

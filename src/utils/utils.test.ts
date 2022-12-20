@@ -65,6 +65,8 @@ describe("Utility functions", () => {
         rpcUrl: "https://eth-goerli.public.blastapi.io",
       });
 
+      console.log(gasPrices);
+
       expect(gasPrices).to.be.a("object");
       expect(gasPrices.slow.maxFeePerGas).to.be.a("number");
       expect(gasPrices.slow.maxPriorityFeePerGas).to.be.a("number");
