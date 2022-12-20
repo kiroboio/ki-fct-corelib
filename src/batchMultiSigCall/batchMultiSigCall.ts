@@ -40,9 +40,9 @@ import {
   BatchMultiSigCallTypedData,
   ComputedVariables,
   IBatchMultiSigCallFCT,
+  IFCTOptions,
   IMSCallInput,
   IWithPlugin,
-  MSCallOptions,
   TypedDataMessageTransaction,
 } from "./types";
 
@@ -55,7 +55,7 @@ export class BatchMultiSigCall {
 
   private computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
-  options: MSCallOptions = {
+  options: IFCTOptions = {
     maxGasPrice: "100000000000", // 100 Gwei as default
     validFrom: getDate(), // Valid from now
     expiresAt: getDate(7), // Expires after 7 days
@@ -72,7 +72,7 @@ export class BatchMultiSigCall {
   }: {
     provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
     contractAddress?: string;
-    options?: Partial<MSCallOptions>;
+    options?: Partial<IFCTOptions>;
     chainId?: number;
   }) {
     this.FCT_Controller = new ethers.Contract(
@@ -273,7 +273,7 @@ export class BatchMultiSigCall {
   //
   // Options
 
-  public setOptions(options: Partial<MSCallOptions>): MSCallOptions {
+  public setOptions(options: Partial<IFCTOptions>): IFCTOptions {
     if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
       throw new Error("Max gas price cannot be 0 or less");
     }

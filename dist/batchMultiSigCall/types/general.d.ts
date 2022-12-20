@@ -40,7 +40,7 @@ export interface MSCall {
     types: number[];
     typedHashes: string[];
 }
-export interface MSCallOptions {
+export interface IFCTOptions {
     name?: string;
     validFrom: string;
     expiresAt: string;

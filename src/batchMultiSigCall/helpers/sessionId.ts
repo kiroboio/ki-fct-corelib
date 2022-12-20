@@ -1,4 +1,4 @@
-import { IMSCallInput, MSCallOptions } from "batchMultiSigCall/types";
+import { IFCTOptions, IMSCallInput } from "batchMultiSigCall/types";
 
 import { CALL_TYPE, Flow, flows } from "../../constants";
 
@@ -82,7 +82,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
 // 16 - Gas price limit
 // 2 - Flags
 
-export const getSessionId = (salt: string, options: MSCallOptions): string => {
+export const getSessionId = (salt: string, options: IFCTOptions): string => {
   const currentDate = new Date();
 
   if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
@@ -111,7 +111,7 @@ export const getSessionId = (salt: string, options: MSCallOptions): string => {
   return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 
-export const parseSessionID = (sessionId: string, builder: string): MSCallOptions => {
+export const parseSessionID = (sessionId: string, builder: string): IFCTOptions => {
   // const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
   // const version = sessionId.slice(10, 16);

@@ -1,6 +1,6 @@
 import { PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
-import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, MSCallOptions } from "./types";
+import { IBatchMultiSigCallFCT, IFCTOptions, IMSCallInput, IWithPlugin } from "./types";
 export declare class BatchMultiSigCall {
     private FCT_Controller;
     private FCT_BatchMultiSigCall;
@@ -9,11 +9,11 @@ export declare class BatchMultiSigCall {
     private chainId;
     private computedVariables;
     calls: IMSCallInput[];
-    options: MSCallOptions;
+    options: IFCTOptions;
     constructor({ provider, contractAddress, options, chainId, }: {
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
         contractAddress?: string;
-        options?: Partial<MSCallOptions>;
+        options?: Partial<IFCTOptions>;
         chainId?: number;
     });
     getCalldataForActuator: ({ signedFCT, purgedFCT, investor, activator, version, }: {
@@ -33,7 +33,7 @@ export declare class BatchMultiSigCall {
     private getOutputVariable;
     private getExternalVariable;
     private getComputedVariable;
-    setOptions(options: Partial<MSCallOptions>): MSCallOptions;
+    setOptions(options: Partial<IFCTOptions>): IFCTOptions;
     getPlugin: (index: number) => Promise<PluginInstance>;
     getPluginClass: (index: number) => Promise<any>;
     create(callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]>;
