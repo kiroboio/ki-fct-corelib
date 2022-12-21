@@ -74,6 +74,9 @@ describe("Utility functions", () => {
 
       expect(gasPrices.fast.maxFeePerGas).to.be.a("number");
       expect(gasPrices.fast.maxPriorityFeePerGas).to.be.a("number");
+
+      expect(gasPrices.fastest.maxFeePerGas).to.be.a("number");
+      expect(gasPrices.fastest.maxPriorityFeePerGas).to.be.a("number");
     });
 
     it("Should get KIRO cost of FCT", async () => {
