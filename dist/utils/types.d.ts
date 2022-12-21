@@ -1,8 +1,10 @@
 import { BatchMultiSigCallTypedData, MSCall } from "../batchMultiSigCall/types";
+import { getGasPrices } from "./gas";
 export interface IFCT {
     typedData: BatchMultiSigCallTypedData;
     mcall: MSCall[];
 }
+export type GasPriority = keyof Awaited<ReturnType<typeof getGasPrices>>;
 export interface ITxValidator {
     rpcUrl: string;
     callData: string;
@@ -10,7 +12,7 @@ export interface ITxValidator {
     actuatorContractAddress: string;
     activateForFree: boolean;
     eip1559?: boolean;
-    gasPriority?: "slow" | "average" | "fast";
+    gasPriority?: GasPriority;
 }
 export interface EIP1559GasPrice {
     maxFeePerGas: number;

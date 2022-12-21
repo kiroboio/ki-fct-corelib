@@ -84,7 +84,7 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, }) => {
         body: JSON.stringify({
             jsonrpc: "2.0",
             method: "eth_feeHistory",
-            params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [5, 15, 30]],
+            params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [5, 15, 30, 75]],
             id: 1,
         }),
     });
@@ -105,6 +105,7 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, }) => {
     const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
     const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
     const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+    const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
     const baseFeePerGas = Number(baseFee);
     return {
         slow: {
@@ -118,6 +119,10 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, }) => {
         fast: {
             maxFeePerGas: fast + baseFeePerGas,
             maxPriorityFeePerGas: fast,
+        },
+        fastest: {
+            maxFeePerGas: fastest + baseFeePerGas,
+            maxPriorityFeePerGas: fastest,
         },
     };
 };

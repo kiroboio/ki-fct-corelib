@@ -33,6 +33,10 @@ export declare const getGasPrices: ({ rpcUrl, historicalBlocks, }: {
         maxFeePerGas: number;
         maxPriorityFeePerGas: number;
     };
+    fastest: {
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+    };
 }>;
 export declare const estimateFCTGasCost: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
     fct: IFCT;
