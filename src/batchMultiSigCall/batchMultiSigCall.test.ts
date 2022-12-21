@@ -1,7 +1,6 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import util from "util";
 
 import { Flow } from "../constants";
 import { BatchMultiSigCall } from "./index";
@@ -38,15 +37,25 @@ describe("BatchMultiSigCall", () => {
 
     expect(() => batchMultiSigCall.setOptions(expiresAtErrorSettings)).to.throw("Expires at must be in the future");
 
+    const expiresAt = getDate(1);
+
     const validSettings = {
       maxGasPrice: "100000000000",
-      expiresAt: getDate(1),
+      expiresAt,
+      purgeable: true,
+      blockable: true,
+      builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     };
 
     expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
+    expect(batchMultiSigCall.options.builder).to.be.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(batchMultiSigCall.options.maxGasPrice).to.be.eq("100000000000");
+    expect(batchMultiSigCall.options.expiresAt).to.be.eq(expiresAt);
+    expect(batchMultiSigCall.options.purgeable).to.be.eq(true);
+    expect(batchMultiSigCall.options.blockable).to.be.eq(true);
   });
 
-  it("Should create simple ERC20 Transfer FCT", async () => {
+  it("Should create an FCT with 1 plugin call", async () => {
     const transfer = new ERC20.actions.Transfer({
       chainId: "5",
       initParams: {
@@ -60,20 +69,24 @@ describe("BatchMultiSigCall", () => {
 
     const calls = await batchMultiSigCall.create({
       nodeId: "node1",
-      plugin: transfer,
       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      plugin: transfer,
+      options: {
+        flow: Flow.OK_CONT_FAIL_STOP,
+      },
     });
 
     expect(calls).to.be.an("array");
 
     const FCT = await batchMultiSigCall.exportFCT();
 
-    expect(FCT).to.be.an("object");
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
+    expect(FCT.typedData.message["transaction_1"].call.to).to.eq("0xfeab457d95d9990b7eb6c943c839258245541754");
+    expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq("continue on success, stop on fail");
   });
 
-  it("Should create ERC20 Transfer, ERC20 Balance Of and Aave V2 deposit FCT", async () => {
+  it("Should create an FCT with 2 plugin calls and 1 non-plugin call", async () => {
     const balanceOf = new ERC20.getters.BalanceOf({
       chainId: "5",
       initParams: {
@@ -129,8 +142,6 @@ describe("BatchMultiSigCall", () => {
 
     const FCT = await batchMultiSigCall.exportFCT();
 
-    expect(FCT).to.be.an("object");
-
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("20");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
@@ -142,7 +153,7 @@ describe("BatchMultiSigCall", () => {
     expect(FCT.typedData.message["transaction_3"].onBehalfOf).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
   });
 
-  it("Should...", async () => {
+  it("Should create an FCT with 3 non-plugin calls", async () => {
     batchMultiSigCall = new BatchMultiSigCall({
       contractAddress,
       provider,
@@ -154,7 +165,7 @@ describe("BatchMultiSigCall", () => {
         to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         method: "balanceOf",
-        params: [{ name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" }],
+        params: [{ name: "recipient", type: "address", value: { type: "global", id: "minerAddress" } }],
         options: {
           jumpOnSuccess: "node3",
           jumpOnFail: "node2",
@@ -190,7 +201,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT).to.be.an("object");
 
-    expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);
     expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(0);
 
@@ -199,6 +210,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT.typedData.message["transaction_3"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_3"].amount).to.eq("20");
+    expect(FCT.typedData.message["transaction_3"].call.to_ens).to.eq("@token.kiro.eth");
   });
   it("Should create FCT with Computed Variables", async () => {
     const balanceOf = new ERC20.getters.BalanceOf({
@@ -247,8 +259,6 @@ describe("BatchMultiSigCall", () => {
     ]);
 
     const FCT = await batchMultiSigCall.exportFCT();
-
-    console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
     expect(FCT).to.be.an("object");
 
