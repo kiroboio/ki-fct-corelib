@@ -169,6 +169,7 @@ describe("BatchMultiSigCall", () => {
         options: {
           jumpOnSuccess: "node3",
           jumpOnFail: "node2",
+          flow: Flow.OK_STOP_FAIL_CONT,
         },
       },
       {
@@ -180,6 +181,9 @@ describe("BatchMultiSigCall", () => {
           { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
           { name: "amount", type: "uint256", value: { type: "output", id: { nodeId: "node1", innerIndex: 0 } } },
         ],
+        options: {
+          flow: Flow.OK_CONT_FAIL_REVERT,
+        },
       },
       {
         nodeId: "node3",
