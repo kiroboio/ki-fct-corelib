@@ -1,5 +1,5 @@
 import { Variable } from "../types";
-export type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
+export declare type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
 export declare const globalVariables: {
     blockNumber: string;
     blockTimestamp: string;
