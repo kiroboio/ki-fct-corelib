@@ -1,7 +1,7 @@
 import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
-export declare type Variable = {
+export type Variable = {
     type: "output";
     id: {
         nodeId: string;
@@ -29,7 +29,7 @@ export interface MethodParamsInterface {
     validator?: IValidator;
     to?: string | Variable;
 }
-export declare type CallType = keyof typeof CALL_TYPE;
+export type CallType = keyof typeof CALL_TYPE;
 export interface CallOptions {
     gasLimit?: string;
     flow?: Flow;
