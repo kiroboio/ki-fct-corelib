@@ -11,7 +11,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
-      "@helpers": ["helpers"],
+      "@helpers": ["helpers/index.ts"],
       "@types": ["types"]
     }
   },

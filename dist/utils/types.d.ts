@@ -4,7 +4,7 @@ export interface IFCT {
     typedData: BatchMultiSigCallTypedData;
     mcall: MSCall[];
 }
-export declare type GasPriority = keyof Awaited<ReturnType<typeof getGasPrices>>;
+export type GasPriority = keyof Awaited<ReturnType<typeof getGasPrices>>;
 export interface ITxValidator {
     rpcUrl: string;
     callData: string;
@@ -21,4 +21,4 @@ export interface EIP1559GasPrice {
 export interface LegacyGasPrice {
     gasPrice: number;
 }
-export declare type GasPrice = EIP1559GasPrice | LegacyGasPrice;
+export type GasPrice = EIP1559GasPrice | LegacyGasPrice;
