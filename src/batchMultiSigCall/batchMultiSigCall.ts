@@ -75,6 +75,7 @@ export class BatchMultiSigCall {
   protected getOutputVariable = getOutputVariable;
   protected getExternalVariable = getExternalVariable;
   protected getComputedVariable = getComputedVariable;
+
   // End of variables
   //
   //
@@ -89,6 +90,7 @@ export class BatchMultiSigCall {
 
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
+
   // End of plugin functions
   //
   //
