@@ -1,7 +1,5 @@
 import { Graph } from "graphlib";
 
-const isSame = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i]);
-
 async function main() {
   const g = new Graph({ directed: true });
 
