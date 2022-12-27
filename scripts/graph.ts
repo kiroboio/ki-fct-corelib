@@ -8,25 +8,19 @@ async function main() {
   const allPaths: string[][] = [];
 
   const printAllPaths = (g: Graph, start: string, end: string) => {
-    const nodes = g.nodes();
     const isVisited = {};
-    for (const id of nodes) {
-      isVisited[id] = false;
-      const pathList: string[] = [];
+    const pathList: string[] = [];
 
-      pathList.push(start);
+    pathList.push(start);
 
-      printAllPathsUtil(g, start, end, isVisited, pathList);
-    }
+    printAllPathsUtil(g, start, end, isVisited, pathList);
   };
 
   const printAllPathsUtil = (g: Graph, start: string, end: string, isVisited: object, localPathList: string[]) => {
     if (start === end) {
       const path = localPathList.slice();
 
-      if (!allPaths.some((p) => isSame(p, path))) {
-        allPaths.push(path);
-      }
+      allPaths.push(path);
       return;
     }
 
