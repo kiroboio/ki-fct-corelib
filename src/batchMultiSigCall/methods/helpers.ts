@@ -45,8 +45,8 @@ export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<
     requiredAmount: string | undefined;
     from: string;
   }[] = [];
-  if (!this.provider) {
-    throw new Error("No provider set");
+  if (!this.chainId && !this.provider) {
+    throw new Error("No chainId or provider has been set");
   }
 
   const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString()) as ChainId;
