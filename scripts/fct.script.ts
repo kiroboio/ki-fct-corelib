@@ -1,7 +1,8 @@
-import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, FCT_UNISWAP, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
 import util from "util";
 
@@ -51,6 +52,18 @@ async function main() {
     },
   });
 
+  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapWithoutSlippageProtection({
+    chainId: "1",
+    initParams: {
+      to: data[chainId].KIRO,
+      methodParams: {
+        amount: "1000",
+        path: [data[chainId].KIRO, data[chainId].USDC],
+        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+      },
+    },
+  });
+
   const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
     chainId: "1",
   });
@@ -91,6 +104,7 @@ async function main() {
     },
     { plugin: swap, from: vault, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
+    { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
@@ -146,6 +160,13 @@ async function main() {
   // });
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
+
+  const fees = utils.getMaxKIROCostPerPayer({
+    fct: signedFCT,
+    kiroPriceInETH: "38270821632831754769812",
+  });
+
+  console.log(fees);
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
