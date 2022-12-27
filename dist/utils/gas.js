@@ -8,6 +8,7 @@ const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
+const graphlib_1 = require("graphlib");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const helpers_1 = require("../batchMultiSigCall/helpers");
@@ -205,7 +206,48 @@ const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     };
 };
 exports.getKIROPayment = getKIROPayment;
+const printAllPaths = (g, start, end) => {
+    const isVisited = new Array(g.nodes().length);
+    for (let i = 0; i < isVisited.length; i++) {
+        isVisited[i] = false;
+        const pathList = [];
+        pathList.push(start);
+        printAllPathsUtil(g, start, end, isVisited, pathList);
+    }
+};
+const printAllPathsUtil = (g, start, end, isVisited, localPathList) => {
+    if (start === end) {
+        console.log("localpathlist", localPathList);
+        return;
+    }
+    isVisited[start] = true;
+    const successors = g.successors(start);
+    if (successors === undefined) {
+        isVisited[start] = false;
+        return;
+    }
+    for (let i = 0; i < successors.length; i++) {
+        if (!isVisited[successors[i]]) {
+            // store current node
+            // in path[]
+            localPathList.push(successors[i]);
+            printAllPathsUtil(g, successors[i], end, isVisited, localPathList);
+            // remove current node
+            // in path[]
+            localPathList.splice(localPathList.indexOf(successors[i]), 1);
+        }
+    }
+    isVisited[start] = false;
+};
 const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
+    const g = new graphlib_1.Graph({ directed: true });
+    for (const [index, call] of Object.entries(fct.mcall)) {
+        g.setNode(index.toString());
+    }
+    for (let i = 0; i < fct.mcall.length - 1; i++) {
+        g.setEdge(i.toString(), (i + 1).toString());
+    }
+    console.log(printAllPaths(g, "0", (fct.mcall.length - 1).toString()));
     const FCTOverhead = 135500;
     const callOverhead = 16370;
     const defaultCallGas = 50000;
