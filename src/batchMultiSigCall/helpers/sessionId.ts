@@ -207,14 +207,14 @@ export const parseCallID = (
   payerIndex: number;
   callIndex: number;
 } => {
-  const permissions = callId.slice(2, 6);
-  const flowNumber = parseInt(callId.slice(6, 8), 16);
-  const jumpOnFail = parseInt(callId.slice(8, 12), 16);
-  const jumpOnSuccess = parseInt(callId.slice(12, 16), 16);
-  const payerIndex = parseInt(callId.slice(16, 20), 16);
-  const callIndex = parseInt(callId.slice(20, 24), 16);
-  const gasLimit = parseInt(callId.slice(24, 32), 16).toString();
-  const flags = parseInt(callId.slice(32, 34), 16);
+  const permissions = callId.slice(36, 38);
+  const flowNumber = parseInt(callId.slice(38, 40), 16);
+  const jumpOnFail = parseInt(callId.slice(40, 44), 16);
+  const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
+  const payerIndex = parseInt(callId.slice(48, 52), 16);
+  const callIndex = parseInt(callId.slice(52, 56), 16);
+  const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
+  const flags = parseInt(callId.slice(64, 66), 16);
 
   const getFlow = () => {
     const flow = Object.entries(flows).find(([, value]) => {

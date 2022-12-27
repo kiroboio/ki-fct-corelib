@@ -50,4 +50,5 @@ export interface IPluginCall {
     to: string | Variable;
     method: string;
     params: Param[];
+    options?: CallOptions;
 }

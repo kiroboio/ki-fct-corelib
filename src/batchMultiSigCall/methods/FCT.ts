@@ -29,14 +29,17 @@ export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | 
     call = {
       ...pluginCall,
       from: callInput.from,
-      options: callInput.options,
+      options: { ...pluginCall.options, ...callInput.options },
       nodeId: callInput.nodeId,
     };
   } else {
-    if (!callInput.to) {
-      throw new Error("To address is required");
-    }
     call = { ...callInput };
+  }
+  if (!call.to) {
+    throw new Error("To address is required");
+  }
+  if (!call.from) {
+    throw new Error("From address is required");
   }
 
   if (call.nodeId) {

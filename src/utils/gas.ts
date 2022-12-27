@@ -5,6 +5,7 @@ import { hexlify } from "ethers/lib/utils";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
+import { parseCallID } from "../batchMultiSigCall/helpers";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
 import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 
@@ -264,4 +265,37 @@ export const getKIROPayment = async ({
     vault,
     amount: kiroCost.toString(),
   };
+};
+
+export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kiroPriceInETH: string }) => {
+  const FCTOverhead = 135500;
+  const callOverhead = 16370;
+
+  const defaultCallGas = 50000;
+
+  const FCTOverheadPerPayer = FCTOverhead / fct.mcall.length;
+
+  const limits = fct.typedData.message.limits as TypedDataLimits;
+  const maxGasPrice = limits.gas_price_limit;
+
+  return fct.mcall.reduce((acc, call) => {
+    const callId = parseCallID(call.callId);
+    const payerIndex = callId.payerIndex;
+    const payer = fct.mcall[payerIndex - 1].from;
+
+    const gasForCall = BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas);
+
+    const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
+
+    const normalisedKiroPriceInETH = BigNumber(kiroPriceInETH);
+
+    const kiroCost = BigNumber(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+
+    return {
+      ...acc,
+      [payer]: BigNumber(acc[payer] || 0)
+        .plus(kiroCost)
+        .toString(),
+    };
+  }, {});
 };
