@@ -39,9 +39,6 @@ async function main() {
     contractAddress: data[chainId].FCT_Controller,
   });
 
-  const feeData = await provider.getFeeData();
-  console.log(feeData);
-
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
     expiresAt: getDate(1000000),
@@ -135,23 +132,23 @@ async function main() {
     version,
   });
 
-  const gasEstimation = await utils.estimateFCTGasCost({
-    fct: signedFCT,
-    callData,
-    rpcUrl: data[chainId].rpcUrl,
-    batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
-  });
+  // const gasEstimation = await utils.estimateFCTGasCost({
+  //   fct: signedFCT,
+  //   callData,
+  //   rpcUrl: data[chainId].rpcUrl,
+  //   batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
+  // });
 
-  console.log("gasEstimation", gasEstimation);
+  // console.log("gasEstimation", gasEstimation);
 
-  const kiroPayment = await utils.getKIROPayment({
-    fct: signedFCT,
-    kiroPriceInETH: "38270821632831754769812",
-    gasPrice: 1580000096,
-    gas: 462109,
-  });
+  // const kiroPayment = await utils.getKIROPayment({
+  //   fct: signedFCT,
+  //   kiroPriceInETH: "38270821632831754769812",
+  //   gasPrice: 1580000096,
+  //   gas: 462109,
+  // });
 
-  console.log("kiroPayment", kiroPayment);
+  // console.log("kiroPayment", kiroPayment);
 
   // Import decoded calldata
   // const newBatchMultiSigCall = new BatchMultiSigCall({

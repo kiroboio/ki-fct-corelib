@@ -2,6 +2,7 @@ import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
+import { Graph } from "graphlib";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -267,7 +268,62 @@ export const getKIROPayment = async ({
   };
 };
 
+const printAllPaths = (g: Graph, start: string, end: string) => {
+  const isVisited = new Array(g.nodes().length);
+  for (let i = 0; i < isVisited.length; i++) {
+    isVisited[i] = false;
+    const pathList = [];
+
+    pathList.push(start);
+
+    printAllPathsUtil(g, start, end, isVisited, pathList);
+  }
+};
+
+const printAllPathsUtil = (g: Graph, start: string, end: string, isVisited: boolean[], localPathList: string[]) => {
+  if (start === end) {
+    console.log("localpathlist", localPathList);
+    return;
+  }
+
+  isVisited[start] = true;
+
+  const successors = g.successors(start);
+
+  if (successors === undefined) {
+    isVisited[start] = false;
+    return;
+  }
+
+  for (let i = 0; i < (successors as string[]).length; i++) {
+    if (!isVisited[successors[i]]) {
+      // store current node
+      // in path[]
+      localPathList.push(successors[i]);
+
+      printAllPathsUtil(g, successors[i], end, isVisited, localPathList);
+
+      // remove current node
+      // in path[]
+      localPathList.splice(localPathList.indexOf(successors[i]), 1);
+    }
+  }
+
+  isVisited[start] = false;
+};
+
 export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kiroPriceInETH: string }) => {
+  const g = new Graph({ directed: true });
+  for (const [index, call] of Object.entries(fct.mcall)) {
+    g.setNode(index.toString());
+  }
+
+  for (let i = 0; i < fct.mcall.length - 1; i++) {
+    g.setEdge(i.toString(), (i + 1).toString());
+  }
+
+  console.log(printAllPaths(g, "0", (fct.mcall.length - 1).toString()));
+
   const FCTOverhead = 135500;
   const callOverhead = 16370;
 
