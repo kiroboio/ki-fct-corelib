@@ -50,9 +50,8 @@ async function main() {
   });
 
   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapWithoutSlippageProtection({
-    chainId: "1",
+    chainId: "5",
     initParams: {
-      to: data[chainId].KIRO,
       methodParams: {
         amount: "1000",
         path: [data[chainId].KIRO, data[chainId].USDC],
@@ -123,15 +122,15 @@ async function main() {
     externalSigners: [],
   };
 
-  const version = "010101";
+  // const version = "010101";
 
-  const callData = batchMultiSigCall.getCalldataForActuator({
-    signedFCT,
-    activator: process.env.ACTIVATOR as string,
-    investor: ZERO_ADDRESS,
-    purgedFCT: "0x".padEnd(66, "0"),
-    version,
-  });
+  // const callData = batchMultiSigCall.getCalldataForActuator({
+  //   signedFCT,
+  //   activator: process.env.ACTIVATOR as string,
+  //   investor: ZERO_ADDRESS,
+  //   purgedFCT: "0x".padEnd(66, "0"),
+  //   version,
+  // });
 
   // const gasEstimation = await utils.estimateFCTGasCost({
   //   fct: signedFCT,
