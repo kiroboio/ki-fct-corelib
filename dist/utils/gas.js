@@ -240,13 +240,13 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
             return payer;
         })),
     ];
-    return allPayers.reduce((acc, payer) => {
+    return allPayers.map((payer) => {
         return {
-            ...acc,
-            [payer]: data.reduce((acc, path) => {
-                return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || 0) ? acc : path[payer] || 0;
-            }, 0),
+            payer,
+            amount: data.reduce((acc, path) => {
+                return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+            }, "0"),
         };
-    }, {});
+    });
 };
 exports.getMaxKIROCostPerPayer = getMaxKIROCostPerPayer;
