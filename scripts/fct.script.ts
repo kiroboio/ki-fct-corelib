@@ -97,9 +97,10 @@ async function main() {
       options: {
         callType: "LIBRARY",
         falseMeansFail: true,
+        jumpOnFail: "3",
       },
     },
-    { plugin: swap, from: vault, nodeId: "2" },
+    { plugin: swap, from: wallet, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
   ]);

@@ -2,12 +2,12 @@ import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
-import { Graph } from "graphlib";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { parseCallID } from "../batchMultiSigCall/helpers";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
+import { getAllFCTPaths } from "./FCT";
 import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 
 export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
@@ -268,90 +268,59 @@ export const getKIROPayment = async ({
   };
 };
 
-const printAllPaths = (g: Graph, start: string, end: string) => {
-  const isVisited = new Array(g.nodes().length);
-  for (let i = 0; i < isVisited.length; i++) {
-    isVisited[i] = false;
-    const pathList = [];
-
-    pathList.push(start);
-
-    printAllPathsUtil(g, start, end, isVisited, pathList);
-  }
-};
-
-const printAllPathsUtil = (g: Graph, start: string, end: string, isVisited: boolean[], localPathList: string[]) => {
-  if (start === end) {
-    console.log("localpathlist", localPathList);
-    return;
-  }
-
-  isVisited[start] = true;
-
-  const successors = g.successors(start);
-
-  if (successors === undefined) {
-    isVisited[start] = false;
-    return;
-  }
-
-  for (let i = 0; i < (successors as string[]).length; i++) {
-    if (!isVisited[successors[i]]) {
-      // store current node
-      // in path[]
-      localPathList.push(successors[i]);
-
-      printAllPathsUtil(g, successors[i], end, isVisited, localPathList);
-
-      // remove current node
-      // in path[]
-      localPathList.splice(localPathList.indexOf(successors[i]), 1);
-    }
-  }
-
-  isVisited[start] = false;
-};
-
 export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kiroPriceInETH: string }) => {
-  const g = new Graph({ directed: true });
-  for (const [index, call] of Object.entries(fct.mcall)) {
-    g.setNode(index.toString());
-  }
-
-  for (let i = 0; i < fct.mcall.length - 1; i++) {
-    g.setEdge(i.toString(), (i + 1).toString());
-  }
-
-  console.log(printAllPaths(g, "0", (fct.mcall.length - 1).toString()));
-
+  const allPaths = getAllFCTPaths(fct);
   const FCTOverhead = 135500;
   const callOverhead = 16370;
 
   const defaultCallGas = 50000;
 
-  const FCTOverheadPerPayer = FCTOverhead / fct.mcall.length;
-
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = limits.gas_price_limit;
 
-  return fct.mcall.reduce((acc, call) => {
-    const callId = parseCallID(call.callId);
-    const payerIndex = callId.payerIndex;
-    const payer = fct.mcall[payerIndex - 1].from;
+  const data = allPaths.map((path) => {
+    const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
 
-    const gasForCall = BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas);
+    return path.reduce((acc, callIndex) => {
+      const call = fct.mcall[callIndex];
+      const callId = parseCallID(call.callId);
+      const payerIndex = callId.payerIndex;
+      const payer = fct.mcall[payerIndex - 1].from;
 
-    const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
+      const gasForCall = BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas);
 
-    const normalisedKiroPriceInETH = BigNumber(kiroPriceInETH);
+      const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
 
-    const kiroCost = BigNumber(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+      const normalisedKiroPriceInETH = BigNumber(kiroPriceInETH);
 
+      const kiroCost = BigNumber(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+
+      return {
+        ...acc,
+        [payer]: BigNumber(acc[payer] || 0)
+          .plus(kiroCost)
+          .toString(),
+      };
+    }, {});
+  });
+
+  const allPayers = [
+    ...new Set(
+      fct.mcall.map((call) => {
+        const callId = parseCallID(call.callId);
+        const payerIndex = callId.payerIndex;
+        const payer = fct.mcall[payerIndex - 1].from;
+        return payer;
+      })
+    ),
+  ];
+
+  return allPayers.reduce((acc, payer) => {
     return {
       ...acc,
-      [payer]: BigNumber(acc[payer] || 0)
-        .plus(kiroCost)
-        .toString(),
+      [payer]: data.reduce((acc: number, path) => {
+        return BigNumber(acc).isGreaterThan(path[payer] || 0) ? acc : path[payer] || 0;
+      }, 0),
     };
   }, {});
 };
