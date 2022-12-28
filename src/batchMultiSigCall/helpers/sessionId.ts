@@ -194,7 +194,8 @@ export const parseSessionID = (sessionId: string, builder: string): IFCTOptions 
 };
 
 export const parseCallID = (
-  callId: string
+  callId: string,
+  jumpsAsNumbers = false
 ): {
   options: {
     gasLimit: string;
@@ -228,9 +229,13 @@ export const parseCallID = (
     flow: getFlow(),
   };
 
-  if (jumpOnFail) options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
-  if (jumpOnSuccess) options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
-
+  if (jumpsAsNumbers) {
+    options["jumpOnFail"] = jumpOnFail;
+    options["jumpOnSuccess"] = jumpOnSuccess;
+  } else {
+    if (jumpOnFail) options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
+    if (jumpOnSuccess) options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
+  }
   return {
     options,
     viewOnly: flags === 1,

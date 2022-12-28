@@ -36,6 +36,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@types/chai": "^4.3.4",
+    "@types/graphlib": "^2.1.8",
     "@types/mocha": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
@@ -59,6 +60,7 @@
     "@kirobo/ki-eth-fct-provider-ts": "https://github.com/kiroboio/ki-eth-fct-provider-ts.git#develop",
     "@metamask/eth-sig-util": "^5.0.2",
     "bignumber.js": "^9.1.0",
-    "ethers": "^5.7.2"
+    "ethers": "^5.7.2",
+    "graphlib": "^2.1.8"
   }
 }

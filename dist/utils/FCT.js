@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVariablesAsBytes32 = exports.validateFCT = exports.getFCTMessageHash = exports.recoverAddressFromEIP712 = void 0;
+exports.getAllFCTPaths = exports.getVariablesAsBytes32 = exports.validateFCT = exports.getFCTMessageHash = exports.recoverAddressFromEIP712 = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
+const graphlib_1 = require("graphlib");
+const helpers_1 = require("../batchMultiSigCall/helpers");
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {
         const signatureString = ethers_1.utils.joinSignature(signature);
@@ -88,3 +90,54 @@ const getVariablesAsBytes32 = (variables) => {
     });
 };
 exports.getVariablesAsBytes32 = getVariablesAsBytes32;
+const getAllFCTPaths = (fct) => {
+    const g = new graphlib_1.Graph({ directed: true });
+    fct.mcall.forEach((_, index) => {
+        g.setNode(index.toString());
+    });
+    for (let i = 0; i < fct.mcall.length - 1; i++) {
+        const callID = (0, helpers_1.parseCallID)(fct.mcall[i].callId, true);
+        const jumpOnSuccess = callID.options.jumpOnSuccess;
+        const jumpOnFail = callID.options.jumpOnFail;
+        if (jumpOnSuccess === jumpOnFail) {
+            g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
+        }
+        else {
+            g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
+            g.setEdge(i.toString(), (i + 1 + Number(jumpOnFail)).toString());
+        }
+    }
+    const allPaths = [];
+    const isVisited = {};
+    const pathList = [];
+    const start = "0";
+    const end = (fct.mcall.length - 1).toString();
+    pathList.push(start);
+    const printAllPathsUtil = (g, start, end, isVisited, localPathList) => {
+        if (start === end) {
+            const path = localPathList.slice();
+            allPaths.push(path);
+            return;
+        }
+        isVisited[start] = true;
+        let successors = g.successors(start);
+        if (successors === undefined) {
+            successors = [];
+        }
+        for (const id of successors) {
+            if (!isVisited[id]) {
+                // store current node
+                // in path[]
+                localPathList.push(id);
+                printAllPathsUtil(g, id, end, isVisited, localPathList);
+                // remove current node
+                // in path[]
+                localPathList.splice(localPathList.indexOf(id), 1);
+            }
+        }
+        isVisited[start] = false;
+    };
+    printAllPathsUtil(g, start, end, isVisited, pathList);
+    return allPaths;
+};
+exports.getAllFCTPaths = getAllFCTPaths;

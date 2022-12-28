@@ -4,7 +4,7 @@ export declare const manageFlow: (call: IMSCallInput) => string;
 export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, index: number) => string;
 export declare const getSessionId: (salt: string, options: IFCTOptions) => string;
 export declare const parseSessionID: (sessionId: string, builder: string) => IFCTOptions;
-export declare const parseCallID: (callId: string) => {
+export declare const parseCallID: (callId: string, jumpsAsNumbers?: boolean) => {
     options: {
         gasLimit: string;
         flow: Flow;

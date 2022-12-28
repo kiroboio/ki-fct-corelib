@@ -177,7 +177,7 @@ const parseSessionID = (sessionId, builder) => {
     };
 };
 exports.parseSessionID = parseSessionID;
-const parseCallID = (callId) => {
+const parseCallID = (callId, jumpsAsNumbers = false) => {
     const permissions = callId.slice(36, 38);
     const flowNumber = parseInt(callId.slice(38, 40), 16);
     const jumpOnFail = parseInt(callId.slice(40, 44), 16);
@@ -196,10 +196,16 @@ const parseCallID = (callId) => {
         gasLimit,
         flow: getFlow(),
     };
-    if (jumpOnFail)
-        options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
-    if (jumpOnSuccess)
-        options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
+    if (jumpsAsNumbers) {
+        options["jumpOnFail"] = jumpOnFail;
+        options["jumpOnSuccess"] = jumpOnSuccess;
+    }
+    else {
+        if (jumpOnFail)
+            options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
+        if (jumpOnSuccess)
+            options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
+    }
     return {
         options,
         viewOnly: flags === 1,

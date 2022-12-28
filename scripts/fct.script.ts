@@ -39,9 +39,6 @@ async function main() {
     contractAddress: data[chainId].FCT_Controller,
   });
 
-  const feeData = await provider.getFeeData();
-  console.log(feeData);
-
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
     expiresAt: getDate(1000000),
@@ -59,7 +56,7 @@ async function main() {
       methodParams: {
         amount: "1000",
         path: [data[chainId].KIRO, data[chainId].USDC],
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> Tokens")),
       },
     },
   });
@@ -100,9 +97,10 @@ async function main() {
       options: {
         callType: "LIBRARY",
         falseMeansFail: true,
+        jumpOnFail: "3",
       },
     },
-    { plugin: swap, from: vault, nodeId: "2" },
+    { plugin: swap, from: wallet, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
   ]);
@@ -135,23 +133,23 @@ async function main() {
     version,
   });
 
-  const gasEstimation = await utils.estimateFCTGasCost({
-    fct: signedFCT,
-    callData,
-    rpcUrl: data[chainId].rpcUrl,
-    batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
-  });
+  // const gasEstimation = await utils.estimateFCTGasCost({
+  //   fct: signedFCT,
+  //   callData,
+  //   rpcUrl: data[chainId].rpcUrl,
+  //   batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
+  // });
 
-  console.log("gasEstimation", gasEstimation);
+  // console.log("gasEstimation", gasEstimation);
 
-  const kiroPayment = await utils.getKIROPayment({
-    fct: signedFCT,
-    kiroPriceInETH: "38270821632831754769812",
-    gasPrice: 1580000096,
-    gas: 462109,
-  });
+  // const kiroPayment = await utils.getKIROPayment({
+  //   fct: signedFCT,
+  //   kiroPriceInETH: "38270821632831754769812",
+  //   gasPrice: 1580000096,
+  //   gas: 462109,
+  // });
 
-  console.log("kiroPayment", kiroPayment);
+  // console.log("kiroPayment", kiroPayment);
 
   // Import decoded calldata
   // const newBatchMultiSigCall = new BatchMultiSigCall({
@@ -160,6 +158,9 @@ async function main() {
   // });
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
+
+  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  console.log("requiredApprovals", requiredApprovals);
 
   const fees = utils.getMaxKIROCostPerPayer({
     fct: signedFCT,

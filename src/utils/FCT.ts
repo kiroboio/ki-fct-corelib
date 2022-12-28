@@ -1,7 +1,9 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { ethers, utils } from "ethers";
+import { Graph } from "graphlib";
 
+import { parseCallID } from "../batchMultiSigCall/helpers";
 import {
   BatchMultiSigCallTypedData,
   IBatchMultiSigCallFCT,
@@ -9,6 +11,7 @@ import {
   TypedDataMeta,
   TypedDataTypes,
 } from "../batchMultiSigCall/types";
+import { IFCT } from "./types";
 
 export const recoverAddressFromEIP712 = (
   typedData: BatchMultiSigCallTypedData,
@@ -107,4 +110,71 @@ export const getVariablesAsBytes32 = (variables: string[]) => {
 
     return `0x${Number(v).toString(16).padStart(64, "0")}`;
   });
+};
+
+export const getAllFCTPaths = (fct: IFCT) => {
+  const g = new Graph({ directed: true });
+
+  fct.mcall.forEach((_, index) => {
+    g.setNode(index.toString());
+  });
+
+  for (let i = 0; i < fct.mcall.length - 1; i++) {
+    const callID = parseCallID(fct.mcall[i].callId, true);
+    const jumpOnSuccess = callID.options.jumpOnSuccess;
+    const jumpOnFail = callID.options.jumpOnFail;
+
+    if (jumpOnSuccess === jumpOnFail) {
+      g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
+    } else {
+      g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
+      g.setEdge(i.toString(), (i + 1 + Number(jumpOnFail)).toString());
+    }
+  }
+
+  const allPaths: string[][] = [];
+
+  const isVisited = {};
+  const pathList: string[] = [];
+  const start = "0";
+  const end = (fct.mcall.length - 1).toString();
+
+  pathList.push(start);
+
+  const printAllPathsUtil = (g: Graph, start: string, end: string, isVisited: object, localPathList: string[]) => {
+    if (start === end) {
+      const path = localPathList.slice();
+
+      allPaths.push(path);
+      return;
+    }
+
+    isVisited[start] = true;
+
+    let successors = g.successors(start);
+
+    if (successors === undefined) {
+      successors = [];
+    }
+
+    for (const id of successors as string[]) {
+      if (!isVisited[id]) {
+        // store current node
+        // in path[]
+        localPathList.push(id);
+
+        printAllPathsUtil(g, id, end, isVisited, localPathList);
+
+        // remove current node
+        // in path[]
+        localPathList.splice(localPathList.indexOf(id), 1);
+      }
+    }
+
+    isVisited[start] = false;
+  };
+
+  printAllPathsUtil(g, start, end, isVisited, pathList);
+
+  return allPaths;
 };
