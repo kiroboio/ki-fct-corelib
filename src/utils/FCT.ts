@@ -115,8 +115,6 @@ export const getVariablesAsBytes32 = (variables: string[]) => {
 export const getAllFCTPaths = (fct: IFCT) => {
   const g = new Graph({ directed: true });
 
-  console.log(fct.mcall);
-
   fct.mcall.forEach((_, index) => {
     g.setNode(index.toString());
   });

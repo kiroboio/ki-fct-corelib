@@ -56,7 +56,7 @@ async function main() {
       methodParams: {
         amount: "1000",
         path: [data[chainId].KIRO, data[chainId].USDC],
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> Tokens")),
       },
     },
   });
@@ -158,6 +158,9 @@ async function main() {
   // });
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
+
+  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  console.log("requiredApprovals", requiredApprovals);
 
   const fees = utils.getMaxKIROCostPerPayer({
     fct: signedFCT,

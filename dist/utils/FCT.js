@@ -92,7 +92,6 @@ const getVariablesAsBytes32 = (variables) => {
 exports.getVariablesAsBytes32 = getVariablesAsBytes32;
 const getAllFCTPaths = (fct) => {
     const g = new graphlib_1.Graph({ directed: true });
-    console.log(fct.mcall);
     fct.mcall.forEach((_, index) => {
         g.setNode(index.toString());
     });
