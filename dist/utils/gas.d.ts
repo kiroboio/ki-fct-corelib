@@ -56,4 +56,7 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
 export declare const getMaxKIROCostPerPayer: ({ fct, kiroPriceInETH }: {
     fct: IFCT;
     kiroPriceInETH: string;
-}) => {};
+}) => {
+    payer: string;
+    amount: string;
+}[];
