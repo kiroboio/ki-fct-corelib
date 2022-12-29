@@ -141,14 +141,14 @@ async function main() {
 
   // console.log("gasEstimation", gasEstimation);
 
-  // const kiroPayment = await utils.getKIROPayment({
-  //   fct: signedFCT,
-  //   kiroPriceInETH: "38270821632831754769812",
-  //   gasPrice: 1580000096,
-  //   gas: 462109,
-  // });
+  const kiroPayment = await utils.getKIROPayment({
+    fct: signedFCT,
+    kiroPriceInETH: "38270821632831754769812",
+    gasPrice: 1580000096,
+    gas: 462109,
+  });
 
-  // console.log("kiroPayment", kiroPayment);
+  console.log("kiroPayment", kiroPayment);
 
   // Import decoded calldata
   // const newBatchMultiSigCall = new BatchMultiSigCall({
@@ -157,9 +157,6 @@ async function main() {
   // });
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
-
-  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log("requiredApprovals", requiredApprovals);
 
   const fees = utils.getMaxKIROCostPerPayer({
     fct: signedFCT,
