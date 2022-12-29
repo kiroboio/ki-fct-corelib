@@ -51,7 +51,8 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
     gas: number;
 }) => Promise<{
     vault: any;
-    amount: string;
+    amountInKIRO: string;
+    amountInETH: string;
 }>;
 export declare const getMaxKIROCostPerPayer: ({ fct, kiroPriceInETH }: {
     fct: IFCT;

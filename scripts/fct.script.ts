@@ -50,9 +50,8 @@ async function main() {
   });
 
   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapWithoutSlippageProtection({
-    chainId: "1",
+    chainId: "5",
     initParams: {
-      to: data[chainId].KIRO,
       methodParams: {
         amount: "1000",
         path: [data[chainId].KIRO, data[chainId].USDC],
@@ -123,15 +122,15 @@ async function main() {
     externalSigners: [],
   };
 
-  const version = "010101";
+  // const version = "010101";
 
-  const callData = batchMultiSigCall.getCalldataForActuator({
-    signedFCT,
-    activator: process.env.ACTIVATOR as string,
-    investor: ZERO_ADDRESS,
-    purgedFCT: "0x".padEnd(66, "0"),
-    version,
-  });
+  // const callData = batchMultiSigCall.getCalldataForActuator({
+  //   signedFCT,
+  //   activator: process.env.ACTIVATOR as string,
+  //   investor: ZERO_ADDRESS,
+  //   purgedFCT: "0x".padEnd(66, "0"),
+  //   version,
+  // });
 
   // const gasEstimation = await utils.estimateFCTGasCost({
   //   fct: signedFCT,
@@ -142,14 +141,14 @@ async function main() {
 
   // console.log("gasEstimation", gasEstimation);
 
-  // const kiroPayment = await utils.getKIROPayment({
-  //   fct: signedFCT,
-  //   kiroPriceInETH: "38270821632831754769812",
-  //   gasPrice: 1580000096,
-  //   gas: 462109,
-  // });
+  const kiroPayment = await utils.getKIROPayment({
+    fct: signedFCT,
+    kiroPriceInETH: "38270821632831754769812",
+    gasPrice: 1580000096,
+    gas: 462109,
+  });
 
-  // console.log("kiroPayment", kiroPayment);
+  console.log("kiroPayment", kiroPayment);
 
   // Import decoded calldata
   // const newBatchMultiSigCall = new BatchMultiSigCall({
@@ -158,9 +157,6 @@ async function main() {
   // });
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
-
-  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log("requiredApprovals", requiredApprovals);
 
   const fees = utils.getMaxKIROCostPerPayer({
     fct: signedFCT,

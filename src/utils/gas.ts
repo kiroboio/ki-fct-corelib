@@ -261,10 +261,12 @@ export const getKIROPayment = async ({
 
   const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
   const kiroCost = Number(totalCost * normalisedKiroPriceInETH) / 1e36;
+  const amountInETH = Number(totalCost) / 1e18;
 
   return {
     vault,
-    amount: kiroCost.toString(),
+    amountInKIRO: kiroCost.toString(),
+    amountInETH: amountInETH.toString(),
   };
 };
 
