@@ -270,7 +270,7 @@ export const getKIROPayment = ({
   };
 };
 
-export const getMaxKIROCostPerPayer = ({
+export const getPaymentPerPayer = ({
   fct,
   gasPrice,
   kiroPriceInETH,
