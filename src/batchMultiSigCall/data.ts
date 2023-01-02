@@ -1,6 +1,6 @@
 const FCTControllerAddresses = {
-  1: "0x5c44Ce0F64018Bc839a5cA7131502437e089A55d",
-  5: "0x5c44Ce0F64018Bc839a5cA7131502437e089A55d",
+  1: "0xa36457BCa36Ac0eED36f1b25bd9144B029600982",
+  5: "0xa36457BCa36Ac0eED36f1b25bd9144B029600982",
 };
 
 export default FCTControllerAddresses;

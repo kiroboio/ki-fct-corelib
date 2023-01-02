@@ -1,25 +1,28 @@
 [
   {
-    "inputs": [
-      { "internalType": "address", "name": "kiro", "type": "address" },
-      { "internalType": "address", "name": "fctController", "type": "address" },
-      { "internalType": "address", "name": "pairAddress", "type": "address" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "by", "type": "address" },
       { "indexed": true, "internalType": "address", "name": "activator", "type": "address" },
       { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" },
       { "indexed": false, "internalType": "address", "name": "builder", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "usersBase", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "usersFees", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "activatorPayment", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "builderPayment", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "calcGas", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint256", "name": "kiroboPayment", "type": "uint256" },
+          { "internalType": "uint256", "name": "builderPayment", "type": "uint256" },
+          { "internalType": "uint256", "name": "activatorPayment", "type": "uint256" },
+          { "internalType": "uint256", "name": "base", "type": "uint256" },
+          { "internalType": "uint256", "name": "fees", "type": "uint256" },
+          { "internalType": "uint256", "name": "commonGas", "type": "uint256" },
+          { "internalType": "uint256", "name": "userGas", "type": "uint256" },
+          { "internalType": "uint256", "name": "missingKiro", "type": "uint256" },
+          { "internalType": "uint256", "name": "availableEth", "type": "uint256" }
+        ],
+        "indexed": false,
+        "internalType": "struct Total",
+        "name": "total",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "gasPrice", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
@@ -39,10 +42,11 @@
           { "internalType": "bool", "name": "activateForFreeBatch", "type": "bool" }
         ],
         "indexed": false,
-        "internalType": "struct FCT_Actuator.Approvals",
+        "internalType": "struct IFCT_ActuatorStorage.Approvals",
         "name": "approvals",
         "type": "tuple"
-      }
+      },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_ActivationApproval",
     "type": "event"
@@ -65,11 +69,32 @@
       { "indexed": true, "internalType": "address", "name": "payer", "type": "address" },
       { "indexed": true, "internalType": "address", "name": "builder", "type": "address" },
       { "indexed": false, "internalType": "uint256", "name": "call", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "fees", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "totalKiroFees", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "kiroPayed", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "ethPayed", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "builderPayment", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "activatorPayment", "type": "uint256" }
     ],
     "name": "FCTE_CallPayment",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "uint32", "name": "kiroPriceBPS", "type": "uint32" },
+          { "internalType": "bool", "name": "paused", "type": "bool" },
+          { "internalType": "bool", "name": "freezed", "type": "bool" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.EthPenalty",
+        "name": "ethPenalty",
+        "type": "tuple"
+      },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "name": "FCTE_EthStatusChanged",
     "type": "event"
   },
   {
@@ -101,8 +126,26 @@
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "from", "type": "address" },
       { "indexed": true, "internalType": "address", "name": "to", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "balance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "balance",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amounts",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_FundsAdded",
@@ -112,9 +155,36 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "stakingBalance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "balance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "staking",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "balance",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amounts",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_FundsMovedFromDeposit",
@@ -124,9 +194,36 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "balance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "stakingBalance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "balance",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "staking",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amounts",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_FundsMovedToDeposit",
@@ -136,11 +233,39 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "balance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "balance",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amounts",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_FundsRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "oldAddress", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "newAddress", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "name": "FCTE_KiroFundingUpdated",
     "type": "event"
   },
   {
@@ -224,8 +349,26 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "stakingBalance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "staking",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amount",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_StakingAdded",
@@ -235,8 +378,26 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "stakingBalance", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "staking",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+          { "internalType": "uint96", "name": "eth", "type": "uint96" }
+        ],
+        "indexed": false,
+        "internalType": "struct IFCT_ActuatorStorage.Balance",
+        "name": "amount",
+        "type": "tuple"
+      },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
     ],
     "name": "FCTE_StakingRemoved",
@@ -252,85 +413,6 @@
     ],
     "name": "FCTE_TokenomicsUpdated",
     "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "indexed": true, "internalType": "bytes32", "name": "previousAdminRole", "type": "bytes32" },
-      { "indexed": true, "internalType": "bytes32", "name": "newAdminRole", "type": "bytes32" }
-    ],
-    "name": "RoleAdminChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }
-    ],
-    "name": "RoleGranted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }
-    ],
-    "name": "RoleRevoked",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "DAO_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DAO_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MANAGER_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MANAGER_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PROTECTOR_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PROTECTOR_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [
@@ -358,7 +440,7 @@
       { "internalType": "address", "name": "activator", "type": "address" }
     ],
     "name": "activateForFree",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [{ "internalType": "uint256", "name": "activatorPaymentOrFees", "type": "uint256" }],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -373,60 +455,40 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [{ "internalType": "uint96", "name": "kiro", "type": "uint96" }],
     "name": "addFunds",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [
       { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      { "internalType": "uint96", "name": "amount", "type": "uint96" }
     ],
     "name": "addFundsTo",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [{ "internalType": "uint96", "name": "kiro", "type": "uint96" }],
     "name": "deposit",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "amountIn", "type": "uint256" }],
+    "name": "getAmountOfEthForGivenKiro",
+    "outputs": [{ "internalType": "uint256", "name": "amountOut", "type": "uint256" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [{ "internalType": "uint256", "name": "amountIn", "type": "uint256" }],
     "name": "getAmountOfKiroForGivenEth",
     "outputs": [{ "internalType": "uint256", "name": "amountOut", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }],
-    "name": "getRoleAdmin",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "hasRole",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -444,7 +506,7 @@
           { "internalType": "bool", "name": "activateForFree", "type": "bool" },
           { "internalType": "bool", "name": "activateForFreeBatch", "type": "bool" }
         ],
-        "internalType": "struct FCT_Actuator.Approvals",
+        "internalType": "struct IFCT_ActuatorStorage.Approvals",
         "name": "",
         "type": "tuple"
       }
@@ -453,77 +515,47 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" }
+    ],
     "name": "moveFundsFromDeposit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" }
+    ],
     "name": "moveFundsToDeposit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" }
+    ],
     "name": "removeFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "address", "name": "", "type": "address" }
-    ],
-    "name": "s_activation_approvals",
-    "outputs": [
-      { "internalType": "bool", "name": "activate", "type": "bool" },
-      { "internalType": "bool", "name": "activateBatch", "type": "bool" },
-      { "internalType": "bool", "name": "activateForFree", "type": "bool" },
-      { "internalType": "bool", "name": "activateForFreeBatch", "type": "bool" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "name": "s_balances",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "s_blockTimestampLast",
-    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "inputs": [{ "internalType": "bytes32", "name": "nameHash", "type": "bytes32" }],
     "name": "s_builders",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
@@ -531,8 +563,12 @@
   },
   {
     "inputs": [],
-    "name": "s_fctController",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "s_ethPenalty",
+    "outputs": [
+      { "internalType": "uint32", "name": "", "type": "uint32" },
+      { "internalType": "bool", "name": "", "type": "bool" },
+      { "internalType": "bool", "name": "", "type": "bool" }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -545,7 +581,7 @@
   },
   {
     "inputs": [],
-    "name": "s_kiro",
+    "name": "s_kiroFunding",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
@@ -554,13 +590,6 @@
     "inputs": [],
     "name": "s_kirobo",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_lastUpdateDateOfPrice",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -586,61 +615,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "s_price0Average",
-    "outputs": [{ "internalType": "uint224", "name": "_x", "type": "uint224" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_price0CumulativeLast",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_price1Average",
-    "outputs": [{ "internalType": "uint224", "name": "_x", "type": "uint224" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_price1CumulativeLast",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "name": "s_staked",
     "outputs": [
-      { "internalType": "uint96", "name": "balance", "type": "uint96" },
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" },
       { "internalType": "uint64", "name": "blockNumber", "type": "uint64" }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_timeBetweenKiroPriceUpdate",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_token0",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "s_token1",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -668,7 +649,7 @@
           { "internalType": "bool", "name": "activateForFree", "type": "bool" },
           { "internalType": "bool", "name": "activateForFreeBatch", "type": "bool" }
         ],
-        "internalType": "struct FCT_Actuator.Approvals",
+        "internalType": "struct IFCT_ActuatorStorage.Approvals",
         "name": "approvals",
         "type": "tuple"
       }
@@ -689,8 +670,32 @@
     "type": "function"
   },
   {
+    "inputs": [{ "internalType": "uint32", "name": "kiroPriceBPS", "type": "uint32" }],
+    "name": "setEthMatchup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bool", "name": "pause", "type": "bool" },
+      { "internalType": "bool", "name": "freeze", "type": "bool" }
+    ],
+    "name": "setEthState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "uint256", "name": "feesLimitBPS", "type": "uint256" }],
     "name": "setForFreeFeesLimitBPS",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "kiroFunding", "type": "address" }],
+    "name": "setKiroFunding",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -734,14 +739,6 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }],
-    "name": "supportsInterface",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  { "inputs": [], "name": "updateKiroPrice", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-  {
     "inputs": [{ "internalType": "uint256", "name": "time", "type": "uint256" }],
     "name": "updateTimeBetweenKiroPriceUpdate",
     "outputs": [],
@@ -749,10 +746,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "uint96", "name": "kiro", "type": "uint96" },
+      { "internalType": "uint96", "name": "eth", "type": "uint96" }
+    ],
     "name": "withdraw",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   }
 ]
