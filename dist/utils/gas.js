@@ -184,8 +184,7 @@ exports.estimateFCTGasCost = estimateFCTGasCost;
 // 38270821632831754769812 - kiro price
 // 1275004198 - max fee
 // 462109 - gas
-// 34.910655705373187788
-const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
+const getKIROPayment = ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
     const gasInt = BigInt(gas);
     const gasPriceFormatted = BigInt(gasPrice);
@@ -208,7 +207,8 @@ const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     };
 };
 exports.getKIROPayment = getKIROPayment;
-const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
+const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH, penalty, }) => {
+    penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     const FCTOverhead = 135500;
     const callOverhead = 16370;
@@ -243,11 +243,13 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
         })),
     ];
     return allPayers.map((payer) => {
+        const amount = data.reduce((acc, path) => {
+            return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+        }, "0");
         return {
             payer,
-            amount: data.reduce((acc, path) => {
-                return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
-            }, "0"),
+            amount,
+            amountInETH: (0, bignumber_js_1.default)(amount).div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty).toString(),
         };
     });
 };
