@@ -9,6 +9,7 @@ const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const ganache_1 = __importDefault(require("ganache"));
+const util_1 = __importDefault(require("util"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const helpers_1 = require("../batchMultiSigCall/helpers");
@@ -16,6 +17,7 @@ const FCT_1 = require("./FCT");
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+    // const signer1 = new ethers.Wallet(actuatorPrivateKey, provider);
     const gasPrice = txVal.eip1559
         ? (await (0, exports.getGasPrices)({
             rpcUrl,
@@ -25,6 +27,9 @@ const transactionValidator = async (txVal, pureGas = false) => {
         const ganacheProvider = new ethers_1.ethers.providers.Web3Provider(ganache_1.default.provider({
             fork: {
                 url: rpcUrl,
+            },
+            logging: {
+                quiet: true,
             },
         }));
         const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, ganacheProvider);
@@ -47,7 +52,13 @@ const transactionValidator = async (txVal, pureGas = false) => {
                 ...gasPrice,
             });
             const receipt = await tx.wait();
-            console.log(receipt);
+            // const FCT_BatchMultiSig = new ethers.utils.Interface(BatchMultiSigCallABI);
+            // // From logs get FCTE_CallPayment event
+            // const FCTE_CallPayment = receipt.logs.find(
+            //   (log) => log.topics[0] === FCT_BatchMultiSig.events.FCTE_CallPayment.topic
+            // );
+            console.log(util_1.default.inspect(receipt.events, false, null, true /* enable colors */));
+            console.log(util_1.default.inspect(receipt.logs, false, null, true /* enable colors */));
         }
         // Add 20% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
@@ -200,7 +211,7 @@ exports.estimateFCTGasCost = estimateFCTGasCost;
 // 1275004198 - max fee
 // 462109 - gas
 // 34.910655705373187788
-const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
+const getKIROPayment = ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
     const gasInt = BigInt(gas);
     const gasPriceFormatted = BigInt(gasPrice);
