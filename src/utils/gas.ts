@@ -3,6 +3,7 @@ import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
 import Ganache from "ganache";
+import util from "util";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -15,6 +16,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  // const signer1 = new ethers.Wallet(actuatorPrivateKey, provider);
 
   const gasPrice = txVal.eip1559
     ? (
@@ -29,6 +31,9 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
       Ganache.provider({
         fork: {
           url: rpcUrl,
+        },
+        logging: {
+          quiet: true,
         },
       })
     );
@@ -58,7 +63,15 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
 
       const receipt = await tx.wait();
 
-      console.log(receipt);
+      // const FCT_BatchMultiSig = new ethers.utils.Interface(BatchMultiSigCallABI);
+
+      // // From logs get FCTE_CallPayment event
+      // const FCTE_CallPayment = receipt.logs.find(
+      //   (log) => log.topics[0] === FCT_BatchMultiSig.events.FCTE_CallPayment.topic
+      // );
+
+      console.log(util.inspect(receipt.events, false, null, true /* enable colors */));
+      console.log(util.inspect(receipt.logs, false, null, true /* enable colors */));
     }
 
     // Add 20% to gasUsed value
@@ -252,7 +265,7 @@ export const estimateFCTGasCost = async ({
 // 462109 - gas
 
 // 34.910655705373187788
-export const getKIROPayment = async ({
+export const getKIROPayment = ({
   fct,
   kiroPriceInETH,
   gasPrice,

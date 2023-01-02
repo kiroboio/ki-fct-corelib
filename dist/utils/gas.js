@@ -8,6 +8,7 @@ const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
+const ganache_1 = __importDefault(require("ganache"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const helpers_1 = require("../batchMultiSigCall/helpers");
@@ -15,24 +16,38 @@ const FCT_1 = require("./FCT");
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-    const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
-    const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
     const gasPrice = txVal.eip1559
         ? (await (0, exports.getGasPrices)({
             rpcUrl,
         }))[txVal.gasPriority || "average"]
         : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
     try {
+        const ganacheProvider = new ethers_1.ethers.providers.Web3Provider(ganache_1.default.provider({
+            fork: {
+                url: rpcUrl,
+            },
+        }));
+        const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, ganacheProvider);
+        const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
         let gas;
         if (activateForFree) {
             gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
                 ...gasPrice,
             });
+            const tx = await actuatorContract.activate(callData, signer.address, {
+                ...gasPrice,
+            });
+            const receipt = await tx.wait();
         }
         else {
             gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
                 ...gasPrice,
             });
+            const tx = await actuatorContract.activate(callData, signer.address, {
+                ...gasPrice,
+            });
+            const receipt = await tx.wait();
+            console.log(receipt);
         }
         // Add 20% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);

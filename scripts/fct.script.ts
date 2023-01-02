@@ -1,10 +1,8 @@
-import { ERC20, FCT_UNISWAP, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
-import util from "util";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
@@ -32,7 +30,6 @@ const wallet = process.env.WALLET as string;
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
-  console.log("rpcUrl", data[chainId].rpcUrl);
   const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
 
   const batchMultiSigCall = new BatchMultiSigCall({
@@ -43,21 +40,11 @@ async function main() {
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
     expiresAt: getDate(1000000),
+    validFrom: "0",
     recurrency: {
       accumetable: true,
       maxRepeats: "1000",
       chillTime: "1",
-    },
-  });
-
-  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapWithoutSlippageProtection({
-    chainId: "5",
-    initParams: {
-      methodParams: {
-        amount: "1000",
-        path: [data[chainId].KIRO, data[chainId].USDC],
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> Tokens")),
-      },
     },
   });
 
@@ -87,31 +74,10 @@ async function main() {
     },
   });
 
-  console.log("Adding");
+  await batchMultiSigCall.createMultiple([{ plugin: transfer, from: vault, nodeId: "3" }]);
 
-  await batchMultiSigCall.createMultiple([
-    {
-      from: vault,
-      nodeId: "1",
-      value: "100",
-      params: [],
-      to: data[chainId].KIRO,
-      options: {
-        callType: "LIBRARY",
-        falseMeansFail: true,
-        jumpOnFail: "3",
-      },
-    },
-    { plugin: swap, from: wallet, nodeId: "2" },
-    { plugin: transfer, from: vault, nodeId: "3" },
-    { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
-  ]);
-
-  console.log("Added");
-  console.log("Export");
   const FCT = await batchMultiSigCall.exportFCT();
-  console.log("Exported");
-  console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -128,27 +94,25 @@ async function main() {
     externalSigners: [],
   };
 
-  // const version = "010101";
+  const version = "010101";
 
-  // const callData = batchMultiSigCall.getCalldataForActuator({
-  //   signedFCT,
-  //   activator: process.env.ACTIVATOR as string,
-  //   investor: ZERO_ADDRESS,
-  //   purgedFCT: "0x".padEnd(66, "0"),
-  //   version,
-  // });
+  const callData = batchMultiSigCall.getCalldataForActuator({
+    signedFCT,
+    activator: process.env.ACTIVATOR as string,
+    investor: ZERO_ADDRESS,
+    purgedFCT: "0x".padEnd(66, "0"),
+    version,
+  });
 
-  // console.log(callData);
-
-  // const txValidator = await utils.transactionValidator({
-  //   rpcUrl: data[chainId].rpcUrl,
-  //   activateForFree: false,
-  //   callData,
-  //   actuatorContractAddress: data[chainId].Actuator,
-  //   actuatorPrivateKey: key,
-  // });
-
-  // console.log("txValidator", txValidator);
+  console.time("txValidator");
+  const txValidator = await utils.transactionValidator({
+    rpcUrl: data[chainId].rpcUrl,
+    activateForFree: false,
+    callData,
+    actuatorContractAddress: data[chainId].Actuator,
+    actuatorPrivateKey: key,
+  });
+  console.timeEnd("txValidator");
 
   // const gasEstimation = await utils.estimateFCTGasCost({
   //   fct: signedFCT,
@@ -159,7 +123,7 @@ async function main() {
 
   // console.log("gasEstimation", gasEstimation);
 
-  const kiroPayment = await utils.getKIROPayment({
+  const kiroPayment = utils.getKIROPayment({
     fct: signedFCT,
     kiroPriceInETH: "38270821632831754769812",
     gasPrice: 1580000096,
@@ -176,17 +140,21 @@ async function main() {
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
-  const fees = utils.getMaxKIROCostPerPayer({
-    fct: signedFCT,
-    kiroPriceInETH: "38270821632831754769812",
-  });
+  // const fees = utils.getMaxKIROCostPerPayer({
+  //   fct: signedFCT,
+  //   kiroPriceInETH: "38270821632831754769812",
+  // });
 
-  console.log(fees);
+  // console.log(fees);
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
