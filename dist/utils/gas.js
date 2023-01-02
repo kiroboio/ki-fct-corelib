@@ -184,8 +184,7 @@ exports.estimateFCTGasCost = estimateFCTGasCost;
 // 38270821632831754769812 - kiro price
 // 1275004198 - max fee
 // 462109 - gas
-// 34.910655705373187788
-const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
+const getKIROPayment = ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     const vault = fct.typedData.message["transaction_1"].call.from;
     const gasInt = BigInt(gas);
     const gasPriceFormatted = BigInt(gasPrice);
@@ -208,10 +207,12 @@ const getKIROPayment = async ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     };
 };
 exports.getKIROPayment = getKIROPayment;
-const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
+const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH, penalty, }) => {
+    penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     const FCTOverhead = 135500;
-    const callOverhead = 16370;
+    // const callOverhead = 16370;
+    const callOverhead = 0;
     const defaultCallGas = 50000;
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
@@ -222,10 +223,10 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
             const callId = (0, helpers_1.parseCallID)(call.callId);
             const payerIndex = callId.payerIndex;
             const payer = fct.mcall[payerIndex - 1].from;
-            const gasForCall = BigInt((0, helpers_1.parseCallID)(call.callId).options.gasLimit) || BigInt(defaultCallGas);
+            // 21000 - base fee of the call on EVMs
+            const gasForCall = (BigInt((0, helpers_1.parseCallID)(call.callId).options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
             const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
-            const normalisedKiroPriceInETH = (0, bignumber_js_1.default)(kiroPriceInETH);
-            const kiroCost = (0, bignumber_js_1.default)(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+            const kiroCost = (0, bignumber_js_1.default)(callFee.toString()).multipliedBy((0, bignumber_js_1.default)(kiroPriceInETH)).shiftedBy(-36).toNumber();
             return {
                 ...acc,
                 [payer]: (0, bignumber_js_1.default)(acc[payer] || 0)
@@ -243,11 +244,13 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }) => {
         })),
     ];
     return allPayers.map((payer) => {
+        const amount = data.reduce((acc, path) => {
+            return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+        }, "0");
         return {
             payer,
-            amount: data.reduce((acc, path) => {
-                return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
-            }, "0"),
+            amount,
+            amountInETH: (0, bignumber_js_1.default)(amount).div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty).toString(),
         };
     });
 };

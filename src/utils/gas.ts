@@ -227,8 +227,7 @@ export const estimateFCTGasCost = async ({
 // 1275004198 - max fee
 // 462109 - gas
 
-// 34.910655705373187788
-export const getKIROPayment = async ({
+export const getKIROPayment = ({
   fct,
   kiroPriceInETH,
   gasPrice,
@@ -270,10 +269,20 @@ export const getKIROPayment = async ({
   };
 };
 
-export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kiroPriceInETH: string }) => {
+export const getMaxKIROCostPerPayer = ({
+  fct,
+  kiroPriceInETH,
+  penalty,
+}: {
+  fct: IFCT;
+  kiroPriceInETH: string;
+  penalty?: number;
+}) => {
+  penalty = penalty || 1;
   const allPaths = getAllFCTPaths(fct);
   const FCTOverhead = 135500;
-  const callOverhead = 16370;
+  // const callOverhead = 16370;
+  const callOverhead = 0;
 
   const defaultCallGas = 50000;
 
@@ -289,13 +298,12 @@ export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kir
       const payerIndex = callId.payerIndex;
       const payer = fct.mcall[payerIndex - 1].from;
 
-      const gasForCall = BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas);
+      // 21000 - base fee of the call on EVMs
+      const gasForCall = (BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
 
       const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
 
-      const normalisedKiroPriceInETH = BigNumber(kiroPriceInETH);
-
-      const kiroCost = BigNumber(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+      const kiroCost = BigNumber(callFee.toString()).multipliedBy(BigNumber(kiroPriceInETH)).shiftedBy(-36).toNumber();
 
       return {
         ...acc,
@@ -318,11 +326,13 @@ export const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH }: { fct: IFCT; kir
   ];
 
   return allPayers.map((payer) => {
+    const amount = data.reduce<string>((acc: string, path) => {
+      return BigNumber(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+    }, "0");
     return {
       payer,
-      amount: data.reduce<string>((acc: string, path) => {
-        return BigNumber(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
-      }, "0"),
+      amount,
+      amountInETH: BigNumber(amount).div(BigNumber(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty).toString(),
     };
   });
 };

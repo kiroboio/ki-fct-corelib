@@ -87,21 +87,8 @@ async function main() {
   });
 
   await batchMultiSigCall.createMultiple([
-    {
-      from: vault,
-      nodeId: "1",
-      value: "100",
-      params: [],
-      to: data[chainId].KIRO,
-      options: {
-        callType: "LIBRARY",
-        falseMeansFail: true,
-        jumpOnFail: "3",
-      },
-    },
-    { plugin: swap, from: wallet, nodeId: "2" },
     { plugin: transfer, from: vault, nodeId: "3" },
-    { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
+    { plugin: transfer, from: vault, nodeId: "4" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
@@ -141,7 +128,7 @@ async function main() {
 
   // console.log("gasEstimation", gasEstimation);
 
-  const kiroPayment = await utils.getKIROPayment({
+  const kiroPayment = utils.getKIROPayment({
     fct: signedFCT,
     kiroPriceInETH: "38270821632831754769812",
     gasPrice: 1580000096,
@@ -149,6 +136,9 @@ async function main() {
   });
 
   console.log("kiroPayment", kiroPayment);
+
+  // 34149170958632548614943
+  // kiro 1017
 
   // Import decoded calldata
   // const newBatchMultiSigCall = new BatchMultiSigCall({
@@ -160,7 +150,7 @@ async function main() {
 
   const fees = utils.getMaxKIROCostPerPayer({
     fct: signedFCT,
-    kiroPriceInETH: "38270821632831754769812",
+    kiroPriceInETH: "34149170958632548614943",
   });
 
   console.log(fees);
@@ -168,7 +158,11 @@ async function main() {
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
