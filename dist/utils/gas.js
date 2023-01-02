@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMaxKIROCostPerPayer = exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exports.transactionValidator = void 0;
+exports.getPaymentPerPayer = exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exports.transactionValidator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
@@ -208,7 +208,7 @@ const getKIROPayment = ({ fct, kiroPriceInETH, gasPrice, gas, }) => {
     };
 };
 exports.getKIROPayment = getKIROPayment;
-const getMaxKIROCostPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
+const getPaymentPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
     penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     const batchMultiSigCall = new batchMultiSigCall_1.BatchMultiSigCall({});
@@ -272,4 +272,4 @@ const getMaxKIROCostPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => 
         };
     });
 };
-exports.getMaxKIROCostPerPayer = getMaxKIROCostPerPayer;
+exports.getPaymentPerPayer = getPaymentPerPayer;
