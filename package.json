@@ -13,7 +13,7 @@
     "fct:get": "ts-node scripts/fct_get.script.ts",
     "fct:execute": "ts-node scripts/fct_execute.script.ts",
     "fct:approvals": "ts-node scripts/fct_approvals.script.ts",
-    "estimate": "ts-node scripts/estimate.script.ts",
+    "fct:estimate": "ts-node scripts/estimate.script.ts",
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "prepare": "husky install"
