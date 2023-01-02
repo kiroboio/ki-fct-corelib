@@ -211,7 +211,8 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH, penalty, }) => {
     penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     const FCTOverhead = 135500;
-    const callOverhead = 16370;
+    // const callOverhead = 16370;
+    const callOverhead = 0;
     const defaultCallGas = 50000;
     const limits = fct.typedData.message.limits;
     const maxGasPrice = limits.gas_price_limit;
@@ -222,10 +223,10 @@ const getMaxKIROCostPerPayer = ({ fct, kiroPriceInETH, penalty, }) => {
             const callId = (0, helpers_1.parseCallID)(call.callId);
             const payerIndex = callId.payerIndex;
             const payer = fct.mcall[payerIndex - 1].from;
-            const gasForCall = BigInt((0, helpers_1.parseCallID)(call.callId).options.gasLimit) || BigInt(defaultCallGas);
+            // 21000 - base fee of the call on EVMs
+            const gasForCall = (BigInt((0, helpers_1.parseCallID)(call.callId).options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
             const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
-            const normalisedKiroPriceInETH = (0, bignumber_js_1.default)(kiroPriceInETH);
-            const kiroCost = (0, bignumber_js_1.default)(callFee.toString()).multipliedBy(normalisedKiroPriceInETH).shiftedBy(-36).toNumber();
+            const kiroCost = (0, bignumber_js_1.default)(callFee.toString()).multipliedBy((0, bignumber_js_1.default)(kiroPriceInETH)).shiftedBy(-36).toNumber();
             return {
                 ...acc,
                 [payer]: (0, bignumber_js_1.default)(acc[payer] || 0)
