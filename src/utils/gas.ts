@@ -2,6 +2,7 @@ import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
+import Ganache from "ganache";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
@@ -14,8 +15,6 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
   const gasPrice = txVal.eip1559
     ? (
@@ -26,15 +25,40 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
     : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
 
   try {
+    const ganacheProvider = new ethers.providers.Web3Provider(
+      Ganache.provider({
+        fork: {
+          url: rpcUrl,
+        },
+      })
+    );
+
+    const signer = new ethers.Wallet(actuatorPrivateKey, ganacheProvider);
+    const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+
     let gas: BigNumberEthers;
     if (activateForFree) {
       gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
         ...gasPrice,
       });
+
+      const tx = await actuatorContract.activate(callData, signer.address, {
+        ...gasPrice,
+      });
+
+      const receipt = await tx.wait();
     } else {
       gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
         ...gasPrice,
       });
+
+      const tx = await actuatorContract.activate(callData, signer.address, {
+        ...gasPrice,
+      });
+
+      const receipt = await tx.wait();
+
+      console.log(receipt);
     }
 
     // Add 20% to gasUsed value

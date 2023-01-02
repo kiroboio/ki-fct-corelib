@@ -14,6 +14,7 @@ export const getTypedDataDomain = async (
   salt: string;
 }> => {
   const chainId = await factoryProxy.CHAIN_ID();
+
   return {
     name: await factoryProxy.NAME(),
     version: await factoryProxy.VERSION(),

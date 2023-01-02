@@ -32,6 +32,7 @@ const wallet = process.env.WALLET as string;
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
+  console.log("rpcUrl", data[chainId].rpcUrl);
   const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
 
   const batchMultiSigCall = new BatchMultiSigCall({
@@ -86,6 +87,8 @@ async function main() {
     },
   });
 
+  console.log("Adding");
+
   await batchMultiSigCall.createMultiple([
     {
       from: vault,
@@ -104,7 +107,10 @@ async function main() {
     { plugin: swapWithoutSlippage, from: vault, nodeId: "4" },
   ]);
 
+  console.log("Added");
+  console.log("Export");
   const FCT = await batchMultiSigCall.exportFCT();
+  console.log("Exported");
   console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
@@ -131,6 +137,18 @@ async function main() {
   //   purgedFCT: "0x".padEnd(66, "0"),
   //   version,
   // });
+
+  // console.log(callData);
+
+  // const txValidator = await utils.transactionValidator({
+  //   rpcUrl: data[chainId].rpcUrl,
+  //   activateForFree: false,
+  //   callData,
+  //   actuatorContractAddress: data[chainId].Actuator,
+  //   actuatorPrivateKey: key,
+  // });
+
+  // console.log("txValidator", txValidator);
 
   // const gasEstimation = await utils.estimateFCTGasCost({
   //   fct: signedFCT,
