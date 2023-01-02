@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import { parseUnits } from "ethers/lib/utils";
 
 import { ethers, utils } from "../src/index";
 import FCT from "./ERC20TransferFCT.json";
@@ -17,6 +18,7 @@ async function main() {
   const cost = utils.getMaxKIROCostPerPayer({
     fct: FCT,
     kiroPriceInETH: "34149170958632548614943",
+    gasPrice: parseUnits("45", "mwei").toNumber(),
   });
 
   console.log("Cost", cost);

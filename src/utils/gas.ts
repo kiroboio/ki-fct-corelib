@@ -5,6 +5,7 @@ import { hexlify } from "ethers/lib/utils";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { parseCallID } from "../batchMultiSigCall/helpers";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
@@ -243,8 +244,6 @@ export const getKIROPayment = ({
   const gasInt = BigInt(gas);
   const gasPriceFormatted = BigInt(gasPrice);
 
-  const baseGasCost = gasInt * gasPriceFormatted;
-
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = limits.gas_price_limit;
 
@@ -256,6 +255,8 @@ export const getKIROPayment = ({
     BigInt(10000);
 
   const feeGasCost = gasInt * (effectiveGasPrice - gasPriceFormatted);
+  const baseGasCost = gasInt * gasPriceFormatted;
+
   const totalCost = baseGasCost + feeGasCost;
 
   const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
@@ -271,23 +272,41 @@ export const getKIROPayment = ({
 
 export const getMaxKIROCostPerPayer = ({
   fct,
+  gasPrice,
   kiroPriceInETH,
   penalty,
 }: {
   fct: IFCT;
+  gasPrice?: number;
   kiroPriceInETH: string;
   penalty?: number;
 }) => {
   penalty = penalty || 1;
   const allPaths = getAllFCTPaths(fct);
-  const FCTOverhead = 135500;
-  // const callOverhead = 16370;
-  const callOverhead = 0;
+  const batchMultiSigCall = new BatchMultiSigCall({});
 
+  const callData = batchMultiSigCall.getCalldataForActuator({
+    signedFCT: fct,
+    activator: "0x0000000000000000000000000000000000000000",
+    investor: "0x0000000000000000000000000000000000000000",
+    purgedFCT: "0x".padEnd(66, "0"),
+    version: "010101",
+  });
+
+  const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
+  const callOverhead = 16370;
   const defaultCallGas = 50000;
 
   const limits = fct.typedData.message.limits as TypedDataLimits;
   const maxGasPrice = limits.gas_price_limit;
+
+  const FCTgasPrice = gasPrice ? gasPrice.toString() : maxGasPrice;
+  const bigIntGasPrice = BigInt(FCTgasPrice);
+
+  const effectiveGasPrice = (
+    (bigIntGasPrice * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - bigIntGasPrice) * BigInt(5000)) / BigInt(10000) -
+    bigIntGasPrice
+  ).toString();
 
   const data = allPaths.map((path) => {
     const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
@@ -300,10 +319,16 @@ export const getMaxKIROCostPerPayer = ({
 
       // 21000 - base fee of the call on EVMs
       const gasForCall = (BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
+      const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
 
-      const callFee = (BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall) * BigInt(maxGasPrice);
+      const callCost = totalGasForCall * BigInt(FCTgasPrice);
+      const callFee = totalGasForCall * BigInt(effectiveGasPrice);
+      const totalCallCost = callCost + callFee;
 
-      const kiroCost = BigNumber(callFee.toString()).multipliedBy(BigNumber(kiroPriceInETH)).shiftedBy(-36).toNumber();
+      const kiroCost = new BigNumber(totalCallCost.toString())
+        .multipliedBy(new BigNumber(kiroPriceInETH))
+        .shiftedBy(-18 - 18)
+        .toNumber();
 
       return {
         ...acc,
