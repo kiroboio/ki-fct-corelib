@@ -11,7 +11,7 @@ const TYPE_ARRAY_WITH_LENGTH = 5000;
 
 const typeValue = (param: Param): number[] => {
   // If type is an array
-  if (param.type.lastIndexOf("[") > 0) {
+  if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
     if (param.customType || param.type.includes("tuple")) {
       const value = param.value as Param[][];
       return [TYPE_ARRAY, value.length, ...getTypesArray(param.value[0] as Param[])];
@@ -26,12 +26,12 @@ const typeValue = (param: Param): number[] => {
   }
 
   // If type is a string
-  if (param.type === "string") {
+  if (param.type === "string" && !param.hashed) {
     return [TYPE_STRING];
   }
 
   // If type is bytes
-  if (param.type === "bytes") {
+  if (param.type === "bytes" && !param.hashed) {
     return [TYPE_BYTES];
   }
 

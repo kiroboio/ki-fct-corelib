@@ -47,6 +47,10 @@
         {
           "name": "transaction_3",
           "type": "transaction3"
+        },
+        {
+          "name": "transaction_4",
+          "type": "transaction4"
         }
       ],
       "Meta": [
@@ -157,6 +161,24 @@
           "type": "uint256"
         }
       ],
+      "transaction4": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "method",
+          "type": "bytes32"
+        },
+        {
+          "name": "path",
+          "type": "address[]"
+        }
+      ],
       "Call": [
         {
           "name": "call_index",
@@ -230,12 +252,12 @@
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0x2409a934",
         "version": "0x010101",
-        "random_id": "0x5ccf31",
+        "random_id": "0x2779d3",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1672759779",
-        "expires_at": "88072759779",
+        "valid_from": "1672764672",
+        "expires_at": "88072764672",
         "gas_price_limit": "3000000000",
         "purgeable": false,
         "blockable": true
@@ -308,12 +330,36 @@
         },
         "recipient": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
         "amount": "1000000000000000000"
+      },
+      "transaction_4": {
+        "call": {
+          "call_index": 4,
+          "payer_index": 4,
+          "call_type": "library",
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+          "to": "0xeC506211E33e54Ddf7a59396539c31E214e79aC4",
+          "to_ens": "@lib:uniswap2_v2",
+          "eth_value": "0",
+          "gas_limit": "0",
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+        },
+        "amount": "1000000",
+        "method": "0x879b548aa5cfb2c501936de860db8fbbfd55fc8bfb83436d8285c2ff4426b364",
+        "path": [
+          "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557"
+        ]
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0xddf7ae3db84cea6520538310cd63d35977cacdebf0e331e406a4de8d574dac51",
-  "sessionId": "0x5ccf310001010103e80000000114818ba9e30063b449e300000000b2d05e000d",
+  "typeHash": "0x5fc1a077863d35e5d56824da69b2118686be5aa10b8ff2b8cf6f22e19792345e",
+  "sessionId": "0x2779d30001010103e80000000114818bbd000063b45d0000000000b2d05e000d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
@@ -327,7 +373,7 @@
       "data": "0x00000000000000000000000000000000000000000000000000000000000f4240466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
       "types": [
         1000,
-        2000,
+        1000,
         4000,
         1000
       ],
@@ -356,6 +402,23 @@
       "data": "0x000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd300000000000000000000000000000000000000000000000000de0b6b3a7640000",
       "types": [],
       "typedHashes": []
+    },
+    {
+      "typeHash": "0xf64b1ead5b8988b32a91fcdc3bf12b0997fecff4915e4dcd4d5f339a2ce0b07d",
+      "ensHash": "0xf4a5af27cd5d6e09f7947a858a0093e16d72bcd561d90f51b6ae3cf3bc1b6616",
+      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000400040000000022",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+      "to": "0xeC506211E33e54Ddf7a59396539c31E214e79aC4",
+      "data": "0x00000000000000000000000000000000000000000000000000000000000f4240879b548aa5cfb2c501936de860db8fbbfd55fc8bfb83436d8285c2ff4426b36400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000002000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d0000000000000000000000002f3a40a3db8a7e3d09b0adfefbce4f6f81927557",
+      "types": [
+        1000,
+        1000,
+        4000,
+        1000
+      ],
+      "typedHashes": []
     }
   ],
   "variables": [],
@@ -363,13 +426,13 @@
   "computed": [],
   "signatures": [
     {
-      "r": "0xf5bef3a622dfa74eb4c0992a6f93bfe6d32c40d073aa9bf92df504716ccea919",
-      "s": "0x316ef96a9ebc387e5b49e04379c6b25d1bac9630b80c395834c2b2ba1d184484",
-      "_vs": "0xb16ef96a9ebc387e5b49e04379c6b25d1bac9630b80c395834c2b2ba1d184484",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xb16ef96a9ebc387e5b49e04379c6b25d1bac9630b80c395834c2b2ba1d184484",
-      "compact": "0xf5bef3a622dfa74eb4c0992a6f93bfe6d32c40d073aa9bf92df504716ccea919b16ef96a9ebc387e5b49e04379c6b25d1bac9630b80c395834c2b2ba1d184484"
+      "r": "0x57a6dd51b3bb8fcc6fb9cb2005f6f83818ba6614bd5c2c8f30b35da3045c16ef",
+      "s": "0x15001483525f514bb5c039cb4a4178de22ddddf199cf5e6a2bd2a8b0ce4d7714",
+      "_vs": "0x15001483525f514bb5c039cb4a4178de22ddddf199cf5e6a2bd2a8b0ce4d7714",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x15001483525f514bb5c039cb4a4178de22ddddf199cf5e6a2bd2a8b0ce4d7714",
+      "compact": "0x57a6dd51b3bb8fcc6fb9cb2005f6f83818ba6614bd5c2c8f30b35da3045c16ef15001483525f514bb5c039cb4a4178de22ddddf199cf5e6a2bd2a8b0ce4d7714"
     }
   ]
 }

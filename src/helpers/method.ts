@@ -78,7 +78,6 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
 
     if (param.hashed) {
       if (typeof param.value === "string") {
-        console.log("Hashed", utils.keccak256(toUtf8Bytes(param.value)));
         return utils.keccak256(toUtf8Bytes(param.value));
       }
       throw new Error("Hashed value must be a string");
