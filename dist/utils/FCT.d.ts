@@ -9,6 +9,8 @@ export declare const validateFCT: (FCT: IBatchMultiSigCallFCT, softValidation?: 
         expires_at: string;
         gas_price_limit: string;
         builder: string;
+        blockable: boolean;
+        purgeable: boolean;
     };
     getFCTMessageHash: () => string;
     getSigners: () => string[];
