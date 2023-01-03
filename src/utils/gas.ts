@@ -285,6 +285,8 @@ export const getPaymentPerPayer = ({
   const allPaths = getAllFCTPaths(fct);
   const batchMultiSigCall = new BatchMultiSigCall({});
 
+  fct.signatures = fct.signatures || [];
+
   const callData = batchMultiSigCall.getCalldataForActuator({
     signedFCT: fct,
     activator: "0x0000000000000000000000000000000000000000",
