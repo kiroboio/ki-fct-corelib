@@ -54,7 +54,7 @@ const getEncodedMethodParams = (call, withFunction) => {
             }
             return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
         }
-        return param.type;
+        return param.hashed ? "bytes32" : param.type;
     };
     const getValues = (param) => {
         if (param.customType || param.type.includes("tuple")) {
@@ -69,6 +69,13 @@ const getEncodedMethodParams = (call, withFunction) => {
                 value = param.value;
                 return value.map(getValues);
             }
+        }
+        if (param.hashed) {
+            if (typeof param.value === "string") {
+                console.log("Hashed", ethers_1.utils.keccak256((0, utils_1.toUtf8Bytes)(param.value)));
+                return ethers_1.utils.keccak256((0, utils_1.toUtf8Bytes)(param.value));
+            }
+            throw new Error("Hashed value must be a string");
         }
         return param.value;
     };
