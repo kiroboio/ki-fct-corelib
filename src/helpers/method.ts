@@ -1,5 +1,5 @@
 import { utils } from "ethers";
-import { defaultAbiCoder } from "ethers/lib/utils";
+import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
 import { MethodParamsInterface, Param } from "../types";
 import { instanceOfParams } from "./instanceOf";
@@ -35,7 +35,15 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
     const iface = new utils.Interface(ABI);
     return iface.encodeFunctionData(
       call.method,
-      call.params.map((item) => item.value)
+      call.params.map((item) => {
+        if (item.hashed) {
+          if (typeof item.value === "string") {
+            return utils.keccak256(toUtf8Bytes(item.value));
+          }
+          throw new Error("Hashed value must be a string");
+        }
+        return item.value;
+      })
     );
   }
 
