@@ -3,7 +3,6 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import fs from "fs";
-import util from "util";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
@@ -83,18 +82,23 @@ async function main() {
         {
           name: "amount",
           type: "uint256",
-          value: "1000",
+          value: "1000000",
+          customType: false,
+          hashed: false,
         },
         {
           name: "method",
           type: "string",
-          value: "swap <X> Tokens for <amount> Tokens",
+          value: "swap <amount> ETH for <X> Tokens",
+          customType: false,
           hashed: true,
         },
         {
           name: "path",
           type: "address[]",
-          value: [data[chainId].KIRO, data[chainId].USDC],
+          value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
+          customType: false,
+          hashed: false,
         },
       ],
       nodeId: "1",
@@ -104,7 +108,7 @@ async function main() {
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
-  console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -147,7 +151,7 @@ async function main() {
     gas: 462109,
   });
 
-  console.log("kiroPayment", kiroPayment);
+  // console.log("kiroPayment", kiroPayment);
 
   // 34149170958632548614943
   // kiro 1017
@@ -165,7 +169,7 @@ async function main() {
     kiroPriceInETH: "34149170958632548614943",
   });
 
-  console.log(fees);
+  // console.log(fees);
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
@@ -178,3 +182,21 @@ main()
     console.error(error);
     process.exitCode = 1;
   });
+
+// 0x
+// 00000000000000000000000000000000000000000000000000000000000f4240
+// 0000000000000000000000000000000000000000000000000000000000000060
+// 00000000000000000000000000000000000000000000000000000000000000a0
+// 0000000000000000000000000000000000000000000000000000000000000020
+// 73776170203c616d6f756e743e2045544820666f72203c583e20546f6b656e73
+// 0000000000000000000000000000000000000000000000000000000000000002
+// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
+// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984
+
+// 0x
+// 00000000000000000000000000000000000000000000000000000000000f4240
+// 466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc
+// 0000000000000000000000000000000000000000000000000000000000000060
+// 0000000000000000000000000000000000000000000000000000000000000002
+// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
+// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984

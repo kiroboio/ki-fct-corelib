@@ -59,7 +59,7 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
       }
       return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
     }
-    return param.type;
+    return param.hashed ? "bytes32" : param.type;
   };
 
   const getValues = (param: Param) => {
@@ -74,6 +74,14 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
         value = param.value as Param[];
         return value.map(getValues);
       }
+    }
+
+    if (param.hashed) {
+      if (typeof param.value === "string") {
+        console.log("Hashed", utils.keccak256(toUtf8Bytes(param.value)));
+        return utils.keccak256(toUtf8Bytes(param.value));
+      }
+      throw new Error("Hashed value must be a string");
     }
 
     return param.value;

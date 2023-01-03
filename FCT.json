@@ -1,0 +1,233 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "BatchMultiSigCall": [
+        {
+          "name": "meta",
+          "type": "Meta"
+        },
+        {
+          "name": "limits",
+          "type": "Limits"
+        },
+        {
+          "name": "transaction_1",
+          "type": "transaction1"
+        }
+      ],
+      "Meta": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "builder",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "version",
+          "type": "bytes3"
+        },
+        {
+          "name": "random_id",
+          "type": "bytes3"
+        },
+        {
+          "name": "eip712",
+          "type": "bool"
+        }
+      ],
+      "Limits": [
+        {
+          "name": "valid_from",
+          "type": "uint40"
+        },
+        {
+          "name": "expires_at",
+          "type": "uint40"
+        },
+        {
+          "name": "gas_price_limit",
+          "type": "uint64"
+        },
+        {
+          "name": "purgeable",
+          "type": "bool"
+        },
+        {
+          "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "transaction1": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "method",
+          "type": "string"
+        },
+        {
+          "name": "path",
+          "type": "address[]"
+        }
+      ],
+      "Call": [
+        {
+          "name": "call_index",
+          "type": "uint16"
+        },
+        {
+          "name": "payer_index",
+          "type": "uint16"
+        },
+        {
+          "name": "call_type",
+          "type": "string"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "to_ens",
+          "type": "string"
+        },
+        {
+          "name": "eth_value",
+          "type": "uint256"
+        },
+        {
+          "name": "gas_limit",
+          "type": "uint32"
+        },
+        {
+          "name": "permissions",
+          "type": "uint16"
+        },
+        {
+          "name": "flow_control",
+          "type": "string"
+        },
+        {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
+          "name": "jump_on_success",
+          "type": "uint16"
+        },
+        {
+          "name": "jump_on_fail",
+          "type": "uint16"
+        },
+        {
+          "name": "method_interface",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x6E3f47f5B80499c7904086257fB5Cf8f375E635c",
+      "salt": "0x01008ee99fd72a69279200006e3f47f5b80499c7904086257fb5cf8f375e635c"
+    },
+    "message": {
+      "meta": {
+        "name": "",
+        "builder": "0x0000000000000000000000000000000000000000",
+        "selector": "0x2409a934",
+        "version": "0x010101",
+        "random_id": "0x4996fe",
+        "eip712": true
+      },
+      "limits": {
+        "valid_from": "1672758649",
+        "expires_at": "1673363449",
+        "gas_price_limit": "100000000000",
+        "purgeable": false,
+        "blockable": true
+      },
+      "transaction_1": {
+        "call": {
+          "call_index": 1,
+          "payer_index": 1,
+          "call_type": "library",
+          "from": "0xcA84b48a4a96c50A7Ecbd22A17cf23Db0b8a23ec",
+          "to": "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
+          "to_ens": "@lib:uniswap_v2",
+          "eth_value": "0",
+          "gas_limit": "0",
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+        },
+        "amount": "1000000",
+        "method": "swap <amount> ETH for <X> Tokens",
+        "path": ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"]
+      }
+    }
+  },
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x1cc3df3f04cd4b8a3a335275ab56f77edd6f062c08b8e5dbc47426da0936efa4",
+  "sessionId": "0x4996fe000101010000000000000063bd7ff90063b44579000000174876e8000c",
+  "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "mcall": [
+    {
+      "typeHash": "0xc0f2bc18d08aca5ca4de62820a15c580d94519cd311e4f78e8110f0165b3da8f",
+      "ensHash": "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
+      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000100010000000022",
+      "from": "0xcA84b48a4a96c50A7Ecbd22A17cf23Db0b8a23ec",
+      "to": "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
+      "data": "0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000002073776170203c616d6f756e743e2045544820666f72203c583e20546f6b656e730000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
+      "types": [1000, 2000, 4000, 1000],
+      "typedHashes": []
+    }
+  ],
+  "variables": [],
+  "externalSigners": [],
+  "computed": []
+}
