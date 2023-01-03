@@ -22,6 +22,7 @@ export interface Param {
     type: string;
     value?: boolean | string | string[] | Param[] | Param[][] | Variable;
     customType?: boolean;
+    hashed?: boolean;
 }
 export interface MethodParamsInterface {
     method: string;

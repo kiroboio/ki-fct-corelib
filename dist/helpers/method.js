@@ -17,7 +17,7 @@ const getMethodInterface = (call) => {
                 return `(${value.map(getParamsType).join(",")})`;
             }
         }
-        return param.type;
+        return param.hashed ? "bytes32" : param.type;
     };
     const params = call.params.map(getParamsType);
     return `${call.method}(${params})`;
@@ -27,7 +27,9 @@ const getEncodedMethodParams = (call, withFunction) => {
     if (!call.method)
         return "0x";
     if (withFunction) {
-        const ABI = [`function ${call.method}(${call.params.map((item) => item.type).join(",")})`];
+        const ABI = [
+            `function ${call.method}(${call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",")})`,
+        ];
         const iface = new ethers_1.utils.Interface(ABI);
         return iface.encodeFunctionData(call.method, call.params.map((item) => item.value));
     }
