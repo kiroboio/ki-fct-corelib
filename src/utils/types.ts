@@ -1,8 +1,11 @@
+import { SignatureLike } from "@ethersproject/bytes";
+
 import { BatchMultiSigCallTypedData, MSCall } from "../batchMultiSigCall/types";
 import { getGasPrices } from "./gas";
 
 export interface IFCT {
   typedData: BatchMultiSigCallTypedData;
+  signatures: SignatureLike[];
   mcall: MSCall[];
 }
 

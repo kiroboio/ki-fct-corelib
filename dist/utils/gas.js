@@ -212,6 +212,7 @@ const getPaymentPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
     penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     const batchMultiSigCall = new batchMultiSigCall_1.BatchMultiSigCall({});
+    fct.signatures = fct.signatures || [];
     const callData = batchMultiSigCall.getCalldataForActuator({
         signedFCT: fct,
         activator: "0x0000000000000000000000000000000000000000",
