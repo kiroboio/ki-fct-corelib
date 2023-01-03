@@ -67,6 +67,8 @@ const validateFCT = (FCT, softValidation = false) => {
                 expires_at: limits.expires_at,
                 gas_price_limit: limits.gas_price_limit,
                 builder: fctData.builder,
+                blockable: limits.blockable,
+                purgeable: limits.purgeable,
             };
         },
         getFCTMessageHash: () => (0, exports.getFCTMessageHash)(FCT.typedData),

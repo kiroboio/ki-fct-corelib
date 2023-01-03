@@ -17,7 +17,7 @@ export const getMethodInterface = (call: Partial<MethodParamsInterface>): string
       }
     }
 
-    return param.type;
+    return param.hashed ? "bytes32" : param.type;
   };
   const params = call.params.map(getParamsType);
 
@@ -28,7 +28,9 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
   if (!call.method) return "0x";
 
   if (withFunction) {
-    const ABI = [`function ${call.method}(${call.params.map((item) => item.type).join(",")})`];
+    const ABI = [
+      `function ${call.method}(${call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",")})`,
+    ];
 
     const iface = new utils.Interface(ABI);
     return iface.encodeFunctionData(
@@ -39,7 +41,7 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
 
   const getType = (param: Param) => {
     if (param.customType || param.type.includes("tuple")) {
-      let value;
+      let value: Param[];
       let isArray = false;
       if (param.type.lastIndexOf("[") > 0) {
         isArray = true;

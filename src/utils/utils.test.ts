@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import FCT from "../../FCT_Test.json";
+import FCT from "../../FCT_TransferERC20.json";
 import { ethers, utils } from "../index";
 
 const ACTIVATOR = "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30";
