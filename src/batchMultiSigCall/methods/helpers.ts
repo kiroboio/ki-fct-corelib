@@ -132,7 +132,7 @@ export async function createTypedData(
     }
 
     const options = call.options || {};
-    const gasLimit = options.gasLimit ?? 0;
+    const gasLimit = options.gasLimit ?? "0";
     const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
 
     let jumpOnSuccess = 0;

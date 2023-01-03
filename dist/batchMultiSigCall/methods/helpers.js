@@ -88,7 +88,7 @@ async function createTypedData(salt, version) {
             paramsData = this.getParamsFromCall(call);
         }
         const options = call.options || {};
-        const gasLimit = options.gasLimit ?? 0;
+        const gasLimit = options.gasLimit ?? "0";
         const flow = options.flow ? constants_1.flows[options.flow].text : "continue on success, revert on fail";
         let jumpOnSuccess = 0;
         let jumpOnFail = 0;

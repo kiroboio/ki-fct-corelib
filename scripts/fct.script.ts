@@ -1,8 +1,7 @@
-import { ERC20, FCT_UNISWAP, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
 import util from "util";
 
@@ -49,17 +48,6 @@ async function main() {
     },
   });
 
-  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapWithoutSlippageProtection({
-    chainId: "5",
-    initParams: {
-      methodParams: {
-        amount: "1000",
-        path: [data[chainId].KIRO, data[chainId].USDC],
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> Tokens")),
-      },
-    },
-  });
-
   const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
     chainId: "1",
   });
@@ -87,6 +75,30 @@ async function main() {
   });
 
   await batchMultiSigCall.createMultiple([
+    {
+      from: vault,
+      method: "swap_noSlippageProtection",
+      to: data[chainId].KIRO,
+      params: [
+        {
+          name: "amount",
+          type: "uint256",
+          value: "1000",
+        },
+        {
+          name: "method",
+          type: "string",
+          value: "swap <X> Tokens for <amount> Tokens",
+          hashed: true,
+        },
+        {
+          name: "path",
+          type: "address[]",
+          value: [data[chainId].KIRO, data[chainId].USDC],
+        },
+      ],
+      nodeId: "1",
+    },
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: transfer, from: vault, nodeId: "4" },
   ]);
@@ -148,7 +160,7 @@ async function main() {
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
-  const fees = utils.getMaxKIROCostPerPayer({
+  const fees = utils.getPaymentPerPayer({
     fct: signedFCT,
     kiroPriceInETH: "34149170958632548614943",
   });
