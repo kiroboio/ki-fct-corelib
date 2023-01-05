@@ -39,12 +39,11 @@ const typeValue = (param: Param): number[] => {
   if (param.customType || param.type.includes("tuple")) {
     const values = param.value as Param[];
 
-    return [
-      values.length,
-      ...values.reduce((acc, item) => {
-        return [...acc, ...typeValue(item)];
-      }, []),
-    ];
+    const types = values.reduce((acc, item) => {
+      return [...acc, ...typeValue(item)];
+    }, []);
+
+    return [values.length, ...(types.some((item) => item !== TYPE_NATIVE) ? types : [])];
   }
 
   // If all statements above are false, then type is a native type
