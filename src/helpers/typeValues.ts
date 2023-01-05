@@ -43,7 +43,11 @@ const typeValue = (param: Param): number[] => {
       return [...acc, ...typeValue(item)];
     }, []);
 
-    return [values.length, ...(types.some((item) => item !== TYPE_NATIVE) ? types : [])];
+    if (!types.some((item) => item !== TYPE_NATIVE)) {
+      return [];
+    }
+
+    return [values.length, ...types];
   }
 
   // If all statements above are false, then type is a native type
