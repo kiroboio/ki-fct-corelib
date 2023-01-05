@@ -129,6 +129,12 @@ export async function createTypedData(
     if (call.params) {
       this.verifyParams(call.params);
       paramsData = this.getParamsFromCall(call);
+
+      // Check if paramsData has one key and that key is typeof object
+
+      if (Object.keys(paramsData).length === 1 && typeof paramsData[Object.keys(paramsData)[0]] === "object") {
+        paramsData = paramsData[Object.keys(paramsData)[0]];
+      }
     }
 
     const options = call.options || {};
