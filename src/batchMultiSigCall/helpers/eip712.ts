@@ -20,7 +20,6 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     let customCount = 0;
     const eip712Type = paramValue.map((item) => {
       if (item.customType || item.type.includes("tuple")) {
-        // const innerTypeName = getStructType(item, index);
         ++customCount;
         const innerTypeName = `Struct${getTypeCount() + customCount}`;
         return {
@@ -59,6 +58,18 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
         { name: "call", type: "Call" },
         ...getValidatorFunctionData(call.validator, call.params),
       ];
+      return;
+    }
+
+    if (call.params.length === 1 && call.params[0].name === "params") {
+      const params = call.params[0].value as Param[];
+      const values = params.map((param) => {
+        return {
+          name: param.name,
+          type: param.type,
+        };
+      });
+      txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
       return;
     }
 
