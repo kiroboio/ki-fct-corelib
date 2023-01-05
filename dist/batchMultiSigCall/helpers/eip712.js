@@ -55,7 +55,8 @@ const getTxEIP712Types = (calls) => {
             ];
             return;
         }
-        if (call.params.length === 1 && call.params[0].name === "params") {
+        // If call consists of a single custom type, then do not create a struct type
+        if (call.params.length === 1 && call.params[0].customType) {
             const params = call.params[0].value;
             const values = params.map((param) => {
                 return {
