@@ -48,10 +48,6 @@ const getTypesArray = (params) => {
         const data = typeValue(item);
         return [...acc, ...data];
     }, []);
-    if (params.length === 1 && params[0].customType) {
-        // Remove first element if it is a custom type
-        types.shift();
-    }
     if (!types.some((item) => item !== TYPE_NATIVE)) {
         return [];
     }
