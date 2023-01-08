@@ -133,7 +133,15 @@ export async function createTypedData(
       // Check if paramsData has one key and that key is typeof object
 
       if (Object.keys(paramsData).length === 1 && typeof paramsData[Object.keys(paramsData)[0]] === "object") {
-        paramsData = paramsData[Object.keys(paramsData)[0]];
+        const hasNonNativeType = (call.params[0].value as Param[]).some((param) => {
+          const { type } = param;
+          const nativeTypes = ["address", "uint", "int", "bytes32", "bool"];
+          return !nativeTypes.every((nativeType) => type.startsWith(nativeType));
+        });
+
+        if (hasNonNativeType) {
+          paramsData = paramsData[Object.keys(paramsData)[0]];
+        }
       }
     }
 
