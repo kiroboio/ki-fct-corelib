@@ -34,9 +34,6 @@ const typeValue = (param) => {
         const types = values.reduce((acc, item) => {
             return [...acc, ...typeValue(item)];
         }, []);
-        if (!types.some((item) => item !== TYPE_NATIVE)) {
-            return [];
-        }
         return [values.length, ...types];
     }
     // If all statements above are false, then type is a native type

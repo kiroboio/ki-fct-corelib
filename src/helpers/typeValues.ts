@@ -43,10 +43,6 @@ const typeValue = (param: Param): number[] => {
       return [...acc, ...typeValue(item)];
     }, []);
 
-    if (!types.some((item) => item !== TYPE_NATIVE)) {
-      return [];
-    }
-
     return [values.length, ...types];
   }
 
