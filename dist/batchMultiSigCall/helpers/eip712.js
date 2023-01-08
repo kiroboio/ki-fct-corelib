@@ -71,6 +71,7 @@ const getTxEIP712Types = (calls) => {
                     };
                 });
                 txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+                return;
             }
             // const values = params.map((param) => {
             //   return {
