@@ -48,7 +48,10 @@ const getTypesArray = (params) => {
         const data = typeValue(item);
         return [...acc, ...data];
     }, []);
-    return types.some((item) => item !== TYPE_NATIVE) ? types : [];
+    if (!types.some((item) => item !== TYPE_NATIVE) || types[0] < TYPE_NATIVE) {
+        return [];
+    }
+    return types;
 };
 exports.getTypesArray = getTypesArray;
 const getTypedHashes = (params, typedData) => {

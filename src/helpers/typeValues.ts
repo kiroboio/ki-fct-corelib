@@ -61,7 +61,10 @@ export const getTypesArray = (params: Param[]): number[] => {
     return [...acc, ...data];
   }, []);
 
-  return types.some((item) => item !== TYPE_NATIVE) ? types : [];
+  if (!types.some((item) => item !== TYPE_NATIVE) || types[0] < TYPE_NATIVE) {
+    return [];
+  }
+  return types;
 };
 
 export const getTypedHashes = (
