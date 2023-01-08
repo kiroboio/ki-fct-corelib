@@ -88,12 +88,12 @@ async function createTypedData(salt, version) {
             paramsData = this.getParamsFromCall(call);
             // Check if paramsData has one key and that key is typeof object
             if (Object.keys(paramsData).length === 1 && typeof paramsData[Object.keys(paramsData)[0]] === "object") {
-                const hasNonNativeType = call.params[0].value.some((param) => {
+                const allNativeTypes = call.params[0].value.every((param) => {
                     const { type } = param;
                     const nativeTypes = ["address", "uint", "int", "bytes32", "bool"];
-                    return !nativeTypes.every((nativeType) => type.startsWith(nativeType));
+                    return nativeTypes.some((nativeType) => type.startsWith(nativeType));
                 });
-                if (hasNonNativeType) {
+                if (allNativeTypes) {
                     paramsData = paramsData[Object.keys(paramsData)[0]];
                 }
             }

@@ -64,14 +64,30 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     // If call consists of a single custom type, then do not create a struct type
     if (call.params.length === 1 && call.params[0].customType) {
       const params = call.params[0].value as Param[];
-      const values = params.map((param) => {
-        return {
-          name: param.name,
-          type: param.type,
-        };
+
+      const allNativeTypes = params.every((param) => {
+        const { type } = param;
+        const nativeTypes = ["address", "uint", "int", "bytes32", "bool"];
+        return nativeTypes.some((nativeType) => type.startsWith(nativeType));
       });
-      txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
-      return;
+
+      if (allNativeTypes) {
+        const values = params.map((param) => {
+          return {
+            name: param.name,
+            type: param.type,
+          };
+        });
+        txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+      }
+      // const values = params.map((param) => {
+      //   return {
+      //     name: param.name,
+      //     type: param.type,
+      //   };
+      // });
+      // txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+      // return;
     }
 
     const values = call.params.map((param: Param) => {
