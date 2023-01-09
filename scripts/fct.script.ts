@@ -1,9 +1,9 @@
-import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, FCT_UNISWAP, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
-import util from "util";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
@@ -48,6 +48,17 @@ async function main() {
     },
   });
 
+  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
+    chainId: "5",
+    initParams: {
+      methodParams: {
+        amount: "1000000",
+        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+        path: [data[chainId].KIRO, data[chainId].USDC],
+      },
+    },
+  });
+
   const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
     chainId: "1",
   });
@@ -83,28 +94,34 @@ async function main() {
         {
           name: "amount",
           type: "uint256",
-          value: "1000",
+          value: "1000000",
+          customType: false,
+          hashed: false,
         },
         {
           name: "method",
           type: "string",
-          value: "swap <X> Tokens for <amount> Tokens",
+          value: "swap <amount> ETH for <X> Tokens",
+          customType: false,
           hashed: true,
         },
         {
           name: "path",
           type: "address[]",
-          value: [data[chainId].KIRO, data[chainId].USDC],
+          value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
+          customType: false,
+          hashed: false,
         },
       ],
       nodeId: "1",
     },
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: transfer, from: vault, nodeId: "4" },
+    { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();
-  console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -147,7 +164,7 @@ async function main() {
     gas: 462109,
   });
 
-  console.log("kiroPayment", kiroPayment);
+  // console.log("kiroPayment", kiroPayment);
 
   // 34149170958632548614943
   // kiro 1017
@@ -160,12 +177,15 @@ async function main() {
   // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
   // console.log(util.inspect(decoded, false, null, true /* enable colors */));
 
+  const requireApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  console.log(requireApprovals);
+
   const fees = utils.getPaymentPerPayer({
     fct: signedFCT,
     kiroPriceInETH: "34149170958632548614943",
   });
 
-  console.log(fees);
+  // console.log(fees);
 
   fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
@@ -178,3 +198,21 @@ main()
     console.error(error);
     process.exitCode = 1;
   });
+
+// 0x
+// 00000000000000000000000000000000000000000000000000000000000f4240
+// 0000000000000000000000000000000000000000000000000000000000000060
+// 00000000000000000000000000000000000000000000000000000000000000a0
+// 0000000000000000000000000000000000000000000000000000000000000020
+// 73776170203c616d6f756e743e2045544820666f72203c583e20546f6b656e73
+// 0000000000000000000000000000000000000000000000000000000000000002
+// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
+// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984
+
+// 0x
+// 00000000000000000000000000000000000000000000000000000000000f4240 amount
+// 466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc method bytes32
+// 0000000000000000000000000000000000000000000000000000000000000060 path position
+// 0000000000000000000000000000000000000000000000000000000000000002 path length
+// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6 path[0]
+// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984 path[1]

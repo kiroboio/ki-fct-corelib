@@ -10,7 +10,7 @@ const TYPE_ARRAY = 4000;
 const TYPE_ARRAY_WITH_LENGTH = 5000;
 const typeValue = (param) => {
     // If type is an array
-    if (param.type.lastIndexOf("[") > 0) {
+    if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
         if (param.customType || param.type.includes("tuple")) {
             const value = param.value;
             return [TYPE_ARRAY, value.length, ...(0, exports.getTypesArray)(param.value[0])];
@@ -21,22 +21,20 @@ const typeValue = (param) => {
         return [type, ...insideType];
     }
     // If type is a string
-    if (param.type === "string") {
+    if (param.type === "string" && !param.hashed) {
         return [TYPE_STRING];
     }
     // If type is bytes
-    if (param.type === "bytes") {
+    if (param.type === "bytes" && !param.hashed) {
         return [TYPE_BYTES];
     }
     // If param is custom struct
     if (param.customType || param.type.includes("tuple")) {
         const values = param.value;
-        return [
-            values.length,
-            ...values.reduce((acc, item) => {
-                return [...acc, ...typeValue(item)];
-            }, []),
-        ];
+        const types = values.reduce((acc, item) => {
+            return [...acc, ...typeValue(item)];
+        }, []);
+        return [values.length, ...types];
     }
     // If all statements above are false, then type is a native type
     return [TYPE_NATIVE];
@@ -47,7 +45,10 @@ const getTypesArray = (params) => {
         const data = typeValue(item);
         return [...acc, ...data];
     }, []);
-    return types.some((item) => item !== TYPE_NATIVE) ? types : [];
+    if (!types.some((item) => item !== TYPE_NATIVE)) {
+        return [];
+    }
+    return types;
 };
 exports.getTypesArray = getTypesArray;
 const getTypedHashes = (params, typedData) => {
