@@ -1,7 +1,8 @@
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 
-import { BatchMultiSigCall } from "../src";
+import { BatchMultiSigCall, FCT_UNISWAP } from "../src";
 import data from "./scriptData";
 // import util from "util";
 
@@ -183,13 +184,13 @@ const FCT = {
         builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
         selector: "0x2409a934",
         version: "0x010101",
-        random_id: "0xc77cb6",
+        random_id: "0x106923",
         eip712: true,
       },
       limits: {
         valid_from: "1673215200",
         expires_at: "1673906399",
-        gas_price_limit: "90546486126",
+        gas_price_limit: "80940377000",
         purgeable: false,
         blockable: true,
       },
@@ -222,7 +223,7 @@ const FCT = {
   },
   builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
   typeHash: "0x6f1ae9636c9d64eabd691678b87a436912c55da715d475f75b34b7982c549d79",
-  sessionId: "0xc77cb6000101010000000000000063c5c8df0063bb3ce00000001514fdbb6e0c",
+  sessionId: "0x106923000101010000000000000063c5c8df0063bb3ce000000012d86c23a80c",
   nameHash: "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   mcall: [
     {
@@ -241,13 +242,6 @@ const FCT = {
   variables: [],
   externalSigners: [],
   computed: [],
-  signatures: [
-    {
-      r: "0x80aa308e9e12adc41bf8e17ab7d975173e89346cfaea980269f71adc2805d102",
-      s: "0x60eaad16e5db621124dc01e1d3c382ed9a229ae41527f849e3eb574339b21380",
-      v: 28,
-    },
-  ],
 };
 
 dotenv.config();
@@ -289,19 +283,18 @@ async function main() {
     },
   });
 
-  //   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
-  //     chainId: "5",
-  //     initParams: {
-  //       methodParams: {
-  //         amount: "1000000",
-  //         method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
-  //         path: [data[chainId].KIRO, data[chainId].USDC],
-  //       },
-  //     },
-  //   });
+  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
+    chainId: "5",
+    initParams: {
+      methodParams: {
+        amount: "1000000",
+        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+        path: [data[chainId].KIRO, data[chainId].USDC],
+      },
+    },
+  });
 
-  //   const requiredApprovals = swapWithoutSlippage.getRequiredApprovals();
-  //   console.log(requiredApprovals);
+  console.log(swapWithoutSlippage.methodInterface);
 
   batchMultiSigCall.importFCT(FCT);
 
