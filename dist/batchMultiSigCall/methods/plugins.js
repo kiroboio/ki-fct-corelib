@@ -22,6 +22,9 @@ async function getPlugin(index) {
         address: call.to,
         chainId: chainId,
     });
+    if (!pluginData) {
+        throw new Error("Plugin not found");
+    }
     const pluginClass = pluginData.plugin;
     const plugin = new pluginClass({
         chainId: chainId.toString(),

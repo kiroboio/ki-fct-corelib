@@ -25,6 +25,10 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
     chainId: chainId as ChainId,
   });
 
+  if (!pluginData) {
+    throw new Error("Plugin not found");
+  }
+
   const pluginClass = pluginData.plugin as any;
 
   const plugin = new pluginClass({
