@@ -105,7 +105,13 @@ function importFCT(fct) {
     for (const [index, call] of fct.mcall.entries()) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
-        const decodedParams = new utils_1.AbiCoder().decode(dataTypes.map((type) => `${type.type} ${type.name}`), call.data);
+        // Getting types from method_interface, because parameter might be hashed and inside
+        // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
+        const types = meta.method_interface
+            .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
+            .split(",")
+            .map((type, i) => `${type} ${dataTypes[i].name}`);
+        const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
         const params = dataTypes.map((t) => ({
             name: t.name,
             type: t.type,
@@ -125,7 +131,6 @@ function importFCT(fct) {
             method: meta.method_interface.split("(")[0],
             params,
             toENS: meta.to_ens,
-            // viewOnly: meta.view_only,
             options: {
                 gasLimit: meta.gas_limit,
                 jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
