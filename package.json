@@ -41,6 +41,8 @@
     "@types/mocha": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
+    "@uniswap/sdk-core": "^3.1.1",
+    "@uniswap/v3-sdk": "^3.9.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
