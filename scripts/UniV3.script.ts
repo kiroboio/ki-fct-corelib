@@ -9,7 +9,6 @@ type Value = string | number | BigNumber;
 dotenv.config();
 
 const q96 = 2n ** 96n;
-const bgQ96 = new BigNumber(q96.toString());
 
 function getLiquidity0_v2(x: Value, sa: Value, sb: Value) {
   x = new BigNumber(x);
@@ -23,24 +22,6 @@ function getLiquidity1_v2(y: Value, sa: Value, sb: Value) {
   sa = new BigNumber(sa);
   sb = new BigNumber(sb);
   return y.div(sb.minus(sa)).integerValue(BigNumber.ROUND_FLOOR).toString();
-}
-
-function getLiquidity(x: Value, y: Value, sp: Value, sa: Value, sb: Value) {
-  x = new BigNumber(x);
-  y = new BigNumber(y);
-  sp = new BigNumber(sp);
-  sa = new BigNumber(sa);
-  sb = new BigNumber(sb);
-
-  if (sp.gte(sa)) {
-    return getLiquidity0_v2(x, sa, sb);
-  }
-  if (sp.lt(sb)) {
-    const liq0 = getLiquidity0_v2(x, sp, sb);
-    const liq1 = getLiquidity1_v2(y, sa, sp);
-    return BigNumber.min(liq0, liq1).toString();
-  }
-  return getLiquidity1_v2(y, sa, sb);
 }
 
 function calculateX(L: Value, sp: Value, sa: Value, sb: Value) {
