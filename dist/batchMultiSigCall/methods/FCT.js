@@ -112,11 +112,15 @@ function importFCT(fct) {
             .split(",")
             .map((type, i) => `${type} ${dataTypes[i].name}`);
         const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
-        const params = dataTypes.map((t) => ({
-            name: t.name,
-            type: t.type,
-            value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
-        }));
+        const params = dataTypes.map((t, i) => {
+            const realType = types[i].split(" ")[0];
+            return {
+                name: t.name,
+                type: t.type,
+                hashed: t.type === realType ? false : true,
+                value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
+            };
+        });
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
                 return value.text === meta.flow_control.toString();
