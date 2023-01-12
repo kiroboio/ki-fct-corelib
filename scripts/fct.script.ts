@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
 
-import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
+import { BatchMultiSigCall, TypedDataTypes, utils, variables } from "../src";
 import data from "./scriptData";
 // import util from "util";
 
@@ -85,39 +85,66 @@ async function main() {
     },
   });
 
-  await batchMultiSigCall.createMultiple([
-    {
-      from: vault,
-      method: "swap_noSlippageProtection",
+  const balanceOf = new ERC20.getters.BalanceOf({
+    chainId: "1",
+    initParams: {
       to: data[chainId].KIRO,
-      params: [
-        {
-          name: "amount",
-          type: "uint256",
-          value: "1000000",
-          customType: false,
-          hashed: false,
-        },
-        {
-          name: "method",
-          type: "string",
-          value: "swap <amount> ETH for <X> Tokens",
-          customType: false,
-          hashed: true,
-        },
-        {
-          name: "path",
-          type: "address[]",
-          value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
-          customType: false,
-          hashed: false,
-        },
-      ],
-      nodeId: "1",
+      methodParams: {
+        owner: wallet,
+      },
     },
-    { plugin: transfer, from: vault, nodeId: "3" },
-    { plugin: transfer, from: vault, nodeId: "4" },
-    { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
+  });
+
+  const removeLiquidity = new Uniswap.actions.RemoveLiquidity({
+    chainId: "1",
+    initParams: {
+      methodParams: {
+        tokenA: data[chainId].KIRO,
+        tokenB: data[chainId].USDC,
+        liquidity: "100000000000000000000",
+        amountAMin: "1",
+        amountBMin: "1",
+        to: wallet,
+        deadline: variables.getBlockTimestamp(),
+      },
+    },
+  });
+
+  await batchMultiSigCall.createMultiple([
+    // {
+    //   from: vault,
+    //   method: "swap_noSlippageProtection",
+    //   to: data[chainId].KIRO,
+    //   params: [
+    //     {
+    //       name: "amount",
+    //       type: "uint256",
+    //       value: "1000000",
+    //       customType: false,
+    //       hashed: false,
+    //     },
+    //     {
+    //       name: "method",
+    //       type: "string",
+    //       value: "swap <amount> ETH for <X> Tokens",
+    //       customType: false,
+    //       hashed: true,
+    //     },
+    //     {
+    //       name: "path",
+    //       type: "address[]",
+    //       value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
+    //       customType: false,
+    //       hashed: false,
+    //     },
+    //   ],
+    //   nodeId: "1",
+    // },
+    // { plugin: transfer, from: vault, nodeId: "3" },
+    // { plugin: transfer, from: vault, nodeId: "4" },
+    // { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
+    { plugin: balanceOf, from: vault, nodeId: "7" },
+    { plugin: removeLiquidity, from: vault, nodeId: "6" },
   ]);
 
   const FCT = await batchMultiSigCall.exportFCT();

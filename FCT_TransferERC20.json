@@ -39,6 +39,10 @@
         {
           "name": "transaction_1",
           "type": "transaction1"
+        },
+        {
+          "name": "transaction_2",
+          "type": "transaction2"
         }
       ],
       "Meta": [
@@ -109,16 +113,42 @@
           "type": "Call"
         },
         {
-          "name": "amount",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "transaction2": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "tokenA",
+          "type": "address"
+        },
+        {
+          "name": "tokenB",
+          "type": "address"
+        },
+        {
+          "name": "liquidity",
           "type": "uint256"
         },
         {
-          "name": "method",
-          "type": "bytes32"
+          "name": "amountAMin",
+          "type": "uint256"
         },
         {
-          "name": "path",
-          "type": "address[]"
+          "name": "amountBMin",
+          "type": "uint256"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "deadline",
+          "type": "uint256"
         }
       ],
       "Call": [
@@ -185,8 +215,8 @@
       "name": "FCT Controller",
       "version": "1",
       "chainId": 5,
-      "verifyingContract": "0xa36457BCa36Ac0eED36f1b25bd9144B029600982",
-      "salt": "0x0100aaeed667ace37eb90000a36457bca36ac0eed36f1b25bd9144b029600982"
+      "verifyingContract": "0xc86A8f32feDB6D05b9153049aA596cF5C1621d45",
+      "salt": "0x0100e421e2e61b1b9a580000c86a8f32fedb6d05b9153049aa596cf5c1621d45"
     },
     "message": {
       "meta": {
@@ -194,12 +224,12 @@
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0x2409a934",
         "version": "0x010101",
-        "random_id": "0x4fd6b8",
+        "random_id": "0x6f0ce8",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1673257127",
-        "expires_at": "88073257127",
+        "valid_from": "1673512788",
+        "expires_at": "88073512788",
         "gas_price_limit": "3000000000",
         "purgeable": false,
         "blockable": true
@@ -213,48 +243,75 @@
         "call": {
           "call_index": 1,
           "payer_index": 1,
-          "call_type": "library",
+          "call_type": "view only",
           "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-          "to": "0xeC506211E33e54Ddf7a59396539c31E214e79aC4",
-          "to_ens": "@lib:uniswap2_v2",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
           "eth_value": "0",
-          "gas_limit": "0",
+          "gas_limit": "47884",
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+          "method_interface": "balanceOf(address)"
         },
-        "amount": "1000000",
-        "method": "0x879b548aa5cfb2c501936de860db8fbbfd55fc8bfb83436d8285c2ff4426b364",
-        "path": [
-          "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
-          "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557"
-        ]
+        "owner": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30"
+      },
+      "transaction_2": {
+        "call": {
+          "call_index": 2,
+          "payer_index": 2,
+          "call_type": "action",
+          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+          "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": "305264",
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "removeLiquidity(address,address,uint256,uint256,uint256,address,uint256)"
+        },
+        "tokenA": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+        "tokenB": "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
+        "liquidity": "100000000000000000000",
+        "amountAMin": "1",
+        "amountBMin": "1",
+        "to": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+        "deadline": "0xFB0B000000000000000000000000000000000000"
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x01dcbb811ff59f730c8a12cae65acc7f80fb4954f315e7e7e4fb3c26047adf26",
-  "sessionId": "0x4fd6b80001010103e80000000114819340a70063bbe0a700000000b2d05e000d",
+  "typeHash": "0x55e5a4687f2bb31b377ba30b0c5ab17aa631c096ab3d2724ab333e638a90c4d1",
+  "sessionId": "0x6f0ce80001010103e80000000114819727540063bfc75400000000b2d05e000d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
-      "typeHash": "0x51a6e9d969fe7bd2230563adfb81c57893c785525c995bbd2ae369000cd73645",
-      "ensHash": "0xf4a5af27cd5d6e09f7947a858a0093e16d72bcd561d90f51b6ae3cf3bc1b6616",
-      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "typeHash": "0x276d3800ab976c19d67a16b7054fee3b1c64560474a19cf900904a0b4291a1c8",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000000000000000100010000000022",
+      "callId": "0x0000000000000000000000000000000000000000000000000100010000bb0c11",
       "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-      "to": "0xeC506211E33e54Ddf7a59396539c31E214e79aC4",
-      "data": "0x00000000000000000000000000000000000000000000000000000000000f4240879b548aa5cfb2c501936de860db8fbbfd55fc8bfb83436d8285c2ff4426b36400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000002000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d0000000000000000000000002f3a40a3db8a7e3d09b0adfefbce4f6f81927557",
-      "types": [
-        1000,
-        1000,
-        4000,
-        1000
-      ],
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd30",
+      "types": [],
+      "typedHashes": []
+    },
+    {
+      "typeHash": "0xb92fa315edcb590dfeea2bd3b2a0ed76f0471444844e7344b54621bb0bae9596",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0xbaa2abdea0af8b36706fa0a9a34a6e89e53bd90c580cbf95a99472e3a5ecda88",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000000000000000200020004a87000",
+      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+      "to": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+      "data": "0x000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d0000000000000000000000002f3a40a3db8a7e3d09b0adfefbce4f6f819275570000000000000000000000000000000000000000000000056bc75e2d6310000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd30000000000000000000000000fb0b000000000000000000000000000000000000",
+      "types": [],
       "typedHashes": []
     }
   ],
@@ -263,13 +320,13 @@
   "computed": [],
   "signatures": [
     {
-      "r": "0xb1a4d93026268f1c81fd5ee96803d5b421c1fe8f63741fbca6001fbdb34c70b5",
-      "s": "0x64782b7337a03c0d513d0e5ce6a7289ce1a85abbd6aabf15fc1a6a0ce6082510",
-      "_vs": "0xe4782b7337a03c0d513d0e5ce6a7289ce1a85abbd6aabf15fc1a6a0ce6082510",
+      "r": "0x7e61ea8dc21e38453e9796513028da01e6fa227167211459c70fdd1d4bfe2fd0",
+      "s": "0x5abfa1f7ed1fcc8abeae6049940c530fc2895de2c2dca34d9794a5801b31b058",
+      "_vs": "0xdabfa1f7ed1fcc8abeae6049940c530fc2895de2c2dca34d9794a5801b31b058",
       "recoveryParam": 1,
       "v": 28,
-      "yParityAndS": "0xe4782b7337a03c0d513d0e5ce6a7289ce1a85abbd6aabf15fc1a6a0ce6082510",
-      "compact": "0xb1a4d93026268f1c81fd5ee96803d5b421c1fe8f63741fbca6001fbdb34c70b5e4782b7337a03c0d513d0e5ce6a7289ce1a85abbd6aabf15fc1a6a0ce6082510"
+      "yParityAndS": "0xdabfa1f7ed1fcc8abeae6049940c530fc2895de2c2dca34d9794a5801b31b058",
+      "compact": "0x7e61ea8dc21e38453e9796513028da01e6fa227167211459c70fdd1d4bfe2fd0dabfa1f7ed1fcc8abeae6049940c530fc2895de2c2dca34d9794a5801b31b058"
     }
   ]
 }

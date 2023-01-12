@@ -21,7 +21,10 @@ const data = {
     RecoveryWallet: "0x38e5Bec4f5401AF5C35990BED8D4153113EDa743",
     RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
     RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
-    rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    // rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    // Goerli rpcUrl
+    // rpcUrl: "https://rpc.ankr.com/eth_goerli",
+    rpcUrl: "https://eth-goerli.g.alchemy.com/v2/5eXdqoAjO_fDoRVaYTsfh1Omged-0Xyt",
   },
 };
 
