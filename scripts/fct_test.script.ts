@@ -1,11 +1,11 @@
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import util from "util";
 
 import { BatchMultiSigCall, FCT_UNISWAP } from "../src";
 import data from "./scriptData";
 // import util from "util";
-
 const FCT = {
   typedData: {
     types: {
@@ -184,13 +184,13 @@ const FCT = {
         builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
         selector: "0x2409a934",
         version: "0x010101",
-        random_id: "0x2f6b13",
+        random_id: "0x405bba",
         eip712: true,
       },
       limits: {
-        valid_from: "1673388000",
-        expires_at: "1674079199",
-        gas_price_limit: "80885450900",
+        valid_from: "1673474400",
+        expires_at: "1674165599",
+        gas_price_limit: "199312020452",
         purgeable: false,
         blockable: true,
       },
@@ -200,7 +200,7 @@ const FCT = {
           payer_index: 1,
           call_type: "library",
           from: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-          to: "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
+          to: "0x4186dA7567697B155BC9281eF409ff3eCc6bB0dC",
           to_ens: "@lib:uniswap_v2",
           eth_value: "0",
           gas_limit: "400000",
@@ -211,19 +211,19 @@ const FCT = {
           jump_on_fail: 0,
           method_interface: "swap_noSlippageProtection(uint256,bytes32,address[])",
         },
-        amount: "34000000000000000000",
+        amount: "12000000000000000000",
         method: "swap <amount> Tokens for <X> Tokens",
         path: [
-          "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60",
+          "0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165",
           "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+          "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
         ],
       },
     },
   },
   builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
   typeHash: "0x1cc3df3f04cd4b8a3a335275ab56f77edd6f062c08b8e5dbc47426da0936efa4",
-  sessionId: "0x2f6b13000101010000000000000063c86bdf0063bddfe000000012d52608940c",
+  sessionId: "0x405bba000101010000000000000063c9bd5f0063bf31600000002e67ec13e40c",
   nameHash: "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   mcall: [
     {
@@ -233,8 +233,8 @@ const FCT = {
       value: "0",
       callId: "0x00000000000000000000000000000000000006000000000001000100061a8022",
       from: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-      to: "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
-      data: "0x000000000000000000000000000000000000000000000001d7d843dc3b48000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000dc31ee1784292379fbb2964b3b9c4124d8f89c60000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      to: "0x4186dA7567697B155BC9281eF409ff3eCc6bB0dC",
+      data: "0x000000000000000000000000000000000000000000000000a688906bd8b0000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000e4e81fa6b16327d4b78cfeb83aade04ba7075165000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
       types: [1000, 1000, 4000, 1000],
       typedHashes: [],
     },
@@ -242,6 +242,7 @@ const FCT = {
   variables: [],
   externalSigners: [],
   computed: [],
+  signatures: [],
 };
 
 dotenv.config();
@@ -297,7 +298,7 @@ async function main() {
   console.log(swapWithoutSlippage.methodInterface);
 
   batchMultiSigCall.importFCT(FCT);
-
+  console.log(util.inspect(batchMultiSigCall.calls, false, null, true));
   const getAllRequiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
 
   console.log(getAllRequiredApprovals);

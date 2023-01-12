@@ -135,11 +135,16 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 
     const decodedParams = new AbiCoder().decode(types, call.data);
 
-    const params = dataTypes.map((t) => ({
-      name: t.name,
-      type: t.type,
-      value: BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
-    }));
+    const params = dataTypes.map((t, i) => {
+      const realType = types[i].split(" ")[0];
+
+      return {
+        name: t.name,
+        type: t.type,
+        hashed: t.type === realType ? false : true,
+        value: BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
+      };
+    });
 
     const getFlow = () => {
       const flow = Object.entries(flows).find(([, value]) => {

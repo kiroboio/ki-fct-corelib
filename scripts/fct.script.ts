@@ -38,15 +38,26 @@ async function main() {
     contractAddress: data[chainId].FCT_Controller,
   });
 
+  const nullAddress = "0x0000000000000000000000000000000000000000";
+
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
     expiresAt: getDate(1000000),
+    builder: wallet,
     recurrency: {
       accumetable: true,
       maxRepeats: "1000",
       chillTime: "1",
     },
   });
+
+  console.log("options", batchMultiSigCall.options);
+
+  batchMultiSigCall.setOptions({
+    builder: nullAddress,
+  });
+
+  console.log("options", batchMultiSigCall.options);
 
   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
     chainId: "5",
