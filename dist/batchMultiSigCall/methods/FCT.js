@@ -105,22 +105,27 @@ function importFCT(fct) {
     for (const [index, call] of fct.mcall.entries()) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
-        // Getting types from method_interface, because parameter might be hashed and inside
-        // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
-        const types = meta.method_interface
-            .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-            .split(",")
-            .map((type, i) => `${type} ${dataTypes[i].name}`);
-        const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
-        const params = dataTypes.map((t, i) => {
-            const realType = types[i].split(" ")[0];
-            return {
-                name: t.name,
-                type: t.type,
-                hashed: t.type === realType ? false : true,
-                value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name]) ? decodedParams[t.name].toString() : decodedParams[t.name],
-            };
-        });
+        let params = [];
+        if (dataTypes.length > 1) {
+            // Getting types from method_interface, because parameter might be hashed and inside
+            // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
+            const types = meta.method_interface
+                .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
+                .split(",")
+                .map((type, i) => `${type} ${dataTypes[i].name}`);
+            const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
+            params = dataTypes.map((t, i) => {
+                const realType = types[i].split(" ")[0];
+                return {
+                    name: t.name,
+                    type: t.type,
+                    hashed: t.type === realType ? false : true,
+                    value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name])
+                        ? decodedParams[t.name].toString()
+                        : decodedParams[t.name],
+                };
+            });
+        }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
                 return value.text === meta.flow_control.toString();
