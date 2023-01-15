@@ -98,7 +98,7 @@ export const getGasPrices = async ({
     body: JSON.stringify({
       jsonrpc: "2.0",
       method: "eth_feeHistory",
-      params: [historicalBlocks, hexlify(blockNumber), [5, 15, 30, 75]],
+      params: [historicalBlocks, hexlify(blockNumber), [2, 5, 25, 50]],
       id: 1,
     }),
   });
