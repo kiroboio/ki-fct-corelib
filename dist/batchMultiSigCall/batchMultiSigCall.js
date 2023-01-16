@@ -13,6 +13,7 @@ const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
 const plugins_1 = require("./methods/plugins");
 const variables_1 = require("./methods/variables");
+const utils_1 = require("./utils");
 class BatchMultiSigCall {
     constructor({ provider, contractAddress, options, chainId, }) {
         this.batchMultiSigSelector = "0x2409a934";
@@ -34,20 +35,11 @@ class BatchMultiSigCall {
         this.getOutputVariable = variables_1.getOutputVariable;
         this.getExternalVariable = variables_1.getExternalVariable;
         this.getComputedVariable = variables_1.getComputedVariable;
-        // End of variables
-        //
-        //
         // Options
         this.setOptions = helpers_2.setOptions;
-        // End of options
-        //
-        //
         // Plugin functions
         this.getPlugin = plugins_1.getPlugin;
         this.getPluginClass = plugins_1.getPluginClass;
-        // End of plugin functions
-        //
-        //
         // FCT Functions
         this.create = FCT_1.create;
         this.createMultiple = FCT_1.createMultiple;
@@ -55,15 +47,15 @@ class BatchMultiSigCall {
         this.importFCT = FCT_1.importFCT;
         this.importEncodedFCT = FCT_1.importEncodedFCT;
         this.getCall = FCT_1.getCall;
-        // End of main FCT functions
-        //
-        //
         // Helpers functions
         this.createTypedData = helpers_2.createTypedData;
         this.getParamsFromCall = helpers_2.getParamsFromCall;
         this.verifyParams = helpers_2.verifyParams;
         this.handleTo = helpers_2.handleTo;
         this.handleValue = helpers_2.handleValue;
+        // Utility functions
+        // public utils = utils;
+        this.getPluginData = utils_1.getPluginData;
         this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.default[chainId || 1], FCT_Controller_abi_json_1.default, provider);
         if (chainId) {
             this.chainId = chainId;
