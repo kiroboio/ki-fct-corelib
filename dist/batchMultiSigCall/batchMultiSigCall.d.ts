@@ -4,6 +4,7 @@ import { createTypedData, getAllRequiredApprovals, getCalldataForActuator, getPa
 import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
+import { getPluginData } from "./utils";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.Contract;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -40,4 +41,5 @@ export declare class BatchMultiSigCall {
     protected verifyParams: typeof verifyParams;
     protected handleTo: typeof handleTo;
     protected handleValue: typeof handleValue;
+    getPluginData: typeof getPluginData;
 }

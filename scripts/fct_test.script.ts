@@ -1,11 +1,10 @@
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import util from "util";
 
-import { BatchMultiSigCall, FCT_UNISWAP } from "../src";
+import { BatchMultiSigCall } from "../src";
 import data from "./scriptData";
 // import util from "util";
+
 const FCT = {
   typedData: {
     types: {
@@ -98,18 +97,6 @@ const FCT = {
           name: "call",
           type: "Call",
         },
-        {
-          name: "amount",
-          type: "uint256",
-        },
-        {
-          name: "method",
-          type: "string",
-        },
-        {
-          name: "path",
-          type: "address[]",
-        },
       ],
       Call: [
         {
@@ -175,22 +162,22 @@ const FCT = {
       name: "FCT Controller",
       version: "1",
       chainId: 5,
-      verifyingContract: "0xc86A8f32feDB6D05b9153049aA596cF5C1621d45",
-      salt: "0x0100e421e2e61b1b9a580000c86a8f32fedb6d05b9153049aa596cf5c1621d45",
+      verifyingContract: "0x087550a787B2720AAC06351065afC1F413D82572",
+      salt: "0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572",
     },
     message: {
       meta: {
         name: "🔥Untitled",
-        builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+        builder: "0x0000000000000000000000000000000000000000",
         selector: "0x2409a934",
         version: "0x010101",
-        random_id: "0x405bba",
+        random_id: "0xc9986c",
         eip712: true,
       },
       limits: {
-        valid_from: "1673474400",
-        expires_at: "1674165599",
-        gas_price_limit: "199312020452",
+        valid_from: "1673820000",
+        expires_at: "1674511199",
+        gas_price_limit: "80000000000",
         purgeable: false,
         blockable: true,
       },
@@ -198,51 +185,50 @@ const FCT = {
         call: {
           call_index: 1,
           payer_index: 1,
-          call_type: "library",
+          call_type: "action",
           from: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-          to: "0x4186dA7567697B155BC9281eF409ff3eCc6bB0dC",
-          to_ens: "@lib:uniswap_v2",
-          eth_value: "0",
-          gas_limit: "400000",
+          to: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+          to_ens: "",
+          eth_value: "100000000000000",
+          gas_limit: "42002",
           permissions: 0,
           flow_control: "stop on success, revert on fail",
           returned_false_means_fail: false,
           jump_on_success: 0,
           jump_on_fail: 0,
-          method_interface: "swap_noSlippageProtection(uint256,bytes32,address[])",
+          method_interface: "",
         },
-        amount: "12000000000000000000",
-        method: "swap <amount> Tokens for <X> Tokens",
-        path: [
-          "0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165",
-          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-        ],
       },
     },
   },
-  builder: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
-  typeHash: "0x1cc3df3f04cd4b8a3a335275ab56f77edd6f062c08b8e5dbc47426da0936efa4",
-  sessionId: "0x405bba000101010000000000000063c9bd5f0063bf31600000002e67ec13e40c",
+  builder: "0x0000000000000000000000000000000000000000",
+  typeHash: "0x68737ac15a997c004c435ba5a5a43b26b545785523e99b8eb9fd86e50eb9d87d",
+  sessionId: "0xc9986c000101010000000000000063cf035f0063c4776000000012a05f20000c",
   nameHash: "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   mcall: [
     {
-      typeHash: "0xc0f2bc18d08aca5ca4de62820a15c580d94519cd311e4f78e8110f0165b3da8f",
-      ensHash: "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
-      functionSignature: "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
-      value: "0",
-      callId: "0x00000000000000000000000000000000000006000000000001000100061a8022",
+      typeHash: "0x059f3ab25880eb521ca0ee77909d61ec600ee2057b1588455cb8a9a469122816",
+      ensHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      functionSignature: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      value: "100000000000000",
+      callId: "0x0000000000000000000000000000000000000600000000000100010000a41200",
       from: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-      to: "0x4186dA7567697B155BC9281eF409ff3eCc6bB0dC",
-      data: "0x000000000000000000000000000000000000000000000000a688906bd8b0000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000e4e81fa6b16327d4b78cfeb83aade04ba7075165000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
-      types: [1000, 1000, 4000, 1000],
+      to: "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+      data: "0x",
+      types: [],
       typedHashes: [],
     },
   ],
   variables: [],
   externalSigners: [],
   computed: [],
-  signatures: [],
+  signatures: [
+    {
+      r: "0x4efc61eaa16b6524d191a00f40ee2552b0c7062953afbdc243434ad254060e74",
+      s: "0x7c1e60eeefc515d80d9d270b64c67d12adadaa4db3f039ad9bd1f29683ec380f",
+      v: 27,
+    },
+  ],
 };
 
 dotenv.config();
@@ -264,6 +250,12 @@ function addHours(numOfHours: number, date = new Date()) {
 const chainId = 5;
 const wallet = process.env.WALLET as string;
 
+// TypeError: Cannot read properties of undefined (reading 'to')
+//     at BatchMultiSigCall.getPlugin (/Users/lior/kirobo/back/ki-safe-transfer-service/node_modules/ki-fct-corelib/dist/batchMultiSigCall/methods/plugins.js:17:48)
+//     at getPluginData (/Users/lior/kirobo/back/ki-safe-transfer-service/src/services/eth/infura/infura.class.ts:521:44)
+//     at errors (/Users/lior/kirobo/back/ki-safe-transfer-service/src/services/eth/infura/infura.class.ts:267:23)
+//     at processTicksAndRejections (node:internal/process/task_queues:95:5)
+
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
@@ -284,24 +276,33 @@ async function main() {
     },
   });
 
-  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
-    chainId: "5",
-    initParams: {
-      methodParams: {
-        amount: "1000000",
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
-        path: [data[chainId].KIRO, data[chainId].USDC],
-      },
-    },
-  });
+  // const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
+  //   chainId: "5",
+  //   initParams: {
+  //     methodParams: {
+  //       amount: "1000000",
+  //       method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
+  //       path: [data[chainId].KIRO, data[chainId].USDC],
+  //     },
+  //   },
+  // });
 
-  console.log(swapWithoutSlippage.methodInterface);
+  // console.log(swapWithoutSlippage.methodInterface);
 
   batchMultiSigCall.importFCT(FCT);
-  console.log(util.inspect(batchMultiSigCall.calls, false, null, true));
-  const getAllRequiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  const plugin = await batchMultiSigCall.getPlugin(0);
 
-  console.log(getAllRequiredApprovals);
+  console.log("Plugin", plugin);
+
+  const pluginData = await batchMultiSigCall.getPluginData(0);
+  console.log("PluginData", pluginData);
+
+  // const { to, value, methodParams } = plugin.input.get();
+  // console.log("Params", to, value, methodParams);
+
+  // const getAllRequiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+
+  // console.log(getAllRequiredApprovals);
 }
 
 main()

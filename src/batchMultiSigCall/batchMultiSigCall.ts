@@ -18,6 +18,7 @@ import {
 import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
+import { getPluginData } from "./utils";
 
 export class BatchMultiSigCall {
   protected FCT_Controller: ethers.Contract;
@@ -76,26 +77,14 @@ export class BatchMultiSigCall {
   protected getExternalVariable = getExternalVariable;
   protected getComputedVariable = getComputedVariable;
 
-  // End of variables
-  //
-  //
   // Options
-
   public setOptions = setOptions;
 
-  // End of options
-  //
-  //
   // Plugin functions
-
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
 
-  // End of plugin functions
-  //
-  //
   // FCT Functions
-
   public create = create;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
@@ -107,14 +96,14 @@ export class BatchMultiSigCall {
     return this.calls.length;
   }
 
-  // End of main FCT functions
-  //
-  //
   // Helpers functions
-
   protected createTypedData = createTypedData;
   protected getParamsFromCall = getParamsFromCall;
   protected verifyParams = verifyParams;
   protected handleTo = handleTo;
   protected handleValue = handleValue;
+
+  // Utility functions
+  // public utils = utils;
+  public getPluginData = getPluginData;
 }
