@@ -34,10 +34,10 @@ export declare class BatchMultiSigCall {
     importFCT: typeof importFCT;
     importEncodedFCT: typeof importEncodedFCT;
     getCall: typeof getCall;
-    get length(): number;
     protected createTypedData: typeof createTypedData;
     protected getParamsFromCall: typeof getParamsFromCall;
     protected verifyParams: typeof verifyParams;
     protected handleTo: typeof handleTo;
     protected handleValue: typeof handleValue;
+    get length(): number;
 }

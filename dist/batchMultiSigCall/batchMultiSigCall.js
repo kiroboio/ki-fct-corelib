@@ -34,20 +34,11 @@ class BatchMultiSigCall {
         this.getOutputVariable = variables_1.getOutputVariable;
         this.getExternalVariable = variables_1.getExternalVariable;
         this.getComputedVariable = variables_1.getComputedVariable;
-        // End of variables
-        //
-        //
         // Options
         this.setOptions = helpers_2.setOptions;
-        // End of options
-        //
-        //
         // Plugin functions
         this.getPlugin = plugins_1.getPlugin;
         this.getPluginClass = plugins_1.getPluginClass;
-        // End of plugin functions
-        //
-        //
         // FCT Functions
         this.create = FCT_1.create;
         this.createMultiple = FCT_1.createMultiple;
@@ -55,9 +46,6 @@ class BatchMultiSigCall {
         this.importFCT = FCT_1.importFCT;
         this.importEncodedFCT = FCT_1.importEncodedFCT;
         this.getCall = FCT_1.getCall;
-        // End of main FCT functions
-        //
-        //
         // Helpers functions
         this.createTypedData = helpers_2.createTypedData;
         this.getParamsFromCall = helpers_2.getParamsFromCall;

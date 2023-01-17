@@ -52,6 +52,12 @@ async function main() {
   console.log(priceToTick(1500 / 1e12));
 
   const pool = new Pool(USDC, WETH, fee, sqrtPriceX96pool.toString(), liquidity.toString(), tick);
+
+  console.log(pool.token0Price.toFixed());
+  console.log(pool.token1Price.toFixed());
+
+  // Price to closest tick with Uniswap
+
   console.log(
     nearestUsableTick(priceToTick(1499.7 / 1e12), tickSpacing),
     nearestUsableTick(priceToTick(1600.4 / 1e12), tickSpacing)
