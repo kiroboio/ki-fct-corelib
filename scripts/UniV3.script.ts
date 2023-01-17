@@ -1,5 +1,5 @@
 import { SupportedChainId, Token } from "@uniswap/sdk-core";
-import { nearestUsableTick } from "@uniswap/v3-sdk";
+import { nearestUsableTick, Pool } from "@uniswap/v3-sdk";
 import BigNumber from "bignumber.js";
 import * as dotenv from "dotenv";
 // import util from "util";
@@ -14,6 +14,7 @@ function getLiquidity0_v2(x: Value, sa: Value, sb: Value) {
   x = new BigNumber(x);
   sa = new BigNumber(sa);
   sb = new BigNumber(sb);
+  // x * sa * sb / (sb - sa)
   return x.times(sa).times(sb).div(sb.minus(sa)).integerValue(BigNumber.ROUND_FLOOR).toString();
 }
 
@@ -59,9 +60,9 @@ const WETH = new Token(
 const USDC = new Token(SupportedChainId.MAINNET, "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557", 6, "USDC", "USD Coin");
 
 async function main() {
-  const sqrtPriceX96pool = 2167946468689374358323659658413970n;
-  const liquidity = 39574766804608021174n;
-  const tick = 204350;
+  const sqrtPriceX96pool = 1997558511221073801267685416255924n;
+  const liquidity = 26515644603041494425n;
+  const tick = 202712;
   const tickSpacing = 10;
 
   const pr = BigNumber(sqrtPriceX96pool.toString()).div(q96.toString()).pow(2).toString();
@@ -70,6 +71,11 @@ async function main() {
 
   console.log("priceOfToken1inToken0", priceOfToken1inToken0, priceToTick(parseFloat(priceOfToken1inToken0)));
   console.log("priceOfToken0inToken1", priceOfToken0inToken1, priceToTick(parseFloat(priceOfToken0inToken1)));
+
+  const pool = new Pool(WETH, USDC, 500, "1997558511221073801267685416255924", "26515644603041494425", 202712);
+
+  console.log("priceOf token0", pool.priceOf(WETH).toFixed());
+  console.log("priceOf token1", pool.priceOf(USDC).toFixed());
 
   const addLiquidityV2 = ({
     tokenA,
@@ -94,21 +100,48 @@ async function main() {
   }) => {
     const decimalDiff = tokenA.decimals - tokenB.decimals;
 
-    const baseP = priceCurrent;
-    const baseA = priceLower;
-    const baseB = priceUpper;
+    const baseP = priceCurrent / 10 ** decimalDiff;
+    const baseA = priceLower / 10 ** decimalDiff;
+    const baseB = priceUpper / 10 ** decimalDiff;
+    // const baseP = priceCurrent;
+    // const baseA = priceLower;
+    // const baseB = priceUpper;
 
-    const p = priceCurrent * 10 ** decimalDiff;
-    const a = priceLower * 10 ** decimalDiff;
-    const b = priceUpper * 10 ** decimalDiff;
+    // const p = priceCurrent * 10 ** decimalDiff;
+    // const a = priceLower * 10 ** decimalDiff;
+    // const b = priceUpper * 10 ** decimalDiff;
+
+    const p = priceCurrent;
+    const a = priceLower;
+    const b = priceUpper;
 
     const sp = p ** 0.5;
     const sa = a ** 0.5;
     const sb = b ** 0.5;
 
+    function getLiq0(x: string, sa: string, sb: string) {
+      // x = new BigNumber(x);
+      // sa = new BigNumber(sa);
+      // sb = new BigNumber(sb);
+
+      // return x.times(sa).times(sb).div(sb.minus(sa)).integerValue(BigNumber.ROUND_FLOOR).toString();
+      const xBigInt = BigInt(x);
+      const saBigInt = BigInt(sa);
+      const sbBigInt = BigInt(sb);
+
+      // x * sa * sb / (sb - sa)
+
+      return BigNumber(((xBigInt * saBigInt * sbBigInt) / (sbBigInt - saBigInt)).toString())
+        .shiftedBy(-10)
+        .toString();
+    }
+
     if (tokenA.amount) {
       const amount = new BigNumber(tokenA.amount).shiftedBy(18 - tokenA.decimals).toString();
       const liq0 = getLiquidity0_v2(amount, sp, sb);
+      console.log("liq0", BigNumber(liq0).toFixed());
+      console.log("liq0", getLiq0(amount, (sa * 1e10).toFixed(), (sb * 1e10).toFixed()));
+
       const liq1 = getLiquidity0_v2(amount, sp, sa);
       const liq = BigNumber.max(liq0, liq1).toString();
 
@@ -154,6 +187,8 @@ async function main() {
     }
   };
 
+  // 1572.39 - 16216.3, 0.0482346
+
   console.log(
     addLiquidityV2({
       tokenA: {
@@ -165,9 +200,12 @@ async function main() {
         address: USDC.address,
         decimals: USDC.decimals,
       },
-      priceLower: 1200 / 1e12,
-      priceCurrent: 1335.25 / 1e12,
-      priceUpper: 1600.4 / 1e12,
+      // priceLower: 1300 / 1e12,
+      // priceCurrent: 1572.39 / 1e12,
+      // priceUpper: 1600.4 / 1e12,
+      priceLower: 1300,
+      priceCurrent: 1572.39,
+      priceUpper: 1600.4,
     })
   );
 
@@ -182,9 +220,12 @@ async function main() {
         decimals: USDC.decimals,
         amount: BigInt(802 * 10 ** 6).toString(),
       },
-      priceLower: 1200 / 1e12,
-      priceCurrent: 1335.25 / 1e12,
-      priceUpper: 1600.4 / 1e12,
+      // priceLower: 1300 / 1e12,
+      // priceCurrent: 1572.39 / 1e12,
+      // priceUpper: 1600.4 / 1e12,
+      priceLower: 1300,
+      priceCurrent: 1572.39,
+      priceUpper: 1600.4,
     })
   );
 }
