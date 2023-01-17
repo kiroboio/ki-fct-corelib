@@ -13,14 +13,18 @@ export const getTypedDataDomain = async (
   verifyingContract: string;
   salt: string;
 }> => {
-  const chainId = await factoryProxy.CHAIN_ID();
-  return {
-    name: await factoryProxy.NAME(),
-    version: await factoryProxy.VERSION(),
-    chainId: chainId.toNumber(),
-    verifyingContract: factoryProxy.address,
-    salt: await factoryProxy.UID(),
-  };
+  try {
+    const chainId = await factoryProxy.CHAIN_ID();
+    return {
+      name: await factoryProxy.NAME(),
+      version: await factoryProxy.VERSION(),
+      chainId: chainId.toNumber(),
+      verifyingContract: factoryProxy.address,
+      salt: await factoryProxy.UID(),
+    };
+  } catch (e) {
+    throw new Error(`Error getting typed data domain: ${e.message}`);
+  }
 };
 
 export const generateTxType = (item: Partial<MethodParamsInterface>): { name: string; type: string }[] => {
