@@ -64,6 +64,9 @@ export async function createMultiple(
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
+  if (index < 0 || index >= this.calls.length) {
+    throw new Error("Index out of range");
+  }
   return this.calls[index];
 }
 

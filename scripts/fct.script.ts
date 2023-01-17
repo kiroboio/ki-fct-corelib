@@ -3,7 +3,6 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import fs from "fs";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
@@ -175,30 +174,20 @@ async function main() {
     gas: 462109,
   });
 
-  // console.log("kiroPayment", kiroPayment);
+  const pluginData = await batchMultiSigCall.getPluginData(3);
+  console.log(pluginData);
 
-  // 34149170958632548614943
-  // kiro 1017
+  // const requireApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  // console.log(requireApprovals);
 
-  // Import decoded calldata
-  // const newBatchMultiSigCall = new BatchMultiSigCall({
-  //   provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
-  //   contractAddress: data[chainId].FCT_Controller,
+  // const fees = utils.getPaymentPerPayer({
+  //   fct: signedFCT,
+  //   kiroPriceInETH: "34149170958632548614943",
   // });
-  // const decoded = await newBatchMultiSigCall.importEncodedFCT(callData);
-  // console.log(util.inspect(decoded, false, null, true /* enable colors */));
-
-  const requireApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  console.log(requireApprovals);
-
-  const fees = utils.getPaymentPerPayer({
-    fct: signedFCT,
-    kiroPriceInETH: "34149170958632548614943",
-  });
 
   // console.log(fees);
 
-  fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
+  // fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()

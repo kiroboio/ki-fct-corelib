@@ -52,6 +52,9 @@ async function createMultiple(calls) {
 }
 exports.createMultiple = createMultiple;
 function getCall(index) {
+    if (index < 0 || index >= this.calls.length) {
+        throw new Error("Index out of range");
+    }
     return this.calls[index];
 }
 exports.getCall = getCall;
