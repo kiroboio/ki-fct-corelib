@@ -12,8 +12,8 @@ async function getPluginData(index) {
         input: {
             to: call.to,
             value: call.value,
-            ...call.params.reduce((acc, param) => {
-                return { ...acc, [`methodParams.${param.name}`]: param.value };
+            methodParams: call.params.reduce((acc, param) => {
+                return { ...acc, [param.name]: param.value };
             }, {}),
         },
     };

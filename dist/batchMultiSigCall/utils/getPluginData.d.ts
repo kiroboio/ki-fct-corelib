@@ -7,5 +7,6 @@ export declare function getPluginData(this: BatchMultiSigCall, index?: number): 
     input: {
         to: string | import("../..").Variable;
         value: string | import("../..").Variable;
+        methodParams: {};
     };
 }>;
