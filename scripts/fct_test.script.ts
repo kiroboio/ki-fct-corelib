@@ -290,9 +290,6 @@ async function main() {
   // console.log(swapWithoutSlippage.methodInterface);
 
   batchMultiSigCall.importFCT(FCT);
-  const plugin = await batchMultiSigCall.getPlugin(0);
-
-  console.log("Plugin", plugin);
 
   const pluginData = await batchMultiSigCall.getPluginData(0);
   console.log("PluginData", pluginData);
