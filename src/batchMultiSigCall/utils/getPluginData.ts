@@ -12,8 +12,8 @@ export async function getPluginData(this: BatchMultiSigCall, index?: number) {
     input: {
       to: call.to,
       value: call.value,
-      ...call.params.reduce((acc, param) => {
-        return { ...acc, [`methodParams.${param.name}`]: param.value };
+      methodParams: call.params.reduce((acc, param) => {
+        return { ...acc, [param.name]: param.value };
       }, {}),
     },
   };
