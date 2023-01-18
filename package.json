@@ -44,6 +44,7 @@
     "@uniswap/sdk-core": "^3.1.1",
     "@uniswap/v3-sdk": "^3.9.0",
     "chai": "^4.3.7",
+    "decimal.js": "^10.4.3",
     "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",

@@ -1,11 +1,17 @@
 import { SupportedChainId, Token } from "@uniswap/sdk-core";
 import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json";
 import { nearestUsableTick, Pool, Position } from "@uniswap/v3-sdk";
+import Decimal from "decimal.js";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 
 import data from "./scriptData";
 // import util from "util";
+
+// sqrtPriceX96 = sqrt(price) * q96
+// sqrt(price) = sqrtPriceX96 / q96
+// price = sqrtPriceX96 / q96 ** 2
+// sqrt(1.0001)^tick = sqrtPriceX96 / q96
 
 dotenv.config();
 
@@ -43,13 +49,26 @@ async function main() {
   const tick = slot0.tick;
 
   // Create a function that converts price to the closest tick
-  const priceToTick = (price: number) => {
-    if (price < 1) {
-      return Math.floor(Math.log(1 / price) / Math.log(1.0001));
-    }
-    return Math.floor(Math.log(price) / Math.log(1.0001));
+  const priceToTick = (price: number, decimal: number) => {
+    const value = Math.floor(Math.log(price / 10 ** decimal) / Math.log(1.0001));
+    return value > 0 ? value : -value;
   };
-  console.log(priceToTick(1500 / 1e12));
+
+  const priceToTickV2 = (price: number, decimalDiff: number, token0PriceOfToken1: boolean) => {
+    const p = token0PriceOfToken1 ? price : 1 / price;
+    return Math.floor(Math.log(p * 10 ** decimalDiff) / Math.log(1.0001));
+  };
+
+  const priceToTickString = (price: number, decimal: number) => {
+    const value = new Decimal(price)
+      .div(10 ** decimal)
+      .log(1.0001)
+      .floor();
+    return value.isPos() ? value.toString() : value.neg().toString();
+  };
+
+  console.log(priceToTick(1500, 12));
+  console.log(priceToTickString(1500, 12));
 
   const pool = new Pool(USDC, WETH, fee, sqrtPriceX96pool.toString(), liquidity.toString(), tick);
 
@@ -59,14 +78,14 @@ async function main() {
   // Price to closest tick with Uniswap
 
   console.log(
-    nearestUsableTick(priceToTick(1499.7 / 1e12), tickSpacing),
-    nearestUsableTick(priceToTick(1600.4 / 1e12), tickSpacing)
+    nearestUsableTick(priceToTick(1499.7, 12), tickSpacing),
+    nearestUsableTick(priceToTick(1600.4, 12), tickSpacing)
   );
 
   const position = Position.fromAmount0({
     pool,
-    tickUpper: nearestUsableTick(priceToTick(1499.7 / 1e12), tickSpacing),
-    tickLower: nearestUsableTick(priceToTick(1600.4 / 1e12), tickSpacing),
+    tickUpper: nearestUsableTick(priceToTick(1499.7, 12), tickSpacing),
+    tickLower: nearestUsableTick(priceToTick(1600.4, 12), tickSpacing),
     amount0: "100" + "0".repeat(6),
     useFullPrecision: true,
   });
@@ -78,6 +97,10 @@ async function main() {
     tickLower: position.tickLower,
     tickUpper: position.tickUpper,
   });
+
+  // console.log(priceToTick(0.0006667222649076464, 12));
+  console.log(priceToTickV2(0.0006667222649076464, 12, true));
+  console.log(priceToTickV2(1499.8749143896055, 12, false));
 }
 
 main()
