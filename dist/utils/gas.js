@@ -70,64 +70,85 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, }) => {
+const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-    const latestBlock = await provider.getBlock("latest");
-    const baseFee = latestBlock.baseFeePerGas.toString();
-    const blockNumber = latestBlock.number;
-    const res = await fetch(rpcUrl, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            jsonrpc: "2.0",
-            method: "eth_feeHistory",
-            params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [2, 5, 25, 50]],
-            id: 1,
-        }),
-    });
-    const { result } = await res.json();
-    let blockNum = parseInt(result.oldestBlock, 16);
-    let index = 0;
-    const blocks = [];
-    while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
-        blocks.push({
-            number: blockNum,
-            baseFeePerGas: Number(result.baseFeePerGas[index]),
-            gasUsedRatio: Number(result.gasUsedRatio[index]),
-            priorityFeePerGas: result.reward[index].map((x) => Number(x)),
-        });
-        blockNum += 1;
-        index += 1;
-    }
-    const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
-    const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
-    const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
-    const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
-    const baseFeePerGas = Number(baseFee);
-    return {
-        slow: {
-            maxFeePerGas: slow + baseFeePerGas,
-            maxPriorityFeePerGas: slow,
-        },
-        average: {
-            maxFeePerGas: average + baseFeePerGas,
-            maxPriorityFeePerGas: average,
-        },
-        fast: {
-            maxFeePerGas: fast + baseFeePerGas,
-            maxPriorityFeePerGas: fast,
-        },
-        fastest: {
-            maxFeePerGas: fastest + baseFeePerGas,
-            maxPriorityFeePerGas: fastest,
-        },
-    };
+    let keepTrying = true;
+    let returnValue;
+    do {
+        try {
+            const latestBlock = await provider.getBlock("latest");
+            const baseFee = latestBlock.baseFeePerGas.toString();
+            const blockNumber = latestBlock.number;
+            const res = await fetch(rpcUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "eth_feeHistory",
+                    params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [2, 5, 25, 50]],
+                    id: 1,
+                }),
+            });
+            const { result } = await res.json();
+            if (!result) {
+                throw new Error("No result");
+            }
+            let blockNum = parseInt(result.oldestBlock, 16);
+            let index = 0;
+            const blocks = [];
+            while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
+                blocks.push({
+                    number: blockNum,
+                    baseFeePerGas: Number(result.baseFeePerGas[index]),
+                    gasUsedRatio: Number(result.gasUsedRatio[index]),
+                    priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+                });
+                blockNum += 1;
+                index += 1;
+            }
+            const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
+            const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
+            const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+            const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
+            const baseFeePerGas = Number(baseFee);
+            returnValue = {
+                slow: {
+                    maxFeePerGas: slow + baseFeePerGas,
+                    maxPriorityFeePerGas: slow,
+                },
+                average: {
+                    maxFeePerGas: average + baseFeePerGas,
+                    maxPriorityFeePerGas: average,
+                },
+                fast: {
+                    maxFeePerGas: fast + baseFeePerGas,
+                    maxPriorityFeePerGas: fast,
+                },
+                fastest: {
+                    maxFeePerGas: fastest + baseFeePerGas,
+                    maxPriorityFeePerGas: fastest,
+                },
+            };
+            keepTrying = false;
+        }
+        catch (err) {
+            console.log("Error getting gas prices, retrying", err);
+            if (tries > 0) {
+                // Wait 3 seconds before retrying
+                await new Promise((resolve) => setTimeout(resolve, 3000));
+            }
+            else {
+                throw new Error("Could not get gas prices, issue might be related to node provider");
+            }
+        }
+    } while (keepTrying && tries-- > 0);
+    return returnValue;
 };
 exports.getGasPrices = getGasPrices;
 const estimateFCTGasCost = async ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }) => {
