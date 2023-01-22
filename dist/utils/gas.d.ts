@@ -1,4 +1,4 @@
-import { IFCT, ITxValidator } from "./types";
+import { EIP1559GasPrice, IFCT, ITxValidator } from "./types";
 export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<{
     isValid: boolean;
     txData: {
@@ -17,27 +17,11 @@ export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boole
     };
     error: any;
 }>;
-export declare const getGasPrices: ({ rpcUrl, historicalBlocks, }: {
+export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     rpcUrl: string;
     historicalBlocks?: number;
-}) => Promise<{
-    slow: {
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-    };
-    average: {
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-    };
-    fast: {
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-    };
-    fastest: {
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-    };
-}>;
+    tries?: number;
+}) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
 export declare const estimateFCTGasCost: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
     fct: IFCT;
     callData: string;
