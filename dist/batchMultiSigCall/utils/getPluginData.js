@@ -5,7 +5,6 @@ async function getPluginData(index) {
     const plugin = await this.getPlugin(index);
     const call = this.getCall(index);
     return {
-        plugin,
         protocol: plugin.protocol,
         type: plugin.type,
         method: plugin.method,
