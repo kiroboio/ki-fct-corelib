@@ -5,7 +5,6 @@ export async function getPluginData(this: BatchMultiSigCall, index?: number) {
   const call = this.getCall(index);
 
   return {
-    plugin,
     protocol: plugin.protocol,
     type: plugin.type,
     method: plugin.method,
