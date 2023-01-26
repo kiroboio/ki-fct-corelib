@@ -4,14 +4,22 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
 import { parseCallID } from "../batchMultiSigCall/helpers";
-import {
-  BatchMultiSigCallTypedData,
-  IBatchMultiSigCallFCT,
-  TypedDataLimits,
-  TypedDataMeta,
-  TypedDataTypes,
-} from "../batchMultiSigCall/types";
+import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT, TypedDataTypes } from "../batchMultiSigCall/types";
 import { IFCT } from "./types";
+
+function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT {
+  return [
+    "typeHash",
+    "typedData",
+    "sessionId",
+    "nameHash",
+    "mcall",
+    "builder",
+    "variables",
+    "externalSigners",
+    "computed",
+  ].includes(keyInput);
+}
 
 export const recoverAddressFromEIP712 = (
   typedData: BatchMultiSigCallTypedData,
@@ -31,34 +39,21 @@ export const recoverAddressFromEIP712 = (
   }
 };
 
-export const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData) => {
-  // Return FCT Message hash
+export const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData): string => {
   return ethers.utils.hexlify(
     TypedDataUtils.eip712Hash(typedData as unknown as TypedMessage<TypedDataTypes>, SignTypedDataVersion.V4)
   );
 };
 
-export const validateFCT = (FCT: IBatchMultiSigCallFCT, softValidation = false) => {
-  const listOfKeys = [
-    "typeHash",
-    "typedData",
-    "sessionId",
-    "nameHash",
-    "mcall",
-    "builder",
-    "variables",
-    "externalSigners",
-    "computed",
-  ];
+export const validateFCT = <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softValidation = false) => {
+  const keys = Object.keys(FCT);
 
-  listOfKeys.forEach((key) => {
-    if (FCT[key] === undefined) {
-      throw new Error(`FCT is missing ${key}`);
-    }
-  });
+  if (!keys.every(isFCTKeyType)) {
+    throw new Error(`FCT has invalid keys`);
+  }
 
-  const limits = FCT.typedData.message.limits as TypedDataLimits;
-  const fctData = FCT.typedData.message.meta as TypedDataMeta;
+  const limits = FCT.typedData.message.limits;
+  const fctData = FCT.typedData.message.meta;
 
   const currentDate = new Date().getTime() / 1000;
   const validFrom = parseInt(limits.valid_from);

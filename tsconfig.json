@@ -12,7 +12,10 @@
     "skipLibCheck": true,
     "paths": {
       "@helpers": ["helpers/index.ts"],
-      "@types": ["types"]
+      "@types": ["types"],
+      "@constants": ["constants"],
+      "BatchMultiSigCall": ["batchMultiSigCall"],
+      "corelib": ["index.ts"]
     }
   },
   "include": ["src/**/*", "hardhat.config.ts", "./test"],

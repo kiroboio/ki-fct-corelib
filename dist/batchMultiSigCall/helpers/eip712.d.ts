@@ -1,7 +1,7 @@
-import { BatchMultiSigCallTypedData, ComputedVariables, IMSCallInput } from "../types";
+import { BatchMultiSigCallTypedData, ComputedVariables, IComputedVariable, IMSCallInput } from "../types";
 export declare const getTxEIP712Types: (calls: IMSCallInput[]) => {
     txTypes: {};
     structTypes: {};
 };
 export declare const getUsedStructTypes: (typedData: BatchMultiSigCallTypedData, typeName: string) => string[];
-export declare const getComputedVariableMessage: (computedVariables: ComputedVariables[]) => {};
+export declare const getComputedVariableMessage: (computedVariables: ComputedVariables[]) => Record<`computed_${number}`, IComputedVariable>;

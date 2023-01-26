@@ -124,27 +124,10 @@ export async function createTypedData(
   version: string
 ): Promise<BatchMultiSigCallTypedData> {
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
-    // Update params if variables (FC) or references (FD) are used
     let paramsData = {};
     if (call.params) {
       this.verifyParams(call.params);
       paramsData = this.getParamsFromCall(call);
-
-      // Check if paramsData has one key and that key is typeof object
-
-      // if (Object.keys(paramsData).length === 1 && typeof paramsData[Object.keys(paramsData)[0]] === "object") {
-      //   const allNativeTypes = (call.params[0].value as Param[]).every((param) => {
-      //     const { type } = param;
-      //     const nativeTypes = ["address", "uint", "int", "bytes32", "bool"];
-      //     return nativeTypes.some((nativeType) => type.startsWith(nativeType));
-      //   });
-
-      //   if (allNativeTypes) {
-      //     paramsData = paramsData[Object.keys(paramsData)[0]];
-      //   }
-
-      //   paramsData = paramsData[Object.keys(paramsData)[0]];
-      // }
     }
 
     const options = call.options || {};

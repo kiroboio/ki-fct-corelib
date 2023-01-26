@@ -3,7 +3,7 @@ import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT } from "../batchMulti
 import { IFCT } from "./types";
 export declare const recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string | null;
 export declare const getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;
-export declare const validateFCT: (FCT: IBatchMultiSigCallFCT, softValidation?: boolean) => {
+export declare const validateFCT: <IFCT_1 extends IBatchMultiSigCallFCT>(FCT: IFCT_1, softValidation?: boolean) => {
     getOptions: () => {
         valid_from: string;
         expires_at: string;

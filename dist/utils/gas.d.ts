@@ -1,22 +1,40 @@
-import { EIP1559GasPrice, IFCT, ITxValidator } from "./types";
-export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<{
-    isValid: boolean;
-    txData: {
-        type: number;
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
+import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
+interface TransactionValidatorSuccess<T extends ITxValidator> {
+    isValid: true;
+    txData: T extends {
+        eip1559: true;
+    } ? {
         gas: number;
-    } | {
-        type: number;
-        gasPrice: number;
+        type: 2;
+    } & EIP1559GasPrice : {
         gas: number;
-    };
+        type: 1;
+    } & LegacyGasPrice;
     prices: {
         gas: number;
         gasPrice: number;
     };
-    error: any;
-}>;
+    error: null;
+}
+interface TransactionValidatorError<T extends ITxValidator> {
+    isValid: false;
+    txData: T extends {
+        eip1559: true;
+    } ? {
+        gas: number;
+        type: 2;
+    } & EIP1559GasPrice : {
+        gas: number;
+        type: 1;
+    } & LegacyGasPrice;
+    prices: {
+        gas: number;
+        gasPrice: number;
+    };
+    error: string;
+}
+type TransactionValidatorResult<T extends ITxValidator> = TransactionValidatorSuccess<T> | TransactionValidatorError<T>;
+export declare const transactionValidator: <T extends ITxValidator>(txVal: T, pureGas?: boolean) => Promise<TransactionValidatorResult<T>>;
 export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     rpcUrl: string;
     historicalBlocks?: number;
@@ -34,7 +52,7 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
     gasPrice: number;
     gas: number;
 }) => {
-    vault: any;
+    vault: string;
     amountInKIRO: string;
     amountInETH: string;
 };
@@ -48,3 +66,4 @@ export declare const getPaymentPerPayer: ({ fct, gasPrice, kiroPriceInETH, penal
     amount: string;
     amountInETH: string;
 }[];
+export {};
