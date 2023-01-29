@@ -46,7 +46,10 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
   return plugin;
 }
 
-export async function getPluginClass(this: BatchMultiSigCall, index: number): Promise<any> {
+export async function getPluginClass(
+  this: BatchMultiSigCall,
+  index: number
+): Promise<ReturnType<typeof getPluginProvider>> {
   const { chainId } = await this.provider.getNetwork();
   const call = this.getCall(index);
 

@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-import { utils } from "../src/index";
+import { ERC20, utils } from "../src/index";
 import data from "./scriptData";
 // 34149170958632548614943
 
@@ -16,6 +16,16 @@ async function main() {
   });
 
   console.log("Gas Prices", gasPrices);
+
+  const createNodeData = (plugin: any) => {
+    return JSON.parse(new plugin({ chainId: "5" }).toJSON());
+  };
+
+  const transfer = new ERC20.actions.Transfer({
+    chainId: "5",
+  });
+
+  console.log(createNodeData(transfer));
 }
 
 main().catch((error) => {

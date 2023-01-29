@@ -6,8 +6,11 @@ export * as constants from "./constants";
 export * as utils from "./utils";
 export * as variables from "./variables";
 
+// BatchMultiSigCall exports
+export * as FCTBatchMultiSigCall from "./batchMultiSigCall";
+
 // FCT exports
-export { BatchMultiSigCall } from "./batchMultiSigCall";
+export * from "./methods";
 
 // Type exports
 export * from "./batchMultiSigCall/types";

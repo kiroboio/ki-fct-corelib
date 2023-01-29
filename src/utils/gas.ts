@@ -11,20 +11,45 @@ import { TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
 import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 
-export const transactionValidator = async (txVal: ITxValidator, pureGas = false) => {
+interface TransactionValidatorSuccess<T extends ITxValidator> {
+  isValid: true;
+  txData: T extends { eip1559: true }
+    ? { gas: number; type: 2 } & EIP1559GasPrice
+    : { gas: number; type: 1 } & LegacyGasPrice;
+  prices: { gas: number; gasPrice: number };
+  error: null;
+}
+
+interface TransactionValidatorError<T extends ITxValidator> {
+  isValid: false;
+  txData: T extends { eip1559: true }
+    ? { gas: number; type: 2 } & EIP1559GasPrice
+    : { gas: number; type: 1 } & LegacyGasPrice;
+  prices: { gas: number; gasPrice: number };
+  error: string;
+}
+
+type TransactionValidatorResult<T extends ITxValidator> = TransactionValidatorSuccess<T> | TransactionValidatorError<T>;
+
+type GasPriceType<T extends ITxValidator> = T extends { eip1559: true } ? EIP1559GasPrice : LegacyGasPrice;
+
+export const transactionValidator = async <T extends ITxValidator>(
+  txVal: T,
+  pureGas = false
+): Promise<TransactionValidatorResult<T>> => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
-  const gasPrice = txVal.eip1559
-    ? (
+  const gasPrice: GasPriceType<T> = txVal.eip1559
+    ? ((
         await getGasPrices({
           rpcUrl,
         })
-      )[txVal.gasPriority || "average"]
-    : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
+      )[txVal.gasPriority || "average"] as any)
+    : ({ gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() } as any);
 
   try {
     let gas: BigNumberEthers;
@@ -44,17 +69,17 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
     if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
       return {
         isValid: true,
-        txData: { gas: gasUsed, ...(gasPrice as EIP1559GasPrice), type: 2 },
+        txData: { gas: gasUsed, ...gasPrice, type: 2 },
         prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
         error: null,
-      };
+      } as any;
     } else {
       return {
         isValid: true,
-        txData: { gas: gasUsed, ...(gasPrice as LegacyGasPrice), type: 1 },
-        prices: { gas: gasUsed, gasPrice: (gasPrice as LegacyGasPrice).gasPrice },
+        txData: { gas: gasUsed, ...gasPrice, type: 1 },
+        prices: { gas: gasUsed, gasPrice: gasPrice.gasPrice },
         error: null,
-      };
+      } as any;
     }
   } catch (err: any) {
     if (err.reason === "processing response error") {
@@ -68,7 +93,7 @@ export const transactionValidator = async (txVal: ITxValidator, pureGas = false)
         gasPrice: txVal.eip1559 ? (gasPrice as EIP1559GasPrice).maxFeePerGas : (gasPrice as LegacyGasPrice).gasPrice,
       },
       error: err.reason,
-    };
+    } as any;
   }
 };
 
@@ -269,7 +294,7 @@ export const getKIROPayment = ({
   const gasInt = BigInt(gas);
   const gasPriceFormatted = BigInt(gasPrice);
 
-  const limits = fct.typedData.message.limits as TypedDataLimits;
+  const limits = fct.typedData.message.limits;
   const maxGasPrice = limits.gas_price_limit;
 
   // 1000 - baseFee
