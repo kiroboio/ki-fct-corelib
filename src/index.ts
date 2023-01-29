@@ -7,7 +7,7 @@ export * as utils from "./utils";
 export * as variables from "./variables";
 
 // BatchMultiSigCall exports
-export * as batchMultiSigCall from "./batchMultiSigCall";
+export * as FCTBatchMultiSigCall from "./batchMultiSigCall";
 
 // FCT exports
 export * from "./methods";
