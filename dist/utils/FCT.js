@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllFCTPaths = exports.getVariablesAsBytes32 = exports.validateFCT = exports.getFCTMessageHash = exports.recoverAddressFromEIP712 = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const BatchMultiSigCall_1 = require("BatchMultiSigCall");
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
 const helpers_1 = require("../batchMultiSigCall/helpers");
@@ -63,7 +62,7 @@ const validateFCT = (FCT, softValidation = false) => {
     }
     return {
         getOptions: () => {
-            const parsedSessionID = BatchMultiSigCall_1.helpers.parseSessionID(FCT.sessionId, fctData.builder);
+            const parsedSessionID = (0, helpers_1.parseSessionID)(FCT.sessionId, fctData.builder);
             return {
                 valid_from: parsedSessionID.validFrom,
                 expires_at: parsedSessionID.expiresAt,

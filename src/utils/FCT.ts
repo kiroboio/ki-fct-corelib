@@ -1,10 +1,9 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
-import { helpers } from "BatchMultiSigCall";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
-import { parseCallID } from "../batchMultiSigCall/helpers";
+import { parseCallID, parseSessionID } from "../batchMultiSigCall/helpers";
 import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT, TypedDataTypes } from "../batchMultiSigCall/types";
 import { IFCT } from "./types";
 
@@ -79,7 +78,7 @@ export const validateFCT = <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softV
 
   return {
     getOptions: () => {
-      const parsedSessionID = helpers.parseSessionID(FCT.sessionId, fctData.builder);
+      const parsedSessionID = parseSessionID(FCT.sessionId, fctData.builder);
 
       return {
         valid_from: parsedSessionID.validFrom,

@@ -111,7 +111,7 @@ export const getSessionId = (salt: string, options: IFCTOptions): string => {
   return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 
-export const parseSessionID = (sessionId: string, builder: string): IFCTOptions => {
+export const parseSessionID = (sessionId: string, builder: string) => {
   // const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
   // const version = sessionId.slice(10, 16);
