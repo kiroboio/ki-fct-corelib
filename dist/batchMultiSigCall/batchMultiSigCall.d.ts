@@ -5,6 +5,7 @@ import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 import { getPluginData } from "./utils";
+type ChainId = 1 | 5;
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.Contract;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -18,7 +19,7 @@ export declare class BatchMultiSigCall {
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
         contractAddress?: string;
         options?: Partial<IFCTOptions>;
-        chainId?: number;
+        chainId?: ChainId;
     });
     getCalldataForActuator: typeof getCalldataForActuator;
     getAllRequiredApprovals: typeof getAllRequiredApprovals;
@@ -43,3 +44,4 @@ export declare class BatchMultiSigCall {
     protected handleValue: typeof handleValue;
     getPluginData: typeof getPluginData;
 }
+export {};

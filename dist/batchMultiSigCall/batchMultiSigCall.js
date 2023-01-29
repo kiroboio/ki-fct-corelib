@@ -8,7 +8,7 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
-const data_1 = __importDefault(require("./data"));
+const data_1 = require("./data");
 const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
 const plugins_1 = require("./methods/plugins");
@@ -56,10 +56,13 @@ class BatchMultiSigCall {
         // Utility functions
         // public utils = utils;
         this.getPluginData = utils_1.getPluginData;
-        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.default[chainId || 1], FCT_Controller_abi_json_1.default, provider);
         if (chainId) {
             this.chainId = chainId;
         }
+        else {
+            this.chainId = 1;
+        }
+        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.addresses[chainId].FCT_Controller, FCT_Controller_abi_json_1.default, provider);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.provider = provider;
         if (options) {

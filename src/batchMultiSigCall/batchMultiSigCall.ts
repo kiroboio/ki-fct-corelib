@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
-import FCTControllerAddresses from "./data";
+import { addresses } from "./data";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import {
   createTypedData,
@@ -19,6 +19,8 @@ import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 import { getPluginData } from "./utils";
+
+type ChainId = 1 | 5;
 
 export class BatchMultiSigCall {
   protected FCT_Controller: ethers.Contract;
@@ -47,17 +49,19 @@ export class BatchMultiSigCall {
     provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
     contractAddress?: string;
     options?: Partial<IFCTOptions>;
-    chainId?: number;
+    chainId?: ChainId;
   }) {
+    if (chainId) {
+      this.chainId = chainId;
+    } else {
+      this.chainId = 1;
+    }
+
     this.FCT_Controller = new ethers.Contract(
-      contractAddress || FCTControllerAddresses[chainId || 1],
+      contractAddress || addresses[chainId].FCT_Controller,
       FCT_ControllerABI,
       provider
     );
-
-    if (chainId) {
-      this.chainId = chainId;
-    }
 
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     this.provider = provider;

@@ -85,8 +85,14 @@ export interface TypedDataMessageOptions {
         required_signatures: number;
     };
 }
-type MandatoryTypedDataMessage = Record<`transaction_${number}`, TypedDataMessageTransaction> & Record<"meta", TypedDataMeta> & Record<"limits", TypedDataLimits>;
-type OptionalTypedDataMessage = Record<"recurrency", TypedDataRecurrency> & Record<"multisig", TypedDataMultiSig> & Record<`computed_${number}`, IComputedVariable>;
+export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
+export type MessageMeta = Record<"meta", TypedDataMeta>;
+export type MessageLimits = Record<"limits", TypedDataLimits>;
+export type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
+export type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
+export type MessageComputed = Record<`computed_${number}`, IComputedVariable>;
+export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
+export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 export type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
 export interface BatchMultiSigCallTypedData {
     types: TypedDataTypes;
