@@ -1,5 +1,6 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import { helpers } from "BatchMultiSigCall";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
@@ -78,13 +79,17 @@ export const validateFCT = <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softV
 
   return {
     getOptions: () => {
+      const parsedSessionID = helpers.parseSessionID(FCT.sessionId, fctData.builder);
+
       return {
-        valid_from: limits.valid_from,
-        expires_at: limits.expires_at,
-        gas_price_limit: limits.gas_price_limit,
-        builder: fctData.builder,
-        blockable: limits.blockable,
-        purgeable: limits.purgeable,
+        valid_from: parsedSessionID.validFrom,
+        expires_at: parsedSessionID.expiresAt,
+        gas_price_limit: parsedSessionID.maxGasPrice,
+        blockable: parsedSessionID.blockable,
+        purgeable: parsedSessionID.purgeable,
+        builder: parsedSessionID.builder,
+        recurrency: parsedSessionID.recurrency,
+        multisig: parsedSessionID.multisig,
       };
     },
     getFCTMessageHash: () => getFCTMessageHash(FCT.typedData),

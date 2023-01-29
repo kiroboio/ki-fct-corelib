@@ -8,9 +8,18 @@ export declare const validateFCT: <IFCT_1 extends IBatchMultiSigCallFCT>(FCT: IF
         valid_from: string;
         expires_at: string;
         gas_price_limit: string;
-        builder: string;
         blockable: boolean;
         purgeable: boolean;
+        builder: string;
+        recurrency: {
+            maxRepeats?: string;
+            chillTime?: string;
+            accumetable?: boolean;
+        };
+        multisig: {
+            externalSigners?: string[];
+            minimumApprovals?: number;
+        };
     };
     getFCTMessageHash: () => string;
     getSigners: () => string[];
