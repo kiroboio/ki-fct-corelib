@@ -5,14 +5,8 @@ import { instanceOfVariable } from "../../helpers";
 import { handleFunctionSignature } from "../helpers";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
-  let chainId: string;
+  const chainId = this.chainId;
 
-  if (this.chainId) {
-    chainId = this.chainId.toString();
-  } else {
-    const data = await this.provider.getNetwork();
-    chainId = data.chainId.toString();
-  }
   const call = this.getCall(index);
 
   if (instanceOfVariable(call.to)) {
@@ -52,7 +46,7 @@ export async function getPluginClass(
   this: BatchMultiSigCall,
   index: number
 ): Promise<ReturnType<typeof getPluginProvider>> {
-  const { chainId } = await this.provider.getNetwork();
+  const chainId = this.chainId;
   const call = this.getCall(index);
 
   if (instanceOfVariable(call.to)) {

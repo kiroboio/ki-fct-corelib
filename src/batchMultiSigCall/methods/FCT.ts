@@ -1,4 +1,4 @@
-import { ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { Param } from "@types";
 import { BigNumber, utils } from "ethers";
@@ -71,7 +71,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
   return this.calls[index];
 }
 
-export async function exportFCT(this: BatchMultiSigCall): Promise<IBatchMultiSigCallFCT> {
+export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   this.computedVariables = [];
 
   if (this.calls.length === 0) {
@@ -84,7 +84,7 @@ export async function exportFCT(this: BatchMultiSigCall): Promise<IBatchMultiSig
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const version = "0x010101";
-  const typedData = await this.createTypedData(salt, version);
+  const typedData = this.createTypedData(salt, version);
   const sessionId: string = getSessionId(salt, this.options);
 
   const mcall = this.calls.map((call, index) => {
@@ -192,14 +192,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   const ABI = FCTBatchMultiSigCallABI;
   const iface = new utils.Interface(ABI);
 
-  let chainId: ChainId;
-
-  if (this.chainId) {
-    chainId = this.chainId.toString() as ChainId;
-  } else {
-    const data = await this.provider.getNetwork();
-    chainId = data.chainId.toString() as ChainId;
-  }
+  const chainId = this.chainId;
 
   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
 

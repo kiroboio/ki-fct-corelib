@@ -1,14 +1,12 @@
 import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
+import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
-import { addresses } from "./data";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import {
   createTypedData,
   getAllRequiredApprovals,
-  getCalldataForActuator,
   getParamsFromCall,
   handleTo,
   handleValue,
@@ -20,14 +18,17 @@ import { getComputedVariable, getExternalVariable, getOutputVariable, getVariabl
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 import { getPluginData } from "./utils";
 
-type ChainId = 1 | 5;
+export type ChainId = "1" | "5";
+interface BatchMultiSigCallConstructor {
+  chainId?: ChainId;
+  options?: Partial<IFCTOptions>;
+}
 
 export class BatchMultiSigCall {
-  protected FCT_Controller: ethers.Contract;
-  protected FCT_BatchMultiSigCall: ethers.utils.Interface;
+  protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
+  protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
   protected batchMultiSigSelector = "0x2409a934";
-  protected provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-  protected chainId: number;
+  protected chainId: ChainId;
 
   protected computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
@@ -40,36 +41,17 @@ export class BatchMultiSigCall {
     builder: "0x0000000000000000000000000000000000000000",
   };
 
-  constructor({
-    provider,
-    contractAddress,
-    options,
-    chainId,
-  }: {
-    provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-    contractAddress?: string;
-    options?: Partial<IFCTOptions>;
-    chainId?: ChainId;
-  }) {
-    if (chainId) {
-      this.chainId = chainId;
+  constructor(input: BatchMultiSigCallConstructor = {}) {
+    if (input.chainId) {
+      this.chainId = input.chainId;
     } else {
-      this.chainId = 1;
+      this.chainId = "1";
     }
 
-    this.FCT_Controller = new ethers.Contract(
-      contractAddress || addresses[this.chainId as keyof typeof addresses].FCT_Controller,
-      FCT_ControllerABI,
-      provider
-    );
-
-    this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-    if (provider) this.provider = provider;
-    if (options) this.setOptions(options);
+    if (input.options) this.setOptions(input.options);
   }
 
   // Helpers
-  public getCalldataForActuator = getCalldataForActuator;
   public getAllRequiredApprovals = getAllRequiredApprovals;
 
   // Variables

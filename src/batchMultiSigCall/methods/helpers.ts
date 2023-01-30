@@ -1,4 +1,4 @@
-import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
 import { utils } from "ethers";
 
@@ -40,11 +40,11 @@ export function getCalldataForActuator(
 
 export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<IRequiredApproval[]> {
   let requiredApprovals: IRequiredApproval[] = [];
-  if (!this.chainId && !this.provider) {
+  if (!this.chainId) {
     throw new Error("No chainId or provider has been set");
   }
 
-  const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString()) as ChainId;
+  const chainId = this.chainId;
 
   for (const call of this.calls) {
     if (typeof call.to !== "string") {
@@ -115,11 +115,7 @@ export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions
   return this.options;
 }
 
-export async function createTypedData(
-  this: BatchMultiSigCall,
-  salt: string,
-  version: string
-): Promise<BatchMultiSigCallTypedData> {
+export function createTypedData(this: BatchMultiSigCall, salt: string, version: string): BatchMultiSigCallTypedData {
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
@@ -302,7 +298,7 @@ export async function createTypedData(
       ],
     },
     primaryType: "BatchMultiSigCall",
-    domain: await getTypedDataDomain(this.FCT_Controller),
+    domain: getTypedDataDomain(this.chainId),
     message: {
       meta: {
         name: this.options.name || "",

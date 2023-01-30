@@ -1,12 +1,8 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
-import { ethers } from "ethers";
 
 import { Flow } from "../constants";
 import { BatchMultiSigCall } from "./index";
-
-const contractAddress = "0xBc0ED9A150D9b50BaA2dC3d350D0d59E69daeBD9";
-const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
 function getDate(days = 0) {
   const result = new Date();
@@ -19,8 +15,7 @@ describe("BatchMultiSigCall", () => {
 
   beforeEach(async () => {
     batchMultiSigCall = new BatchMultiSigCall({
-      contractAddress,
-      provider,
+      chainId: "5",
     });
   });
 
@@ -78,7 +73,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(calls).to.be.an("array");
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
@@ -140,7 +135,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(calls).to.be.an("array");
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("20");
@@ -155,8 +150,7 @@ describe("BatchMultiSigCall", () => {
 
   it("Should create an FCT with 3 non-plugin calls", async () => {
     batchMultiSigCall = new BatchMultiSigCall({
-      contractAddress,
-      provider,
+      chainId: "5",
     });
 
     await batchMultiSigCall.createMultiple([
@@ -262,7 +256,7 @@ describe("BatchMultiSigCall", () => {
       },
     ]);
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT).to.be.an("object");
 
