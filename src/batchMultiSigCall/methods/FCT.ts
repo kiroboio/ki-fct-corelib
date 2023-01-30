@@ -19,6 +19,7 @@ import {
   parseSessionID,
 } from "../helpers";
 import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
+import { getAuthenticatorSignature } from "../utils/signatures";
 
 export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]> {
   let call: IMSCallInput;
@@ -107,7 +108,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     };
   });
 
-  return {
+  const FCTData = {
     typedData,
     builder: this.options.builder || "0x0000000000000000000000000000000000000000",
     typeHash: utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
@@ -116,8 +117,11 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     mcall,
     variables: [],
     externalSigners: [],
+    signatures: [getAuthenticatorSignature(typedData)],
     computed: this.computedVariables,
   };
+
+  return FCTData;
 }
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {

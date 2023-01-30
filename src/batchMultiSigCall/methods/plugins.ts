@@ -1,7 +1,7 @@
 import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
-import { BatchMultiSigCall } from "batchMultiSigCall/batchMultiSigCall";
 
 import { instanceOfVariable } from "../../helpers";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { handleFunctionSignature } from "../helpers";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {

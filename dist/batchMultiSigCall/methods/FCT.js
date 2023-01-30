@@ -11,6 +11,7 @@ const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
+const signatures_1 = require("../utils/signatures");
 async function create(callInput) {
     let call;
     if ("plugin" in callInput) {
@@ -87,7 +88,7 @@ function exportFCT() {
                 : [],
         };
     });
-    return {
+    const FCTData = {
         typedData,
         builder: this.options.builder || "0x0000000000000000000000000000000000000000",
         typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
@@ -96,8 +97,10 @@ function exportFCT() {
         mcall,
         variables: [],
         externalSigners: [],
+        signatures: [(0, signatures_1.getAuthenticatorSignature)(typedData)],
         computed: this.computedVariables,
     };
+    return FCTData;
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {

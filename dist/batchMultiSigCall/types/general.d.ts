@@ -1,3 +1,4 @@
+import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { CallOptions, IPluginCall, Param, Variable } from "@types";
 import { BatchMultiSigCallTypedData } from "./typedData";
@@ -24,6 +25,7 @@ export interface IBatchMultiSigCallFCT {
         mul: string;
         div: string;
     }[];
+    signatures: SignatureLike[];
 }
 export interface IMSCallInput {
     nodeId: string;

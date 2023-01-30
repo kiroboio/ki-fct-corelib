@@ -1,6 +1,5 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
-import { getTypedDataDomain } from "batchMultiSigCall/helpers/fct";
 import { utils } from "ethers";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
@@ -11,6 +10,7 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
 } from "../helpers";
+import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
