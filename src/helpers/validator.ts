@@ -20,7 +20,7 @@ export const getValidatorFunctionData = (validator: IValidator, params: any[]): 
       ];
     }
     return [...acc, { name: item.name, type: item.type === "bytes32" ? "string" : item.type }];
-  }, []);
+  }, [] as { name: string; type: string }[]);
 };
 
 export const getValidatorMethodInterface = (validator: IValidator): string => {
@@ -36,6 +36,9 @@ export const getValidatorMethodInterface = (validator: IValidator): string => {
 
 export const getValidatorData = (call: Partial<IMSCallInput>, noFunctionSignature: boolean): string => {
   const iface = new utils.Interface(ValidatorABI);
+  if (!call.validator) {
+    throw new Error("Validator is not defined");
+  }
   const data = iface.encodeFunctionData(call.validator.method, [
     ...Object.values(call.validator.params),
     call.to,
@@ -54,6 +57,9 @@ const getValidatorDataOffset = (types: string[], data: string): string => {
 
 export const createValidatorTxData = (call: Partial<IMSCallInput>): object | Error => {
   const iface = new utils.Interface(ValidatorABI);
+  if (!call.validator) {
+    throw new Error("Validator is not defined");
+  }
   const validatorFunction = iface.getFunction(call.validator.method);
   const validator = call.validator;
 
@@ -74,12 +80,14 @@ export const createValidatorTxData = (call: Partial<IMSCallInput>): object | Err
     functionSignature: getMethodInterface(call),
     method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, getEncodedMethodParams(call)),
     method_data_length: getParamsLength(getEncodedMethodParams(call)),
-    ...call.params.reduce(
-      (acc, param) => ({
-        ...acc,
-        [param.name]: param.value,
-      }),
-      {}
-    ),
+    ...(call.params
+      ? call.params.reduce(
+          (acc, param) => ({
+            ...acc,
+            [param.name]: param.value,
+          }),
+          {}
+        )
+      : {}),
   };
 };

@@ -22,7 +22,7 @@ export const getTypedDataDomain = async (
       verifyingContract: factoryProxy.address,
       salt: await factoryProxy.UID(),
     };
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(`Error getting typed data domain: ${e.message}`);
   }
 };
@@ -36,7 +36,7 @@ export const generateTxType = (item: Partial<MethodParamsInterface>): { name: st
     }
     const types = item.params.reduce((acc, param) => {
       return [...acc, { name: param.name, type: param.type }];
-    }, []);
+    }, [] as { name: string; type: string }[]);
 
     return [...defaults, ...types];
   }

@@ -2,17 +2,19 @@ import { getValidatorFunctionData } from "../../helpers";
 import { Param } from "../../types";
 import { BatchMultiSigCallTypedData, ComputedVariables, IComputedVariable, IMSCallInput } from "../types";
 
+type EIP712Types = Record<string, { name: string; type: string }[]>;
+
 export const getTxEIP712Types = (calls: IMSCallInput[]) => {
-  const txTypes = {};
-  const structTypes = {};
+  const txTypes: EIP712Types = {};
+  const structTypes: EIP712Types = {};
   const getTypeCount = () => Object.values(structTypes).length + 1;
 
   const getStructType = (param: Param, index: number) => {
     const typeName = `Struct${getTypeCount()}`;
 
     let paramValue: Param[];
-    if (param.type.lastIndexOf("[") > 0) {
-      paramValue = param.value[0] as Param[];
+    if (param.type.lastIndexOf("[") > 0 && param.value) {
+      paramValue = (param.value as Param[][])[0];
     } else {
       paramValue = param.value as Param[];
     }
@@ -36,7 +38,7 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     structTypes[typeName] = eip712Type;
 
     if (param.type.lastIndexOf("[") > 0) {
-      for (const parameter of param.value[0] as Param[]) {
+      for (const parameter of (param.value as Param[][])[0]) {
         if (parameter.customType || parameter.type.includes("tuple")) {
           getStructType(parameter, index);
         }
@@ -56,21 +58,23 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     if (call.validator) {
       txTypes[`transaction${index + 1}`] = [
         { name: "call", type: "Call" },
-        ...getValidatorFunctionData(call.validator, call.params),
+        ...getValidatorFunctionData(call.validator, call.params || []),
       ];
       return;
     }
 
-    const values = call.params.map((param: Param) => {
-      if (param.customType || param.type === "tuple") {
-        const type = getStructType(param, index);
-        return { name: param.name, type };
-      }
-      return {
-        name: param.name,
-        type: param.type,
-      };
-    });
+    const values = call.params
+      ? call.params.map((param: Param) => {
+          if (param.customType || param.type === "tuple") {
+            const type = getStructType(param, index);
+            return { name: param.name, type };
+          }
+          return {
+            name: param.name,
+            type: param.type,
+          };
+        })
+      : [];
 
     txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
   });

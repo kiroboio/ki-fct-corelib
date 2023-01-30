@@ -11,10 +11,10 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
         provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
     }
     const chainId = (await provider.getNetwork()).chainId.toString();
-    if (!constants_1.multicallContracts[chainId]) {
+    if (!constants_1.multicallContracts[Number(chainId)]) {
         throw new Error("Multicall contract not found for this chain");
     }
-    const multiCallContract = new ethers_1.ethers.Contract(constants_1.multicallContracts[chainId], [
+    const multiCallContract = new ethers_1.ethers.Contract(constants_1.multicallContracts[Number(chainId)], [
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
     const calls = data.map((approval) => {

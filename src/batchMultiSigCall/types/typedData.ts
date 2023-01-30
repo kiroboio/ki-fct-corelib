@@ -21,7 +21,7 @@ interface TypedDataMultiSig {
   required_signers: number;
 }
 
-export interface TypedDataTypes {
+export type TypedDataTypes = {
   EIP712Domain: MessageTypeProperty[];
   BatchMultiSigCall: MessageTypeProperty[];
   Meta: MessageTypeProperty[];
@@ -29,8 +29,7 @@ export interface TypedDataTypes {
   Call: MessageTypeProperty[];
   Recurrency?: MessageTypeProperty[];
   MultiSig?: MessageTypeProperty[];
-  [key: string]: MessageTypeProperty[];
-}
+} & { [key: string]: MessageTypeProperty[] };
 
 export interface TypedDataDomain {
   name: string;

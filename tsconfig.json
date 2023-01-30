@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "strict": true,
     "module": "commonjs",
     "target": "ES2020",
     "declaration": true,
+    "strictPropertyInitialization": false,
     "outDir": "dist",
     "baseUrl": "src",
     "allowJs": true,
@@ -14,7 +16,6 @@
       "@helpers": ["helpers/index.ts"],
       "@types": ["types"],
       "@constants": ["constants"],
-      "BatchMultiSigCall": ["batchMultiSigCall"],
       "corelib": ["index.ts"]
     }
   },

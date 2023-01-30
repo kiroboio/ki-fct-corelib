@@ -30,6 +30,7 @@ function getVariable(variable, type) {
         const index = length - 1;
         return this.getComputedVariable(index, type);
     }
+    throw new Error("Variable type not found");
 }
 exports.getVariable = getVariable;
 function getOutputVariable(index, innerIndex, type) {
@@ -46,7 +47,7 @@ function getOutputVariable(index, innerIndex, type) {
             base = constants_1.FDBackBase;
         }
     }
-    if (innerIndex >= 0) {
+    else {
         innerIndexHex = innerIndex.toString(16).padStart(4, "0");
         if (type.includes("bytes")) {
             base = constants_1.FDBaseBytes;

@@ -1,5 +1,4 @@
 import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
-import { IMSCallInput } from "batchMultiSigCall/types";
 import { utils } from "ethers";
 
 import { nullValue } from "../../constants";
@@ -11,6 +10,7 @@ import {
   getValidatorData,
   getValidatorMethodInterface,
 } from "../../helpers";
+import { IMSCallInput } from "../types";
 
 export const handleMethodInterface = (call: IMSCallInput): string => {
   // If call is not a ETH transfer
