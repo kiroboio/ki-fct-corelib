@@ -2,25 +2,12 @@ import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
 import { utils } from "ethers";
 
 import { nullValue } from "../../constants";
-import {
-  getEncodedMethodParams,
-  getMethodInterface,
-  getTypedHashes,
-  getTypesArray,
-  getValidatorData,
-  getValidatorMethodInterface,
-} from "../../helpers";
+import { getEncodedMethodParams, getMethodInterface, getTypedHashes, getTypesArray } from "../../helpers";
 import { IMSCallInput } from "../types";
 
 export const handleMethodInterface = (call: IMSCallInput): string => {
   // If call is not a ETH transfer
   if (call.method) {
-    // If call is a validation call
-    if (call.validator) {
-      return getValidatorMethodInterface(call.validator);
-    }
-
-    // Else it's a standard method interface
     return getMethodInterface(call);
   }
 
@@ -30,7 +17,7 @@ export const handleMethodInterface = (call: IMSCallInput): string => {
 
 export const handleFunctionSignature = (call: IMSCallInput) => {
   if (call.method) {
-    const value = call.validator ? getValidatorMethodInterface(call.validator) : getMethodInterface(call);
+    const value = getMethodInterface(call);
     return utils.id(value);
   }
   return nullValue;
@@ -44,10 +31,6 @@ export const handleEnsHash = (call: IMSCallInput) => {
 };
 
 export const handleData = (call: IMSCallInput) => {
-  if (call.validator) {
-    return getValidatorData(call, true);
-  }
-
   return getEncodedMethodParams(call);
 };
 

@@ -1,15 +1,11 @@
+import { ChainId } from "@types";
 import { ethers } from "ethers";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
 import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 import { getPluginData } from "./utils";
-export type ChainId = "1" | "5";
-interface BatchMultiSigCallConstructor {
-    chainId?: ChainId;
-    options?: Partial<IFCTOptions>;
-}
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -41,4 +37,3 @@ export declare class BatchMultiSigCall {
     protected handleValue: typeof handleValue;
     getPluginData: typeof getPluginData;
 }
-export {};

@@ -1,5 +1,6 @@
 import { CALL_TYPE_MSG } from "@constants";
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
+import { FCTCallParam } from "./general";
 export interface IComputedVariable {
     index: string;
     var: string;
@@ -8,12 +9,12 @@ export interface IComputedVariable {
     mul: string;
     div: string;
 }
-interface TypedDataRecurrency {
+export interface TypedDataRecurrency {
     max_repeats: string;
     chill_time: string;
     accumetable: boolean;
 }
-interface TypedDataMultiSig {
+export interface TypedDataMultiSig {
     signers: string[];
     required_signers: number;
 }
@@ -35,9 +36,6 @@ export interface TypedDataDomain {
     verifyingContract: string;
     salt: string;
 }
-export type TransactionParam = string | number | boolean | TransactionParam[] | {
-    [key: string]: TransactionParam;
-};
 export type TypedDataMessageTransaction = {
     call: {
         call_index: number;
@@ -56,7 +54,7 @@ export type TypedDataMessageTransaction = {
         method_interface: string;
     };
 } & {
-    [key: string]: TransactionParam;
+    [key: string]: FCTCallParam;
 };
 export interface TypedDataLimits {
     valid_from: string;
@@ -73,19 +71,6 @@ export interface TypedDataMeta {
     random_id: string;
     eip712: boolean;
 }
-export interface TypedDataMessageOptions {
-    meta: TypedDataMeta;
-    limits: TypedDataLimits;
-    recurrency?: {
-        max_repeats: string;
-        chill_time: string;
-        accumetable: boolean;
-    };
-    multisig?: {
-        external_signers: string[];
-        required_signatures: number;
-    };
-}
 export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 export type MessageMeta = Record<"meta", TypedDataMeta>;
 export type MessageLimits = Record<"limits", TypedDataLimits>;
@@ -101,4 +86,3 @@ export interface BatchMultiSigCallTypedData {
     domain: TypedDataDomain;
     message: TypedDataMessage;
 }
-export {};

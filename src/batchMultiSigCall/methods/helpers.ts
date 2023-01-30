@@ -1,9 +1,10 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
+import { getTypedDataDomain } from "batchMultiSigCall/helpers/fct";
 import { utils } from "ethers";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
-import { createValidatorTxData, getTypedDataDomain, instanceOfVariable } from "../../helpers";
+import { instanceOfVariable } from "../../helpers";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -11,7 +12,7 @@ import {
   handleMethodInterface,
 } from "../helpers";
 import { BatchMultiSigCall } from "../index";
-import { BatchMultiSigCallTypedData, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
+import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
 export function getCalldataForActuator(
   this: BatchMultiSigCall,
@@ -119,7 +120,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      this.verifyParams(call.params);
+      // this.verifyParams(call.params);
       paramsData = this.getParamsFromCall(call);
     }
 
@@ -326,20 +327,10 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
 export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
   // If call has parameters
   if (call.params) {
-    // If mcall is a validation call
-    if (call.validator) {
-      Object.entries(call.validator.params).forEach(([key, value]) => {
-        if (typeof value !== "string" && call.validator) {
-          call.validator.params[key] = this.getVariable(value, "uint256");
-        }
-      });
-
-      return createValidatorTxData(call);
-    }
-    const getParams = (params: Param[]) => {
+    const getParams = (params: Param[]): Record<string, FCTCallParam> => {
       return {
         ...params.reduce((acc, param) => {
-          let value: any;
+          let value: FCTCallParam;
 
           // If parameter is a custom type (struct)
           if (param.customType || param.type.includes("tuple")) {
@@ -353,7 +344,13 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
               value = getParams(valueArray);
             }
           } else {
-            value = param.value;
+            if (!param.value) {
+              throw new Error(`Parameter ${param.name} is not defined`);
+            }
+            if (instanceOfVariable(param.value)) {
+              param.value = this.getVariable(param.value, param.type);
+            }
+            value = param.value as string[] | string | boolean;
           }
           return {
             ...acc,
@@ -389,11 +386,6 @@ export function verifyParams(this: BatchMultiSigCall, params: Param[]) {
 }
 
 export function handleTo(this: BatchMultiSigCall, call: IMSCallInput) {
-  // If call is a validator method, return validator address as to address
-  if (call.validator) {
-    return call.validator.validatorAddress;
-  }
-
   if (typeof call.to === "string") {
     return call.to;
   }

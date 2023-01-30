@@ -1,8 +1,15 @@
-import { ChainId } from "../batchMultiSigCall/batchMultiSigCall";
-import { MethodParamsInterface } from "../types";
-import { getValidatorFunctionData } from "./validator";
+import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { MethodParamsInterface } from "@types";
 
-const TYPED_DATA_DOMAIN = {
+interface TypedDataDomain {
+  name: string;
+  version: string;
+  chainId: number;
+  verifyingContract: string;
+  salt: string;
+}
+
+const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
     name: "FCT Controller",
     version: "1",
@@ -27,9 +34,6 @@ export const generateTxType = (item: Partial<MethodParamsInterface>): { name: st
   const defaults = [{ name: "details", type: "Transaction_" }];
 
   if (item.params) {
-    if (item.validator) {
-      return [{ name: "details", type: "Transaction_" }, ...getValidatorFunctionData(item.validator, item.params)];
-    }
     const types = item.params.reduce((acc, param) => {
       return [...acc, { name: param.name, type: param.type }];
     }, [] as { name: string; type: string }[]);

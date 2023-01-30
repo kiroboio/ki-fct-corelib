@@ -1,4 +1,3 @@
-export * from "@kirobo/ki-eth-fct-provider-ts";
 export { ethers } from "ethers";
 export * as constants from "./constants";
 export * as utils from "./utils";

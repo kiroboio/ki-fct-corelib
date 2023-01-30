@@ -60,7 +60,7 @@ class BatchMultiSigCall {
             this.chainId = input.chainId;
         }
         else {
-            this.chainId = "1";
+            this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
         }
         if (input.options)
             this.setOptions(input.options);

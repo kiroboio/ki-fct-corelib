@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTxType = exports.getTypedDataDomain = void 0;
-const validator_1 = require("./validator");
 const TYPED_DATA_DOMAIN = {
     "1": {
         name: "FCT Controller",
@@ -25,9 +24,6 @@ exports.getTypedDataDomain = getTypedDataDomain;
 const generateTxType = (item) => {
     const defaults = [{ name: "details", type: "Transaction_" }];
     if (item.params) {
-        if (item.validator) {
-            return [{ name: "details", type: "Transaction_" }, ...(0, validator_1.getValidatorFunctionData)(item.validator, item.params)];
-        }
         const types = item.params.reduce((acc, param) => {
             return [...acc, { name: param.name, type: param.type }];
         }, []);

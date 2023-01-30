@@ -1,5 +1,12 @@
-import { CallOptions, IPluginCall, IValidator, Param, Variable } from "@types";
+import { CallOptions, ChainId, IPluginCall, Param, Variable } from "@types";
 import { BatchMultiSigCallTypedData } from "./typedData";
+export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
+    [key: string]: FCTCallParam;
+};
+export interface BatchMultiSigCallConstructor {
+    chainId?: ChainId;
+    options?: Partial<IFCTOptions>;
+}
 export interface IBatchMultiSigCallFCT {
     typeHash: string;
     typedData: BatchMultiSigCallTypedData;
@@ -25,7 +32,6 @@ export interface IMSCallInput {
     params?: Param[];
     method?: string;
     toENS?: string;
-    validator?: IValidator;
     options?: CallOptions;
 }
 export interface MSCall {

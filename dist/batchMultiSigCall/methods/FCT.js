@@ -16,7 +16,7 @@ async function create(callInput) {
     if ("plugin" in callInput) {
         const pluginCall = await callInput.plugin.create();
         if (pluginCall === undefined) {
-            throw new Error("Error creating call with plugin");
+            throw new Error("Error creating call with plugin. Make sure input values are valid");
         }
         call = {
             ...pluginCall,
