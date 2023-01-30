@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPaymentPerPayer = exports.getKIROPayment = exports.estimateFCTGasCost = exports.getGasPrices = exports.transactionValidator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
-const corelib_1 = require("corelib");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
+const batchMultiSigCall_1 = require("../batchMultiSigCall");
 const helpers_1 = require("../batchMultiSigCall/helpers");
 const FCT_1 = require("./FCT");
 const transactionValidator = async (txVal, pureGas = false) => {
@@ -237,7 +237,7 @@ const getPaymentPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
     penalty = penalty || 1;
     const allPaths = (0, FCT_1.getAllFCTPaths)(fct);
     fct.signatures = fct.signatures || [];
-    const callData = corelib_1.FCTBatchMultiSigCall.utils.getCalldataForActuator({
+    const callData = batchMultiSigCall_1.utils.getCalldataForActuator({
         signedFCT: fct,
         activator: "0x0000000000000000000000000000000000000000",
         investor: "0x0000000000000000000000000000000000000000",
