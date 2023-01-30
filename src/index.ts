@@ -1,3 +1,4 @@
+export * from "@kirobo/ki-eth-fct-provider-ts";
 export { ethers } from "ethers";
 
 // Utils exports

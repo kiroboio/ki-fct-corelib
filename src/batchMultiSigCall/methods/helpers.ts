@@ -39,7 +39,7 @@ export function getCalldataForActuator(
   ]);
 }
 
-export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<IRequiredApproval[]> {
+export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];
   if (!this.chainId) {
     throw new Error("No chainId or provider has been set");

@@ -17,7 +17,7 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
     ]);
 }
 exports.getCalldataForActuator = getCalldataForActuator;
-async function getAllRequiredApprovals() {
+function getAllRequiredApprovals() {
     let requiredApprovals = [];
     if (!this.chainId) {
         throw new Error("No chainId or provider has been set");

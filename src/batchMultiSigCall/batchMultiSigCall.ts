@@ -1,4 +1,5 @@
-import { ChainId } from "@types";
+// import { ChainId } from "@types";
+import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
