@@ -18,6 +18,7 @@ class BatchMultiSigCall {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.batchMultiSigSelector = "0x2409a934";
+        this.version = "0x010102";
         this.computedVariables = [];
         this.calls = [];
         this.options = {

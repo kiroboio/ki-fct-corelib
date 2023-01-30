@@ -24,6 +24,7 @@ export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
   protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
   protected batchMultiSigSelector = "0x2409a934";
+  protected version = "0x010102";
   protected chainId: ChainId;
 
   protected computedVariables: ComputedVariables[] = [];

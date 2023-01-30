@@ -10,6 +10,7 @@ export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
     protected batchMultiSigSelector: string;
+    protected version: string;
     protected chainId: ChainId;
     protected computedVariables: ComputedVariables[];
     calls: IMSCallInput[];

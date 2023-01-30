@@ -84,8 +84,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   }
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-  const version = "0x010101";
-  const typedData = this.createTypedData(salt, version);
+  const typedData = this.createTypedData(salt, this.version);
   const sessionId: string = getSessionId(salt, this.options);
 
   const mcall = this.calls.map((call, index) => {
