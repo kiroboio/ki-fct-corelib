@@ -8,14 +8,15 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
-const data_1 = require("./data");
 const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
 const plugins_1 = require("./methods/plugins");
 const variables_1 = require("./methods/variables");
 const utils_1 = require("./utils");
 class BatchMultiSigCall {
-    constructor({ provider, contractAddress, options, chainId, }) {
+    constructor(input = {}) {
+        this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
+        this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.batchMultiSigSelector = "0x2409a934";
         this.computedVariables = [];
         this.calls = [];
@@ -28,7 +29,6 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getCalldataForActuator = helpers_2.getCalldataForActuator;
         this.getAllRequiredApprovals = helpers_2.getAllRequiredApprovals;
         // Variables
         this.getVariable = variables_1.getVariable;
@@ -56,18 +56,14 @@ class BatchMultiSigCall {
         // Utility functions
         // public utils = utils;
         this.getPluginData = utils_1.getPluginData;
-        if (chainId) {
-            this.chainId = chainId;
+        if (input.chainId) {
+            this.chainId = input.chainId;
         }
         else {
-            this.chainId = 1;
+            this.chainId = "1";
         }
-        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.addresses[this.chainId].FCT_Controller, FCT_Controller_abi_json_1.default, provider);
-        this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
-        if (provider)
-            this.provider = provider;
-        if (options)
-            this.setOptions(options);
+        if (input.options)
+            this.setOptions(input.options);
     }
     get length() {
         return this.calls.length;

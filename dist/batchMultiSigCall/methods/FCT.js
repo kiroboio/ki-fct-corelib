@@ -58,7 +58,7 @@ function getCall(index) {
     return this.calls[index];
 }
 exports.getCall = getCall;
-async function exportFCT() {
+function exportFCT() {
     this.computedVariables = [];
     if (this.calls.length === 0) {
         throw new Error("No calls added");
@@ -68,7 +68,7 @@ async function exportFCT() {
     }
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const version = "0x010101";
-    const typedData = await this.createTypedData(salt, version);
+    const typedData = this.createTypedData(salt, version);
     const sessionId = (0, helpers_1.getSessionId)(salt, this.options);
     const mcall = this.calls.map((call, index) => {
         const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
@@ -161,14 +161,7 @@ exports.importFCT = importFCT;
 async function importEncodedFCT(calldata) {
     const ABI = FCT_BatchMultiSigCall_abi_json_1.default;
     const iface = new ethers_1.utils.Interface(ABI);
-    let chainId;
-    if (this.chainId) {
-        chainId = this.chainId.toString();
-    }
-    else {
-        const data = await this.provider.getNetwork();
-        chainId = data.chainId.toString();
-    }
+    const chainId = this.chainId;
     const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
     const arrayKeys = ["signatures", "mcall"];
     const objectKeys = ["tr"];

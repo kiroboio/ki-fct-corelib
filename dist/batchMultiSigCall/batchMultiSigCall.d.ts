@@ -1,27 +1,24 @@
 import { ethers } from "ethers";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
-import { createTypedData, getAllRequiredApprovals, getCalldataForActuator, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
+import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
 import { getPlugin, getPluginClass } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 import { getPluginData } from "./utils";
-type ChainId = 1 | 5;
+export type ChainId = "1" | "5";
+interface BatchMultiSigCallConstructor {
+    chainId?: ChainId;
+    options?: Partial<IFCTOptions>;
+}
 export declare class BatchMultiSigCall {
-    protected FCT_Controller: ethers.Contract;
+    protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
     protected batchMultiSigSelector: string;
-    protected provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-    protected chainId: number;
+    protected chainId: ChainId;
     protected computedVariables: ComputedVariables[];
     calls: IMSCallInput[];
     options: IFCTOptions;
-    constructor({ provider, contractAddress, options, chainId, }: {
-        provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-        contractAddress?: string;
-        options?: Partial<IFCTOptions>;
-        chainId?: ChainId;
-    });
-    getCalldataForActuator: typeof getCalldataForActuator;
+    constructor(input?: BatchMultiSigCallConstructor);
     getAllRequiredApprovals: typeof getAllRequiredApprovals;
     protected getVariable: typeof getVariable;
     protected getOutputVariable: typeof getOutputVariable;

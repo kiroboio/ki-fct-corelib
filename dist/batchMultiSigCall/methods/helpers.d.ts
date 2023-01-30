@@ -10,7 +10,7 @@ export declare function getCalldataForActuator(this: BatchMultiSigCall, { signed
 }): string;
 export declare function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<IRequiredApproval[]>;
 export declare function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions;
-export declare function createTypedData(this: BatchMultiSigCall, salt: string, version: string): Promise<BatchMultiSigCallTypedData>;
+export declare function createTypedData(this: BatchMultiSigCall, salt: string, version: string): BatchMultiSigCallTypedData;
 export declare function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput): {};
 export declare function verifyParams(this: BatchMultiSigCall, params: Param[]): void;
 export declare function handleTo(this: BatchMultiSigCall, call: IMSCallInput): string;

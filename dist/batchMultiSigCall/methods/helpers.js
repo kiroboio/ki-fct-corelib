@@ -18,10 +18,10 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
 exports.getCalldataForActuator = getCalldataForActuator;
 async function getAllRequiredApprovals() {
     let requiredApprovals = [];
-    if (!this.chainId && !this.provider) {
+    if (!this.chainId) {
         throw new Error("No chainId or provider has been set");
     }
-    const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString());
+    const chainId = this.chainId;
     for (const call of this.calls) {
         if (typeof call.to !== "string") {
             continue;
@@ -81,7 +81,7 @@ function setOptions(options) {
     return this.options;
 }
 exports.setOptions = setOptions;
-async function createTypedData(salt, version) {
+function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
@@ -244,7 +244,7 @@ async function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_Controller),
+        domain: (0, helpers_1.getTypedDataDomain)(this.chainId),
         message: {
             meta: {
                 name: this.options.name || "",
