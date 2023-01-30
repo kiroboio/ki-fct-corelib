@@ -1,6 +1,14 @@
-import { CallOptions, IPluginCall, IValidator, Param, Variable } from "@types";
+import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { CallOptions, IPluginCall, Param, Variable } from "@types";
 
 import { BatchMultiSigCallTypedData } from "./typedData";
+
+export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
+
+export interface BatchMultiSigCallConstructor {
+  chainId?: ChainId;
+  options?: Partial<IFCTOptions>;
+}
 
 export interface IBatchMultiSigCallFCT {
   typeHash: string;
@@ -28,7 +36,7 @@ export interface IMSCallInput {
   params?: Param[];
   method?: string;
   toENS?: string;
-  validator?: IValidator;
+  // validator?: IValidator;
   options?: CallOptions;
 }
 

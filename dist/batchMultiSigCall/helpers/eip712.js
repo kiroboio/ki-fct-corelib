@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getComputedVariableMessage = exports.getUsedStructTypes = exports.getTxEIP712Types = void 0;
-const helpers_1 = require("../../helpers");
 const getTxEIP712Types = (calls) => {
     const txTypes = {};
     const structTypes = {};
@@ -48,13 +47,6 @@ const getTxEIP712Types = (calls) => {
         return typeName;
     };
     calls.forEach((call, index) => {
-        if (call.validator) {
-            txTypes[`transaction${index + 1}`] = [
-                { name: "call", type: "Call" },
-                ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params || []),
-            ];
-            return;
-        }
         const values = call.params
             ? call.params.map((param) => {
                 if (param.customType || param.type === "tuple") {

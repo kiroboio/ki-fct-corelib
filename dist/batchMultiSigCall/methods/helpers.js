@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleValue = exports.handleTo = exports.verifyParams = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+const fct_1 = require("batchMultiSigCall/helpers/fct");
 const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
@@ -16,12 +17,12 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
     ]);
 }
 exports.getCalldataForActuator = getCalldataForActuator;
-async function getAllRequiredApprovals() {
+function getAllRequiredApprovals() {
     let requiredApprovals = [];
-    if (!this.chainId && !this.provider) {
+    if (!this.chainId) {
         throw new Error("No chainId or provider has been set");
     }
-    const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString());
+    const chainId = this.chainId;
     for (const call of this.calls) {
         if (typeof call.to !== "string") {
             continue;
@@ -81,11 +82,11 @@ function setOptions(options) {
     return this.options;
 }
 exports.setOptions = setOptions;
-async function createTypedData(salt, version) {
+function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            this.verifyParams(call.params);
+            // this.verifyParams(call.params);
             paramsData = this.getParamsFromCall(call);
         }
         const options = call.options || {};
@@ -244,7 +245,7 @@ async function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_Controller),
+        domain: (0, fct_1.getTypedDataDomain)(this.chainId),
         message: {
             meta: {
                 name: this.options.name || "",
@@ -272,15 +273,6 @@ exports.createTypedData = createTypedData;
 function getParamsFromCall(call) {
     // If call has parameters
     if (call.params) {
-        // If mcall is a validation call
-        if (call.validator) {
-            Object.entries(call.validator.params).forEach(([key, value]) => {
-                if (typeof value !== "string" && call.validator) {
-                    call.validator.params[key] = this.getVariable(value, "uint256");
-                }
-            });
-            return (0, helpers_1.createValidatorTxData)(call);
-        }
         const getParams = (params) => {
             return {
                 ...params.reduce((acc, param) => {
@@ -299,6 +291,12 @@ function getParamsFromCall(call) {
                         }
                     }
                     else {
+                        if (!param.value) {
+                            throw new Error(`Parameter ${param.name} is not defined`);
+                        }
+                        if ((0, helpers_1.instanceOfVariable)(param.value)) {
+                            param.value = this.getVariable(param.value, param.type);
+                        }
                         value = param.value;
                     }
                     return {
@@ -333,10 +331,6 @@ function verifyParams(params) {
 }
 exports.verifyParams = verifyParams;
 function handleTo(call) {
-    // If call is a validator method, return validator address as to address
-    if (call.validator) {
-        return call.validator.validatorAddress;
-    }
     if (typeof call.to === "string") {
         return call.to;
     }

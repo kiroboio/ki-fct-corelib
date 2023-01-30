@@ -27,7 +27,6 @@ export interface Param {
 export interface MethodParamsInterface {
     method: string;
     params: Param[];
-    validator?: IValidator;
     to?: string | Variable;
 }
 export type CallType = keyof typeof CALL_TYPE;
@@ -38,13 +37,6 @@ export interface CallOptions {
     jumpOnFail?: string;
     falseMeansFail?: boolean;
     callType?: CallType;
-}
-export interface IValidator {
-    method: string;
-    params: {
-        [key: string]: string | Variable;
-    };
-    validatorAddress: string;
 }
 export interface IPluginCall {
     value?: string | Variable;

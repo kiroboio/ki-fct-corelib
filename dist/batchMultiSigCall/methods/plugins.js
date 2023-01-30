@@ -5,14 +5,7 @@ const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
 async function getPlugin(index) {
-    let chainId;
-    if (this.chainId) {
-        chainId = this.chainId.toString();
-    }
-    else {
-        const data = await this.provider.getNetwork();
-        chainId = data.chainId.toString();
-    }
+    const chainId = this.chainId;
     const call = this.getCall(index);
     if ((0, helpers_1.instanceOfVariable)(call.to)) {
         throw new Error("To value cannot be a variable");
@@ -42,7 +35,7 @@ async function getPlugin(index) {
 }
 exports.getPlugin = getPlugin;
 async function getPluginClass(index) {
-    const { chainId } = await this.provider.getNetwork();
+    const chainId = this.chainId;
     const call = this.getCall(index);
     if ((0, helpers_1.instanceOfVariable)(call.to)) {
         throw new Error("To value cannot be a variable");

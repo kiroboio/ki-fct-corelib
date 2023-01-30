@@ -1,6 +1,8 @@
 import { CALL_TYPE_MSG } from "@constants";
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
+import { FCTCallParam } from "./general";
+
 export interface IComputedVariable {
   index: string;
   var: string;
@@ -10,13 +12,13 @@ export interface IComputedVariable {
   div: string;
 }
 
-interface TypedDataRecurrency {
+export interface TypedDataRecurrency {
   max_repeats: string;
   chill_time: string;
   accumetable: boolean;
 }
 
-interface TypedDataMultiSig {
+export interface TypedDataMultiSig {
   signers: string[];
   required_signers: number;
 }
@@ -39,8 +41,6 @@ export interface TypedDataDomain {
   salt: string;
 }
 
-export type TransactionParam = string | number | boolean | TransactionParam[] | { [key: string]: TransactionParam };
-
 export type TypedDataMessageTransaction = {
   call: {
     call_index: number;
@@ -59,7 +59,7 @@ export type TypedDataMessageTransaction = {
     method_interface: string;
   };
 } & {
-  [key: string]: TransactionParam;
+  [key: string]: FCTCallParam;
 };
 
 export interface TypedDataLimits {
@@ -78,19 +78,6 @@ export interface TypedDataMeta {
   random_id: string;
   eip712: boolean;
 }
-export interface TypedDataMessageOptions {
-  meta: TypedDataMeta;
-  limits: TypedDataLimits;
-  recurrency?: {
-    max_repeats: string;
-    chill_time: string;
-    accumetable: boolean;
-  };
-  multisig?: {
-    external_signers: string[];
-    required_signatures: number;
-  };
-}
 
 export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 export type MessageMeta = Record<"meta", TypedDataMeta>;
@@ -103,14 +90,6 @@ export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & Messa
 export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 
 export type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
-// interface TypedDataMessageV2 {
-//   meta: TypedDataMeta;
-//   limits: TypedDataLimits;
-//   [key: `transaction_${number}`]: TypedDataMessageTransaction;
-//   recurrency?: TypedDataRecurrency;
-//   multisig?: TypedDataMultiSig;
-//   [key: `computed_${number}`]: IComputedVariable | undefined;
-// }
 
 export interface BatchMultiSigCallTypedData {
   types: TypedDataTypes;

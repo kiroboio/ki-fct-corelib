@@ -1,4 +1,3 @@
-import { getValidatorFunctionData } from "../../helpers";
 import { Param } from "../../types";
 import { BatchMultiSigCallTypedData, ComputedVariables, IComputedVariable, IMSCallInput } from "../types";
 
@@ -55,14 +54,6 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
   };
 
   calls.forEach((call: IMSCallInput, index: number) => {
-    if (call.validator) {
-      txTypes[`transaction${index + 1}`] = [
-        { name: "call", type: "Call" },
-        ...getValidatorFunctionData(call.validator, call.params || []),
-      ];
-      return;
-    }
-
     const values = call.params
       ? call.params.map((param: Param) => {
           if (param.customType || param.type === "tuple") {
