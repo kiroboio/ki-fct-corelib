@@ -15,8 +15,7 @@
     "paths": {
       "@helpers": ["helpers/index.ts"],
       "@types": ["types"],
-      "@constants": ["constants"],
-      "corelib": ["index.ts"]
+      "@constants": ["constants"]
     }
   },
   "include": ["src/**/*", "hardhat.config.ts", "./test"],
