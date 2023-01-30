@@ -1,11 +1,11 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import BigNumber from "bignumber.js";
+import { FCTBatchMultiSigCall } from "corelib";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { parseCallID } from "../batchMultiSigCall/helpers";
 import { TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
@@ -337,11 +337,10 @@ export const getPaymentPerPayer = ({
 }) => {
   penalty = penalty || 1;
   const allPaths = getAllFCTPaths(fct);
-  const batchMultiSigCall = new BatchMultiSigCall({});
 
   fct.signatures = fct.signatures || [];
 
-  const callData = batchMultiSigCall.getCalldataForActuator({
+  const callData = FCTBatchMultiSigCall.utils.getCalldataForActuator({
     signedFCT: fct,
     activator: "0x0000000000000000000000000000000000000000",
     investor: "0x0000000000000000000000000000000000000000",
