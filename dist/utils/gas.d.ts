@@ -37,8 +37,8 @@ type TransactionValidatorResult<T extends ITxValidator> = TransactionValidatorSu
 export declare const transactionValidator: <T extends ITxValidator>(txVal: T, pureGas?: boolean) => Promise<TransactionValidatorResult<T>>;
 export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     rpcUrl: string;
-    historicalBlocks?: number;
-    tries?: number;
+    historicalBlocks?: number | undefined;
+    tries?: number | undefined;
 }) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
 export declare const estimateFCTGasCost: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
     fct: IFCT;
@@ -58,9 +58,9 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
 };
 export declare const getPaymentPerPayer: ({ fct, gasPrice, kiroPriceInETH, penalty, }: {
     fct: IFCT;
-    gasPrice?: number;
+    gasPrice?: number | undefined;
     kiroPriceInETH: string;
-    penalty?: number;
+    penalty?: number | undefined;
 }) => {
     payer: string;
     amount: string;

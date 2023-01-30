@@ -133,6 +133,9 @@ function importFCT(fct) {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
                 return value.text === meta.flow_control.toString();
             });
+            if (!flow) {
+                throw new Error("Flow control not found");
+            }
             return constants_1.Flow[flow[0]];
         };
         const callInput = {
@@ -214,6 +217,9 @@ async function importEncodedFCT(calldata) {
                 chainId,
                 signature: call.functionSignature,
             });
+            if (!pluginData) {
+                throw new Error("Plugin not found");
+            }
             const plugin = new pluginData.plugin({
                 chainId,
             });
@@ -245,7 +251,7 @@ async function importEncodedFCT(calldata) {
                 nodeId: `node${index + 1}`,
                 plugin,
                 from: call.from,
-                options,
+                options: options,
             };
             await this.create(callInput);
         }

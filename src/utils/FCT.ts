@@ -135,14 +135,20 @@ export const getAllFCTPaths = (fct: IFCT) => {
 
   const allPaths: string[][] = [];
 
-  const isVisited = {};
+  const isVisited: Record<string, boolean> = {};
   const pathList: string[] = [];
   const start = "0";
   const end = (fct.mcall.length - 1).toString();
 
   pathList.push(start);
 
-  const printAllPathsUtil = (g: Graph, start: string, end: string, isVisited: object, localPathList: string[]) => {
+  const printAllPathsUtil = (
+    g: Graph,
+    start: string,
+    end: string,
+    isVisited: Record<string, boolean>,
+    localPathList: string[]
+  ) => {
     if (start === end) {
       const path = localPathList.slice();
 

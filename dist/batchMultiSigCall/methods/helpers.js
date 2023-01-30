@@ -33,10 +33,12 @@ async function getAllRequiredApprovals() {
         });
         if (pluginData) {
             const initPlugin = new pluginData.plugin({ chainId });
-            const methodParams = call.params.reduce((acc, param) => {
-                acc[param.name] = param.value;
-                return acc;
-            }, {});
+            const methodParams = call.params
+                ? call.params.reduce((acc, param) => {
+                    acc[param.name] = param.value;
+                    return acc;
+                }, {})
+                : {};
             initPlugin.input.set({
                 to: call.to,
                 methodParams,
@@ -49,9 +51,9 @@ async function getAllRequiredApprovals() {
                 })
                     .map((approval) => {
                     return {
-                        token: approval.to,
-                        spender: approval.spender,
-                        requiredAmount: approval.amount,
+                        token: approval.to ?? "",
+                        spender: approval.spender ?? "",
+                        requiredAmount: approval.amount ?? "",
                         from: call.from,
                     };
                 });
@@ -273,7 +275,7 @@ function getParamsFromCall(call) {
         // If mcall is a validation call
         if (call.validator) {
             Object.entries(call.validator.params).forEach(([key, value]) => {
-                if (typeof value !== "string") {
+                if (typeof value !== "string" && call.validator) {
                     call.validator.params[key] = this.getVariable(value, "uint256");
                 }
             });

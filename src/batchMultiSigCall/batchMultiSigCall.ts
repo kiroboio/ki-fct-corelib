@@ -58,17 +58,14 @@ export class BatchMultiSigCall {
     }
 
     this.FCT_Controller = new ethers.Contract(
-      contractAddress || addresses[chainId].FCT_Controller,
+      contractAddress || addresses[this.chainId as keyof typeof addresses].FCT_Controller,
       FCT_ControllerABI,
       provider
     );
 
     this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-    this.provider = provider;
-
-    if (options) {
-      this.setOptions(options);
-    }
+    if (provider) this.provider = provider;
+    if (options) this.setOptions(options);
   }
 
   // Helpers

@@ -1,6 +1,5 @@
-import { IFCTOptions, IMSCallInput } from "batchMultiSigCall/types";
-
 import { CALL_TYPE, Flow, flows } from "../../constants";
+import { IFCTOptions, IMSCallInput } from "../types";
 
 export const manageFlow = (call: IMSCallInput) => {
   // const jump = (call.options && call.options.jump) || 0;
@@ -49,20 +48,22 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   let successJump = "0000";
   let failJump = "0000";
 
-  if (call?.options?.jumpOnFail) {
-    const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
+  if (call.options) {
+    if (call.options.jumpOnFail) {
+      const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
 
-    failJump = Number(nodeIndex - index - 1)
-      .toString(16)
-      .padStart(4, "0");
-  }
+      failJump = Number(nodeIndex - index - 1)
+        .toString(16)
+        .padStart(4, "0");
+    }
 
-  if (call?.options?.jumpOnSuccess) {
-    const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnSuccess);
+    if (call.options.jumpOnSuccess) {
+      const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
 
-    successJump = Number(nodeIndex - index - 1)
-      .toString(16)
-      .padStart(4, "0");
+      successJump = Number(nodeIndex - index - 1)
+        .toString(16)
+        .padStart(4, "0");
+    }
   }
 
   return (
@@ -89,7 +90,10 @@ export const getSessionId = (salt: string, options: IFCTOptions): string => {
     throw new Error("Expires at date cannot be in the past");
   }
 
-  const minimumApprovals = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
+  const minimumApprovals =
+    options.multisig && options.multisig.minimumApprovals
+      ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
+      : "00";
   const version = "010101";
   const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
   const chillTime = options.recurrency
@@ -193,6 +197,8 @@ export const parseSessionID = (sessionId: string, builder: string) => {
   };
 };
 
+type CallIdResult<T extends boolean> = T extends true ? number : string;
+
 export const parseCallID = (
   callId: string,
   jumpsAsNumbers = false
@@ -200,8 +206,8 @@ export const parseCallID = (
   options: {
     gasLimit: string;
     flow: Flow;
-    jumpOnSuccess?: string;
-    jumpOnFail?: string;
+    jumpOnSuccess?: CallIdResult<typeof jumpsAsNumbers>;
+    jumpOnFail?: CallIdResult<typeof jumpsAsNumbers>;
   };
   viewOnly: boolean;
   permissions: string;
@@ -221,12 +227,20 @@ export const parseCallID = (
     const flow = Object.entries(flows).find(([, value]) => {
       return value.value === flowNumber.toString();
     });
-    return Flow[flow[0]];
+    if (!flow) throw new Error("Invalid flow");
+    return Flow[flow[0] as keyof typeof Flow];
   };
 
-  const options = {
+  const options: {
+    gasLimit: string;
+    flow: Flow;
+    jumpOnSuccess?: string | number;
+    jumpOnFail?: string | number;
+  } = {
     gasLimit,
     flow: getFlow(),
+    jumpOnFail: 0,
+    jumpOnSuccess: 0,
   };
 
   if (jumpsAsNumbers) {

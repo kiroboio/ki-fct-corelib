@@ -1,5 +1,5 @@
 import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
-import { IMSCallInput } from "batchMultiSigCall/types";
+import { IMSCallInput } from "../types";
 export declare const handleMethodInterface: (call: IMSCallInput) => string;
 export declare const handleFunctionSignature: (call: IMSCallInput) => string;
 export declare const handleEnsHash: (call: IMSCallInput) => string;

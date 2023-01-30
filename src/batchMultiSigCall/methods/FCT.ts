@@ -1,5 +1,6 @@
 import { ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { Param } from "@types";
 import { BigNumber, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
@@ -129,7 +130,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
     const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
     const { call: meta } = typedData.message[`transaction_${index + 1}`] as TypedDataMessageTransaction;
 
-    let params = [];
+    let params: Param[] = [];
 
     if (dataTypes.length > 1) {
       // Getting types from method_interface, because parameter might be hashed and inside
@@ -159,7 +160,10 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       const flow = Object.entries(flows).find(([, value]) => {
         return value.text === meta.flow_control.toString();
       });
-      return Flow[flow[0]];
+      if (!flow) {
+        throw new Error("Flow control not found");
+      }
+      return Flow[flow[0] as keyof typeof Flow];
     };
 
     const callInput: IMSCallInput = {
@@ -202,7 +206,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   const arrayKeys = ["signatures", "mcall"];
   const objectKeys = ["tr"];
 
-  const getFCT = (obj: object) => {
+  const getFCT = (obj: object): Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any> => {
     return Object.entries(obj).reduce((acc, [key, value]) => {
       if (!isNaN(parseFloat(key))) {
         return acc;
@@ -211,7 +215,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
       if (arrayKeys.includes(key)) {
         return {
           ...acc,
-          [key]: value.map((sign) => getFCT(sign)),
+          [key]: (value as object[]).map((sign) => getFCT(sign)),
         };
       }
 
@@ -232,7 +236,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
       if (key === "types") {
         return {
           ...acc,
-          [key]: value.map((type) => type.toString()),
+          [key]: (value as BigNumber[]).map((type) => type.toString()),
         };
       }
 
@@ -240,7 +244,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         ...acc,
         [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
       };
-    }, {});
+    }, {} as Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any>);
   };
 
   const decodedFCT: {
@@ -261,6 +265,10 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         chainId,
         signature: call.functionSignature,
       });
+
+      if (!pluginData) {
+        throw new Error("Plugin not found");
+      }
 
       const plugin = new pluginData.plugin({
         chainId,
@@ -306,11 +314,11 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         nodeId: `node${index + 1}`,
         plugin,
         from: call.from,
-        options,
+        options: options as any,
       };
 
       await this.create(callInput);
-    } catch (e) {
+    } catch (e: any) {
       if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
         throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
       }

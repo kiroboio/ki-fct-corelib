@@ -62,12 +62,12 @@ class BatchMultiSigCall {
         else {
             this.chainId = 1;
         }
-        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.addresses[chainId].FCT_Controller, FCT_Controller_abi_json_1.default, provider);
+        this.FCT_Controller = new ethers_1.ethers.Contract(contractAddress || data_1.addresses[this.chainId].FCT_Controller, FCT_Controller_abi_json_1.default, provider);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
-        this.provider = provider;
-        if (options) {
+        if (provider)
+            this.provider = provider;
+        if (options)
             this.setOptions(options);
-        }
     }
     get length() {
         return this.calls.length;
