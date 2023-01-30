@@ -14,7 +14,7 @@ const typeValue = (param: Param): number[] => {
   if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
     if (param.customType || param.type.includes("tuple")) {
       const value = param.value as Param[][];
-      return [TYPE_ARRAY, value.length, ...getTypesArray(param.value[0] as Param[])];
+      return [TYPE_ARRAY, value.length, ...getTypesArray((param.value as Param[][])[0])];
     }
 
     const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
@@ -41,7 +41,7 @@ const typeValue = (param: Param): number[] => {
 
     const types = values.reduce((acc, item) => {
       return [...acc, ...typeValue(item)];
-    }, []);
+    }, [] as number[]);
 
     return [values.length, ...types];
   }
@@ -55,7 +55,7 @@ export const getTypesArray = (params: Param[]): number[] => {
   const types = params.reduce((acc, item) => {
     const data = typeValue(item);
     return [...acc, ...data];
-  }, []);
+  }, [] as number[]);
 
   if (!types.some((item) => item !== TYPE_NATIVE)) {
     return [];
@@ -73,5 +73,5 @@ export const getTypedHashes = (
       return [...acc, utils.hexlify(utils.hexlify(TypedDataUtils.hashType(type, typedData.types)))];
     }
     return acc;
-  }, []);
+  }, [] as string[]);
 };

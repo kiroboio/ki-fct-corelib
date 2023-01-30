@@ -35,6 +35,9 @@ const getValidatorMethodInterface = (validator) => {
 exports.getValidatorMethodInterface = getValidatorMethodInterface;
 const getValidatorData = (call, noFunctionSignature) => {
     const iface = new ethers_1.utils.Interface(validator_abi_json_1.default);
+    if (!call.validator) {
+        throw new Error("Validator is not defined");
+    }
     const data = iface.encodeFunctionData(call.validator.method, [
         ...Object.values(call.validator.params),
         call.to,
@@ -51,6 +54,9 @@ const getValidatorDataOffset = (types, data) => {
 };
 const createValidatorTxData = (call) => {
     const iface = new ethers_1.utils.Interface(validator_abi_json_1.default);
+    if (!call.validator) {
+        throw new Error("Validator is not defined");
+    }
     const validatorFunction = iface.getFunction(call.validator.method);
     const validator = call.validator;
     if (!validatorFunction) {
@@ -67,10 +73,12 @@ const createValidatorTxData = (call) => {
         functionSignature: (0, method_1.getMethodInterface)(call),
         method_data_offset: getValidatorDataOffset(methodDataOffsetTypes, (0, method_1.getEncodedMethodParams)(call)),
         method_data_length: (0, method_1.getParamsLength)((0, method_1.getEncodedMethodParams)(call)),
-        ...call.params.reduce((acc, param) => ({
-            ...acc,
-            [param.name]: param.value,
-        }), {}),
+        ...(call.params
+            ? call.params.reduce((acc, param) => ({
+                ...acc,
+                [param.name]: param.value,
+            }), {})
+            : {}),
     };
 };
 exports.createValidatorTxData = createValidatorTxData;

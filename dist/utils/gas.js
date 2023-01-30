@@ -81,6 +81,9 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
     do {
         try {
             const latestBlock = await provider.getBlock("latest");
+            if (!latestBlock.baseFeePerGas) {
+                throw new Error("No baseFeePerGas");
+            }
             const baseFee = latestBlock.baseFeePerGas.toString();
             const blockNumber = latestBlock.number;
             const res = await fetch(rpcUrl, {
@@ -136,6 +139,7 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
                 },
             };
             keepTrying = false;
+            return returnValue;
         }
         catch (err) {
             console.log("Error getting gas prices, retrying", err);
@@ -148,7 +152,7 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
             }
         }
     } while (keepTrying && tries-- > 0);
-    return returnValue;
+    throw new Error("Could not get gas prices, issue might be related to node provider");
 };
 exports.getGasPrices = getGasPrices;
 const estimateFCTGasCost = async ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }) => {
@@ -253,7 +257,7 @@ const getPaymentPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
     const data = allPaths.map((path) => {
         const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
         return path.reduce((acc, callIndex) => {
-            const call = fct.mcall[callIndex];
+            const call = fct.mcall[Number(callIndex)];
             const callId = (0, helpers_1.parseCallID)(call.callId);
             const payerIndex = callId.payerIndex;
             const payer = fct.mcall[payerIndex - 1].from;
@@ -285,12 +289,17 @@ const getPaymentPerPayer = ({ fct, gasPrice, kiroPriceInETH, penalty, }) => {
     ];
     return allPayers.map((payer) => {
         const amount = data.reduce((acc, path) => {
-            return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+            return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0")
+                ? acc
+                : path[payer] || "0";
         }, "0");
         return {
             payer,
             amount,
-            amountInETH: (0, bignumber_js_1.default)(amount).div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty).toString(),
+            amountInETH: (0, bignumber_js_1.default)(amount)
+                .div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18))
+                .multipliedBy(penalty || 1)
+                .toString(),
         };
     });
 };

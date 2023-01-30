@@ -9,7 +9,7 @@ const getTxEIP712Types = (calls) => {
     const getStructType = (param, index) => {
         const typeName = `Struct${getTypeCount()}`;
         let paramValue;
-        if (param.type.lastIndexOf("[") > 0) {
+        if (param.type.lastIndexOf("[") > 0 && param.value) {
             paramValue = param.value[0];
         }
         else {
@@ -51,20 +51,22 @@ const getTxEIP712Types = (calls) => {
         if (call.validator) {
             txTypes[`transaction${index + 1}`] = [
                 { name: "call", type: "Call" },
-                ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params),
+                ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params || []),
             ];
             return;
         }
-        const values = call.params.map((param) => {
-            if (param.customType || param.type === "tuple") {
-                const type = getStructType(param, index);
-                return { name: param.name, type };
-            }
-            return {
-                name: param.name,
-                type: param.type,
-            };
-        });
+        const values = call.params
+            ? call.params.map((param) => {
+                if (param.customType || param.type === "tuple") {
+                    const type = getStructType(param, index);
+                    return { name: param.name, type };
+                }
+                return {
+                    name: param.name,
+                    type: param.type,
+                };
+            })
+            : [];
         txTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
     });
     return {

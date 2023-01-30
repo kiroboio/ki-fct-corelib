@@ -40,17 +40,19 @@ const manageCallId = (calls, call, index) => {
     };
     let successJump = "0000";
     let failJump = "0000";
-    if (call?.options?.jumpOnFail) {
-        const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnFail);
-        failJump = Number(nodeIndex - index - 1)
-            .toString(16)
-            .padStart(4, "0");
-    }
-    if (call?.options?.jumpOnSuccess) {
-        const nodeIndex = calls.findIndex((c) => c.nodeId === call.options.jumpOnSuccess);
-        successJump = Number(nodeIndex - index - 1)
-            .toString(16)
-            .padStart(4, "0");
+    if (call.options) {
+        if (call.options.jumpOnFail) {
+            const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
+            failJump = Number(nodeIndex - index - 1)
+                .toString(16)
+                .padStart(4, "0");
+        }
+        if (call.options.jumpOnSuccess) {
+            const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
+            successJump = Number(nodeIndex - index - 1)
+                .toString(16)
+                .padStart(4, "0");
+        }
     }
     return ("0x" +
         `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
@@ -71,7 +73,9 @@ const getSessionId = (salt, options) => {
     if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
         throw new Error("Expires at date cannot be in the past");
     }
-    const minimumApprovals = options.multisig ? options.multisig.minimumApprovals.toString(16).padStart(2, "0") : "00";
+    const minimumApprovals = options.multisig && options.multisig.minimumApprovals
+        ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
+        : "00";
     const version = "010101";
     const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
     const chillTime = options.recurrency
@@ -190,11 +194,15 @@ const parseCallID = (callId, jumpsAsNumbers = false) => {
         const flow = Object.entries(constants_1.flows).find(([, value]) => {
             return value.value === flowNumber.toString();
         });
+        if (!flow)
+            throw new Error("Invalid flow");
         return constants_1.Flow[flow[0]];
     };
     const options = {
         gasLimit,
         flow: getFlow(),
+        jumpOnFail: 0,
+        jumpOnSuccess: 0,
     };
     if (jumpsAsNumbers) {
         options["jumpOnFail"] = jumpOnFail;

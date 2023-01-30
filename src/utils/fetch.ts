@@ -21,12 +21,12 @@ export const fetchCurrentApprovals = async ({
 
   const chainId = (await provider.getNetwork()).chainId.toString();
 
-  if (!multicallContracts[chainId]) {
+  if (!multicallContracts[Number(chainId) as keyof typeof multicallContracts]) {
     throw new Error("Multicall contract not found for this chain");
   }
 
   const multiCallContract = new ethers.Contract(
-    multicallContracts[chainId],
+    multicallContracts[Number(chainId) as keyof typeof multicallContracts],
     [
       "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ],

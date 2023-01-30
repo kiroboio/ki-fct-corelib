@@ -118,6 +118,9 @@ export const getGasPrices = async ({
   do {
     try {
       const latestBlock = await provider.getBlock("latest");
+      if (!latestBlock.baseFeePerGas) {
+        throw new Error("No baseFeePerGas");
+      }
       const baseFee = latestBlock.baseFeePerGas.toString();
       const blockNumber = latestBlock.number;
 
@@ -181,6 +184,8 @@ export const getGasPrices = async ({
       };
 
       keepTrying = false;
+
+      return returnValue;
     } catch (err) {
       console.log("Error getting gas prices, retrying", err);
 
@@ -192,8 +197,7 @@ export const getGasPrices = async ({
       }
     }
   } while (keepTrying && tries-- > 0);
-
-  return returnValue;
+  throw new Error("Could not get gas prices, issue might be related to node provider");
 };
 
 export const estimateFCTGasCost = async ({
@@ -364,7 +368,7 @@ export const getPaymentPerPayer = ({
     const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
 
     return path.reduce((acc, callIndex) => {
-      const call = fct.mcall[callIndex];
+      const call = fct.mcall[Number(callIndex)];
       const callId = parseCallID(call.callId);
       const payerIndex = callId.payerIndex;
       const payer = fct.mcall[payerIndex - 1].from;
@@ -384,7 +388,7 @@ export const getPaymentPerPayer = ({
 
       return {
         ...acc,
-        [payer]: BigNumber(acc[payer] || 0)
+        [payer]: BigNumber(acc[payer as keyof typeof acc] || 0)
           .plus(kiroCost)
           .toString(),
       };
@@ -404,12 +408,17 @@ export const getPaymentPerPayer = ({
 
   return allPayers.map((payer) => {
     const amount = data.reduce<string>((acc: string, path) => {
-      return BigNumber(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+      return BigNumber(acc).isGreaterThan(path[payer as keyof typeof path] || "0")
+        ? acc
+        : path[payer as keyof typeof path] || "0";
     }, "0");
     return {
       payer,
       amount,
-      amountInETH: BigNumber(amount).div(BigNumber(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty).toString(),
+      amountInETH: BigNumber(amount)
+        .div(BigNumber(kiroPriceInETH).shiftedBy(18))
+        .multipliedBy(penalty || 1)
+        .toString(),
     };
   });
 };

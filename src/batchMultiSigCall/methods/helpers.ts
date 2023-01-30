@@ -39,12 +39,7 @@ export function getCalldataForActuator(
 }
 
 export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<IRequiredApproval[]> {
-  let requiredApprovals: {
-    token: string | undefined;
-    spender: string | undefined;
-    requiredAmount: string | undefined;
-    from: string;
-  }[] = [];
+  let requiredApprovals: IRequiredApproval[] = [];
   if (!this.chainId && !this.provider) {
     throw new Error("No chainId or provider has been set");
   }
@@ -65,10 +60,12 @@ export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<
     if (pluginData) {
       const initPlugin = new pluginData.plugin({ chainId });
 
-      const methodParams = call.params.reduce((acc, param) => {
-        acc[param.name] = param.value;
-        return acc;
-      }, {});
+      const methodParams = call.params
+        ? call.params.reduce((acc, param) => {
+            acc[param.name] = param.value;
+            return acc;
+          }, {} as { [key: string]: Param["value"] })
+        : {};
 
       initPlugin.input.set({
         to: call.to,
@@ -83,9 +80,9 @@ export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<
           })
           .map((approval) => {
             return {
-              token: approval.to,
-              spender: approval.spender,
-              requiredAmount: approval.amount,
+              token: approval.to ?? "",
+              spender: approval.spender ?? "",
+              requiredAmount: approval.amount ?? "",
               from: call.from as string,
             };
           });
@@ -336,7 +333,7 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
     // If mcall is a validation call
     if (call.validator) {
       Object.entries(call.validator.params).forEach(([key, value]) => {
-        if (typeof value !== "string") {
+        if (typeof value !== "string" && call.validator) {
           call.validator.params[key] = this.getVariable(value, "uint256");
         }
       });

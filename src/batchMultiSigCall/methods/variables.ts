@@ -45,6 +45,8 @@ export function getVariable(this: BatchMultiSigCall, variable: Variable, type: s
 
     return this.getComputedVariable(index, type);
   }
+
+  throw new Error("Variable type not found");
 }
 
 export function getOutputVariable(this: BatchMultiSigCall, index: number, innerIndex: number, type: string) {
@@ -60,9 +62,7 @@ export function getOutputVariable(this: BatchMultiSigCall, index: number, innerI
     } else {
       base = FDBackBase;
     }
-  }
-
-  if (innerIndex >= 0) {
+  } else {
     innerIndexHex = innerIndex.toString(16).padStart(4, "0");
     if (type.includes("bytes")) {
       base = FDBaseBytes;

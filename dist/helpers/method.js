@@ -19,7 +19,7 @@ const getMethodInterface = (call) => {
         }
         return param.hashed ? "bytes32" : param.type;
     };
-    const params = call.params.map(getParamsType);
+    const params = call.params ? call.params.map(getParamsType) : "";
     return `${call.method}(${params})`;
 };
 exports.getMethodInterface = getMethodInterface;
@@ -28,18 +28,20 @@ const getEncodedMethodParams = (call, withFunction) => {
         return "0x";
     if (withFunction) {
         const ABI = [
-            `function ${call.method}(${call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",")})`,
+            `function ${call.method}(${call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""})`,
         ];
         const iface = new ethers_1.utils.Interface(ABI);
-        return iface.encodeFunctionData(call.method, call.params.map((item) => {
-            if (item.hashed) {
-                if (typeof item.value === "string") {
-                    return ethers_1.utils.keccak256((0, utils_1.toUtf8Bytes)(item.value));
+        return iface.encodeFunctionData(call.method, call.params
+            ? call.params.map((item) => {
+                if (item.hashed) {
+                    if (typeof item.value === "string") {
+                        return ethers_1.utils.keccak256((0, utils_1.toUtf8Bytes)(item.value));
+                    }
+                    throw new Error("Hashed value must be a string");
                 }
-                throw new Error("Hashed value must be a string");
-            }
-            return item.value;
-        }));
+                return item.value;
+            })
+            : []);
     }
     const getType = (param) => {
         if (param.customType || param.type.includes("tuple")) {
@@ -78,6 +80,8 @@ const getEncodedMethodParams = (call, withFunction) => {
         }
         return param.value;
     };
+    if (!call.params)
+        return "0x";
     return utils_1.defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
 };
 exports.getEncodedMethodParams = getEncodedMethodParams;
