@@ -4,6 +4,8 @@ import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 import { MethodParamsInterface, Param } from "../types";
 import { instanceOfParams } from "./instanceOf";
 
+type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
+
 // From method and params create tuple
 export const getMethodInterface = (call: Partial<MethodParamsInterface>): string => {
   const getParamsType = (param: Param): string => {
@@ -66,14 +68,17 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
     return param.hashed ? "bytes32" : param.type;
   };
 
-  const getValues = (param: Param): any => {
+  const getValues = (param: Param): GetValueType => {
+    if (!param.value) {
+      throw new Error("Param value is required");
+    }
     if (param.customType || param.type.includes("tuple")) {
       let value;
       if (param.type.lastIndexOf("[") > 0) {
         value = param.value as Param[][];
         return value.reduce((acc, val) => {
           return [...acc, val.map(getValues)];
-        }, [] as string[][]);
+        }, [] as GetValueType[][]);
       } else {
         value = param.value as Param[];
         return value.map(getValues);
@@ -87,7 +92,7 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
       throw new Error("Hashed value must be a string");
     }
 
-    return param.value;
+    return param.value as boolean | string;
   };
   if (!call.params) return "0x";
 
