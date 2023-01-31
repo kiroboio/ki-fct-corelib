@@ -1,23 +1,12 @@
 import { CALL_TYPE, Flow, flows } from "../../constants";
 import { IFCTOptions, IMSCallInput } from "../types";
 
-export const manageFlow = (call: IMSCallInput) => {
-  // const jump = (call.options && call.options.jump) || 0;
-  const jump = 0;
-  const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
-
-  if (jump > 15) {
-    throw new Error("Jump value cannot exceed 15");
-  }
-
-  if (!flows[flow]) {
-    throw new Error("Flow not found");
-  }
-
-  return `0x${flows[flow].value}${jump.toString(16)}`;
+const valueWithPadStart = (value: string | number, padStart: number) => {
+  return Number(value).toString(16).padStart(padStart, "0");
 };
 
 export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: number) => {
+  // This is the structure of callId string
   // 4 - Permissions
   // 2 - Flow
   // 4 - Fail Jump
@@ -28,15 +17,10 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   // 2 - Flags
 
   const permissions = "0000";
-  const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
-
-  const payerIndex = Number(index + 1)
-    .toString(16)
-    .padStart(4, "0");
-  const callIndex = Number(index + 1)
-    .toString(16)
-    .padStart(4, "0");
-  const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+  const flow = call?.options?.flow ? valueWithPadStart(flows[call.options.flow].value, 2) : "00";
+  const payerIndex = valueWithPadStart(index + 1, 4);
+  const callIndex = valueWithPadStart(index + 1, 4);
+  const gasLimit = call?.options?.gasLimit ? valueWithPadStart(call.options.gasLimit, 8) : "00000000";
 
   const flags = () => {
     const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;

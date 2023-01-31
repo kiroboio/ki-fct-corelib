@@ -4,6 +4,8 @@ import { GlobalVariable } from "../variables/index";
 
 // export type ChainId = "1" | "5";
 
+// Create a address type where the value is a string that starts with 0x and has 40 characters
+
 export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }

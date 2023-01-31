@@ -195,7 +195,7 @@ describe("BatchMultiSigCall", () => {
       },
     ]);
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT).to.be.an("object");
 

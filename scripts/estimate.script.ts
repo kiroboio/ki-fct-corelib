@@ -11,7 +11,6 @@ async function main() {
   const gasPrices = await utils.getGasPrices({
     rpcUrl: scriptData[chainId].rpcUrl,
   });
-
   console.log(gasPrices);
 }
 

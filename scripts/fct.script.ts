@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import util from "util";
 
-import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
+import { BatchMultiSigCall, constants, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
 // import util from "util";
 
@@ -89,6 +89,9 @@ async function main() {
       from: vault,
       method: "swap_noSlippageProtection",
       to: data[chainId].KIRO,
+      options: {
+        flow: constants.Flow.OK_CONT_FAIL_STOP,
+      },
       params: [
         {
           name: "amount",
@@ -117,6 +120,21 @@ async function main() {
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: transfer, from: vault, nodeId: "4" },
     { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
+    {
+      from: vault,
+      method: "swap_noSlippageProtection",
+      to: data[chainId].KIRO,
+      params: [
+        {
+          name: "amount",
+          type: "uint256",
+          value: { type: "output", id: { nodeId: "1", innerIndex: 9 } },
+          customType: false,
+          hashed: false,
+        },
+      ],
+      nodeId: "15",
+    },
   ]);
 
   const FCT = batchMultiSigCall.exportFCT();
