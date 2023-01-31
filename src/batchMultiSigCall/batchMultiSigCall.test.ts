@@ -2,6 +2,7 @@ import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 
 import { Flow } from "../constants";
+import { parseCallID } from "./helpers";
 import { BatchMultiSigCall } from "./index";
 
 function getDate(days = 0) {
@@ -162,7 +163,7 @@ describe("BatchMultiSigCall", () => {
         params: [{ name: "recipient", type: "address", value: { type: "global", id: "minerAddress" } }],
         options: {
           jumpOnSuccess: "node3",
-          jumpOnFail: "node2",
+          jumpOnFail: "node3",
           flow: Flow.OK_STOP_FAIL_CONT,
         },
       },
@@ -201,7 +202,24 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);
-    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(0);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
+
+    const callId = FCT.mcall[0].callId;
+    const parsedCallId = parseCallID(callId, true);
+    console.log(callId, parsedCallId);
+
+    expect(parsedCallId).to.be.eql({
+      options: {
+        gasLimit: "0",
+        flow: "OK_STOP_FAIL_CONT",
+        jumpOnFail: 1,
+        jumpOnSuccess: 1,
+      },
+      viewOnly: false,
+      permissions: "00",
+      payerIndex: 1,
+      callIndex: 1,
+    });
 
     expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");

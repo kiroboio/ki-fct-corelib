@@ -15,6 +15,7 @@ const manageCallId = (calls, call, index) => {
     // 4 - Call index
     // 8 - Gas limit
     // 2 - Flags
+    // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
     const permissions = "0000";
     const flow = call?.options?.flow ? valueWithPadStart(constants_1.flows[call.options.flow].value, 2) : "00";
     const payerIndex = valueWithPadStart(index + 1, 4);
