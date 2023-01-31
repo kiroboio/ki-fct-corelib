@@ -5,6 +5,4 @@ export * as utils from "./utils";
 export * as variables from "./variables";
 export * as FCTBatchMultiSigCall from "./batchMultiSigCall";
 export * from "./methods";
-export * from "./batchMultiSigCall/types";
 export * from "./types";
-export * from "./utils/types";

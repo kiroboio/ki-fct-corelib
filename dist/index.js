@@ -34,11 +34,9 @@ Object.defineProperty(exports, "ethers", { enumerable: true, get: function () { 
 exports.constants = __importStar(require("./constants"));
 exports.utils = __importStar(require("./utils"));
 exports.variables = __importStar(require("./variables"));
-// BatchMultiSigCall exports
+// BatchMultiSigCall exports (utils and helpers)
 exports.FCTBatchMultiSigCall = __importStar(require("./batchMultiSigCall"));
-// FCT exports
+// FCT class exports
 __exportStar(require("./methods"), exports);
 // Type exports
-__exportStar(require("./batchMultiSigCall/types"), exports);
 __exportStar(require("./types"), exports);
-__exportStar(require("./utils/types"), exports);

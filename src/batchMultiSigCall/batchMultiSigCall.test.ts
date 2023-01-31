@@ -206,7 +206,6 @@ describe("BatchMultiSigCall", () => {
 
     const callId = FCT.mcall[0].callId;
     const parsedCallId = parseCallID(callId, true);
-    console.log(callId, parsedCallId);
 
     expect(parsedCallId).to.be.eql({
       options: {
