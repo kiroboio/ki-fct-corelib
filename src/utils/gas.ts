@@ -1,4 +1,5 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { EIP1559GasPrice, ITxValidator, LegacyGasPrice } from "@types";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
@@ -7,9 +8,8 @@ import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { utils } from "../batchMultiSigCall";
 import { parseCallID } from "../batchMultiSigCall/helpers";
-import { TypedDataLimits } from "../batchMultiSigCall/types";
+import { PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
-import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
 
 interface TransactionValidatorSuccess<T extends ITxValidator> {
   isValid: true;
@@ -206,7 +206,7 @@ export const estimateFCTGasCost = async ({
   batchMultiSigCallAddress,
   rpcUrl,
 }: {
-  fct: IFCT;
+  fct: PartialBatchMultiSigCall;
   callData: string;
   batchMultiSigCallAddress: string;
   rpcUrl: string;
@@ -288,7 +288,7 @@ export const getKIROPayment = ({
   gasPrice,
   gas,
 }: {
-  fct: IFCT;
+  fct: PartialBatchMultiSigCall;
   kiroPriceInETH: string;
   gasPrice: number;
   gas: number;
@@ -330,7 +330,7 @@ export const getPaymentPerPayer = ({
   kiroPriceInETH,
   penalty,
 }: {
-  fct: IFCT;
+  fct: PartialBatchMultiSigCall;
   gasPrice?: number;
   kiroPriceInETH: string;
   penalty?: number;

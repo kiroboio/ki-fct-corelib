@@ -5,11 +5,9 @@ const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const handleMethodInterface = (call) => {
-    // If call is not a ETH transfer
     if (call.method) {
         return (0, helpers_1.getMethodInterface)(call);
     }
-    // Else it's a ETH transfer
     return "";
 };
 exports.handleMethodInterface = handleMethodInterface;

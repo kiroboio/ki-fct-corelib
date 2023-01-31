@@ -59,6 +59,9 @@ const getEncodedMethodParams = (call, withFunction) => {
         return param.hashed ? "bytes32" : param.type;
     };
     const getValues = (param) => {
+        if (!param.value) {
+            throw new Error("Param value is required");
+        }
         if (param.customType || param.type.includes("tuple")) {
             let value;
             if (param.type.lastIndexOf("[") > 0) {

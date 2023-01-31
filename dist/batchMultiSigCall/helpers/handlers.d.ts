@@ -1,8 +1,7 @@
-import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
-import { IMSCallInput } from "../types";
+import { BatchMultiSigCallTypedData, IMSCallInput } from "../types";
 export declare const handleMethodInterface: (call: IMSCallInput) => string;
 export declare const handleFunctionSignature: (call: IMSCallInput) => string;
 export declare const handleEnsHash: (call: IMSCallInput) => string;
 export declare const handleData: (call: IMSCallInput) => string;
 export declare const handleTypes: (call: IMSCallInput) => number[];
-export declare const handleTypedHashes: (call: IMSCallInput, typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>) => string[];
+export declare const handleTypedHashes: (call: IMSCallInput, typedData: BatchMultiSigCallTypedData) => string[];

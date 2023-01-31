@@ -3,19 +3,32 @@ import { BatchMultiSigCallTypedData, ComputedVariables, IComputedVariable, IMSCa
 
 type EIP712Types = Record<string, { name: string; type: string }[]>;
 
+// Create a function that checks if the param type last index of [ is greater than 0. If true - value is Param[][] else - value is Param[]
+const isInstanceOfTupleArray = (value: Param["value"], param: Param): value is Param[][] => {
+  return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
+};
+
+const isInstanceOfTuple = (value: Param["value"], param: Param): value is Param[] => {
+  return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
+};
+
 export const getTxEIP712Types = (calls: IMSCallInput[]) => {
   const txTypes: EIP712Types = {};
   const structTypes: EIP712Types = {};
+
   const getTypeCount = () => Object.values(structTypes).length + 1;
 
   const getStructType = (param: Param, index: number) => {
     const typeName = `Struct${getTypeCount()}`;
 
-    let paramValue: Param[];
-    if (param.type.lastIndexOf("[") > 0 && param.value) {
-      paramValue = (param.value as Param[][])[0];
+    let paramValue: Param[] | Param[][];
+
+    if (isInstanceOfTupleArray(param.value, param)) {
+      paramValue = param.value[0];
+    } else if (isInstanceOfTuple(param.value, param)) {
+      paramValue = param.value;
     } else {
-      paramValue = param.value as Param[];
+      throw new Error("Invalid param value");
     }
 
     let customCount = 0;

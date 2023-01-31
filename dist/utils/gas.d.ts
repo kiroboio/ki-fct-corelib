@@ -1,4 +1,5 @@
-import { EIP1559GasPrice, IFCT, ITxValidator, LegacyGasPrice } from "./types";
+import { EIP1559GasPrice, ITxValidator, LegacyGasPrice } from "@types";
+import { PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
 interface TransactionValidatorSuccess<T extends ITxValidator> {
     isValid: true;
     txData: T extends {
@@ -41,13 +42,13 @@ export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     tries?: number | undefined;
 }) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
 export declare const estimateFCTGasCost: ({ fct, callData, batchMultiSigCallAddress, rpcUrl, }: {
-    fct: IFCT;
+    fct: PartialBatchMultiSigCall;
     callData: string;
     batchMultiSigCallAddress: string;
     rpcUrl: string;
 }) => Promise<string>;
 export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
-    fct: IFCT;
+    fct: PartialBatchMultiSigCall;
     kiroPriceInETH: string;
     gasPrice: number;
     gas: number;
@@ -57,7 +58,7 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
     amountInETH: string;
 };
 export declare const getPaymentPerPayer: ({ fct, gasPrice, kiroPriceInETH, penalty, }: {
-    fct: IFCT;
+    fct: PartialBatchMultiSigCall;
     gasPrice?: number | undefined;
     kiroPriceInETH: string;
     penalty?: number | undefined;

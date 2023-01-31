@@ -30,6 +30,8 @@ export interface IBatchMultiSigCallFCT {
   signatures: SignatureLike[];
 }
 
+export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
+
 export interface IMSCallInput {
   nodeId: string;
   value?: string | Variable;

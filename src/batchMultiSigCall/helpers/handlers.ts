@@ -1,17 +1,14 @@
-import { MessageTypeProperty, TypedMessage } from "@metamask/eth-sig-util";
 import { utils } from "ethers";
 
 import { nullValue } from "../../constants";
 import { getEncodedMethodParams, getMethodInterface, getTypedHashes, getTypesArray } from "../../helpers";
-import { IMSCallInput } from "../types";
+import { BatchMultiSigCallTypedData, IMSCallInput } from "../types";
 
 export const handleMethodInterface = (call: IMSCallInput): string => {
-  // If call is not a ETH transfer
   if (call.method) {
     return getMethodInterface(call);
   }
 
-  // Else it's a ETH transfer
   return "";
 };
 
@@ -41,10 +38,7 @@ export const handleTypes = (call: IMSCallInput) => {
   return [];
 };
 
-export const handleTypedHashes = (
-  call: IMSCallInput,
-  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
-) => {
+export const handleTypedHashes = (call: IMSCallInput, typedData: BatchMultiSigCallTypedData) => {
   if (call.params) {
     return getTypedHashes(call.params, typedData);
   }

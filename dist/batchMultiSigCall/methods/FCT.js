@@ -38,7 +38,7 @@ async function create(callInput) {
     if (call.nodeId) {
         const index = this.calls.findIndex((call) => call.nodeId === callInput.nodeId);
         if (index > 0) {
-            throw new Error("Node id already exists, please use different id");
+            throw new Error(`Node id ${callInput.nodeId} already exists, please use a different one`);
         }
     }
     this.calls.push(call);

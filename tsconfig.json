@@ -11,11 +11,13 @@
     "lib": ["es2017", "DOM"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "strictBindCallApply": true,
     "skipLibCheck": true,
     "paths": {
       "@helpers": ["helpers/index.ts"],
       "@types": ["types"],
-      "@constants": ["constants"]
+      "@constants": ["constants"],
+      "@BatchMultiCall": ["batchMultiSigCall"]
     }
   },
   "include": ["src/**/*", "hardhat.config.ts", "./test"],
