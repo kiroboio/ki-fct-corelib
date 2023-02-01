@@ -1,3 +1,4 @@
+import { IBatchMultiSigCallFCT } from "@types";
 import { utils } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
@@ -9,7 +10,7 @@ export function getCalldataForActuator({
   activator,
   version,
 }: {
-  signedFCT: object;
+  signedFCT: IBatchMultiSigCallFCT;
   purgedFCT: string;
   investor: string;
   activator: string;

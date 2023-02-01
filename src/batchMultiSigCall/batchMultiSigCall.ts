@@ -14,10 +14,9 @@ import {
   setOptions,
   verifyParams,
 } from "./methods/helpers";
-import { getPlugin, getPluginClass } from "./methods/plugins";
+import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
-import { getPluginData } from "./utils";
 
 export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
@@ -83,6 +82,5 @@ export class BatchMultiSigCall {
   protected handleValue = handleValue;
 
   // Utility functions
-  // public utils = utils;
   public getPluginData = getPluginData;
 }

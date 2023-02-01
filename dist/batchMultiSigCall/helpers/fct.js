@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTxType = exports.getTypedDataDomain = void 0;
-const getSaltBuffer = (salt) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
+// const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
 // TODO: Change salt to be a buffer
 const TYPED_DATA_DOMAIN = {
     "1": {

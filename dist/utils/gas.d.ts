@@ -1,5 +1,5 @@
 import { EIP1559GasPrice, ITxValidator, LegacyGasPrice } from "@types";
-import { PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
+import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
 interface TransactionValidatorSuccess<T extends ITxValidator> {
     isValid: true;
     txData: T extends {
@@ -58,7 +58,7 @@ export declare const getKIROPayment: ({ fct, kiroPriceInETH, gasPrice, gas, }: {
     amountInETH: string;
 };
 export declare const getPaymentPerPayer: ({ fct, gasPrice, kiroPriceInETH, penalty, }: {
-    fct: PartialBatchMultiSigCall;
+    fct: IBatchMultiSigCallFCT;
     gasPrice?: number | undefined;
     kiroPriceInETH: string;
     penalty?: number | undefined;

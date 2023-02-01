@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPluginClass = exports.getPlugin = void 0;
+exports.getPluginData = exports.getPluginClass = exports.getPlugin = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
@@ -48,3 +48,22 @@ async function getPluginClass(index) {
     return pluginData;
 }
 exports.getPluginClass = getPluginClass;
+async function getPluginData(index) {
+    const plugin = await this.getPlugin(index);
+    const call = this.getCall(index);
+    return {
+        protocol: plugin.protocol,
+        type: plugin.type,
+        method: plugin.method,
+        input: {
+            to: call.to,
+            value: call.value,
+            methodParams: call.params
+                ? call.params.reduce((acc, param) => {
+                    return { ...acc, [param.name]: param.value };
+                }, {})
+                : {},
+        },
+    };
+}
+exports.getPluginData = getPluginData;

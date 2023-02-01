@@ -8,7 +8,7 @@ import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { utils } from "../batchMultiSigCall";
 import { parseCallID } from "../batchMultiSigCall/helpers";
-import { PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
+import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
 
 interface TransactionValidatorSuccess<T extends ITxValidator> {
@@ -330,7 +330,7 @@ export const getPaymentPerPayer = ({
   kiroPriceInETH,
   penalty,
 }: {
-  fct: PartialBatchMultiSigCall;
+  fct: IBatchMultiSigCallFCT;
   gasPrice?: number;
   kiroPriceInETH: string;
   penalty?: number;

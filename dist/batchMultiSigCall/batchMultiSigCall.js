@@ -12,7 +12,6 @@ const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
 const plugins_1 = require("./methods/plugins");
 const variables_1 = require("./methods/variables");
-const utils_1 = require("./utils");
 class BatchMultiSigCall {
     constructor(input = {}) {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
@@ -55,8 +54,7 @@ class BatchMultiSigCall {
         this.handleTo = helpers_2.handleTo;
         this.handleValue = helpers_2.handleValue;
         // Utility functions
-        // public utils = utils;
-        this.getPluginData = utils_1.getPluginData;
+        this.getPluginData = plugins_1.getPluginData;
         if (input.chainId) {
             this.chainId = input.chainId;
         }
