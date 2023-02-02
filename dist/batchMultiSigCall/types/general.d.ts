@@ -58,6 +58,7 @@ export interface IFCTOptions {
     blockable: boolean;
     purgeable: boolean;
     builder: string;
+    authEnabled: boolean;
     recurrency?: {
         maxRepeats?: string;
         chillTime?: string;

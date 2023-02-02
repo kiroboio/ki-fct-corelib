@@ -46,6 +46,7 @@ const manageCallId = (calls, call, index) => {
         `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
 };
 exports.manageCallId = manageCallId;
+// TODO: Update sessionID to include auth_enabled value
 // Deconstructed sessionID
 // 6 - Salt
 // 2 - External signers
