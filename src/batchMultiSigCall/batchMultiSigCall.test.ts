@@ -2,7 +2,7 @@ import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 
 import { Flow } from "../constants";
-import { parseCallID } from "./helpers";
+import { parseCallID, parseSessionID } from "./helpers";
 import { BatchMultiSigCall } from "./index";
 
 function getDate(days = 0) {
@@ -199,6 +199,28 @@ describe("BatchMultiSigCall", () => {
     const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT).to.be.an("object");
+
+    // parse SessionId
+    const sessionId = parseSessionID(FCT.sessionId, "0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(sessionId).to.be.an("object");
+    expect(sessionId).to.be.eql({
+      validFrom: batchMultiSigCall.options.validFrom,
+      expiresAt: batchMultiSigCall.options.expiresAt,
+      maxGasPrice: "100000000000",
+      blockable: true,
+      purgeable: false,
+      authEnabled: true,
+      builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      recurrency: {
+        accumetable: false,
+        chillTime: "0",
+        maxRepeats: "0",
+      },
+      multisig: {
+        minimumApprovals: 0,
+        externalSigners: [],
+      },
+    });
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);

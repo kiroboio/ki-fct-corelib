@@ -104,7 +104,7 @@ function exportFCT() {
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
     // Here we import FCT and add all the data inside BatchMultiSigCall
-    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder);
+    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
     this.setOptions(options);
     const typedData = fct.typedData;
     for (const [index, call] of fct.mcall.entries()) {

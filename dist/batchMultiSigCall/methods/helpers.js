@@ -255,6 +255,7 @@ function createTypedData(salt, version) {
                 version,
                 random_id: `0x${salt}`,
                 eip712: true,
+                auth_enabled: this.options.authEnabled || true,
             },
             limits: {
                 valid_from: this.options.validFrom,

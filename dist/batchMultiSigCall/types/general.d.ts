@@ -5,6 +5,13 @@ import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
 };
+export interface ComuptedVariable {
+    variable: string;
+    add: string;
+    sub: string;
+    mul: string;
+    div: string;
+}
 export interface BatchMultiSigCallConstructor {
     chainId?: ChainId;
     options?: Partial<IFCTOptions>;
@@ -18,13 +25,7 @@ export interface IBatchMultiSigCallFCT {
     builder: string;
     variables: string[];
     externalSigners: string[];
-    computed: {
-        variable: string;
-        add: string;
-        sub: string;
-        mul: string;
-        div: string;
-    }[];
+    computed: ComuptedVariable[];
     signatures: SignatureLike[];
 }
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;

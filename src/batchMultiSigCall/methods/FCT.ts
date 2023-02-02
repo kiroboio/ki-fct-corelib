@@ -125,7 +125,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
   // Here we import FCT and add all the data inside BatchMultiSigCall
-  const options = parseSessionID(fct.sessionId, fct.builder);
+  const options = parseSessionID(fct.sessionId, fct.builder, fct.externalSigners);
   this.setOptions(options);
   const typedData = fct.typedData;
 
