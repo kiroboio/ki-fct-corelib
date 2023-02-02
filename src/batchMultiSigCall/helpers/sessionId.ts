@@ -58,6 +58,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   );
 };
 
+// TODO: Update sessionID to include auth_enabled value
 // Deconstructed sessionID
 // 6 - Salt
 // 2 - External signers

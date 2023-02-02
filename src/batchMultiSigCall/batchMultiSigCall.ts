@@ -34,6 +34,7 @@ export class BatchMultiSigCall {
     purgeable: false,
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
+    authEnabled: true,
   };
 
   constructor(input: BatchMultiSigCallConstructor = {}) {

@@ -258,6 +258,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         { name: "version", type: "bytes3" },
         { name: "random_id", type: "bytes3" },
         { name: "eip712", type: "bool" },
+        { name: "auth_enabled", type: "bool" },
       ],
       Limits: [
         { name: "valid_from", type: "uint40" },
