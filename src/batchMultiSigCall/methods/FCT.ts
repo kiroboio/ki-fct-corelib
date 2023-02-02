@@ -135,7 +135,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 
     let params: Param[] = [];
 
-    if (dataTypes.length > 1) {
+    if (dataTypes.length > 0) {
       // Getting types from method_interface, because parameter might be hashed and inside
       // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
       const types = meta.method_interface
