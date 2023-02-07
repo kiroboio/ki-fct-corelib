@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 
 import FCT from "../FCT2.json";
+import { verifyOptions } from "../src/batchMultiSigCall/helpers";
 import { BatchMultiSigCall, utils } from "../src/index";
 import scriptData from "./scriptData";
 
@@ -16,6 +17,14 @@ async function main() {
   const fct = new BatchMultiSigCall({
     chainId,
   });
+
+  fct.setOptions({
+    recurrency: {
+      chillTime: "0.2",
+    },
+  });
+
+  verifyOptions(fct.options);
 
   fct.importFCT(FCT);
 
