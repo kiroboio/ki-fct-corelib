@@ -6,7 +6,6 @@ const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
-const fct_1 = require("../helpers/fct");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
@@ -246,7 +245,8 @@ function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: (0, fct_1.getTypedDataDomain)(this.chainId),
+        // domain: getTypedDataDomain(this.chainId),
+        domain: this.domain,
         message: {
             meta: {
                 name: this.options.name || "",

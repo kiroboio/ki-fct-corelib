@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
+import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import {
   createTypedData,
@@ -16,7 +17,7 @@ import {
 } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput, TypedDataDomain } from "./types";
 
 export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
@@ -24,6 +25,7 @@ export class BatchMultiSigCall {
   protected batchMultiSigSelector = "0x2409a934";
   protected version = "0x010102";
   protected chainId: ChainId;
+  protected domain: TypedDataDomain;
 
   protected computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
@@ -42,6 +44,11 @@ export class BatchMultiSigCall {
       this.chainId = input.chainId;
     } else {
       this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
+    }
+    if (input.domain) {
+      this.domain = input.domain;
+    } else {
+      this.domain = TYPED_DATA_DOMAIN[this.chainId];
     }
 
     if (input.options) this.setOptions(input.options);

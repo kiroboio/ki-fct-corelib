@@ -6,7 +6,7 @@ import { TypedDataDomain } from "../types";
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
 
 // TODO: Change salt to be a buffer
-const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
+export const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
     name: "FCT Controller",
     version: "1",

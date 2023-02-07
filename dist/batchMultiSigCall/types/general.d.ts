@@ -15,6 +15,7 @@ export interface ComuptedVariable {
 export interface BatchMultiSigCallConstructor {
     chainId?: ChainId;
     options?: Partial<IFCTOptions>;
+    domain?: BatchMultiSigCallTypedData["domain"];
 }
 export interface IBatchMultiSigCallFCT {
     typeHash: string;

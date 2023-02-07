@@ -10,7 +10,6 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
 } from "../helpers";
-import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
@@ -300,7 +299,8 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       ],
     },
     primaryType: "BatchMultiSigCall",
-    domain: getTypedDataDomain(this.chainId),
+    // domain: getTypedDataDomain(this.chainId),
+    domain: this.domain,
     message: {
       meta: {
         name: this.options.name || "",
