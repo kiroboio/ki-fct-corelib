@@ -5,12 +5,13 @@ export declare const getSessionId: (salt: string, options: IFCTOptions) => strin
 export declare const parseSessionID: (sessionId: string, builder: string) => {
     builder: string;
     recurrency: {
-        accumetable: boolean;
-        chillTime: string;
-        maxRepeats: string;
+        maxRepeats?: string | undefined;
+        chillTime?: string | undefined;
+        accumetable?: boolean | undefined;
     };
     multisig: {
-        minimumApprovals: number;
+        externalSigners?: string[] | undefined;
+        minimumApprovals?: string | undefined;
     };
     validFrom: string;
     expiresAt: string;

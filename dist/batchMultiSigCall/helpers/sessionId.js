@@ -62,7 +62,7 @@ const getSessionId = (salt, options) => {
         throw new Error("Expires at date cannot be in the past");
     }
     const minimumApprovals = options.multisig && options.multisig.minimumApprovals
-        ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
+        ? Number(options.multisig.minimumApprovals).toString(16).padStart(2, "0")
         : "00";
     const version = "010101";
     const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
@@ -87,7 +87,7 @@ const getSessionId = (salt, options) => {
 exports.getSessionId = getSessionId;
 const parseSessionID = (sessionId, builder) => {
     // const salt = sessionId.slice(2, 8);
-    const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
+    const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
     // const version = sessionId.slice(10, 16);
     const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
     const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
@@ -155,17 +155,20 @@ const parseSessionID = (sessionId, builder) => {
         blockable: flags.blockable,
         purgeable: flags.purgeable,
     };
+    const recurrency = {};
+    recurrency.accumetable = flags.accumetable;
+    if (maxRepeats !== "0")
+        recurrency.maxRepeats = maxRepeats;
+    if (chillTime !== "0")
+        recurrency.chillTime = chillTime;
+    const multisig = {};
+    if (minimumApprovals !== "0")
+        multisig.minimumApprovals = minimumApprovals;
     return {
         ...data,
         builder,
-        recurrency: {
-            accumetable: flags.accumetable,
-            chillTime,
-            maxRepeats,
-        },
-        multisig: {
-            minimumApprovals,
-        },
+        recurrency,
+        multisig,
     };
 };
 exports.parseSessionID = parseSessionID;
