@@ -69,7 +69,7 @@ function getAllRequiredApprovals() {
 }
 exports.getAllRequiredApprovals = getAllRequiredApprovals;
 function setOptions(options) {
-    const mergedOptions = lodash_1.default.merge(this.options, options);
+    const mergedOptions = lodash_1.default.merge({ ...this.options }, options);
     (0, helpers_2.verifyOptions)(mergedOptions);
     this.options = mergedOptions;
     return this.options;

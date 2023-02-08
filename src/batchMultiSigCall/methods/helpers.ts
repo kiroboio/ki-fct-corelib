@@ -98,9 +98,10 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
   return requiredApprovals;
 }
 
-export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions {
-  const mergedOptions = _.merge(this.options, options);
+export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions | undefined {
+  const mergedOptions = _.merge({ ...this.options }, options);
   verifyOptions(mergedOptions);
+
   this.options = mergedOptions;
   return this.options;
 }
