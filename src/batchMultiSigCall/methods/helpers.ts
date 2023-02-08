@@ -119,7 +119,6 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      // this.verifyParams(call.params);
       paramsData = this.getParamsFromCall(call);
     }
 

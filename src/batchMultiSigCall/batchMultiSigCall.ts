@@ -51,6 +51,8 @@ export class BatchMultiSigCall {
       this.domain = TYPED_DATA_DOMAIN[this.chainId];
     }
 
+    if (input.version) this.version = input.version;
+
     if (input.options) this.setOptions(input.options);
   }
 

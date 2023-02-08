@@ -69,6 +69,8 @@ class BatchMultiSigCall {
         else {
             this.domain = fct_1.TYPED_DATA_DOMAIN[this.chainId];
         }
+        if (input.version)
+            this.version = input.version;
         if (input.options)
             this.setOptions(input.options);
     }

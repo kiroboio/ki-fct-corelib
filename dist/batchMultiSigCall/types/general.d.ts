@@ -16,6 +16,7 @@ export interface BatchMultiSigCallConstructor {
     chainId?: ChainId;
     options?: Partial<IFCTOptions>;
     domain?: BatchMultiSigCallTypedData["domain"];
+    version?: `0x${string}`;
 }
 export interface IBatchMultiSigCallFCT {
     typeHash: string;

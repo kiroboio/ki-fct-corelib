@@ -85,7 +85,6 @@ function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            // this.verifyParams(call.params);
             paramsData = this.getParamsFromCall(call);
         }
         const options = call.options || {};
