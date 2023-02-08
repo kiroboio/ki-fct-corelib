@@ -1,5 +1,6 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
+import { verifyCall } from "./methods/checkers";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
@@ -36,4 +37,5 @@ export declare class BatchMultiSigCall {
     protected handleTo: typeof handleTo;
     protected handleValue: typeof handleValue;
     getPluginData: typeof getPluginData;
+    protected verifyCall: typeof verifyCall;
 }

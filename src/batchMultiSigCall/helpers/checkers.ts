@@ -1,4 +1,4 @@
-import { IFCTOptions } from "@types";
+import { IFCTOptions, Param } from "@types";
 import BigNumber from "bignumber.js";
 import { isAddress } from "ethers/lib/utils";
 
@@ -11,7 +11,7 @@ const validateInteger = (value: string, keys: string[]) => {
   if (value.includes(".")) {
     throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
   }
-  if (value.includes("-")) {
+  if (value.startsWith("-")) {
     throw new Error(`Options: ${keys.join(".")} cannot be negative`);
   }
   if (currentKey === "maxRepeats" && Number(value) < 2) {
@@ -46,6 +46,7 @@ const validateOptionsValues = (
     if (mustBeAddress.includes(objKey)) {
       validateAddress(value[objKey] as string, [...parentKeys, objKey]);
     }
+    // Expires at validator
     if (objKey === "expiresAt") {
       const expiresAt = Number(value[objKey]);
       const now = Number(new Date().getTime() / 1000).toFixed();
@@ -62,4 +63,40 @@ const validateOptionsValues = (
 
 export const verifyOptions = (options: Partial<IFCTOptions>) => {
   validateOptionsValues(options);
+};
+
+export const verifyParam = (param: Param) => {
+  if (!param.value) {
+    throw new Error(`Param ${param.name} is missing a value`);
+  }
+  if (typeof param.value !== "string") {
+    return;
+  }
+  // uint value
+  if (param.type.startsWith("uint")) {
+    if (param.value.includes(".")) {
+      throw new Error(`Param ${param.name} cannot be a decimal`);
+    }
+    if (param.value.startsWith("-")) {
+      throw new Error(`Param ${param.name} cannot be negative`);
+    }
+  }
+  // int value
+  if (param.type.startsWith("int")) {
+    if (param.value.includes(".")) {
+      throw new Error(`Param ${param.name} cannot be a decimal`);
+    }
+  }
+  // address
+  if (param.type === "address") {
+    if (!isAddress(param.value)) {
+      throw new Error(`Param ${param.name} is not a valid address`);
+    }
+  }
+  // bytes
+  if (param.type.startsWith("bytes")) {
+    if (!param.value.startsWith("0x")) {
+      throw new Error(`Param ${param.name} is not a valid bytes value`);
+    }
+  }
 };

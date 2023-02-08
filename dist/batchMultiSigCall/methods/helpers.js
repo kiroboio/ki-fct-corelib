@@ -79,7 +79,7 @@ function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            paramsData = this.getParamsFromCall(call);
+            paramsData = this.getParamsFromCall(call, index);
         }
         const options = call.options || {};
         const gasLimit = options.gasLimit ?? "0";
@@ -262,7 +262,7 @@ function createTypedData(salt, version) {
     return typedData;
 }
 exports.createTypedData = createTypedData;
-function getParamsFromCall(call) {
+function getParamsFromCall(call, index) {
     // If call has parameters
     if (call.params) {
         const getParams = (params) => {
@@ -283,8 +283,13 @@ function getParamsFromCall(call) {
                         }
                     }
                     else {
-                        if (!param.value) {
-                            throw new Error(`Parameter ${param.name} is not defined`);
+                        try {
+                            (0, helpers_2.verifyParam)(param);
+                        }
+                        catch (err) {
+                            if (err instanceof Error) {
+                                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+                            }
                         }
                         if ((0, helpers_1.instanceOfVariable)(param.value)) {
                             param.value = this.getVariable(param.value, param.type);

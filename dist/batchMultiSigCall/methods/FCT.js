@@ -29,25 +29,22 @@ async function create(callInput) {
     else {
         call = { ...callInput };
     }
-    if (!call.to) {
-        throw new Error("To address is required");
-    }
-    if (!call.from) {
-        throw new Error("From address is required");
-    }
-    if (call.nodeId) {
-        const index = this.calls.findIndex((call) => call.nodeId === callInput.nodeId);
-        if (index > 0) {
-            throw new Error(`Node id ${callInput.nodeId} already exists, please use a different one`);
-        }
-    }
+    // Before adding the call, we check if it is valid
+    this.verifyCall(call);
     this.calls.push(call);
     return this.calls;
 }
 exports.create = create;
 async function createMultiple(calls) {
-    for (const call of calls) {
-        await this.create(call);
+    for (const [index, call] of calls.entries()) {
+        try {
+            await this.create(call);
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                throw new Error(`Error creating call ${index + 1}: ${err.message}`);
+            }
+        }
     }
     return this.calls;
 }
@@ -64,9 +61,7 @@ function exportFCT() {
     if (this.calls.length === 0) {
         throw new Error("No calls added");
     }
-    if (this.options.builder) {
-        ethers_1.utils.isAddress(this.options.builder);
-    }
+    (0, helpers_1.verifyOptions)(this.options);
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const typedData = this.createTypedData(salt, this.version);
     const sessionId = (0, helpers_1.getSessionId)(salt, this.options);

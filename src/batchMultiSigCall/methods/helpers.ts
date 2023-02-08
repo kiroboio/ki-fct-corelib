@@ -10,6 +10,7 @@ import {
   handleFunctionSignature,
   handleMethodInterface,
   verifyOptions,
+  verifyParam,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
@@ -108,7 +109,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      paramsData = this.getParamsFromCall(call);
+      paramsData = this.getParamsFromCall(call, index);
     }
 
     const options = call.options || {};
@@ -311,7 +312,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   return typedData;
 }
 
-export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
+export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, index: number) {
   // If call has parameters
   if (call.params) {
     const getParams = (params: Param[]): Record<string, FCTCallParam> => {
@@ -331,8 +332,12 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
               value = getParams(valueArray);
             }
           } else {
-            if (!param.value) {
-              throw new Error(`Parameter ${param.name} is not defined`);
+            try {
+              verifyParam(param);
+            } catch (err) {
+              if (err instanceof Error) {
+                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+              }
             }
             if (instanceOfVariable(param.value)) {
               param.value = this.getVariable(param.value, param.type);

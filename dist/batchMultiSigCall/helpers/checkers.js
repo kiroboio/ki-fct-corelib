@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyOptions = void 0;
+exports.verifyParam = exports.verifyOptions = void 0;
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const utils_1 = require("ethers/lib/utils");
 const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
@@ -14,7 +14,7 @@ const validateInteger = (value, keys) => {
     if (value.includes(".")) {
         throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
     }
-    if (value.includes("-")) {
+    if (value.startsWith("-")) {
         throw new Error(`Options: ${keys.join(".")} cannot be negative`);
     }
     if (currentKey === "maxRepeats" && Number(value) < 2) {
@@ -44,6 +44,7 @@ const validateOptionsValues = (value, parentKeys = []) => {
         if (mustBeAddress.includes(objKey)) {
             validateAddress(value[objKey], [...parentKeys, objKey]);
         }
+        // Expires at validator
         if (objKey === "expiresAt") {
             const expiresAt = Number(value[objKey]);
             const now = Number(new Date().getTime() / 1000).toFixed();
@@ -61,3 +62,39 @@ const verifyOptions = (options) => {
     validateOptionsValues(options);
 };
 exports.verifyOptions = verifyOptions;
+const verifyParam = (param) => {
+    if (!param.value) {
+        throw new Error(`Param ${param.name} is missing a value`);
+    }
+    if (typeof param.value !== "string") {
+        return;
+    }
+    // uint value
+    if (param.type.startsWith("uint")) {
+        if (param.value.includes(".")) {
+            throw new Error(`Param ${param.name} cannot be a decimal`);
+        }
+        if (param.value.startsWith("-")) {
+            throw new Error(`Param ${param.name} cannot be negative`);
+        }
+    }
+    // int value
+    if (param.type.startsWith("int")) {
+        if (param.value.includes(".")) {
+            throw new Error(`Param ${param.name} cannot be a decimal`);
+        }
+    }
+    // address
+    if (param.type === "address") {
+        if (!(0, utils_1.isAddress)(param.value)) {
+            throw new Error(`Param ${param.name} is not a valid address`);
+        }
+    }
+    // bytes
+    if (param.type.startsWith("bytes")) {
+        if (!param.value.startsWith("0x")) {
+            throw new Error(`Param ${param.name} is not a valid bytes value`);
+        }
+    }
+};
+exports.verifyParam = verifyParam;
