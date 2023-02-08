@@ -72,7 +72,7 @@ export interface IFCTOptions {
   };
   multisig?: {
     externalSigners?: string[];
-    minimumApprovals?: number;
+    minimumApprovals?: string;
   };
 }
 
