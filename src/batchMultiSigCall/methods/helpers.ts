@@ -1,6 +1,6 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
-import { utils } from "ethers";
+import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
@@ -9,6 +9,7 @@ import {
   getTxEIP712Types,
   handleFunctionSignature,
   handleMethodInterface,
+  verifyOptions,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
@@ -97,22 +98,9 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
 }
 
 export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions {
-  if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
-    throw new Error("Max gas price cannot be 0 or less");
-  }
-
-  if (options.expiresAt !== undefined) {
-    const now = Number(new Date().getTime() / 1000).toFixed();
-    if (options.expiresAt <= now) {
-      throw new Error("Expires at must be in the future");
-    }
-  }
-
-  if (options.builder !== undefined && !utils.isAddress(options.builder)) {
-    throw new Error("Builder must be a valid address");
-  }
-
-  this.options = { ...this.options, ...options };
+  const mergedOptions = _.merge(this.options, options);
+  verifyOptions(mergedOptions);
+  this.options = mergedOptions;
   return this.options;
 }
 
@@ -120,7 +108,6 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      // this.verifyParams(call.params);
       paramsData = this.getParamsFromCall(call);
     }
 

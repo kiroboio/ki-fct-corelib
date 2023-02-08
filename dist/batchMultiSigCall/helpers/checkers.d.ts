@@ -1,2 +1,2 @@
 import { IFCTOptions } from "@types";
-export declare const verifyOptions: (options: IFCTOptions) => void;
+export declare const verifyOptions: (options: Partial<IFCTOptions>) => void;
