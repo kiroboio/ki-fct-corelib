@@ -8,6 +8,7 @@ const mustBeAddress = ["builder"];
 // Validate Integer values in options
 const validateInteger = (value: string, keys: string[]) => {
   const currentKey = keys[keys.length - 1];
+
   if (value.includes(".")) {
     throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
   }
