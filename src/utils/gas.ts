@@ -82,7 +82,7 @@ export const getGasPrices = async ({
   rpcUrl: string;
   historicalBlocks?: number;
   tries?: number;
-}) => {
+}): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
   function avg(arr: number[]) {
     const sum = arr.reduce((a, v) => a + v);
     return Math.round(sum / arr.length);
