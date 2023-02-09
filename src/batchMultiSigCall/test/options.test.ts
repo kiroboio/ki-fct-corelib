@@ -11,7 +11,7 @@ const catchError = ({ param, message }: { param: Partial<IFCTOptions>; message: 
   assert.throws(() => FCT.setOptions(param), message);
 };
 
-describe("FCT Options", () => {
+describe("FCT Options Errors", () => {
   it("Should get error when setting builder", async () => {
     catchError({
       param: { builder: "0x-" },

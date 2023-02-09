@@ -1,5 +1,5 @@
 import { IMSCallInput } from "@types";
-import { isAddress } from "ethers/lib/utils";
+import { utils } from "ethers";
 
 import { CALL_TYPE } from "../../constants";
 import { verifyParam } from "..//helpers";
@@ -17,29 +17,28 @@ const isInteger = (value: string, key: string) => {
   }
 };
 
+const isAddress = (value: string, key: string) => {
+  if (value.length === 0) {
+    throw new Error(`${key} address cannot be empty string`);
+  }
+  if (!utils.isAddress(value)) {
+    throw new Error(`${key} address is not a valid address`);
+  }
+};
+
 export function verifyCall(this: BatchMultiSigCall, call: IMSCallInput) {
   // To address validator
   if (!call.to) {
     throw new Error("To address is required");
   } else if (typeof call.to === "string") {
-    if (call.to.length === 0) {
-      throw new Error("To address cannot be empty string");
-    }
-    if (!isAddress(call.to)) {
-      throw new Error("To address is not a valid address");
-    }
+    isAddress(call.to, "To");
   }
 
   // From address validator
   if (!call.from) {
     throw new Error("From address is required");
   } else if (typeof call.from === "string") {
-    if (call.from.length === 0) {
-      throw new Error("From address cannot be empty string");
-    }
-    if (!isAddress(call.from)) {
-      throw new Error("From address is not a valid address");
-    }
+    isAddress(call.from, "From");
   }
 
   // Value validator
@@ -74,7 +73,10 @@ export function verifyCall(this: BatchMultiSigCall, call: IMSCallInput) {
     }
   }
 
-  if (call.params) {
+  if (call.params && call.params.length) {
+    if (!call.method) {
+      throw new Error("Method is required when params are present");
+    }
     call.params.map(verifyParam);
   }
 }
