@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCall = void 0;
-const utils_1 = require("ethers/lib/utils");
+const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
 const helpers_1 = require("..//helpers");
 const isInteger = (value, key) => {
@@ -15,30 +15,28 @@ const isInteger = (value, key) => {
         throw new Error(`${key} cannot be a decimal`);
     }
 };
+const isAddress = (value, key) => {
+    if (value.length === 0) {
+        throw new Error(`${key} address cannot be empty string`);
+    }
+    if (!ethers_1.utils.isAddress(value)) {
+        throw new Error(`${key} address is not a valid address`);
+    }
+};
 function verifyCall(call) {
     // To address validator
     if (!call.to) {
         throw new Error("To address is required");
     }
     else if (typeof call.to === "string") {
-        if (call.to.length === 0) {
-            throw new Error("To address cannot be empty string");
-        }
-        if (!(0, utils_1.isAddress)(call.to)) {
-            throw new Error("To address is not a valid address");
-        }
+        isAddress(call.to, "To");
     }
     // From address validator
     if (!call.from) {
         throw new Error("From address is required");
     }
     else if (typeof call.from === "string") {
-        if (call.from.length === 0) {
-            throw new Error("From address cannot be empty string");
-        }
-        if (!(0, utils_1.isAddress)(call.from)) {
-            throw new Error("From address is not a valid address");
-        }
+        isAddress(call.from, "From");
     }
     // Value validator
     if (call.value && typeof call.value === "string") {
@@ -68,7 +66,10 @@ function verifyCall(call) {
             }
         }
     }
-    if (call.params) {
+    if (call.params && call.params.length) {
+        if (!call.method) {
+            throw new Error("Method is required when params are present");
+        }
         call.params.map(helpers_1.verifyParam);
     }
 }
