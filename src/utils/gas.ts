@@ -1,5 +1,5 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
-import { EIP1559GasPrice, ITxValidator, LegacyGasPrice } from "@types";
+import { EIP1559GasPrice, ITxValidator } from "@types";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
@@ -11,45 +11,31 @@ import { parseCallID } from "../batchMultiSigCall/helpers";
 import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
 import { getAllFCTPaths } from "./FCT";
 
-interface TransactionValidatorSuccess<T extends ITxValidator> {
+interface TransactionValidatorSuccess {
   isValid: true;
-  txData: T extends { eip1559: true }
-    ? { gas: number; type: 2 } & EIP1559GasPrice
-    : { gas: number; type: 1 } & LegacyGasPrice;
+  txData: { gas: number; type: 2 } & EIP1559GasPrice;
   prices: { gas: number; gasPrice: number };
   error: null;
 }
 
-interface TransactionValidatorError<T extends ITxValidator> {
+interface TransactionValidatorError {
   isValid: false;
-  txData: T extends { eip1559: true }
-    ? { gas: number; type: 2 } & EIP1559GasPrice
-    : { gas: number; type: 1 } & LegacyGasPrice;
+  txData: { gas: number; type: 2 } & EIP1559GasPrice;
   prices: { gas: number; gasPrice: number };
   error: string;
 }
 
-type TransactionValidatorResult<T extends ITxValidator> = TransactionValidatorSuccess<T> | TransactionValidatorError<T>;
+type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
 
-type GasPriceType<T extends ITxValidator> = T extends { eip1559: true } ? EIP1559GasPrice : LegacyGasPrice;
-
-export const transactionValidator = async <T extends ITxValidator>(
-  txVal: T,
+export const transactionValidator = async (
+  txVal: ITxValidator,
   pureGas = false
-): Promise<TransactionValidatorResult<T>> => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
+): Promise<TransactionValidatorResult> => {
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
-
-  const gasPrice: GasPriceType<T> = txVal.eip1559
-    ? ((
-        await getGasPrices({
-          rpcUrl,
-        })
-      )[txVal.gasPriority || "average"] as any)
-    : ({ gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() } as any);
 
   try {
     let gas: BigNumberEthers;
@@ -66,34 +52,25 @@ export const transactionValidator = async <T extends ITxValidator>(
     // Add 20% to gasUsed value
     const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
 
-    if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
-      return {
-        isValid: true,
-        txData: { gas: gasUsed, ...gasPrice, type: 2 },
-        prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
-        error: null,
-      } as any;
-    } else {
-      return {
-        isValid: true,
-        txData: { gas: gasUsed, ...gasPrice, type: 1 },
-        prices: { gas: gasUsed, gasPrice: gasPrice.gasPrice },
-        error: null,
-      } as any;
-    }
+    return {
+      isValid: true,
+      txData: { gas: gasUsed, ...gasPrice, type: 2 },
+      prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
+      error: null,
+    };
   } catch (err: any) {
     if (err.reason === "processing response error") {
       throw err;
     }
     return {
       isValid: false,
-      txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
+      txData: { gas: 0, ...gasPrice, type: 2 },
       prices: {
         gas: 0,
-        gasPrice: txVal.eip1559 ? (gasPrice as EIP1559GasPrice).maxFeePerGas : (gasPrice as LegacyGasPrice).gasPrice,
+        gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
       },
       error: err.reason,
-    } as any;
+    };
   }
 };
 

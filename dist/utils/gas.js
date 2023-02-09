@@ -14,15 +14,10 @@ const batchMultiSigCall_1 = require("../batchMultiSigCall");
 const helpers_1 = require("../batchMultiSigCall/helpers");
 const FCT_1 = require("./FCT");
 const transactionValidator = async (txVal, pureGas = false) => {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
-    const gasPrice = txVal.eip1559
-        ? (await (0, exports.getGasPrices)({
-            rpcUrl,
-        }))[txVal.gasPriority || "average"]
-        : { gasPrice: (await provider.getGasPrice()).mul(11).div(10).toNumber() };
     try {
         let gas;
         if (activateForFree) {
@@ -37,22 +32,12 @@ const transactionValidator = async (txVal, pureGas = false) => {
         }
         // Add 20% to gasUsed value
         const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
-        if (txVal.eip1559 && "maxFeePerGas" in gasPrice) {
-            return {
-                isValid: true,
-                txData: { gas: gasUsed, ...gasPrice, type: 2 },
-                prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
-                error: null,
-            };
-        }
-        else {
-            return {
-                isValid: true,
-                txData: { gas: gasUsed, ...gasPrice, type: 1 },
-                prices: { gas: gasUsed, gasPrice: gasPrice.gasPrice },
-                error: null,
-            };
-        }
+        return {
+            isValid: true,
+            txData: { gas: gasUsed, ...gasPrice, type: 2 },
+            prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
+            error: null,
+        };
     }
     catch (err) {
         if (err.reason === "processing response error") {
@@ -60,10 +45,10 @@ const transactionValidator = async (txVal, pureGas = false) => {
         }
         return {
             isValid: false,
-            txData: { gas: 0, ...gasPrice, type: txVal.eip1559 ? 2 : 1 },
+            txData: { gas: 0, ...gasPrice, type: 2 },
             prices: {
                 gas: 0,
-                gasPrice: txVal.eip1559 ? gasPrice.maxFeePerGas : gasPrice.gasPrice,
+                gasPrice: gasPrice.maxFeePerGas,
             },
             error: err.reason,
         };
