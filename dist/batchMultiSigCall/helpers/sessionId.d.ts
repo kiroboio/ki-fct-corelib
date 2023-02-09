@@ -1,7 +1,7 @@
 import { Flow } from "../../constants";
 import { IFCTOptions, IMSCallInput } from "../types";
 export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, index: number) => string;
-export declare const getSessionId: (salt: string, options: IFCTOptions) => string;
+export declare const getSessionId: (salt: string, versionHex: string, options: IFCTOptions) => string;
 export declare const parseSessionID: (sessionId: string, builder: string) => {
     builder: string;
     recurrency: {

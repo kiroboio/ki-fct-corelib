@@ -64,7 +64,7 @@ function exportFCT() {
     (0, helpers_1.verifyOptions)(this.options);
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const typedData = this.createTypedData(salt, this.version);
-    const sessionId = (0, helpers_1.getSessionId)(salt, this.options);
+    const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);
     const mcall = this.calls.map((call, index) => {
         const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
         return {
