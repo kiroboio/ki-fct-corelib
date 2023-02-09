@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
+import { verifyCall } from "./methods/checkers";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import {
   createTypedData,
@@ -83,4 +84,7 @@ export class BatchMultiSigCall {
 
   // Utility functions
   public getPluginData = getPluginData;
+
+  // Validation functions
+  protected verifyCall = verifyCall;
 }

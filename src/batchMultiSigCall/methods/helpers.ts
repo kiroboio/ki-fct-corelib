@@ -1,6 +1,6 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
-import { utils } from "ethers";
+import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
@@ -9,6 +9,8 @@ import {
   getTxEIP712Types,
   handleFunctionSignature,
   handleMethodInterface,
+  verifyOptions,
+  verifyParam,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
@@ -96,23 +98,11 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
   return requiredApprovals;
 }
 
-export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions {
-  if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
-    throw new Error("Max gas price cannot be 0 or less");
-  }
+export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions | undefined {
+  const mergedOptions = _.merge({ ...this.options }, options);
+  verifyOptions(mergedOptions);
 
-  if (options.expiresAt !== undefined) {
-    const now = Number(new Date().getTime() / 1000).toFixed();
-    if (options.expiresAt <= now) {
-      throw new Error("Expires at must be in the future");
-    }
-  }
-
-  if (options.builder !== undefined && !utils.isAddress(options.builder)) {
-    throw new Error("Builder must be a valid address");
-  }
-
-  this.options = { ...this.options, ...options };
+  this.options = mergedOptions;
   return this.options;
 }
 
@@ -120,8 +110,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      // this.verifyParams(call.params);
-      paramsData = this.getParamsFromCall(call);
+      paramsData = this.getParamsFromCall(call, index);
     }
 
     const options = call.options || {};
@@ -324,7 +313,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
   return typedData;
 }
 
-export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
+export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, index: number) {
   // If call has parameters
   if (call.params) {
     const getParams = (params: Param[]): Record<string, FCTCallParam> => {
@@ -344,8 +333,12 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
               value = getParams(valueArray);
             }
           } else {
-            if (!param.value) {
-              throw new Error(`Parameter ${param.name} is not defined`);
+            try {
+              verifyParam(param);
+            } catch (err) {
+              if (err instanceof Error) {
+                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+              }
             }
             if (instanceOfVariable(param.value)) {
               param.value = this.getVariable(param.value, param.type);

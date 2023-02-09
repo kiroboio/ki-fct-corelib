@@ -8,6 +8,7 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
+const checkers_1 = require("./methods/checkers");
 const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
 const plugins_1 = require("./methods/plugins");
@@ -55,6 +56,8 @@ class BatchMultiSigCall {
         this.handleValue = helpers_2.handleValue;
         // Utility functions
         this.getPluginData = plugins_1.getPluginData;
+        // Validation functions
+        this.verifyCall = checkers_1.verifyCall;
         if (input.chainId) {
             this.chainId = input.chainId;
         }

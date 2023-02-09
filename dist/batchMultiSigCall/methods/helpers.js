@@ -1,8 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleValue = exports.handleTo = exports.verifyParams = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const ethers_1 = require("ethers");
+const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
@@ -66,19 +69,9 @@ function getAllRequiredApprovals() {
 }
 exports.getAllRequiredApprovals = getAllRequiredApprovals;
 function setOptions(options) {
-    if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
-        throw new Error("Max gas price cannot be 0 or less");
-    }
-    if (options.expiresAt !== undefined) {
-        const now = Number(new Date().getTime() / 1000).toFixed();
-        if (options.expiresAt <= now) {
-            throw new Error("Expires at must be in the future");
-        }
-    }
-    if (options.builder !== undefined && !ethers_1.utils.isAddress(options.builder)) {
-        throw new Error("Builder must be a valid address");
-    }
-    this.options = { ...this.options, ...options };
+    const mergedOptions = lodash_1.default.merge({ ...this.options }, options);
+    (0, helpers_2.verifyOptions)(mergedOptions);
+    this.options = mergedOptions;
     return this.options;
 }
 exports.setOptions = setOptions;
@@ -86,8 +79,7 @@ function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            // this.verifyParams(call.params);
-            paramsData = this.getParamsFromCall(call);
+            paramsData = this.getParamsFromCall(call, index);
         }
         const options = call.options || {};
         const gasLimit = options.gasLimit ?? "0";
@@ -270,7 +262,7 @@ function createTypedData(salt, version) {
     return typedData;
 }
 exports.createTypedData = createTypedData;
-function getParamsFromCall(call) {
+function getParamsFromCall(call, index) {
     // If call has parameters
     if (call.params) {
         const getParams = (params) => {
@@ -291,8 +283,13 @@ function getParamsFromCall(call) {
                         }
                     }
                     else {
-                        if (!param.value) {
-                            throw new Error(`Parameter ${param.name} is not defined`);
+                        try {
+                            (0, helpers_2.verifyParam)(param);
+                        }
+                        catch (err) {
+                            if (err instanceof Error) {
+                                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+                            }
                         }
                         if ((0, helpers_1.instanceOfVariable)(param.value)) {
                             param.value = this.getVariable(param.value, param.type);

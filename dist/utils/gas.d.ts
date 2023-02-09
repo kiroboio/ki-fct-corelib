@@ -1,41 +1,31 @@
-import { EIP1559GasPrice, ITxValidator, LegacyGasPrice } from "@types";
+import { EIP1559GasPrice, ITxValidator } from "@types";
 import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
-interface TransactionValidatorSuccess<T extends ITxValidator> {
+interface TransactionValidatorSuccess {
     isValid: true;
-    txData: T extends {
-        eip1559: true;
-    } ? {
+    txData: {
         gas: number;
         type: 2;
-    } & EIP1559GasPrice : {
-        gas: number;
-        type: 1;
-    } & LegacyGasPrice;
+    } & EIP1559GasPrice;
     prices: {
         gas: number;
         gasPrice: number;
     };
     error: null;
 }
-interface TransactionValidatorError<T extends ITxValidator> {
+interface TransactionValidatorError {
     isValid: false;
-    txData: T extends {
-        eip1559: true;
-    } ? {
+    txData: {
         gas: number;
         type: 2;
-    } & EIP1559GasPrice : {
-        gas: number;
-        type: 1;
-    } & LegacyGasPrice;
+    } & EIP1559GasPrice;
     prices: {
         gas: number;
         gasPrice: number;
     };
     error: string;
 }
-type TransactionValidatorResult<T extends ITxValidator> = TransactionValidatorSuccess<T> | TransactionValidatorError<T>;
-export declare const transactionValidator: <T extends ITxValidator>(txVal: T, pureGas?: boolean) => Promise<TransactionValidatorResult<T>>;
+type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
+export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<TransactionValidatorResult>;
 export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     rpcUrl: string;
     historicalBlocks?: number | undefined;

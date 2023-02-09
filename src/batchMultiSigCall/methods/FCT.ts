@@ -17,6 +17,7 @@ import {
   manageCallId,
   parseCallID,
   parseSessionID,
+  verifyOptions,
 } from "../helpers";
 import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
 import { getAuthenticatorSignature } from "../utils/signatures";
@@ -37,19 +38,10 @@ export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | 
   } else {
     call = { ...callInput };
   }
-  if (!call.to) {
-    throw new Error("To address is required");
-  }
-  if (!call.from) {
-    throw new Error("From address is required");
-  }
 
-  if (call.nodeId) {
-    const index = this.calls.findIndex((call) => call.nodeId === callInput.nodeId);
-    if (index > 0) {
-      throw new Error(`Node id ${callInput.nodeId} already exists, please use a different one`);
-    }
-  }
+  // Before adding the call, we check if it is valid
+  this.verifyCall(call);
+
   this.calls.push(call);
 
   return this.calls;
@@ -59,8 +51,14 @@ export async function createMultiple(
   this: BatchMultiSigCall,
   calls: (IMSCallInput | IWithPlugin)[]
 ): Promise<IMSCallInput[]> {
-  for (const call of calls) {
-    await this.create(call);
+  for (const [index, call] of calls.entries()) {
+    try {
+      await this.create(call);
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(`Error creating call ${index + 1}: ${err.message}`);
+      }
+    }
   }
   return this.calls;
 }
@@ -79,13 +77,11 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     throw new Error("No calls added");
   }
 
-  if (this.options.builder) {
-    utils.isAddress(this.options.builder);
-  }
+  verifyOptions(this.options);
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const typedData = this.createTypedData(salt, this.version);
-  const sessionId: string = getSessionId(salt, this.options);
+  const sessionId: string = getSessionId(salt, this.version, this.options);
 
   const mcall = this.calls.map((call, index) => {
     const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);

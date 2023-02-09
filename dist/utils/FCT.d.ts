@@ -11,12 +11,13 @@ export declare const validateFCT: <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT
         purgeable: boolean;
         builder: string;
         recurrency: {
-            accumetable: boolean;
-            chillTime: string;
-            maxRepeats: string;
+            maxRepeats?: string | undefined;
+            chillTime?: string | undefined;
+            accumetable?: boolean | undefined;
         };
         multisig: {
-            minimumApprovals: number;
+            externalSigners?: string[] | undefined;
+            minimumApprovals?: string | undefined;
         };
     };
     getFCTMessageHash: () => string;

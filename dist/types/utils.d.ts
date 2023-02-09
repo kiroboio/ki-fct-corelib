@@ -6,8 +6,7 @@ export interface ITxValidator {
     actuatorPrivateKey: string;
     actuatorContractAddress: string;
     activateForFree: boolean;
-    eip1559?: boolean;
-    gasPriority?: GasPriority;
+    gasPrice: EIP1559GasPrice;
 }
 export interface EIP1559GasPrice {
     maxFeePerGas: number;
