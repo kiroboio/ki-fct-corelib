@@ -78,7 +78,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
 // 16 - Gas price limit
 // 2 - Flags
 
-export const getSessionId = (salt: string, options: IFCTOptions): string => {
+export const getSessionId = (salt: string, versionHex: string, options: IFCTOptions): string => {
   const currentDate = new Date();
 
   if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
@@ -89,7 +89,7 @@ export const getSessionId = (salt: string, options: IFCTOptions): string => {
     options.multisig && options.multisig.minimumApprovals
       ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
       : "00";
-  const version = "010101";
+  const version = versionHex.slice(2);
   const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
   const chillTime = options.recurrency
     ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
