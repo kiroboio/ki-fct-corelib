@@ -2,12 +2,17 @@ import { IFCTOptions } from "@types";
 import { assert } from "chai";
 
 import { BatchMultiSigCall } from "../batchMultiSigCall";
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
 
 const FCT = new BatchMultiSigCall({
   chainId: "5",
 });
 
-const catchError = ({ param, message }: { param: Partial<IFCTOptions>; message: string }) => {
+const catchError = ({ param, message }: { param: DeepPartial<IFCTOptions>; message: string }) => {
   assert.throws(() => FCT.setOptions(param), message);
 };
 
