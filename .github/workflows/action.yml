@@ -20,3 +20,4 @@ jobs:
           git add -A
           git commit -m "Build"
           git push
+        continue-on-error: true
