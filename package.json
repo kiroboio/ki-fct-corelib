@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register src/**/*.test.ts; npm run test:fct",
+    "test": "mocha -r ts-node/register \"src/**/*.test.ts\"",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/test/*.test.ts",
     "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
     "build": "rm -rf dist/ & tsc --project tsconfig.build.json",
