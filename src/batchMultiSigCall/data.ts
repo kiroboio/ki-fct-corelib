@@ -1,6 +1,7 @@
 export const addresses = {
   1: {
     // NOTE: These addresses are not correct since no contracts have been deployed on mainnet
+    // TODO: Update these addresses once contracts have been deployed on mainnet
     FCT_Controller: "0x087550a787B2720AAC06351065afC1F413D82572",
     FCT_BatchMultiSig: "0x067D176d13651c8AfF7964a4bB9dF3107F893e88",
     FCT_EnsManager: "0x7DA33a8606BF2F752D473238ff8681b53cf30976",

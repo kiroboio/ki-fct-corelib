@@ -1,12 +1,9 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
-import { ethers } from "ethers";
 
-import { Flow } from "../constants";
-import { BatchMultiSigCall } from "./index";
-
-const contractAddress = "0xBc0ED9A150D9b50BaA2dC3d350D0d59E69daeBD9";
-const provider = new ethers.providers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
+import { Flow } from "../../constants";
+import { parseCallID } from "../helpers";
+import { BatchMultiSigCall } from "../index";
 
 function getDate(days = 0) {
   const result = new Date();
@@ -19,24 +16,11 @@ describe("BatchMultiSigCall", () => {
 
   beforeEach(async () => {
     batchMultiSigCall = new BatchMultiSigCall({
-      contractAddress,
-      provider,
+      chainId: "5",
     });
   });
 
   it("Should set settings", async () => {
-    const maxGasPriceErrorSettings = {
-      maxGasPrice: "0",
-    };
-
-    expect(() => batchMultiSigCall.setOptions(maxGasPriceErrorSettings)).to.throw("Max gas price cannot be 0 or less");
-
-    const expiresAtErrorSettings = {
-      expiresAt: "0",
-    };
-
-    expect(() => batchMultiSigCall.setOptions(expiresAtErrorSettings)).to.throw("Expires at must be in the future");
-
     const expiresAt = getDate(1);
 
     const validSettings = {
@@ -78,7 +62,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(calls).to.be.an("array");
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("1000000000000000000");
@@ -140,7 +124,7 @@ describe("BatchMultiSigCall", () => {
 
     expect(calls).to.be.an("array");
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_1"].amount).to.eq("20");
@@ -155,8 +139,7 @@ describe("BatchMultiSigCall", () => {
 
   it("Should create an FCT with 3 non-plugin calls", async () => {
     batchMultiSigCall = new BatchMultiSigCall({
-      contractAddress,
-      provider,
+      chainId: "5",
     });
 
     await batchMultiSigCall.createMultiple([
@@ -168,7 +151,7 @@ describe("BatchMultiSigCall", () => {
         params: [{ name: "recipient", type: "address", value: { type: "global", id: "minerAddress" } }],
         options: {
           jumpOnSuccess: "node3",
-          jumpOnFail: "node2",
+          jumpOnFail: "node3",
           flow: Flow.OK_STOP_FAIL_CONT,
         },
       },
@@ -201,13 +184,29 @@ describe("BatchMultiSigCall", () => {
       },
     ]);
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);
-    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(0);
+    expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
+
+    const callId = FCT.mcall[0].callId;
+    const parsedCallId = parseCallID(callId, true);
+
+    expect(parsedCallId).to.be.eql({
+      options: {
+        gasLimit: "0",
+        flow: "OK_STOP_FAIL_CONT",
+        jumpOnFail: 1,
+        jumpOnSuccess: 1,
+      },
+      viewOnly: false,
+      permissions: "00",
+      payerIndex: 1,
+      callIndex: 1,
+    });
 
     expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
@@ -262,7 +261,7 @@ describe("BatchMultiSigCall", () => {
       },
     ]);
 
-    const FCT = await batchMultiSigCall.exportFCT();
+    const FCT = batchMultiSigCall.exportFCT();
 
     expect(FCT).to.be.an("object");
 

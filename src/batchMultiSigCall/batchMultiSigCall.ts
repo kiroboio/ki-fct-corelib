@@ -1,38 +1,35 @@
+import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
-import FCT_ControllerABI from "../abi/FCT_Controller.abi.json";
+import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
-import { addresses } from "./data";
+import { verifyCall } from "./methods/checkers";
 import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
 import {
   createTypedData,
   getAllRequiredApprovals,
-  getCalldataForActuator,
   getParamsFromCall,
   handleTo,
   handleValue,
   setOptions,
   verifyParams,
 } from "./methods/helpers";
-import { getPlugin, getPluginClass } from "./methods/plugins";
+import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
-import { getPluginData } from "./utils";
-
-type ChainId = 1 | 5;
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 
 export class BatchMultiSigCall {
-  protected FCT_Controller: ethers.Contract;
-  protected FCT_BatchMultiSigCall: ethers.utils.Interface;
+  protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
+  protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
   protected batchMultiSigSelector = "0x2409a934";
-  protected provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-  protected chainId: number;
+  protected version = "0x010102";
+  protected chainId: ChainId;
 
   protected computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
   options: IFCTOptions = {
-    maxGasPrice: "100000000000", // 100 Gwei as default
+    maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
     expiresAt: getDate(7), // Expires after 7 days
     purgeable: false,
@@ -40,43 +37,17 @@ export class BatchMultiSigCall {
     builder: "0x0000000000000000000000000000000000000000",
   };
 
-  constructor({
-    provider,
-    contractAddress,
-    options,
-    chainId,
-  }: {
-    provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-    contractAddress?: string;
-    options?: Partial<IFCTOptions>;
-    chainId?: ChainId;
-  }) {
-    if (chainId) {
-      this.chainId = chainId;
+  constructor(input: BatchMultiSigCallConstructor = {}) {
+    if (input.chainId) {
+      this.chainId = input.chainId;
     } else {
-      this.chainId = 1;
+      this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
     }
 
-    this.FCT_Controller = new ethers.Contract(
-      contractAddress || addresses[this.chainId as keyof typeof addresses].FCT_Controller,
-      FCT_ControllerABI,
-      provider
-    );
-
-    this.FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-    if (provider) this.provider = provider;
-    if (options) this.setOptions(options);
+    if (input.options) this.setOptions(input.options);
   }
 
   // Helpers
-  public getCalldataForActuator = getCalldataForActuator;
-  public getAllRequiredApprovals = getAllRequiredApprovals;
-
-  // Variables
-  protected getVariable = getVariable;
-  protected getOutputVariable = getOutputVariable;
-  protected getExternalVariable = getExternalVariable;
-  protected getComputedVariable = getComputedVariable;
 
   // Options
   public setOptions = setOptions;
@@ -93,18 +64,27 @@ export class BatchMultiSigCall {
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
 
+  // Utility functions
+  public getPluginData = getPluginData;
+  public getAllRequiredApprovals = getAllRequiredApprovals;
+
   get length(): number {
     return this.calls.length;
   }
 
-  // Helpers functions
+  // Variables
+  protected getVariable = getVariable;
+  protected getOutputVariable = getOutputVariable;
+  protected getExternalVariable = getExternalVariable;
+  protected getComputedVariable = getComputedVariable;
+
+  // Internal helper functions
   protected createTypedData = createTypedData;
   protected getParamsFromCall = getParamsFromCall;
   protected verifyParams = verifyParams;
   protected handleTo = handleTo;
   protected handleValue = handleValue;
 
-  // Utility functions
-  // public utils = utils;
-  public getPluginData = getPluginData;
+  // Validation functions
+  protected verifyCall = verifyCall;
 }

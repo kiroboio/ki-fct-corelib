@@ -1,0 +1,23 @@
+name: "dist push"
+
+on: ["push"]
+
+# Run build and push dist folder to the same branch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install dependencies & build
+        run: yarn install --production=false && yarn run build
+      - name: Test
+        run: yarn run test
+      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Push build folder
+        run: |
+          git add -A
+          git commit -m "Build"
+          git push
+        continue-on-error: true

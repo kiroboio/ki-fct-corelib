@@ -1,23 +1,12 @@
 import { CALL_TYPE, Flow, flows } from "../../constants";
 import { IFCTOptions, IMSCallInput } from "../types";
 
-export const manageFlow = (call: IMSCallInput) => {
-  // const jump = (call.options && call.options.jump) || 0;
-  const jump = 0;
-  const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
-
-  if (jump > 15) {
-    throw new Error("Jump value cannot exceed 15");
-  }
-
-  if (!flows[flow]) {
-    throw new Error("Flow not found");
-  }
-
-  return `0x${flows[flow].value}${jump.toString(16)}`;
+const valueWithPadStart = (value: string | number, padStart: number) => {
+  return Number(value).toString(16).padStart(padStart, "0");
 };
 
 export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: number) => {
+  // This is the structure of callId string
   // 4 - Permissions
   // 2 - Flow
   // 4 - Fail Jump
@@ -27,16 +16,13 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   // 8 - Gas limit
   // 2 - Flags
 
-  const permissions = "0000";
-  const flow = call?.options?.flow ? Number(flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
+  // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
 
-  const payerIndex = Number(index + 1)
-    .toString(16)
-    .padStart(4, "0");
-  const callIndex = Number(index + 1)
-    .toString(16)
-    .padStart(4, "0");
-  const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+  const permissions = "0000";
+  const flow = call?.options?.flow ? valueWithPadStart(flows[call.options.flow].value, 2) : "00";
+  const payerIndex = valueWithPadStart(index + 1, 4);
+  const callIndex = valueWithPadStart(index + 1, 4);
+  const gasLimit = call?.options?.gasLimit ? valueWithPadStart(call.options.gasLimit, 8) : "00000000";
 
   const flags = () => {
     const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;
@@ -83,7 +69,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
 // 16 - Gas price limit
 // 2 - Flags
 
-export const getSessionId = (salt: string, options: IFCTOptions): string => {
+export const getSessionId = (salt: string, versionHex: string, options: IFCTOptions): string => {
   const currentDate = new Date();
 
   if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
@@ -92,9 +78,9 @@ export const getSessionId = (salt: string, options: IFCTOptions): string => {
 
   const minimumApprovals =
     options.multisig && options.multisig.minimumApprovals
-      ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
+      ? Number(options.multisig.minimumApprovals).toString(16).padStart(2, "0")
       : "00";
-  const version = "010101";
+  const version = versionHex.slice(2);
   const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
   const chillTime = options.recurrency
     ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
@@ -117,7 +103,7 @@ export const getSessionId = (salt: string, options: IFCTOptions): string => {
 
 export const parseSessionID = (sessionId: string, builder: string) => {
   // const salt = sessionId.slice(2, 8);
-  const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
+  const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
   // const version = sessionId.slice(10, 16);
   const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
   const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
@@ -183,17 +169,19 @@ export const parseSessionID = (sessionId: string, builder: string) => {
     purgeable: flags.purgeable,
   };
 
+  const recurrency: IFCTOptions["recurrency"] = {};
+  recurrency.accumetable = flags.accumetable;
+  if (maxRepeats !== "0") recurrency.maxRepeats = maxRepeats;
+  if (chillTime !== "0") recurrency.chillTime = chillTime;
+
+  const multisig: IFCTOptions["multisig"] = {};
+  if (minimumApprovals !== "0") multisig.minimumApprovals = minimumApprovals;
+
   return {
     ...data,
     builder,
-    recurrency: {
-      accumetable: flags.accumetable,
-      chillTime,
-      maxRepeats,
-    },
-    multisig: {
-      minimumApprovals,
-    },
+    recurrency,
+    multisig,
   };
 };
 

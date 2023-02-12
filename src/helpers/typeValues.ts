@@ -1,4 +1,5 @@
-import { MessageTypeProperty, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { BatchMultiSigCallTypedData } from "batchMultiSigCall/types";
 import { utils } from "ethers";
 
 import { Param } from "../types";
@@ -63,10 +64,7 @@ export const getTypesArray = (params: Param[]): number[] => {
   return types;
 };
 
-export const getTypedHashes = (
-  params: Param[],
-  typedData: TypedMessage<Record<"EIP712Domain" & string, MessageTypeProperty[]>>
-): string[] => {
+export const getTypedHashes = (params: Param[], typedData: BatchMultiSigCallTypedData): string[] => {
   return params.reduce((acc, item) => {
     if (item.customType) {
       const type: string = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;

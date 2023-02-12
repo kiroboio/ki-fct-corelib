@@ -3,8 +3,9 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import util from "util";
 
-import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
+import { BatchMultiSigCall, constants, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
 // import util from "util";
 
@@ -24,20 +25,16 @@ function addHours(numOfHours: number, date = new Date()) {
   return Number(date.getTime() / 1000).toFixed();
 }
 
-const chainId = 5;
+const chainId = "5";
 const wallet = process.env.WALLET as string;
 
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
-  const provider = new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl);
 
   const batchMultiSigCall = new BatchMultiSigCall({
-    provider,
-    contractAddress: data[chainId].FCT_Controller,
+    chainId,
   });
-
-  const nullAddress = "0x0000000000000000000000000000000000000000";
 
   batchMultiSigCall.setOptions({
     maxGasPrice: "3000000000",
@@ -49,14 +46,6 @@ async function main() {
       chillTime: "1",
     },
   });
-
-  console.log("options", batchMultiSigCall.options);
-
-  batchMultiSigCall.setOptions({
-    builder: nullAddress,
-  });
-
-  console.log("options", batchMultiSigCall.options);
 
   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
     chainId: "5",
@@ -100,6 +89,9 @@ async function main() {
       from: vault,
       method: "swap_noSlippageProtection",
       to: data[chainId].KIRO,
+      options: {
+        flow: constants.Flow.OK_CONT_FAIL_STOP,
+      },
       params: [
         {
           name: "amount",
@@ -128,10 +120,25 @@ async function main() {
     { plugin: transfer, from: vault, nodeId: "3" },
     { plugin: transfer, from: vault, nodeId: "4" },
     { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
+    {
+      from: vault,
+      method: "swap_noSlippageProtection",
+      to: data[chainId].KIRO,
+      params: [
+        {
+          name: "amount",
+          type: "uint256",
+          value: { type: "output", id: { nodeId: "1", innerIndex: 9 } },
+          customType: false,
+          hashed: false,
+        },
+      ],
+      nodeId: "15",
+    },
   ]);
 
-  const FCT = await batchMultiSigCall.exportFCT();
-  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  const FCT = batchMultiSigCall.exportFCT();
+  console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,

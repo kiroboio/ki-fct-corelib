@@ -1,5 +1,14 @@
-import { CallOptions, IPluginCall, IValidator, Param, Variable } from "@types";
+import { SignatureLike } from "@ethersproject/bytes";
+import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { CallOptions, IPluginCall, Param, Variable } from "@types";
 import { BatchMultiSigCallTypedData } from "./typedData";
+export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
+    [key: string]: FCTCallParam;
+};
+export interface BatchMultiSigCallConstructor {
+    chainId?: ChainId;
+    options?: Partial<IFCTOptions>;
+}
 export interface IBatchMultiSigCallFCT {
     typeHash: string;
     typedData: BatchMultiSigCallTypedData;
@@ -16,7 +25,9 @@ export interface IBatchMultiSigCallFCT {
         mul: string;
         div: string;
     }[];
+    signatures: SignatureLike[];
 }
+export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
 export interface IMSCallInput {
     nodeId: string;
     value?: string | Variable;
@@ -25,7 +36,6 @@ export interface IMSCallInput {
     params?: Param[];
     method?: string;
     toENS?: string;
-    validator?: IValidator;
     options?: CallOptions;
 }
 export interface MSCall {
@@ -55,7 +65,7 @@ export interface IFCTOptions {
     };
     multisig?: {
         externalSigners?: string[];
-        minimumApprovals?: number;
+        minimumApprovals?: string;
     };
 }
 export interface IWithPlugin {

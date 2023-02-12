@@ -4,8 +4,12 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
 import { parseCallID, parseSessionID } from "../batchMultiSigCall/helpers";
-import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT, TypedDataTypes } from "../batchMultiSigCall/types";
-import { IFCT } from "./types";
+import {
+  BatchMultiSigCallTypedData,
+  IBatchMultiSigCallFCT,
+  PartialBatchMultiSigCall,
+  TypedDataTypes,
+} from "../batchMultiSigCall/types";
 
 function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT {
   return [
@@ -18,6 +22,7 @@ function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT
     "variables",
     "externalSigners",
     "computed",
+    "signatures",
   ].includes(keyInput);
 }
 
@@ -113,7 +118,7 @@ export const getVariablesAsBytes32 = (variables: string[]) => {
   });
 };
 
-export const getAllFCTPaths = (fct: IFCT) => {
+export const getAllFCTPaths = (fct: PartialBatchMultiSigCall) => {
   const g = new Graph({ directed: true });
 
   fct.mcall.forEach((_, index) => {

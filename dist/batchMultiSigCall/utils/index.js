@@ -15,4 +15,4 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./getCalldataForActuator"), exports);
-__exportStar(require("./getPluginData"), exports);
+__exportStar(require("./signatures"), exports);

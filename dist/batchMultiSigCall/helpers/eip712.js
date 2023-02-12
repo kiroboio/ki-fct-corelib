@@ -1,7 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getComputedVariableMessage = exports.getUsedStructTypes = exports.getTxEIP712Types = void 0;
-const helpers_1 = require("../../helpers");
+// Create a function that checks if the param type last index of [ is greater than 0. If true - value is Param[][] else - value is Param[]
+const isInstanceOfTupleArray = (value, param) => {
+    return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
+};
+const isInstanceOfTuple = (value, param) => {
+    return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
+};
 const getTxEIP712Types = (calls) => {
     const txTypes = {};
     const structTypes = {};
@@ -9,11 +15,14 @@ const getTxEIP712Types = (calls) => {
     const getStructType = (param, index) => {
         const typeName = `Struct${getTypeCount()}`;
         let paramValue;
-        if (param.type.lastIndexOf("[") > 0 && param.value) {
+        if (isInstanceOfTupleArray(param.value, param)) {
             paramValue = param.value[0];
         }
-        else {
+        else if (isInstanceOfTuple(param.value, param)) {
             paramValue = param.value;
+        }
+        else {
+            throw new Error("Invalid param value");
         }
         let customCount = 0;
         const eip712Type = paramValue.map((item) => {
@@ -48,13 +57,6 @@ const getTxEIP712Types = (calls) => {
         return typeName;
     };
     calls.forEach((call, index) => {
-        if (call.validator) {
-            txTypes[`transaction${index + 1}`] = [
-                { name: "call", type: "Call" },
-                ...(0, helpers_1.getValidatorFunctionData)(call.validator, call.params || []),
-            ];
-            return;
-        }
         const values = call.params
             ? call.params.map((param) => {
                 if (param.customType || param.type === "tuple") {

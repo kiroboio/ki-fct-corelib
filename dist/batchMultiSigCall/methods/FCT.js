@@ -16,7 +16,7 @@ async function create(callInput) {
     if ("plugin" in callInput) {
         const pluginCall = await callInput.plugin.create();
         if (pluginCall === undefined) {
-            throw new Error("Error creating call with plugin");
+            throw new Error("Error creating call with plugin. Make sure input values are valid");
         }
         call = {
             ...pluginCall,
@@ -28,25 +28,22 @@ async function create(callInput) {
     else {
         call = { ...callInput };
     }
-    if (!call.to) {
-        throw new Error("To address is required");
-    }
-    if (!call.from) {
-        throw new Error("From address is required");
-    }
-    if (call.nodeId) {
-        const index = this.calls.findIndex((call) => call.nodeId === callInput.nodeId);
-        if (index > 0) {
-            throw new Error("Node id already exists, please use different id");
-        }
-    }
+    // Before adding the call, we check if it is valid
+    this.verifyCall(call);
     this.calls.push(call);
     return this.calls;
 }
 exports.create = create;
 async function createMultiple(calls) {
-    for (const call of calls) {
-        await this.create(call);
+    for (const [index, call] of calls.entries()) {
+        try {
+            await this.create(call);
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                throw new Error(`Error creating call ${index + 1}: ${err.message}`);
+            }
+        }
     }
     return this.calls;
 }
@@ -58,18 +55,15 @@ function getCall(index) {
     return this.calls[index];
 }
 exports.getCall = getCall;
-async function exportFCT() {
+function exportFCT() {
     this.computedVariables = [];
     if (this.calls.length === 0) {
         throw new Error("No calls added");
     }
-    if (this.options.builder) {
-        ethers_1.utils.isAddress(this.options.builder);
-    }
+    (0, helpers_1.verifyOptions)(this.options);
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    const version = "0x010101";
-    const typedData = await this.createTypedData(salt, version);
-    const sessionId = (0, helpers_1.getSessionId)(salt, this.options);
+    const typedData = this.createTypedData(salt, this.version);
+    const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);
     const mcall = this.calls.map((call, index) => {
         const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
         return {
@@ -87,7 +81,7 @@ async function exportFCT() {
                 : [],
         };
     });
-    return {
+    const FCTData = {
         typedData,
         builder: this.options.builder || "0x0000000000000000000000000000000000000000",
         typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
@@ -96,8 +90,10 @@ async function exportFCT() {
         mcall,
         variables: [],
         externalSigners: [],
+        signatures: [],
         computed: this.computedVariables,
     };
+    return FCTData;
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
@@ -109,7 +105,7 @@ function importFCT(fct) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
         let params = [];
-        if (dataTypes.length > 1) {
+        if (dataTypes.length > 0) {
             // Getting types from method_interface, because parameter might be hashed and inside
             // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
             const types = meta.method_interface
@@ -161,14 +157,7 @@ exports.importFCT = importFCT;
 async function importEncodedFCT(calldata) {
     const ABI = FCT_BatchMultiSigCall_abi_json_1.default;
     const iface = new ethers_1.utils.Interface(ABI);
-    let chainId;
-    if (this.chainId) {
-        chainId = this.chainId.toString();
-    }
-    else {
-        const data = await this.provider.getNetwork();
-        chainId = data.chainId.toString();
-    }
+    const chainId = this.chainId;
     const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
     const arrayKeys = ["signatures", "mcall"];
     const objectKeys = ["tr"];

@@ -1,18 +1,12 @@
 import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
-import { BatchMultiSigCall } from "batchMultiSigCall/batchMultiSigCall";
 
 import { instanceOfVariable } from "../../helpers";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { handleFunctionSignature } from "../helpers";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
-  let chainId: string;
+  const chainId = this.chainId;
 
-  if (this.chainId) {
-    chainId = this.chainId.toString();
-  } else {
-    const data = await this.provider.getNetwork();
-    chainId = data.chainId.toString();
-  }
   const call = this.getCall(index);
 
   if (instanceOfVariable(call.to)) {
@@ -52,7 +46,7 @@ export async function getPluginClass(
   this: BatchMultiSigCall,
   index: number
 ): Promise<ReturnType<typeof getPluginProvider>> {
-  const { chainId } = await this.provider.getNetwork();
+  const chainId = this.chainId;
   const call = this.getCall(index);
 
   if (instanceOfVariable(call.to)) {
@@ -66,4 +60,24 @@ export async function getPluginClass(
   });
 
   return pluginData;
+}
+
+export async function getPluginData(this: BatchMultiSigCall, index: number) {
+  const plugin = await this.getPlugin(index);
+  const call = this.getCall(index);
+
+  return {
+    protocol: plugin.protocol,
+    type: plugin.type,
+    method: plugin.method,
+    input: {
+      to: call.to,
+      value: call.value,
+      methodParams: call.params
+        ? call.params.reduce((acc, param) => {
+            return { ...acc, [param.name]: param.value };
+          }, {})
+        : {},
+    },
+  };
 }

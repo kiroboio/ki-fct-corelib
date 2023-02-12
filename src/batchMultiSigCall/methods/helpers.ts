@@ -1,17 +1,20 @@
-import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { Param, Variable } from "@types";
-import { utils } from "ethers";
+import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
-import { createValidatorTxData, getTypedDataDomain, instanceOfVariable } from "../../helpers";
+import { instanceOfVariable } from "../../helpers";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
   handleFunctionSignature,
   handleMethodInterface,
+  verifyOptions,
+  verifyParam,
 } from "../helpers";
+import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
-import { BatchMultiSigCallTypedData, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
+import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
 export function getCalldataForActuator(
   this: BatchMultiSigCall,
@@ -38,13 +41,13 @@ export function getCalldataForActuator(
   ]);
 }
 
-export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<IRequiredApproval[]> {
+export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];
-  if (!this.chainId && !this.provider) {
+  if (!this.chainId) {
     throw new Error("No chainId or provider has been set");
   }
 
-  const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString()) as ChainId;
+  const chainId = this.chainId;
 
   for (const call of this.calls) {
     if (typeof call.to !== "string") {
@@ -95,36 +98,19 @@ export async function getAllRequiredApprovals(this: BatchMultiSigCall): Promise<
   return requiredApprovals;
 }
 
-export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions {
-  if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
-    throw new Error("Max gas price cannot be 0 or less");
-  }
+export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions | undefined {
+  const mergedOptions = _.merge({ ...this.options }, options);
+  verifyOptions(mergedOptions);
 
-  if (options.expiresAt !== undefined) {
-    const now = Number(new Date().getTime() / 1000).toFixed();
-    if (options.expiresAt <= now) {
-      throw new Error("Expires at must be in the future");
-    }
-  }
-
-  if (options.builder !== undefined && !utils.isAddress(options.builder)) {
-    throw new Error("Builder must be a valid address");
-  }
-
-  this.options = { ...this.options, ...options };
+  this.options = mergedOptions;
   return this.options;
 }
 
-export async function createTypedData(
-  this: BatchMultiSigCall,
-  salt: string,
-  version: string
-): Promise<BatchMultiSigCallTypedData> {
+export function createTypedData(this: BatchMultiSigCall, salt: string, version: string): BatchMultiSigCallTypedData {
   const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
     let paramsData = {};
     if (call.params) {
-      this.verifyParams(call.params);
-      paramsData = this.getParamsFromCall(call);
+      paramsData = this.getParamsFromCall(call, index);
     }
 
     const options = call.options || {};
@@ -302,7 +288,7 @@ export async function createTypedData(
       ],
     },
     primaryType: "BatchMultiSigCall",
-    domain: await getTypedDataDomain(this.FCT_Controller),
+    domain: getTypedDataDomain(this.chainId),
     message: {
       meta: {
         name: this.options.name || "",
@@ -327,23 +313,13 @@ export async function createTypedData(
   return typedData;
 }
 
-export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
+export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, index: number) {
   // If call has parameters
   if (call.params) {
-    // If mcall is a validation call
-    if (call.validator) {
-      Object.entries(call.validator.params).forEach(([key, value]) => {
-        if (typeof value !== "string" && call.validator) {
-          call.validator.params[key] = this.getVariable(value, "uint256");
-        }
-      });
-
-      return createValidatorTxData(call);
-    }
-    const getParams = (params: Param[]) => {
+    const getParams = (params: Param[]): Record<string, FCTCallParam> => {
       return {
         ...params.reduce((acc, param) => {
-          let value: any;
+          let value: FCTCallParam;
 
           // If parameter is a custom type (struct)
           if (param.customType || param.type.includes("tuple")) {
@@ -357,7 +333,17 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput) {
               value = getParams(valueArray);
             }
           } else {
-            value = param.value;
+            try {
+              verifyParam(param);
+            } catch (err) {
+              if (err instanceof Error) {
+                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+              }
+            }
+            if (instanceOfVariable(param.value)) {
+              param.value = this.getVariable(param.value, param.type);
+            }
+            value = param.value as string[] | string | boolean;
           }
           return {
             ...acc,
@@ -393,11 +379,6 @@ export function verifyParams(this: BatchMultiSigCall, params: Param[]) {
 }
 
 export function handleTo(this: BatchMultiSigCall, call: IMSCallInput) {
-  // If call is a validator method, return validator address as to address
-  if (call.validator) {
-    return call.validator.validatorAddress;
-  }
-
   if (typeof call.to === "string") {
     return call.to;
   }

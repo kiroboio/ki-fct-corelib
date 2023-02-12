@@ -1,9 +1,8 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT } from "../batchMultiSigCall/types";
-import { IFCT } from "./types";
+import { BatchMultiSigCallTypedData, IBatchMultiSigCallFCT, PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
 export declare const recoverAddressFromEIP712: (typedData: BatchMultiSigCallTypedData, signature: SignatureLike) => string | null;
 export declare const getFCTMessageHash: (typedData: BatchMultiSigCallTypedData) => string;
-export declare const validateFCT: <IFCT_1 extends IBatchMultiSigCallFCT>(FCT: IFCT_1, softValidation?: boolean) => {
+export declare const validateFCT: <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softValidation?: boolean) => {
     getOptions: () => {
         valid_from: string;
         expires_at: string;
@@ -12,16 +11,17 @@ export declare const validateFCT: <IFCT_1 extends IBatchMultiSigCallFCT>(FCT: IF
         purgeable: boolean;
         builder: string;
         recurrency: {
-            accumetable: boolean;
-            chillTime: string;
-            maxRepeats: string;
+            maxRepeats?: string | undefined;
+            chillTime?: string | undefined;
+            accumetable?: boolean | undefined;
         };
         multisig: {
-            minimumApprovals: number;
+            externalSigners?: string[] | undefined;
+            minimumApprovals?: string | undefined;
         };
     };
     getFCTMessageHash: () => string;
     getSigners: () => string[];
 };
 export declare const getVariablesAsBytes32: (variables: string[]) => string[];
-export declare const getAllFCTPaths: (fct: IFCT) => string[][];
+export declare const getAllFCTPaths: (fct: PartialBatchMultiSigCall) => string[][];

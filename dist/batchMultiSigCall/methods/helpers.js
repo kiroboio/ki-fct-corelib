@@ -1,11 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleValue = exports.handleTo = exports.verifyParams = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const ethers_1 = require("ethers");
+const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
+const fct_1 = require("../helpers/fct");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
@@ -16,12 +20,12 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
     ]);
 }
 exports.getCalldataForActuator = getCalldataForActuator;
-async function getAllRequiredApprovals() {
+function getAllRequiredApprovals() {
     let requiredApprovals = [];
-    if (!this.chainId && !this.provider) {
+    if (!this.chainId) {
         throw new Error("No chainId or provider has been set");
     }
-    const chainId = (this.chainId || (await this.provider.getNetwork()).chainId.toString());
+    const chainId = this.chainId;
     for (const call of this.calls) {
         if (typeof call.to !== "string") {
             continue;
@@ -65,28 +69,17 @@ async function getAllRequiredApprovals() {
 }
 exports.getAllRequiredApprovals = getAllRequiredApprovals;
 function setOptions(options) {
-    if (options.maxGasPrice !== undefined && options.maxGasPrice === "0") {
-        throw new Error("Max gas price cannot be 0 or less");
-    }
-    if (options.expiresAt !== undefined) {
-        const now = Number(new Date().getTime() / 1000).toFixed();
-        if (options.expiresAt <= now) {
-            throw new Error("Expires at must be in the future");
-        }
-    }
-    if (options.builder !== undefined && !ethers_1.utils.isAddress(options.builder)) {
-        throw new Error("Builder must be a valid address");
-    }
-    this.options = { ...this.options, ...options };
+    const mergedOptions = lodash_1.default.merge({ ...this.options }, options);
+    (0, helpers_2.verifyOptions)(mergedOptions);
+    this.options = mergedOptions;
     return this.options;
 }
 exports.setOptions = setOptions;
-async function createTypedData(salt, version) {
+function createTypedData(salt, version) {
     const typedDataMessage = this.calls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            this.verifyParams(call.params);
-            paramsData = this.getParamsFromCall(call);
+            paramsData = this.getParamsFromCall(call, index);
         }
         const options = call.options || {};
         const gasLimit = options.gasLimit ?? "0";
@@ -244,7 +237,7 @@ async function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: await (0, helpers_1.getTypedDataDomain)(this.FCT_Controller),
+        domain: (0, fct_1.getTypedDataDomain)(this.chainId),
         message: {
             meta: {
                 name: this.options.name || "",
@@ -269,18 +262,9 @@ async function createTypedData(salt, version) {
     return typedData;
 }
 exports.createTypedData = createTypedData;
-function getParamsFromCall(call) {
+function getParamsFromCall(call, index) {
     // If call has parameters
     if (call.params) {
-        // If mcall is a validation call
-        if (call.validator) {
-            Object.entries(call.validator.params).forEach(([key, value]) => {
-                if (typeof value !== "string" && call.validator) {
-                    call.validator.params[key] = this.getVariable(value, "uint256");
-                }
-            });
-            return (0, helpers_1.createValidatorTxData)(call);
-        }
         const getParams = (params) => {
             return {
                 ...params.reduce((acc, param) => {
@@ -299,6 +283,17 @@ function getParamsFromCall(call) {
                         }
                     }
                     else {
+                        try {
+                            (0, helpers_2.verifyParam)(param);
+                        }
+                        catch (err) {
+                            if (err instanceof Error) {
+                                throw new Error(`Error in call ${index + 1}: ${err.message}`);
+                            }
+                        }
+                        if ((0, helpers_1.instanceOfVariable)(param.value)) {
+                            param.value = this.getVariable(param.value, param.type);
+                        }
                         value = param.value;
                     }
                     return {
@@ -333,10 +328,6 @@ function verifyParams(params) {
 }
 exports.verifyParams = verifyParams;
 function handleTo(call) {
-    // If call is a validator method, return validator address as to address
-    if (call.validator) {
-        return call.validator.validatorAddress;
-    }
     if (typeof call.to === "string") {
         return call.to;
     }

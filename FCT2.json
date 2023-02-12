@@ -35,6 +35,14 @@
         {
           "name": "transaction_1",
           "type": "transaction1"
+        },
+        {
+          "name": "transaction_2",
+          "type": "transaction2"
+        },
+        {
+          "name": "transaction_3",
+          "type": "transaction3"
         }
       ],
       "Meta": [
@@ -91,16 +99,48 @@
           "type": "Call"
         },
         {
-          "name": "amount",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "transaction2": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "amount1",
           "type": "uint256"
         },
         {
-          "name": "method",
-          "type": "bytes32"
+          "name": "decimals1",
+          "type": "uint256"
         },
         {
-          "name": "path",
-          "type": "address[]"
+          "name": "amount2",
+          "type": "uint256"
+        },
+        {
+          "name": "decimals2",
+          "type": "uint256"
+        },
+        {
+          "name": "decimalsOut",
+          "type": "uint256"
+        }
+      ],
+      "transaction3": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
         }
       ],
       "Call": [
@@ -167,22 +207,22 @@
       "name": "FCT Controller",
       "version": "1",
       "chainId": 5,
-      "verifyingContract": "0x6E3f47f5B80499c7904086257fB5Cf8f375E635c",
-      "salt": "0x0100581df3df6a29b56300006e3f47f5b80499c7904086257fb5cf8f375e635c"
+      "verifyingContract": "0x087550a787B2720AAC06351065afC1F413D82572",
+      "salt": "0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572"
     },
     "message": {
       "meta": {
-        "name": "",
+        "name": "🔥Untitled",
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0x2409a934",
         "version": "0x010101",
-        "random_id": "0xa7220c",
+        "random_id": "0xabf352",
         "eip712": true
       },
       "limits": {
-        "valid_from": "1672764376",
-        "expires_at": "1673369176",
-        "gas_price_limit": "100000000000",
+        "valid_from": "1675202400",
+        "expires_at": "1675893599",
+        "gas_price_limit": "2000000000",
         "purgeable": false,
         "blockable": true
       },
@@ -190,44 +230,110 @@
         "call": {
           "call_index": 1,
           "payer_index": 1,
-          "call_type": "library",
-          "from": "0xcA84b48a4a96c50A7Ecbd22A17cf23Db0b8a23ec",
-          "to": "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
-          "to_ens": "@lib:uniswap_v2",
+          "call_type": "view only",
+          "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
           "eth_value": "0",
-          "gas_limit": "400000",
+          "gas_limit": "97884",
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+          "method_interface": "balanceOf(address)"
         },
-        "amount": "1000000",
-        "method": "0x466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc",
-        "path": ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"]
+        "owner": "0xD2f2d05424F0328F9315893c04B23C395FA358FC"
+      },
+      "transaction_2": {
+        "call": {
+          "call_index": 2,
+          "payer_index": 2,
+          "call_type": "view only",
+          "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+          "to": "0x254fb98E8943faF0F732477c4dE6Af7a1Dd7fD2D",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": "97954",
+          "permissions": 0,
+          "flow_control": "continue on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "div(uint256,uint256,uint256,uint256,uint256)"
+        },
+        "amount1": "0xFD00000000000000000000000000000000000001",
+        "decimals1": "18",
+        "amount2": "10",
+        "decimals2": "0",
+        "decimalsOut": "18"
+      },
+      "transaction_3": {
+        "call": {
+          "call_index": 3,
+          "payer_index": 3,
+          "call_type": "action",
+          "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": "114824",
+          "permissions": 0,
+          "flow_control": "stop on success, revert on fail",
+          "returned_false_means_fail": true,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "transfer(address,uint256)"
+        },
+        "recipient": "0xe071C2b80Ce1Df1c00ebC077c06DecB7Eea2eb80",
+        "amount": "0xFD00000000000000000000000000000000000002"
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x6f1ae9636c9d64eabd691678b87a436912c55da715d475f75b34b7982c549d79",
-  "sessionId": "0xa7220c000101010000000000000063bd96580063b45bd8000000174876e8000c",
-  "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "typeHash": "0xf2ae984eac3b093a931c5cbc28ef8828f2b5244c0817524e32c6e370c18f12a7",
+  "sessionId": "0xabf352000101010000000000000063e41b5f0063d98f6000000000773594000c",
+  "nameHash": "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   "mcall": [
     {
-      "typeHash": "0x51a6e9d969fe7bd2230563adfb81c57893c785525c995bbd2ae369000cd73645",
-      "ensHash": "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
-      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "typeHash": "0x276d3800ab976c19d67a16b7054fee3b1c64560474a19cf900904a0b4291a1c8",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
       "value": "0",
-      "callId": "0x00000000000000000000000000000000000000000000000001000100061a8022",
-      "from": "0xcA84b48a4a96c50A7Ecbd22A17cf23Db0b8a23ec",
-      "to": "0xf2B3a55051F49310635E962D54b9b1D961C81a55",
-      "data": "0x00000000000000000000000000000000000000000000000000000000000f4240466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
-      "types": [1000, 1000, 4000, 1000],
+      "callId": "0x00000000000000000000000000000000000000000000000001000100017e5c11",
+      "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000d2f2d05424f0328f9315893c04b23c395fa358fc",
+      "types": [],
+      "typedHashes": []
+    },
+    {
+      "typeHash": "0xbfd6639af29d0539419accb69c2da808ff6f98d95a7bc48d698f26778566d963",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0xfed05b8a820264c9791ca90101855273c095e62f92494d6a9a52e4552adf21c5",
+      "value": "0",
+      "callId": "0x00000000000000000000000000000000000000000000000002000200017ea211",
+      "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+      "to": "0x254fb98E8943faF0F732477c4dE6Af7a1Dd7fD2D",
+      "data": "0x000000000000000000000000fd000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012",
+      "types": [],
+      "typedHashes": []
+    },
+    {
+      "typeHash": "0x4355be25898c7015477399225af908fffa64d0f7f256cfa9d919c40c7d2aa2b9",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000600000000000300030001c08804",
+      "from": "0xD2f2d05424F0328F9315893c04B23C395FA358FC",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000e071c2b80ce1df1c00ebc077c06decb7eea2eb80000000000000000000000000fd00000000000000000000000000000000000002",
+      "types": [],
       "typedHashes": []
     }
   ],
   "variables": [],
   "externalSigners": [],
-  "computed": []
+  "computed": [],
+  "signatures": []
 }

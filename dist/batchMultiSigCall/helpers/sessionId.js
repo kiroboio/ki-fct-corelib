@@ -1,21 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = exports.manageFlow = void 0;
+exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = void 0;
 const constants_1 = require("../../constants");
-const manageFlow = (call) => {
-    // const jump = (call.options && call.options.jump) || 0;
-    const jump = 0;
-    const flow = (call.options && call.options.flow) || "OK_CONT_FAIL_REVERT";
-    if (jump > 15) {
-        throw new Error("Jump value cannot exceed 15");
-    }
-    if (!constants_1.flows[flow]) {
-        throw new Error("Flow not found");
-    }
-    return `0x${constants_1.flows[flow].value}${jump.toString(16)}`;
+const valueWithPadStart = (value, padStart) => {
+    return Number(value).toString(16).padStart(padStart, "0");
 };
-exports.manageFlow = manageFlow;
 const manageCallId = (calls, call, index) => {
+    // This is the structure of callId string
     // 4 - Permissions
     // 2 - Flow
     // 4 - Fail Jump
@@ -24,15 +15,12 @@ const manageCallId = (calls, call, index) => {
     // 4 - Call index
     // 8 - Gas limit
     // 2 - Flags
+    // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
     const permissions = "0000";
-    const flow = call?.options?.flow ? Number(constants_1.flows[call.options.flow].value).toString(16).padStart(1, "00") : "00";
-    const payerIndex = Number(index + 1)
-        .toString(16)
-        .padStart(4, "0");
-    const callIndex = Number(index + 1)
-        .toString(16)
-        .padStart(4, "0");
-    const gasLimit = call?.options?.gasLimit ? Number(call.options.gasLimit).toString(16).padStart(8, "0") : "00000000";
+    const flow = call?.options?.flow ? valueWithPadStart(constants_1.flows[call.options.flow].value, 2) : "00";
+    const payerIndex = valueWithPadStart(index + 1, 4);
+    const callIndex = valueWithPadStart(index + 1, 4);
+    const gasLimit = call?.options?.gasLimit ? valueWithPadStart(call.options.gasLimit, 8) : "00000000";
     const flags = () => {
         const callType = call?.options?.callType ? constants_1.CALL_TYPE[call.options.callType] : constants_1.CALL_TYPE.ACTION;
         const falseMeansFail = call?.options?.falseMeansFail ? 4 : 0;
@@ -68,15 +56,15 @@ exports.manageCallId = manageCallId;
 // 10 - Before timestamp
 // 16 - Gas price limit
 // 2 - Flags
-const getSessionId = (salt, options) => {
+const getSessionId = (salt, versionHex, options) => {
     const currentDate = new Date();
     if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
         throw new Error("Expires at date cannot be in the past");
     }
     const minimumApprovals = options.multisig && options.multisig.minimumApprovals
-        ? options.multisig.minimumApprovals.toString(16).padStart(2, "0")
+        ? Number(options.multisig.minimumApprovals).toString(16).padStart(2, "0")
         : "00";
-    const version = "010101";
+    const version = versionHex.slice(2);
     const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
     const chillTime = options.recurrency
         ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
@@ -99,7 +87,7 @@ const getSessionId = (salt, options) => {
 exports.getSessionId = getSessionId;
 const parseSessionID = (sessionId, builder) => {
     // const salt = sessionId.slice(2, 8);
-    const minimumApprovals = parseInt(sessionId.slice(8, 10), 16);
+    const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
     // const version = sessionId.slice(10, 16);
     const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
     const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
@@ -167,17 +155,20 @@ const parseSessionID = (sessionId, builder) => {
         blockable: flags.blockable,
         purgeable: flags.purgeable,
     };
+    const recurrency = {};
+    recurrency.accumetable = flags.accumetable;
+    if (maxRepeats !== "0")
+        recurrency.maxRepeats = maxRepeats;
+    if (chillTime !== "0")
+        recurrency.chillTime = chillTime;
+    const multisig = {};
+    if (minimumApprovals !== "0")
+        multisig.minimumApprovals = minimumApprovals;
     return {
         ...data,
         builder,
-        recurrency: {
-            accumetable: flags.accumetable,
-            chillTime,
-            maxRepeats,
-        },
-        multisig: {
-            minimumApprovals,
-        },
+        recurrency,
+        multisig,
     };
 };
 exports.parseSessionID = parseSessionID;
