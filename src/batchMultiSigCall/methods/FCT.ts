@@ -20,7 +20,6 @@ import {
   verifyOptions,
 } from "../helpers";
 import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
-import { getAuthenticatorSignature } from "../utils/signatures";
 
 export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]> {
   let call: IMSCallInput;
@@ -112,7 +111,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     mcall,
     variables: [],
     externalSigners: [],
-    signatures: [getAuthenticatorSignature(typedData)],
+    signatures: [],
     computed: this.computedVariables,
   };
 
