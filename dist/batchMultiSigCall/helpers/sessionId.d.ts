@@ -4,11 +4,11 @@ export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, i
 export declare const getSessionId: (salt: string, versionHex: string, options: IFCTOptions) => string;
 export declare const parseSessionID: (sessionId: string, builder: string) => {
     builder: string;
-    recurrency: {
-        maxRepeats?: string | undefined;
-        chillTime?: string | undefined;
-        accumetable?: boolean | undefined;
-    };
+    recurrency: Partial<{
+        maxRepeats: string;
+        chillTime: string;
+        accumetable: boolean;
+    }>;
     multisig: {
         externalSigners?: string[] | undefined;
         minimumApprovals?: string | undefined;
