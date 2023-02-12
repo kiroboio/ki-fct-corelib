@@ -12,8 +12,7 @@ jobs:
         run: yarn run test
       - name: Install dependencies & build
         run: yarn install --production=false && yarn run build
-      - name: Pushes dist folder to develop
-        uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
         run: |
