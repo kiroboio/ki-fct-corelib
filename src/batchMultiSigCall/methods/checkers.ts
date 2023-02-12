@@ -5,8 +5,6 @@ import { CALL_TYPE } from "../../constants";
 import { verifyParam } from "..//helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
-// Change
-
 const isInteger = (value: string, key: string) => {
   if (value.length === 0) {
     throw new Error(`${key} cannot be empty string`);
