@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register src/**/*.test.ts --timeout 10000",
+    "test": "mocha -r ts-node/register src/**/*.test.ts; npm run test:fct",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/test/*.test.ts",
-    "test:utils": "mocha -r ts-node/register src/utils/*.test.ts --timeout 10000",
+    "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
     "build": "rm -rf dist/ & tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct:struct": "ts-node scripts/fct_struct.script.ts",
@@ -16,8 +16,7 @@
     "fct:estimate": "ts-node scripts/estimate.script.ts",
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
-    "lint:fix": "eslint --fix --ext .js,.ts .",
-    "prepare": "husky install"
+    "lint:fix": "eslint --fix --ext .js,.ts ."
   },
   "repository": {
     "type": "git",

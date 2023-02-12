@@ -16,6 +16,7 @@ function isFCTKeyType(keyInput) {
         "variables",
         "externalSigners",
         "computed",
+        "signatures",
     ].includes(keyInput);
 }
 const recoverAddressFromEIP712 = (typedData, signature) => {

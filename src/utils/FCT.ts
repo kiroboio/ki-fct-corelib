@@ -22,6 +22,7 @@ function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT
     "variables",
     "externalSigners",
     "computed",
+    "signatures",
   ].includes(keyInput);
 }
 
