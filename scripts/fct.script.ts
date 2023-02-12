@@ -3,9 +3,10 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import fs from "fs";
 import util from "util";
 
-import { BatchMultiSigCall, constants, TypedDataTypes, utils } from "../src";
+import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 import data from "./scriptData";
 // import util from "util";
 
@@ -42,8 +43,8 @@ async function main() {
     builder: wallet,
     recurrency: {
       accumetable: true,
-      maxRepeats: "1000",
-      chillTime: "1",
+      maxRepeats: "100",
+      chillTime: "0",
     },
   });
 
@@ -79,62 +80,62 @@ async function main() {
       to: data[chainId].KIRO,
       methodParams: {
         recipient: wallet,
-        amount: ethers.utils.parseUnits("1", 18).toString(),
+        amount: ethers.utils.parseUnits("0.0001", 18).toString(),
       },
     },
   });
 
   await batchMultiSigCall.createMultiple([
-    {
-      from: vault,
-      method: "swap_noSlippageProtection",
-      to: data[chainId].KIRO,
-      options: {
-        flow: constants.Flow.OK_CONT_FAIL_STOP,
-      },
-      params: [
-        {
-          name: "amount",
-          type: "uint256",
-          value: "1000000",
-          customType: false,
-          hashed: false,
-        },
-        {
-          name: "method",
-          type: "string",
-          value: "swap <amount> ETH for <X> Tokens",
-          customType: false,
-          hashed: true,
-        },
-        {
-          name: "path",
-          type: "address[]",
-          value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
-          customType: false,
-          hashed: false,
-        },
-      ],
-      nodeId: "1",
-    },
+    // {
+    //   from: vault,
+    //   method: "swap_noSlippageProtection",
+    //   to: data[chainId].KIRO,
+    //   options: {
+    //     flow: constants.Flow.OK_CONT_FAIL_STOP,
+    //   },
+    //   params: [
+    //     {
+    //       name: "amount",
+    //       type: "uint256",
+    //       value: "1000000",
+    //       customType: false,
+    //       hashed: false,
+    //     },
+    //     {
+    //       name: "method",
+    //       type: "string",
+    //       value: "swap <amount> ETH for <X> Tokens",
+    //       customType: false,
+    //       hashed: true,
+    //     },
+    //     {
+    //       name: "path",
+    //       type: "address[]",
+    //       value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
+    //       customType: false,
+    //       hashed: false,
+    //     },
+    //   ],
+    //   nodeId: "1",
+    // },
     { plugin: transfer, from: vault, nodeId: "3" },
-    { plugin: transfer, from: vault, nodeId: "4" },
-    { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
-    {
-      from: vault,
-      method: "swap_noSlippageProtection",
-      to: data[chainId].KIRO,
-      params: [
-        {
-          name: "amount",
-          type: "uint256",
-          value: { type: "output", id: { nodeId: "1", innerIndex: 9 } },
-          customType: false,
-          hashed: false,
-        },
-      ],
-      nodeId: "15",
-    },
+    // { plugin: transfer, from: vault, nodeId: "4" },
+    // { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
+    // {
+    //   from: vault,
+    //   method: "swap_noSlippageProtection",
+    //   to: data[chainId].KIRO,
+    //   params: [
+    //     {
+    //       name: "amount",
+    //       type: "uint256",
+    //       value: { type: "output", id: { nodeId: "1", innerIndex: 9 } },
+    //       customType: false,
+    //       hashed: false,
+    //     },
+    //   ],
+    //   nodeId: "15",
+    // },
   ]);
 
   const FCT = batchMultiSigCall.exportFCT();
@@ -181,9 +182,6 @@ async function main() {
     gas: 462109,
   });
 
-  const pluginData = await batchMultiSigCall.getPluginData(3);
-  console.log(pluginData);
-
   // const requireApprovals = await batchMultiSigCall.getAllRequiredApprovals();
   // console.log(requireApprovals);
 
@@ -194,7 +192,7 @@ async function main() {
 
   // console.log(fees);
 
-  // fs.writeFileSync("FCT_TransferERC20.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("Lior_ERC20Transfer.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()

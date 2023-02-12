@@ -169,7 +169,7 @@ export const parseSessionID = (sessionId: string, builder: string) => {
     purgeable: flags.purgeable,
   };
 
-  const recurrency: IFCTOptions["recurrency"] = {};
+  const recurrency: Partial<IFCTOptions["recurrency"]> = {};
   recurrency.accumetable = flags.accumetable;
   if (maxRepeats !== "0") recurrency.maxRepeats = maxRepeats;
   if (chillTime !== "0") recurrency.chillTime = chillTime;

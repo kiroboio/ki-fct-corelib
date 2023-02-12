@@ -16,6 +16,12 @@ import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
+
 export function getCalldataForActuator(
   this: BatchMultiSigCall,
   {
@@ -98,7 +104,7 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
   return requiredApprovals;
 }
 
-export function setOptions(this: BatchMultiSigCall, options: Partial<IFCTOptions>): IFCTOptions | undefined {
+export function setOptions(this: BatchMultiSigCall, options: DeepPartial<IFCTOptions>): IFCTOptions | undefined {
   const mergedOptions = _.merge({ ...this.options }, options);
   verifyOptions(mergedOptions);
 

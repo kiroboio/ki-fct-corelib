@@ -66,9 +66,9 @@ export interface IFCTOptions {
   purgeable: boolean;
   builder: string;
   recurrency?: {
-    maxRepeats?: string;
-    chillTime?: string;
-    accumetable?: boolean;
+    maxRepeats: string;
+    chillTime: string;
+    accumetable: boolean;
   };
   multisig?: {
     externalSigners?: string[];
