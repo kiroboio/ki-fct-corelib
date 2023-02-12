@@ -12,9 +12,9 @@ jobs:
         run: yarn run test
       - name: Install dependencies & build
         run: yarn install --production=false && yarn run build
-      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
-        with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
-        run: |
-          git add -A
-          git commit -m "Build"
+      # - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      #   with:
+      #     token: "${{ secrets.GITHUB_TOKEN }}"
+      #   run: |
+      #     git add -A
+      #     git commit -m "Build"
