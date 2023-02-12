@@ -30,12 +30,6 @@ class BatchMultiSigCall {
             builder: "0x0000000000000000000000000000000000000000",
         };
         // Helpers
-        this.getAllRequiredApprovals = helpers_2.getAllRequiredApprovals;
-        // Variables
-        this.getVariable = variables_1.getVariable;
-        this.getOutputVariable = variables_1.getOutputVariable;
-        this.getExternalVariable = variables_1.getExternalVariable;
-        this.getComputedVariable = variables_1.getComputedVariable;
         // Options
         this.setOptions = helpers_2.setOptions;
         // Plugin functions
@@ -48,14 +42,20 @@ class BatchMultiSigCall {
         this.importFCT = FCT_1.importFCT;
         this.importEncodedFCT = FCT_1.importEncodedFCT;
         this.getCall = FCT_1.getCall;
-        // Helpers functions
+        // Utility functions
+        this.getPluginData = plugins_1.getPluginData;
+        this.getAllRequiredApprovals = helpers_2.getAllRequiredApprovals;
+        // Variables
+        this.getVariable = variables_1.getVariable;
+        this.getOutputVariable = variables_1.getOutputVariable;
+        this.getExternalVariable = variables_1.getExternalVariable;
+        this.getComputedVariable = variables_1.getComputedVariable;
+        // Internal helper functions
         this.createTypedData = helpers_2.createTypedData;
         this.getParamsFromCall = helpers_2.getParamsFromCall;
         this.verifyParams = helpers_2.verifyParams;
         this.handleTo = helpers_2.handleTo;
         this.handleValue = helpers_2.handleValue;
-        // Utility functions
-        this.getPluginData = plugins_1.getPluginData;
         // Validation functions
         this.verifyCall = checkers_1.verifyCall;
         if (input.chainId) {

@@ -279,7 +279,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         to: call.to,
         value: parseInt(call.value, 16).toString(),
         methodParams: params.reduce((acc, param) => {
-          const getValue = (value: any) => {
+          const getValue = (value: utils.Result) => {
             const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
             if (BigNumber.isBigNumber(value)) {
               const hexString = value.toHexString();

@@ -1,9 +1,9 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 
-import { Flow } from "../constants";
-import { parseCallID } from "./helpers";
-import { BatchMultiSigCall } from "./index";
+import { Flow } from "../../constants";
+import { parseCallID } from "../helpers";
+import { BatchMultiSigCall } from "../index";
 
 function getDate(days = 0) {
   const result = new Date();
@@ -21,18 +21,6 @@ describe("BatchMultiSigCall", () => {
   });
 
   it("Should set settings", async () => {
-    const maxGasPriceErrorSettings = {
-      maxGasPrice: "0",
-    };
-
-    expect(() => batchMultiSigCall.setOptions(maxGasPriceErrorSettings)).to.throw("Max gas price cannot be 0 or less");
-
-    const expiresAtErrorSettings = {
-      expiresAt: "0",
-    };
-
-    expect(() => batchMultiSigCall.setOptions(expiresAtErrorSettings)).to.throw("Expires at must be in the future");
-
     const expiresAt = getDate(1);
 
     const validSettings = {

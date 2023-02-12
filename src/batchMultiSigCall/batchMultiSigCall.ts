@@ -48,13 +48,6 @@ export class BatchMultiSigCall {
   }
 
   // Helpers
-  public getAllRequiredApprovals = getAllRequiredApprovals;
-
-  // Variables
-  protected getVariable = getVariable;
-  protected getOutputVariable = getOutputVariable;
-  protected getExternalVariable = getExternalVariable;
-  protected getComputedVariable = getComputedVariable;
 
   // Options
   public setOptions = setOptions;
@@ -71,19 +64,26 @@ export class BatchMultiSigCall {
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
 
+  // Utility functions
+  public getPluginData = getPluginData;
+  public getAllRequiredApprovals = getAllRequiredApprovals;
+
   get length(): number {
     return this.calls.length;
   }
 
-  // Helpers functions
+  // Variables
+  protected getVariable = getVariable;
+  protected getOutputVariable = getOutputVariable;
+  protected getExternalVariable = getExternalVariable;
+  protected getComputedVariable = getComputedVariable;
+
+  // Internal helper functions
   protected createTypedData = createTypedData;
   protected getParamsFromCall = getParamsFromCall;
   protected verifyParams = verifyParams;
   protected handleTo = handleTo;
   protected handleValue = handleValue;
-
-  // Utility functions
-  public getPluginData = getPluginData;
 
   // Validation functions
   protected verifyCall = verifyCall;

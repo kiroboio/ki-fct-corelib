@@ -16,11 +16,6 @@ export declare class BatchMultiSigCall {
     calls: IMSCallInput[];
     options: IFCTOptions;
     constructor(input?: BatchMultiSigCallConstructor);
-    getAllRequiredApprovals: typeof getAllRequiredApprovals;
-    protected getVariable: typeof getVariable;
-    protected getOutputVariable: typeof getOutputVariable;
-    protected getExternalVariable: typeof getExternalVariable;
-    protected getComputedVariable: typeof getComputedVariable;
     setOptions: typeof setOptions;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;
@@ -30,12 +25,17 @@ export declare class BatchMultiSigCall {
     importFCT: typeof importFCT;
     importEncodedFCT: typeof importEncodedFCT;
     getCall: typeof getCall;
+    getPluginData: typeof getPluginData;
+    getAllRequiredApprovals: typeof getAllRequiredApprovals;
     get length(): number;
+    protected getVariable: typeof getVariable;
+    protected getOutputVariable: typeof getOutputVariable;
+    protected getExternalVariable: typeof getExternalVariable;
+    protected getComputedVariable: typeof getComputedVariable;
     protected createTypedData: typeof createTypedData;
     protected getParamsFromCall: typeof getParamsFromCall;
     protected verifyParams: typeof verifyParams;
     protected handleTo: typeof handleTo;
     protected handleValue: typeof handleValue;
-    getPluginData: typeof getPluginData;
     protected verifyCall: typeof verifyCall;
 }
