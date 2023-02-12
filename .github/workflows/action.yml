@@ -15,7 +15,8 @@ jobs:
       - uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
-      - run: |
+      - name: Push build folder
+        run: |
           git add -A
           git commit -m "Build"
           git push
