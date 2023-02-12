@@ -22,7 +22,7 @@ class BatchMultiSigCall {
         this.computedVariables = [];
         this.calls = [];
         this.options = {
-            maxGasPrice: "100000000000",
+            maxGasPrice: "30000000000",
             validFrom: (0, helpers_1.getDate)(),
             expiresAt: (0, helpers_1.getDate)(7),
             purgeable: false,

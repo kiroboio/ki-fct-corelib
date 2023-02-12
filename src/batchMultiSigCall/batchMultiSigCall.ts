@@ -29,7 +29,7 @@ export class BatchMultiSigCall {
   protected computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
   options: IFCTOptions = {
-    maxGasPrice: "100000000000", // 100 Gwei as default
+    maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
     expiresAt: getDate(7), // Expires after 7 days
     purgeable: false,
