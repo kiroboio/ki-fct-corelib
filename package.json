@@ -16,8 +16,7 @@
     "fct:estimate": "ts-node scripts/estimate.script.ts",
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
-    "lint:fix": "eslint --fix --ext .js,.ts .",
-    "prepare": "husky install"
+    "lint:fix": "eslint --fix --ext .js,.ts ."
   },
   "repository": {
     "type": "git",
