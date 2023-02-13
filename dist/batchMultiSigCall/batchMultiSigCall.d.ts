@@ -5,10 +5,7 @@ import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT
 import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
-type Required<T> = T extends object ? {
-    [P in keyof T]-?: Required<T[P]>;
-} : T;
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput, RequiredFCTOptions } from "./types";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -20,7 +17,7 @@ export declare class BatchMultiSigCall {
     protected _options: IFCTOptions;
     constructor(input?: BatchMultiSigCallConstructor);
     setOptions: typeof setOptions;
-    get options(): Required<IFCTOptions>;
+    get options(): RequiredFCTOptions;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;
     create: typeof create;
@@ -43,4 +40,3 @@ export declare class BatchMultiSigCall {
     protected handleValue: typeof handleValue;
     protected verifyCall: typeof verifyCall;
 }
-export {};
