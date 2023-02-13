@@ -121,7 +121,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
   // Here we import FCT and add all the data inside BatchMultiSigCall
   const options = parseSessionID(fct.sessionId, fct.builder);
-  this.setOptions(options as any);
+  this.setOptions(options);
   const typedData = fct.typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
@@ -247,8 +247,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   } = getFCT(decoded);
 
   const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
-  // TODO: Fix setOptions type issue
-  this.setOptions(FCTOptions as any);
+  this.setOptions(FCTOptions);
 
   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
     try {
