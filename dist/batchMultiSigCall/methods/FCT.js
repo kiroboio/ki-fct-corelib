@@ -60,7 +60,7 @@ function exportFCT() {
     if (this.calls.length === 0) {
         throw new Error("No calls added");
     }
-    (0, helpers_1.verifyOptions)(this.options);
+    (0, helpers_1.verifyOptions)(this._options);
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const typedData = this.createTypedData(salt, this.version);
     const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);

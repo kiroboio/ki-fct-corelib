@@ -1,7 +1,7 @@
-import { IMSCallInput } from "@types";
 import { assert } from "chai";
 import _ from "lodash";
 
+import { IMSCallInput } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
 const FCT = new BatchMultiSigCall({

@@ -16,3 +16,11 @@ export declare const addresses: {
         ActuatorCore: string;
     };
 };
+export declare const EIP712_RECURRENCY: {
+    name: string;
+    type: string;
+}[];
+export declare const EIP712_MULTISIG: {
+    name: string;
+    type: string;
+}[];

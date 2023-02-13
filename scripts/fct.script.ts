@@ -41,12 +41,14 @@ async function main() {
     maxGasPrice: "3000000000",
     expiresAt: getDate(1000000),
     builder: wallet,
-    recurrency: {
-      accumetable: true,
-      maxRepeats: "100",
-      chillTime: "0",
-    },
+    // recurrency: {
+    //   accumetable: true,
+    //   maxRepeats: "100",
+    //   chillTime: "0",
+    // },
   });
+
+  console.log(batchMultiSigCall.options);
 
   const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
     chainId: "5",

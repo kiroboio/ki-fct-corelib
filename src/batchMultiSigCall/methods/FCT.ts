@@ -1,11 +1,11 @@
 import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { Param } from "@types";
 import { BigNumber, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
+import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,
@@ -76,7 +76,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     throw new Error("No calls added");
   }
 
-  verifyOptions(this.options);
+  verifyOptions(this._options);
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const typedData = this.createTypedData(salt, this.version);

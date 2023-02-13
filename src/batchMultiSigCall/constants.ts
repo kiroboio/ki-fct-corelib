@@ -18,3 +18,14 @@ export const addresses = {
     ActuatorCore: "0xC76b674d3e33cd908055F295c945F1cd575b7df2",
   },
 };
+
+export const EIP712_RECURRENCY = [
+  { name: "max_repeats", type: "uint16" },
+  { name: "chill_time", type: "uint32" },
+  { name: "accumetable", type: "bool" },
+];
+
+export const EIP712_MULTISIG = [
+  { name: "external_signers", type: "address[]" },
+  { name: "minimum_approvals", type: "uint8" },
+];
