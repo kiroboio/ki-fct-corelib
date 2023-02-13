@@ -17,10 +17,13 @@ import {
 } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
-
-// Create a type where we pass an object and make all the properties mandatory
-type Required<T> = T extends object ? { [P in keyof T]-?: Required<T[P]> } : T;
+import {
+  BatchMultiSigCallConstructor,
+  ComputedVariables,
+  IFCTOptions,
+  IMSCallInput,
+  RequiredFCTOptions,
+} from "./types";
 
 export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
@@ -54,7 +57,7 @@ export class BatchMultiSigCall {
 
   // Options
   public setOptions = setOptions;
-  get options(): Required<IFCTOptions> {
+  get options(): RequiredFCTOptions {
     return {
       ...this._options,
       name: this._options.name || "",
