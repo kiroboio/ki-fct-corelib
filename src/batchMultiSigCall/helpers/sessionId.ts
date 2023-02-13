@@ -1,5 +1,5 @@
 import { CALL_TYPE, Flow, flows } from "../../constants";
-import { IFCTOptions, IMSCallInput } from "../types";
+import { IFCTOptions, IMSCallInput, RequiredFCTOptions } from "../types";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");
@@ -69,27 +69,26 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
 // 16 - Gas price limit
 // 2 - Flags
 
-export const getSessionId = (salt: string, versionHex: string, options: IFCTOptions): string => {
+export const getSessionId = (salt: string, versionHex: string, options: RequiredFCTOptions): string => {
   const currentDate = new Date();
+  const { recurrency, multisig } = options;
 
   if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
     throw new Error("Expires at date cannot be in the past");
   }
 
   const minimumApprovals =
-    options.multisig && options.multisig.minimumApprovals
+    multisig.externalSigners.length > 0
       ? Number(options.multisig.minimumApprovals).toString(16).padStart(2, "0")
       : "00";
   const version = versionHex.slice(2);
-  const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
-  const chillTime = options.recurrency
-    ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
-    : "00000000";
-  const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff";
-  const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000";
-  const maxGasPrice = options.maxGasPrice
-    ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
-    : "00000005D21DBA00"; // 25 Gwei
+  const maxRepeats =
+    Number(recurrency.maxRepeats) > 1 ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
+  const chillTime =
+    Number(recurrency.maxRepeats) > 0 ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0") : "00000000";
+  const beforeTimestamp = Number(options.expiresAt).toString(16).padStart(10, "0");
+  const afterTimestamp = Number(options.validFrom).toString(16).padStart(10, "0");
+  const maxGasPrice = Number(options.maxGasPrice).toString(16).padStart(16, "0");
 
   let flagValue = 8; // EIP712 true by default
   if (options.recurrency?.accumetable) flagValue += 1;
