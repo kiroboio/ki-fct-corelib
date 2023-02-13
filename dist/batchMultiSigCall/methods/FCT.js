@@ -198,7 +198,6 @@ async function importEncodedFCT(calldata) {
     };
     const decodedFCT = getFCT(decoded);
     const FCTOptions = (0, helpers_1.parseSessionID)(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
-    // TODO: Fix setOptions type issue
     this.setOptions(FCTOptions);
     for (const [index, call] of decodedFCT.tr.mcall.entries()) {
         try {
