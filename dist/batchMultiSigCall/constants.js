@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addresses = void 0;
+exports.EIP712_MULTISIG = exports.EIP712_RECURRENCY = exports.addresses = void 0;
 exports.addresses = {
     1: {
         // NOTE: These addresses are not correct since no contracts have been deployed on mainnet
@@ -21,3 +21,12 @@ exports.addresses = {
         ActuatorCore: "0xC76b674d3e33cd908055F295c945F1cd575b7df2",
     },
 };
+exports.EIP712_RECURRENCY = [
+    { name: "max_repeats", type: "uint16" },
+    { name: "chill_time", type: "uint32" },
+    { name: "accumetable", type: "bool" },
+];
+exports.EIP712_MULTISIG = [
+    { name: "external_signers", type: "address[]" },
+    { name: "minimum_approvals", type: "uint8" },
+];
