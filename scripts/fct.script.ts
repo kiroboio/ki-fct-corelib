@@ -28,7 +28,6 @@ function addHours(numOfHours: number, date = new Date()) {
 
 const chainId = "5";
 const wallet = process.env.WALLET as string;
-
 async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
@@ -38,14 +37,14 @@ async function main() {
   });
 
   batchMultiSigCall.setOptions({
-    maxGasPrice: "3000000000",
+    maxGasPrice: "20000000000",
     expiresAt: getDate(1000000),
     builder: wallet,
-    // recurrency: {
-    //   accumetable: true,
-    //   maxRepeats: "100",
-    //   chillTime: "0",
-    // },
+    recurrency: {
+      accumetable: true,
+      maxRepeats: "500",
+      chillTime: "0",
+    },
   });
 
   console.log(batchMultiSigCall.options);
