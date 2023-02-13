@@ -1,4 +1,4 @@
-import { Param } from "@types";
+import { Param } from "../../types";
 import { BatchMultiSigCall } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 type DeepPartial<T> = T extends object ? {

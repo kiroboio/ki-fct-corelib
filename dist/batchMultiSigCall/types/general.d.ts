@@ -1,6 +1,6 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { CallOptions, IPluginCall, Param, Variable } from "@types";
+import { CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
@@ -68,6 +68,7 @@ export interface IFCTOptions {
         minimumApprovals?: string;
     };
 }
+export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 export interface IWithPlugin {
     nodeId: string;
     plugin: {

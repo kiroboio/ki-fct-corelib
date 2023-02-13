@@ -1,5 +1,3 @@
-import { Variable } from "@types";
-
 import {
   ComputedBase,
   ComputedBaseBytes,
@@ -10,6 +8,7 @@ import {
   FDBase,
   FDBaseBytes,
 } from "../../constants";
+import { Variable } from "../../types";
 import { globalVariables } from "../../variables";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 

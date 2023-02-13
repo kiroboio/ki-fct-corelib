@@ -5,7 +5,7 @@ import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT
 import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
-import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput, RequiredFCTOptions } from "./types";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -14,9 +14,10 @@ export declare class BatchMultiSigCall {
     protected chainId: ChainId;
     protected computedVariables: ComputedVariables[];
     calls: IMSCallInput[];
-    options: IFCTOptions;
+    protected _options: IFCTOptions;
     constructor(input?: BatchMultiSigCallConstructor);
     setOptions: typeof setOptions;
+    get options(): RequiredFCTOptions;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;
     create: typeof create;

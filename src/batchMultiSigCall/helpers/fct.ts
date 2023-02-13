@@ -1,6 +1,6 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { MethodParamsInterface } from "@types";
 
+import { MethodParamsInterface } from "../../types";
 import { TypedDataDomain } from "../types";
 
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));

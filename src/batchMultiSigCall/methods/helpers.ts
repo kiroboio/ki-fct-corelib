@@ -1,9 +1,9 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
-import { Param, Variable } from "@types";
 import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
+import { Param, Variable } from "../../types";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -13,7 +13,7 @@ import {
   verifyParam,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
-import { BatchMultiSigCall } from "../index";
+import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
 type DeepPartial<T> = T extends object
@@ -105,10 +105,10 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
 }
 
 export function setOptions(this: BatchMultiSigCall, options: DeepPartial<IFCTOptions>): IFCTOptions | undefined {
-  const mergedOptions = _.merge({ ...this.options }, options);
+  const mergedOptions = _.merge({ ...this._options }, options);
   verifyOptions(mergedOptions);
 
-  this.options = mergedOptions;
+  this._options = mergedOptions;
   return this.options;
 }
 
@@ -182,43 +182,34 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
     };
   }, {});
 
+  const FCTOptions = this.options;
+  const { recurrency, multisig } = FCTOptions;
   let optionalMessage = {};
   let optionalTypes = {};
   const primaryType = [];
 
-  if ("recurrency" in this.options) {
-    optionalMessage = {
+  if (Number(recurrency.maxRepeats) > 1) {
+    optionalMessage = _.merge(optionalMessage, {
       recurrency: {
-        max_repeats: this.options?.recurrency?.maxRepeats || "1",
-        chill_time: this.options?.recurrency?.chillTime || "0",
-        accumetable: this.options?.recurrency?.accumetable || false,
+        max_repeats: recurrency.maxRepeats,
+        chill_time: recurrency.chillTime,
+        accumetable: recurrency.accumetable,
       },
-    };
-    optionalTypes = {
-      Recurrency: [
-        { name: "max_repeats", type: "uint16" },
-        { name: "chill_time", type: "uint32" },
-        { name: "accumetable", type: "bool" },
-      ],
-    };
+    });
+
+    optionalTypes = _.merge(optionalTypes, { Recurrency: EIP712_RECURRENCY });
     primaryType.push({ name: "recurrency", type: "Recurrency" });
   }
 
-  if ("multisig" in this.options) {
-    optionalMessage = {
-      ...optionalMessage,
+  if (multisig.externalSigners.length > 0) {
+    optionalMessage = _.merge(optionalMessage, {
       multisig: {
-        external_signers: this.options?.multisig?.externalSigners,
-        minimum_approvals: this.options?.multisig?.minimumApprovals || 2,
+        external_signers: multisig.externalSigners,
+        minimum_approvals: multisig.minimumApprovals || "2",
       },
-    };
-    optionalTypes = {
-      ...optionalTypes,
-      Multisig: [
-        { name: "external_signers", type: "address[]" },
-        { name: "minimum_approvals", type: "uint8" },
-      ],
-    };
+    });
+
+    optionalTypes = _.merge(optionalTypes, { Multisig: EIP712_MULTISIG });
     primaryType.push({ name: "multisig", type: "Multisig" });
   }
 

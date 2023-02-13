@@ -1,5 +1,4 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
-import { EIP1559GasPrice, ITxValidator } from "@types";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
@@ -9,6 +8,7 @@ import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { utils } from "../batchMultiSigCall";
 import { parseCallID } from "../batchMultiSigCall/helpers";
 import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
+import { EIP1559GasPrice, ITxValidator } from "../types";
 import { getAllFCTPaths } from "./FCT";
 
 interface TransactionValidatorSuccess {

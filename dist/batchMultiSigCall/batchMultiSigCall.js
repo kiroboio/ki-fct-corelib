@@ -21,7 +21,7 @@ class BatchMultiSigCall {
         this.version = "0x010102";
         this.computedVariables = [];
         this.calls = [];
-        this.options = {
+        this._options = {
             maxGasPrice: "30000000000",
             validFrom: (0, helpers_1.getDate)(),
             expiresAt: (0, helpers_1.getDate)(7),
@@ -66,6 +66,21 @@ class BatchMultiSigCall {
         }
         if (input.options)
             this.setOptions(input.options);
+    }
+    get options() {
+        return {
+            ...this._options,
+            name: this._options.name || "",
+            recurrency: {
+                maxRepeats: this._options.recurrency?.maxRepeats || "1",
+                chillTime: this._options.recurrency?.chillTime || "0",
+                accumetable: this._options.recurrency?.accumetable || false,
+            },
+            multisig: {
+                externalSigners: this._options.multisig?.externalSigners || [],
+                minimumApprovals: this._options.multisig?.minimumApprovals || "1",
+            },
+        };
     }
     get length() {
         return this.calls.length;

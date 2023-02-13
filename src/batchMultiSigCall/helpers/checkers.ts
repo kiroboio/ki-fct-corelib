@@ -1,6 +1,7 @@
-import { IFCTOptions, Param } from "@types";
 import BigNumber from "bignumber.js";
 import { isAddress } from "ethers/lib/utils";
+
+import { IFCTOptions, Param } from "../../types";
 
 const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
 const mustBeAddress = ["builder"];
