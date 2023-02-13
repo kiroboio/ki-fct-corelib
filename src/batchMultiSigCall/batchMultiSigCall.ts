@@ -19,6 +19,9 @@ import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
 import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput } from "./types";
 
+// Create a type where we pass an object and make all the properties mandatory
+type Required<T> = T extends object ? { [P in keyof T]-?: Required<T[P]> } : T;
+
 export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
   protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
@@ -28,7 +31,7 @@ export class BatchMultiSigCall {
 
   protected computedVariables: ComputedVariables[] = [];
   calls: IMSCallInput[] = [];
-  options: IFCTOptions = {
+  protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
     expiresAt: getDate(7), // Expires after 7 days
@@ -51,6 +54,21 @@ export class BatchMultiSigCall {
 
   // Options
   public setOptions = setOptions;
+  get options(): Required<IFCTOptions> {
+    return {
+      ...this._options,
+      name: this._options.name || "",
+      recurrency: {
+        maxRepeats: this._options.recurrency?.maxRepeats || "1",
+        chillTime: this._options.recurrency?.chillTime || "0",
+        accumetable: this._options.recurrency?.accumetable || false,
+      },
+      multisig: {
+        externalSigners: this._options.multisig?.externalSigners || [],
+        minimumApprovals: this._options.multisig?.minimumApprovals || "1",
+      },
+    };
+  }
 
   // Plugin functions
   public getPlugin = getPlugin;

@@ -76,7 +76,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     throw new Error("No calls added");
   }
 
-  verifyOptions(this.options);
+  verifyOptions(this._options);
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const typedData = this.createTypedData(salt, this.version);
