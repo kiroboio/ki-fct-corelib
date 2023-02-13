@@ -1,11 +1,11 @@
 import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { Param } from "@types";
 import { BigNumber, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
+import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,

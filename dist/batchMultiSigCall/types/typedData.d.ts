@@ -1,5 +1,5 @@
-import { CALL_TYPE_MSG } from "@constants";
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
+import { CALL_TYPE_MSG } from "../../constants";
 import { FCTCallParam } from "./general";
 export interface IComputedVariable {
     index: string;

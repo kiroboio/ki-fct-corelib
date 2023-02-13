@@ -1,6 +1,6 @@
-import { IFCTOptions } from "@types";
 import { assert } from "chai";
 
+import { IFCTOptions } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 type DeepPartial<T> = T extends object
   ? {

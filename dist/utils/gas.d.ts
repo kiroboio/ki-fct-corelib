@@ -1,5 +1,5 @@
-import { EIP1559GasPrice, ITxValidator } from "@types";
 import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall } from "../batchMultiSigCall/types";
+import { EIP1559GasPrice, ITxValidator } from "../types";
 interface TransactionValidatorSuccess {
     isValid: true;
     txData: {

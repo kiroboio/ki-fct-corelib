@@ -1,9 +1,9 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
-import { Param, Variable } from "@types";
 import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
+import { Param, Variable } from "../../types";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,

@@ -1,7 +1,7 @@
-import { IMSCallInput } from "@types";
 import { utils } from "ethers";
 
 import { CALL_TYPE } from "../../constants";
+import { IMSCallInput } from "../../types";
 import { verifyParam } from "..//helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
