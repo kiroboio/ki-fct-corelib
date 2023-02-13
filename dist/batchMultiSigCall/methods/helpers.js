@@ -10,6 +10,7 @@ const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
 const fct_1 = require("../helpers/fct");
+const index_1 = require("../index");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
@@ -69,9 +70,9 @@ function getAllRequiredApprovals() {
 }
 exports.getAllRequiredApprovals = getAllRequiredApprovals;
 function setOptions(options) {
-    const mergedOptions = lodash_1.default.merge({ ...this.options }, options);
+    const mergedOptions = lodash_1.default.merge({ ...this._options }, options);
     (0, helpers_2.verifyOptions)(mergedOptions);
-    this.options = mergedOptions;
+    this._options = mergedOptions;
     return this.options;
 }
 exports.setOptions = setOptions;
@@ -129,41 +130,30 @@ function createTypedData(salt, version) {
             },
         };
     }, {});
+    const FCTOptions = this.options;
+    const { recurrency, multisig } = FCTOptions;
     let optionalMessage = {};
     let optionalTypes = {};
     const primaryType = [];
-    if ("recurrency" in this.options) {
-        optionalMessage = {
+    if (Number(recurrency.maxRepeats) > 1) {
+        optionalMessage = lodash_1.default.merge(optionalMessage, {
             recurrency: {
-                max_repeats: this.options?.recurrency?.maxRepeats || "1",
-                chill_time: this.options?.recurrency?.chillTime || "0",
-                accumetable: this.options?.recurrency?.accumetable || false,
+                max_repeats: recurrency.maxRepeats,
+                chill_time: recurrency.chillTime,
+                accumetable: recurrency.accumetable,
             },
-        };
-        optionalTypes = {
-            Recurrency: [
-                { name: "max_repeats", type: "uint16" },
-                { name: "chill_time", type: "uint32" },
-                { name: "accumetable", type: "bool" },
-            ],
-        };
+        });
+        optionalTypes = lodash_1.default.merge(optionalTypes, { Recurrency: index_1.EIP712_RECURRENCY });
         primaryType.push({ name: "recurrency", type: "Recurrency" });
     }
-    if ("multisig" in this.options) {
-        optionalMessage = {
-            ...optionalMessage,
+    if (multisig.externalSigners.length > 0) {
+        optionalMessage = lodash_1.default.merge(optionalMessage, {
             multisig: {
-                external_signers: this.options?.multisig?.externalSigners,
-                minimum_approvals: this.options?.multisig?.minimumApprovals || 2,
+                external_signers: multisig.externalSigners,
+                minimum_approvals: multisig.minimumApprovals || "2",
             },
-        };
-        optionalTypes = {
-            ...optionalTypes,
-            Multisig: [
-                { name: "external_signers", type: "address[]" },
-                { name: "minimum_approvals", type: "uint8" },
-            ],
-        };
+        });
+        optionalTypes = lodash_1.default.merge(optionalTypes, { Multisig: index_1.EIP712_MULTISIG });
         primaryType.push({ name: "multisig", type: "Multisig" });
     }
     const { structTypes, txTypes } = (0, helpers_2.getTxEIP712Types)(this.calls);
