@@ -21,3 +21,4 @@ export declare const CALL_TYPE_MSG: {
     VIEW_ONLY: string;
     LIBRARY: string;
 };
+export declare const FCT_VAULT_ADDRESS: "FCT_VAULT_ADDRESS";

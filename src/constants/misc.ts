@@ -28,3 +28,5 @@ export const CALL_TYPE_MSG = {
   VIEW_ONLY: "view only",
   LIBRARY: "library",
 };
+
+export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;

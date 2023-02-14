@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CALL_TYPE_MSG = exports.CALL_TYPE = exports.ComputedBaseBytes = exports.ComputedBase = exports.FDBackBaseBytes = exports.FDBackBase = exports.FDBaseBytes = exports.FDBase = exports.FCBaseBytes = exports.FCBase = exports.nullValue = exports.multicallContracts = void 0;
+exports.FCT_VAULT_ADDRESS = exports.CALL_TYPE_MSG = exports.CALL_TYPE = exports.ComputedBaseBytes = exports.ComputedBase = exports.FDBackBaseBytes = exports.FDBackBase = exports.FDBaseBytes = exports.FDBase = exports.FCBaseBytes = exports.FCBase = exports.nullValue = exports.multicallContracts = void 0;
 exports.multicallContracts = {
     1: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
     5: "0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e",
@@ -24,3 +24,4 @@ exports.CALL_TYPE_MSG = {
     VIEW_ONLY: "view only",
     LIBRARY: "library",
 };
+exports.FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";

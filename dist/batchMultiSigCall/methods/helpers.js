@@ -50,6 +50,15 @@ function getAllRequiredApprovals() {
             });
             const approvals = initPlugin.getRequiredApprovals();
             if (approvals.length > 0 && typeof call.from === "string") {
+                const manageValue = (value) => {
+                    if (!value) {
+                        return "";
+                    }
+                    if (value === constants_1.FCT_VAULT_ADDRESS && typeof call.from === "string") {
+                        return call.from;
+                    }
+                    return value;
+                };
                 const requiredApprovalsWithFrom = approvals
                     .filter((approval) => {
                     return Object.values(approval).every((value) => typeof value !== "undefined");
@@ -59,7 +68,7 @@ function getAllRequiredApprovals() {
                         token: approval.to ?? "",
                         spender: approval.spender ?? "",
                         requiredAmount: approval.amount ?? "",
-                        from: call.from,
+                        from: manageValue(approval.from),
                     };
                 });
                 requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
