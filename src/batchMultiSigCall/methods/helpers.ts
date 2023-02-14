@@ -1,7 +1,7 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import _ from "lodash";
 
-import { CALL_TYPE_MSG, flows } from "../../constants";
+import { CALL_TYPE_MSG, FCT_VAULT_ADDRESS, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
 import { Param, Variable } from "../../types";
 import {
@@ -83,6 +83,16 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
 
       const approvals = initPlugin.getRequiredApprovals();
       if (approvals.length > 0 && typeof call.from === "string") {
+        const manageValue = (value: string | undefined) => {
+          if (!value) {
+            return "";
+          }
+          if (value === FCT_VAULT_ADDRESS && typeof call.from === "string") {
+            return call.from;
+          }
+          return value;
+        };
+
         const requiredApprovalsWithFrom = approvals
           .filter((approval) => {
             return Object.values(approval).every((value) => typeof value !== "undefined");
@@ -92,7 +102,7 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
               token: approval.to ?? "",
               spender: approval.spender ?? "",
               requiredAmount: approval.amount ?? "",
-              from: call.from as string,
+              from: manageValue(approval.from),
             };
           });
 
