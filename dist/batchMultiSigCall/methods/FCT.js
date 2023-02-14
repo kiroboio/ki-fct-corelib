@@ -113,15 +113,19 @@ function importFCT(fct) {
                 .split(",")
                 .map((type, i) => `${type} ${dataTypes[i].name}`);
             const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
+            const handleValue = (value) => {
+                if (ethers_1.BigNumber.isBigNumber(value) || typeof value === "number") {
+                    return value.toString();
+                }
+                return value;
+            };
             params = dataTypes.map((t, i) => {
                 const realType = types[i].split(" ")[0];
                 return {
                     name: t.name,
                     type: t.type,
                     hashed: t.type === realType ? false : true,
-                    value: ethers_1.BigNumber.isBigNumber(decodedParams[t.name])
-                        ? decodedParams[t.name].toString()
-                        : decodedParams[t.name],
+                    value: handleValue(decodedParams[i]),
                 };
             });
         }
