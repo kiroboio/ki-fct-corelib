@@ -140,6 +140,13 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 
       const decodedParams = new AbiCoder().decode(types, call.data);
 
+      const handleValue = (value: any) => {
+        if (BigNumber.isBigNumber(value) || typeof value === "number") {
+          return value.toString();
+        }
+        return value;
+      };
+
       params = dataTypes.map((t, i) => {
         const realType = types[i].split(" ")[0];
 
@@ -147,9 +154,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
           name: t.name,
           type: t.type,
           hashed: t.type === realType ? false : true,
-          value: BigNumber.isBigNumber(decodedParams[t.name])
-            ? decodedParams[t.name].toString()
-            : decodedParams[t.name],
+          value: handleValue(decodedParams[i]),
         };
       });
     }

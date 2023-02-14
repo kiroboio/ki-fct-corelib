@@ -1,13 +1,11 @@
-import { ERC20, FCT_UNISWAP, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { AaveV2 } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import fs from "fs";
 import util from "util";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
-import data from "./scriptData";
 // import util from "util";
 
 dotenv.config();
@@ -47,97 +45,19 @@ async function main() {
     },
   });
 
-  console.log(batchMultiSigCall.options);
-
-  const swapWithoutSlippage = new FCT_UNISWAP.actions.SwapNoSlippageProtection({
-    chainId: "5",
-    initParams: {
-      methodParams: {
-        amount: "1000000",
-        method: keccak256(toUtf8Bytes("swap <amount> Tokens for <X> ETH")),
-        path: [data[chainId].KIRO, data[chainId].USDC],
-      },
-    },
+  const deposit = new AaveV2.actions.Deposit({
+    chainId,
   });
 
-  const swap = new Uniswap.actions.UniswapV2SwapExactTokensForETH({
-    chainId: "1",
-  });
-
-  swap.input.set({
+  deposit.input.set({
     methodParams: {
-      amountIn: "1000",
-      amountOutMin: "1",
-      path: [data[chainId].KIRO, data[chainId].USDC],
-      to: vault,
+      amount: "1000000000000000000",
+      asset: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      onBehalfOf: vault,
     },
   });
 
-  swap.input.methodParams.amountIn.set({ value: "1000" });
-
-  const transfer = new ERC20.actions.Transfer({
-    chainId: "1",
-    initParams: {
-      to: data[chainId].KIRO,
-      methodParams: {
-        recipient: wallet,
-        amount: ethers.utils.parseUnits("0.0001", 18).toString(),
-      },
-    },
-  });
-
-  await batchMultiSigCall.createMultiple([
-    // {
-    //   from: vault,
-    //   method: "swap_noSlippageProtection",
-    //   to: data[chainId].KIRO,
-    //   options: {
-    //     flow: constants.Flow.OK_CONT_FAIL_STOP,
-    //   },
-    //   params: [
-    //     {
-    //       name: "amount",
-    //       type: "uint256",
-    //       value: "1000000",
-    //       customType: false,
-    //       hashed: false,
-    //     },
-    //     {
-    //       name: "method",
-    //       type: "string",
-    //       value: "swap <amount> ETH for <X> Tokens",
-    //       customType: false,
-    //       hashed: true,
-    //     },
-    //     {
-    //       name: "path",
-    //       type: "address[]",
-    //       value: ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
-    //       customType: false,
-    //       hashed: false,
-    //     },
-    //   ],
-    //   nodeId: "1",
-    // },
-    { plugin: transfer, from: vault, nodeId: "3" },
-    // { plugin: transfer, from: vault, nodeId: "4" },
-    // { plugin: swapWithoutSlippage, from: vault, nodeId: "5" },
-    // {
-    //   from: vault,
-    //   method: "swap_noSlippageProtection",
-    //   to: data[chainId].KIRO,
-    //   params: [
-    //     {
-    //       name: "amount",
-    //       type: "uint256",
-    //       value: { type: "output", id: { nodeId: "1", innerIndex: 9 } },
-    //       customType: false,
-    //       hashed: false,
-    //     },
-    //   ],
-    //   nodeId: "15",
-    // },
-  ]);
+  await batchMultiSigCall.createMultiple([{ plugin: deposit, from: vault, nodeId: "3" }]);
 
   const FCT = batchMultiSigCall.exportFCT();
   console.log(util.inspect(FCT, false, null, true /* enable colors */));
@@ -193,7 +113,7 @@ async function main() {
 
   // console.log(fees);
 
-  fs.writeFileSync("Lior_ERC20Transfer.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()
