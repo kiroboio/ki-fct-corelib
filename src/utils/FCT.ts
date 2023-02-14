@@ -11,8 +11,8 @@ import {
   TypedDataTypes,
 } from "../batchMultiSigCall/types";
 
-function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT {
-  return [
+function validateFCTKeys(keys: string[]) {
+  const validKeys = [
     "typeHash",
     "typedData",
     "sessionId",
@@ -23,7 +23,12 @@ function isFCTKeyType(keyInput: string): keyInput is keyof IBatchMultiSigCallFCT
     "externalSigners",
     "computed",
     "signatures",
-  ].includes(keyInput);
+  ];
+  validKeys.forEach((key) => {
+    if (!keys.includes(key)) {
+      throw new Error(`FCT missing key ${key}`);
+    }
+  });
 }
 
 export const recoverAddressFromEIP712 = (
@@ -52,10 +57,7 @@ export const getFCTMessageHash = (typedData: BatchMultiSigCallTypedData): string
 
 export const validateFCT = <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softValidation = false) => {
   const keys = Object.keys(FCT);
-
-  if (!keys.every(isFCTKeyType)) {
-    throw new Error(`FCT has invalid keys`);
-  }
+  validateFCTKeys(keys);
 
   const limits = FCT.typedData.message.limits;
   const fctData = FCT.typedData.message.meta;
