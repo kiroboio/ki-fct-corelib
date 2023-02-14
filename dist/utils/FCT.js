@@ -5,8 +5,8 @@ const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
 const helpers_1 = require("../batchMultiSigCall/helpers");
-function isFCTKeyType(keyInput) {
-    return [
+function validateFCTKeys(keys) {
+    const validKeys = [
         "typeHash",
         "typedData",
         "sessionId",
@@ -17,7 +17,12 @@ function isFCTKeyType(keyInput) {
         "externalSigners",
         "computed",
         "signatures",
-    ].includes(keyInput);
+    ];
+    validKeys.forEach((key) => {
+        if (!keys.includes(key)) {
+            throw new Error(`FCT missing key ${key}`);
+        }
+    });
 }
 const recoverAddressFromEIP712 = (typedData, signature) => {
     try {
@@ -40,9 +45,7 @@ const getFCTMessageHash = (typedData) => {
 exports.getFCTMessageHash = getFCTMessageHash;
 const validateFCT = (FCT, softValidation = false) => {
     const keys = Object.keys(FCT);
-    if (!keys.every(isFCTKeyType)) {
-        throw new Error(`FCT has invalid keys`);
-    }
+    validateFCTKeys(keys);
     const limits = FCT.typedData.message.limits;
     const fctData = FCT.typedData.message.meta;
     const currentDate = new Date().getTime() / 1000;

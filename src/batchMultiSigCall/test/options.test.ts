@@ -79,8 +79,9 @@ describe("FCT Options Errors", () => {
       message: "Options: recurrency.maxRepeats cannot be negative",
     });
     catchError({
-      param: { recurrency: { maxRepeats: "1" } },
-      message: "Options: recurrency.maxRepeats should be at least 2",
+      param: { recurrency: { maxRepeats: "0" } },
+      message:
+        "Options: recurrency.maxRepeats should be at least 1. If value is 1, recurrency will not be enabled in order to save gas",
     });
   });
 });
