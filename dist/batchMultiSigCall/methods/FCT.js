@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createMultiple = exports.create = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const fct_1 = require("batchMultiSigCall/helpers/fct");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
@@ -25,8 +26,27 @@ async function create(callInput) {
             nodeId: callInput.nodeId,
         };
     }
+    else if ("abi" in callInput) {
+        const { value, encodedData, abi, options, nodeId } = callInput;
+        const iface = new ethers_1.ethers.utils.Interface(abi);
+        // Create a function that generates random nodeId
+        const generateNodeId = () => [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        const { name, args, value: txValue, functionFragment: { inputs }, } = iface.parseTransaction({
+            data: encodedData,
+            value: typeof value === "string" ? value : "0",
+        });
+        call = {
+            from: callInput.from,
+            to: callInput.to,
+            method: name,
+            params: (0, fct_1.getParamsFromInputs)(inputs, args),
+            options,
+            value: txValue?.toString(),
+            nodeId: nodeId || generateNodeId(),
+        };
+    }
     else {
-        call = { ...callInput };
+        call = callInput;
     }
     // Before adding the call, we check if it is valid
     this.verifyCall(call);

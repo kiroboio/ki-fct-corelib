@@ -22,7 +22,7 @@ const getTxEIP712Types = (calls) => {
             paramValue = param.value;
         }
         else {
-            throw new Error("Invalid param value");
+            throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
         }
         let customCount = 0;
         const eip712Type = paramValue.map((item) => {

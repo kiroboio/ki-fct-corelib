@@ -1,6 +1,8 @@
+import { JsonFragment } from "@ethersproject/abi";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { ABI, CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
+import { Fragment } from "ethers/lib/utils";
+import { CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
@@ -48,8 +50,16 @@ export interface IWithPlugin {
 }
 export interface CallWithEncodedData {
     nodeId?: string;
-    abi: ABI;
+    abi: ReadonlyArray<Fragment | JsonFragment>;
+    encodedData: string;
+    to: string | Variable;
 }
+export type FCTCall = (IMSCallInput | IWithPlugin | CallWithEncodedData) & {
+    nodeId?: string;
+    from: string | Variable;
+    value?: string | Variable;
+    options?: CallOptions;
+};
 export interface MSCall {
     typeHash: string;
     ensHash: string;
