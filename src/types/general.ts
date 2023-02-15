@@ -1,3 +1,5 @@
+import { Fragment } from "ethers/lib/utils";
+
 import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
@@ -21,7 +23,6 @@ export interface Param {
 export interface MethodParamsInterface {
   method: string;
   params: Param[];
-  // validator?: IValidator;
   to?: string | Variable;
 }
 
@@ -35,14 +36,6 @@ export interface CallOptions {
   callType?: CallType;
 }
 
-// export interface IValidator {
-//   method: string;
-//   params: {
-//     [key: string]: string | Variable;
-//   };
-//   validatorAddress: string;
-// }
-
 export interface IPluginCall {
   value?: string | Variable;
   to: string | Variable;
@@ -50,3 +43,5 @@ export interface IPluginCall {
   params: Param[];
   options?: CallOptions;
 }
+
+export type ABI = ReadonlyArray<Fragment>;
