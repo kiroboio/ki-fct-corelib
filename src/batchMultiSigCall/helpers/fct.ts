@@ -1,6 +1,7 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { ethers } from "ethers";
 
-import { MethodParamsInterface } from "../../types";
+import { MethodParamsInterface, Param } from "../../types";
 import { TypedDataDomain } from "../types";
 
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
@@ -41,4 +42,30 @@ export const generateTxType = (item: Partial<MethodParamsInterface>): { name: st
   }
 
   return [{ name: "details", type: "Transaction_" }];
+};
+
+export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: ethers.utils.Result): Param[] => {
+  return inputs.map((input) => {
+    if (input.type === "tuple") {
+      return {
+        name: input.name,
+        type: input.type,
+        customType: true,
+        value: getParamsFromInputs(input.components, values[input.name]),
+      };
+    }
+    if (input.type === "tuple[]") {
+      return {
+        name: input.name,
+        type: input.type,
+        customType: true,
+        value: values[input.name].map((tuple: ethers.utils.Result) => getParamsFromInputs(input.components, tuple)),
+      };
+    }
+    return {
+      name: input.name,
+      type: input.type,
+      value: values[input.name],
+    };
+  });
 };

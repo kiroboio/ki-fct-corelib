@@ -1,6 +1,7 @@
 import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { BigNumber, utils } from "ethers";
+import { getParamsFromInputs } from "batchMultiSigCall/helpers/fct";
+import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
@@ -19,9 +20,9 @@ import {
   parseSessionID,
   verifyOptions,
 } from "../helpers";
-import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
+import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
 
-export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]> {
+export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInput[]> {
   let call: IMSCallInput;
   if ("plugin" in callInput) {
     const pluginCall = await callInput.plugin.create();
@@ -34,8 +35,34 @@ export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | 
       options: { ...pluginCall.options, ...callInput.options },
       nodeId: callInput.nodeId,
     };
+  } else if ("abi" in callInput) {
+    const { value, encodedData, abi, options, nodeId } = callInput;
+    const iface = new ethers.utils.Interface(abi);
+
+    // Create a function that generates random nodeId
+    const generateNodeId = () => [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+
+    const {
+      name,
+      args,
+      value: txValue,
+      functionFragment: { inputs },
+    } = iface.parseTransaction({
+      data: encodedData,
+      value: typeof value === "string" ? value : "0",
+    });
+
+    call = {
+      from: callInput.from,
+      to: callInput.to,
+      method: name,
+      params: getParamsFromInputs(inputs, args),
+      options,
+      value: txValue?.toString(),
+      nodeId: nodeId || generateNodeId(),
+    };
   } else {
-    call = { ...callInput };
+    call = callInput;
   }
 
   // Before adding the call, we check if it is valid

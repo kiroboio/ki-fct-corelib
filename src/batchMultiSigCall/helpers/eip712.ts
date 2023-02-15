@@ -28,7 +28,7 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
     } else if (isInstanceOfTuple(param.value, param)) {
       paramValue = param.value;
     } else {
-      throw new Error("Invalid param value");
+      throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
     }
 
     let customCount = 0;
