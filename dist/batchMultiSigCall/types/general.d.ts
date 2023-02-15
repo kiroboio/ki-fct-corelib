@@ -1,6 +1,6 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
+import { ABI, CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
@@ -29,7 +29,7 @@ export interface IBatchMultiSigCallFCT {
 }
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
 export interface IMSCallInput {
-    nodeId: string;
+    nodeId?: string;
     value?: string | Variable;
     to: string | Variable;
     from: string | Variable;
@@ -37,6 +37,18 @@ export interface IMSCallInput {
     method?: string;
     toENS?: string;
     options?: CallOptions;
+}
+export interface IWithPlugin {
+    nodeId?: string;
+    plugin: {
+        create(): Promise<IPluginCall | undefined>;
+    };
+    from: string;
+    options?: CallOptions;
+}
+export interface CallWithEncodedData {
+    nodeId?: string;
+    abi: ABI;
 }
 export interface MSCall {
     typeHash: string;
@@ -69,14 +81,6 @@ export interface IFCTOptions {
     };
 }
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
-export interface IWithPlugin {
-    nodeId: string;
-    plugin: {
-        create(): Promise<IPluginCall | undefined>;
-    };
-    from: string;
-    options?: CallOptions;
-}
 export interface IComputed {
     variable: string | Variable;
     add?: string;

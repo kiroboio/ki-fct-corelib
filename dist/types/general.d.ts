@@ -1,3 +1,4 @@
+import { Fragment } from "ethers/lib/utils";
 import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
@@ -45,3 +46,4 @@ export interface IPluginCall {
     params: Param[];
     options?: CallOptions;
 }
+export type ABI = ReadonlyArray<Fragment>;
