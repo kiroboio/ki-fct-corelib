@@ -100,7 +100,7 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
           .map((approval) => {
             return {
               token: approval.to ?? "",
-              spender: approval.spender ?? "",
+              spender: manageValue(approval.spender),
               requiredAmount: approval.amount ?? "",
               from: manageValue(approval.from),
             };
