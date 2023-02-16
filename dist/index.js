@@ -26,8 +26,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FCTBatchMultiSigCall = exports.variables = exports.utils = exports.constants = exports.ethers = void 0;
+exports.FCTBatchMultiSigCall = exports.variables = exports.utils = exports.constants = exports.ethers = exports.pluginUtils = void 0;
 __exportStar(require("@kirobo/ki-eth-fct-provider-ts"), exports);
+var ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+Object.defineProperty(exports, "pluginUtils", { enumerable: true, get: function () { return ki_eth_fct_provider_ts_1.utils; } });
 var ethers_1 = require("ethers");
 Object.defineProperty(exports, "ethers", { enumerable: true, get: function () { return ethers_1.ethers; } });
 // Utils exports
