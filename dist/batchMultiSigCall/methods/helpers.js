@@ -51,11 +51,11 @@ function getAllRequiredApprovals() {
             const approvals = initPlugin.getRequiredApprovals();
             if (approvals.length > 0 && typeof call.from === "string") {
                 const manageValue = (value) => {
-                    if (!value) {
-                        return "";
-                    }
                     if (value === constants_1.FCT_VAULT_ADDRESS && typeof call.from === "string") {
                         return call.from;
+                    }
+                    if (!value) {
+                        return "";
                     }
                     return value;
                 };
@@ -68,7 +68,7 @@ function getAllRequiredApprovals() {
                         token: approval.to ?? "",
                         spender: manageValue(approval.spender),
                         requiredAmount: approval.amount ?? "",
-                        from: manageValue(approval.from),
+                        from: approval.from || (typeof call.from === "string" ? call.from : ""),
                     };
                 });
                 requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
