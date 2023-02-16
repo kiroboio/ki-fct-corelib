@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EIP712_MULTISIG = exports.EIP712_RECURRENCY = exports.addresses = void 0;
+exports.DEFAULT_CALL_OPTIONS = exports.NO_JUMP = exports.EIP712_MULTISIG = exports.EIP712_RECURRENCY = exports.addresses = void 0;
+const flows_1 = require("../constants/flows");
 exports.addresses = {
     1: {
         // NOTE: These addresses are not correct since no contracts have been deployed on mainnet
@@ -30,3 +31,13 @@ exports.EIP712_MULTISIG = [
     { name: "external_signers", type: "address[]" },
     { name: "minimum_approvals", type: "uint8" },
 ];
+exports.NO_JUMP = "NO_JUMP";
+exports.DEFAULT_CALL_OPTIONS = {
+    permissions: "0000",
+    gasLimit: "0",
+    flow: flows_1.Flow.OK_CONT_FAIL_REVERT,
+    jumpOnSuccess: exports.NO_JUMP,
+    jumpOnFail: exports.NO_JUMP,
+    falseMeansFail: false,
+    callType: "ACTION",
+};
