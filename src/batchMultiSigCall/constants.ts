@@ -36,15 +36,6 @@ export const EIP712_MULTISIG = [
 
 export const NO_JUMP = "NO_JUMP";
 
-// export interface CallOptions {
-//   gasLimit?: string;
-//   flow?: Flow;
-//   jumpOnSuccess?: string;
-//   jumpOnFail?: string;
-//   falseMeansFail?: boolean;
-//   callType?: CallType;
-// }
-
 export const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions> = {
   permissions: "0000",
   gasLimit: "0",

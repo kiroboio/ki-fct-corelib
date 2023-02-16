@@ -52,7 +52,7 @@ describe("BatchMultiSigCall", () => {
       },
     });
 
-    const calls = await batchMultiSigCall.create({
+    const call = await batchMultiSigCall.create({
       nodeId: "node1",
       from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
       plugin: transfer,
@@ -61,7 +61,7 @@ describe("BatchMultiSigCall", () => {
       },
     });
 
-    expect(calls).to.be.an("array");
+    expect(call).to.be.an("object");
 
     const FCT = batchMultiSigCall.exportFCT();
 
@@ -299,11 +299,53 @@ describe("BatchMultiSigCall", () => {
       chainId: "5",
     });
 
+    FCT.setFromAddress("0x4f631612941F710db646B8290dB097bFB8657dC2");
+
     const iface = new ethers.utils.Interface(ABI);
 
     const encodedData = iface.encodeFunctionData("setActivationApproval", [
       "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
       [true, true, true, true],
     ]);
+
+    const call = await FCT.create({
+      encodedData,
+      abi: ABI,
+      to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    });
+    const params = call.params as any;
+
+    expect(call).to.be.an("object");
+
+    expect(params[0]).to.eql({
+      name: "operator",
+      type: "address",
+      value: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+    });
+    expect(params[1]).to.eql({
+      name: "approvals",
+      type: "tuple",
+      customType: true,
+      value: [
+        { name: "activate", type: "bool", value: true },
+        { name: "activateBatch", type: "bool", value: true },
+        { name: "activateForFree", type: "bool", value: true },
+        { name: "activateForFreeBatch", type: "bool", value: true },
+      ],
+    });
+
+    const FCTExport = FCT.exportFCT();
+
+    expect(FCTExport).to.be.an("object");
+
+    expect(FCTExport.typedData.message["transaction_1"].operator).to.eq("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
+    expect(FCTExport.typedData.message["transaction_1"].approvals).to.eql({
+      activate: true,
+      activateBatch: true,
+      activateForFree: true,
+      activateForFreeBatch: true,
+    });
+
+    expect(FCTExport.mcall[0].data).to.eq(`0x${encodedData.slice(10)}`);
   });
 });

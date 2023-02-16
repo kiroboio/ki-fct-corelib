@@ -34,12 +34,12 @@ export function verifyCall(this: BatchMultiSigCall, call: IMSCallInput) {
     isAddress(call.to, "To");
   }
 
-  // From address validator
-  if (!call.from) {
-    throw new Error("From address is required");
-  } else if (typeof call.from === "string") {
-    isAddress(call.from, "From");
-  }
+  // // From address validator
+  // if (!call.from) {
+  //   throw new Error("From address is required");
+  // } else if (typeof call.from === "string") {
+  //   isAddress(call.from, "From");
+  // }
 
   // Value validator
   if (call.value && typeof call.value === "string") {

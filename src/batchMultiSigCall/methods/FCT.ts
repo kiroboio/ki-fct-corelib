@@ -6,7 +6,7 @@ import { AbiCoder } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { Param } from "../../types";
+import { Param, RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,
@@ -22,18 +22,28 @@ import {
 } from "../helpers";
 import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
 
-export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInput> {
-  let call: IMSCallInput;
+// Generate nodeId for a call
+export function generateNodeId(): string {
+  return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+}
+
+export async function create(
+  this: BatchMultiSigCall,
+  callInput: FCTCall
+): Promise<RequiredKeys<IMSCallInput, "nodeId">> {
+  let call: RequiredKeys<IMSCallInput, "nodeId">;
+
   if ("plugin" in callInput) {
     const pluginCall = await callInput.plugin.create();
     if (pluginCall === undefined) {
       throw new Error("Error creating call with plugin. Make sure input values are valid");
     }
+
     call = {
       ...pluginCall,
       from: callInput.from,
       options: { ...pluginCall.options, ...callInput.options },
-      nodeId: callInput.nodeId,
+      nodeId: callInput.nodeId || generateNodeId(),
     };
   } else if ("abi" in callInput) {
     const { value, encodedData, abi, options, nodeId } = callInput;
@@ -56,10 +66,10 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
       params: getParamsFromInputs(inputs, args),
       options,
       value: txValue?.toString(),
-      nodeId,
+      nodeId: nodeId || generateNodeId(),
     };
   } else {
-    call = callInput;
+    call = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
   }
 
   // Check if call doesnt have nodeId. If not, generate one
@@ -69,19 +79,17 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
 
   // Before adding the call, we check if it is valid
   this.verifyCall(call);
-
   this.calls.push(call);
 
   return call;
 }
 
-export async function createMultiple(
-  this: BatchMultiSigCall,
-  calls: (IMSCallInput | IWithPlugin)[]
-): Promise<IMSCallInput[]> {
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInput[]> {
+  const callsCreated: IMSCallInput[] = [];
   for (const [index, call] of calls.entries()) {
     try {
-      await this.create(call);
+      const createdCall = await this.create(call);
+      callsCreated.push(createdCall);
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(`Error creating call ${index + 1}: ${err.message}`);
@@ -100,6 +108,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   this.computedVariables = [];
+  const calls = this.strictCalls;
 
   if (this.calls.length === 0) {
     throw new Error("No calls added");
@@ -111,7 +120,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   const typedData = this.createTypedData(salt, this.version);
   const sessionId: string = getSessionId(salt, this.version, this.options);
 
-  const mcall = this.calls.map((call, index) => {
+  const mcall = calls.map((call, index) => {
     const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
 
     return {

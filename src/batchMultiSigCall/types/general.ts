@@ -3,7 +3,7 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { Fragment } from "ethers/lib/utils";
 
-import { CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
+import { CallOptions, DeepRequired, IPluginCall, Param, RequiredKeys, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
@@ -35,8 +35,8 @@ export interface IBatchMultiSigCallFCT {
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
 
 export interface MSCallMandatory {
-  nodeId: string;
-  from: string | Variable;
+  nodeId?: string;
+  from?: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
 }
@@ -47,6 +47,9 @@ export type IMSCallInput = {
   toENS?: string;
 } & MSCallMandatory;
 
+export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
+  options: DeepRequired<CallOptions>;
+};
 export type IWithPlugin = {
   plugin: {
     create(): Promise<IPluginCall | undefined>;
