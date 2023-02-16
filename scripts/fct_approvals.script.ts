@@ -1,4 +1,4 @@
-import { ERC20, Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
+import { Uniswap } from "@kirobo/ki-eth-fct-provider-ts";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 
@@ -23,7 +23,7 @@ function addHours(numOfHours: number, date = new Date()) {
   return Number(date.getTime() / 1000).toFixed();
 }
 
-const chainId = 1;
+const chainId = "5";
 const wallet = process.env.WALLET as string;
 
 async function main() {
@@ -31,8 +31,7 @@ async function main() {
   const key = process.env.PRIVATE_KEY as string;
 
   const batchMultiSigCall = new BatchMultiSigCall({
-    provider: new ethers.providers.JsonRpcProvider(data[chainId].rpcUrl),
-    contractAddress: "0x8e5bBbb09Ed1ebdE8674Cda39A0c169401db4252",
+    chainId: "5",
   });
 
   batchMultiSigCall.setOptions({
@@ -42,17 +41,6 @@ async function main() {
       accumetable: true,
       maxRepeats: "1000",
       chillTime: "1",
-    },
-  });
-
-  const transfer = new ERC20.actions.Transfer({
-    chainId: "1",
-    initParams: {
-      to: data[chainId].KIRO,
-      methodParams: {
-        recipient: wallet,
-        amount: ethers.utils.parseUnits("1", 18).toString(),
-      },
     },
   });
 
@@ -78,10 +66,9 @@ async function main() {
       to: data[chainId].KIRO,
     },
     { plugin: swap, nodeId: "2", from: vault },
-    // { plugin: transfer, from: vault, nodeId: "3" },
   ]);
 
-  const requiredApprovals = await batchMultiSigCall.getAllRequiredApprovals();
+  const requiredApprovals = batchMultiSigCall.getAllRequiredApprovals();
   console.log("approvals from core lib", requiredApprovals);
 
   const approvals = await utils.fetchCurrentApprovals({
