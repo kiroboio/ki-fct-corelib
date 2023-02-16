@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { CALL_TYPE_MSG, FCT_VAULT_ADDRESS, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
-import { Param, Variable } from "../../types";
+import { DeepPartial, Param, Variable } from "../../types";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -15,12 +15,6 @@ import {
 import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
-
-type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
 
 export function getCalldataForActuator(
   this: BatchMultiSigCall,

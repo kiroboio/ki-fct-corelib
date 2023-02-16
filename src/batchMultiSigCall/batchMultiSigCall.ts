@@ -4,8 +4,9 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
+import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
-import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
+import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT, setFromAddress } from "./methods/FCT";
 import {
   createTypedData,
   getAllRequiredApprovals,
@@ -32,8 +33,9 @@ export class BatchMultiSigCall {
   protected version = "0x010102";
   protected chainId: ChainId;
 
+  public fromAddress: string;
   protected computedVariables: ComputedVariables[] = [];
-  calls: IMSCallInput[] = [];
+  protected _calls: IMSCallInput[] = [];
   protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
@@ -73,6 +75,17 @@ export class BatchMultiSigCall {
     };
   }
 
+  get calls(): IMSCallInput[] {
+    return this._calls.map((call) => {
+      return {
+        ...call,
+        from: this.fromAddress || call.from,
+        value: call.value || "0",
+        options: call.options || DEFAULT_CALL_OPTIONS,
+      };
+    });
+  }
+
   // Plugin functions
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
@@ -84,6 +97,7 @@ export class BatchMultiSigCall {
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
+  public setFromAddress = setFromAddress;
 
   // Utility functions
   public getPluginData = getPluginData;

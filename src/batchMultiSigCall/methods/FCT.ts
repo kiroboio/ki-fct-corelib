@@ -22,7 +22,7 @@ import {
 } from "../helpers";
 import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
 
-export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInput[]> {
+export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInput> {
   let call: IMSCallInput;
   if ("plugin" in callInput) {
     const pluginCall = await callInput.plugin.create();
@@ -38,9 +38,6 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
   } else if ("abi" in callInput) {
     const { value, encodedData, abi, options, nodeId } = callInput;
     const iface = new ethers.utils.Interface(abi);
-
-    // Create a function that generates random nodeId
-    const generateNodeId = () => [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
     const {
       name,
@@ -59,10 +56,15 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
       params: getParamsFromInputs(inputs, args),
       options,
       value: txValue?.toString(),
-      nodeId: nodeId || generateNodeId(),
+      nodeId,
     };
   } else {
     call = callInput;
+  }
+
+  // Check if call doesnt have nodeId. If not, generate one
+  if (!call.nodeId) {
+    call.nodeId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   }
 
   // Before adding the call, we check if it is valid
@@ -70,7 +72,7 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
 
   this.calls.push(call);
 
-  return this.calls;
+  return call;
 }
 
 export async function createMultiple(
@@ -350,4 +352,8 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   }
 
   return this.calls;
+}
+
+export function setFromAddress(this: BatchMultiSigCall, address: string) {
+  this.fromAddress = address;
 }

@@ -26,6 +26,7 @@ export interface MethodParamsInterface {
 
 export type CallType = keyof typeof CALL_TYPE;
 export interface CallOptions {
+  permissions?: string;
   gasLimit?: string;
   flow?: Flow;
   jumpOnSuccess?: string;

@@ -34,40 +34,33 @@ export interface IBatchMultiSigCallFCT {
 
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
 
-export interface IMSCallInput {
-  nodeId?: string;
-  value?: string | Variable;
-  to: string | Variable;
+export interface MSCallMandatory {
+  nodeId: string;
   from: string | Variable;
+  value?: string | Variable;
+  options?: CallOptions;
+}
+export type IMSCallInput = {
+  to: string | Variable;
   params?: Param[];
   method?: string;
   toENS?: string;
-  // validator?: IValidator;
-  options?: CallOptions;
-}
+} & MSCallMandatory;
 
-export interface IWithPlugin {
-  nodeId?: string;
+export type IWithPlugin = {
   plugin: {
     create(): Promise<IPluginCall | undefined>;
   };
-  from: string;
-  options?: CallOptions;
-}
+} & MSCallMandatory;
 
-export interface CallWithEncodedData {
+export type IMSCallWithEncodedData = {
   nodeId?: string;
   abi: ReadonlyArray<Fragment | JsonFragment>;
   encodedData: string;
   to: string | Variable;
-}
+} & MSCallMandatory;
 
-export type FCTCall = (IMSCallInput | IWithPlugin | CallWithEncodedData) & {
-  nodeId?: string;
-  from: string | Variable;
-  value?: string | Variable;
-  options?: CallOptions;
-};
+export type FCTCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData;
 
 export interface MSCall {
   typeHash: string;

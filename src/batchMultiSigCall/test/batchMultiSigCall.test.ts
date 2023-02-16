@@ -1,5 +1,6 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
+import { ethers } from "ethers";
 
 import { Flow } from "../../constants";
 import { parseCallID } from "../helpers";
@@ -269,5 +270,40 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT.computed[0].variable).to.eq("0xFD00000000000000000000000000000000000001");
     expect(FCT.computed[0].sub).to.eq("10");
+  });
+  it("Should create FCT with encoded data and ABI", async () => {
+    const ABI = [
+      {
+        inputs: [
+          { internalType: "address", name: "operator", type: "address" },
+          {
+            components: [
+              { internalType: "bool", name: "activate", type: "bool" },
+              { internalType: "bool", name: "activateBatch", type: "bool" },
+              { internalType: "bool", name: "activateForFree", type: "bool" },
+              { internalType: "bool", name: "activateForFreeBatch", type: "bool" },
+            ],
+            internalType: "struct IFCT_ActuatorStorage.Approvals",
+            name: "approvals",
+            type: "tuple",
+          },
+        ],
+        name: "setActivationApproval",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+    ];
+
+    const FCT = new BatchMultiSigCall({
+      chainId: "5",
+    });
+
+    const iface = new ethers.utils.Interface(ABI);
+
+    const encodedData = iface.encodeFunctionData("setActivationApproval", [
+      "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+      [true, true, true, true],
+    ]);
   });
 });

@@ -1,3 +1,7 @@
+import { CallOptions, DeepRequired } from "types";
+
+import { Flow } from "../constants/flows";
+
 export const addresses = {
   1: {
     // NOTE: These addresses are not correct since no contracts have been deployed on mainnet
@@ -29,3 +33,24 @@ export const EIP712_MULTISIG = [
   { name: "external_signers", type: "address[]" },
   { name: "minimum_approvals", type: "uint8" },
 ];
+
+export const NO_JUMP = "NO_JUMP";
+
+// export interface CallOptions {
+//   gasLimit?: string;
+//   flow?: Flow;
+//   jumpOnSuccess?: string;
+//   jumpOnFail?: string;
+//   falseMeansFail?: boolean;
+//   callType?: CallType;
+// }
+
+export const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions> = {
+  permissions: "0000",
+  gasLimit: "0",
+  flow: Flow.OK_CONT_FAIL_REVERT,
+  jumpOnSuccess: NO_JUMP,
+  jumpOnFail: NO_JUMP,
+  falseMeansFail: false,
+  callType: "ACTION",
+};

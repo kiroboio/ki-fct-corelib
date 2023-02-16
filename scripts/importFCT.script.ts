@@ -73,6 +73,12 @@ async function main() {
 
   console.log(encodedData);
 
+  await FCT.create({
+    abi: ABI,
+    encodedData: encodedData,
+    to: "0x00ab7c8803962c0f2f5bbbe3fa8bf41cd82aa1923c",
+  });
+
   // const data =
   //   "0x23b872dd0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72000000000000000000000000ab7c8803962c0f2f5bbbe3fa8bf41cd82aa1923c0000000000000000000000000000000000000000000000000de0b6b3a7640000";
   // const value = parseEther("1.0");
