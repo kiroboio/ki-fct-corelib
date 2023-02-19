@@ -1,6 +1,5 @@
-import { NO_JUMP } from "batchMultiSigCall/constants";
-
 import { CALL_TYPE, Flow, flows } from "../../constants";
+import { NO_JUMP } from "../constants";
 import { IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
