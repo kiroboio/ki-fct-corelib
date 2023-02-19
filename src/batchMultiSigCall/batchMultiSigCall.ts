@@ -11,6 +11,7 @@ import { verifyCall } from "./methods/checkers";
 import {
   create,
   createMultiple,
+  createPlugin,
   createWithEncodedData,
   createWithPlugin,
   exportFCT,
@@ -111,6 +112,7 @@ export class BatchMultiSigCall {
   // Plugin functions
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
+  public createPlugin = createPlugin;
 
   // FCT Functions
   public create = create;

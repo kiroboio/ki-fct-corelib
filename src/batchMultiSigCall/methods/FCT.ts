@@ -1,4 +1,4 @@
-import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
+import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { getParamsFromInputs } from "batchMultiSigCall/helpers/fct";
 import { BigNumber, ethers, utils } from "ethers";
@@ -35,10 +35,7 @@ export function generateNodeId(): string {
   return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
-export async function create(
-  this: BatchMultiSigCall,
-  callInput: FCTCall
-): Promise<RequiredKeys<IMSCallInput, "nodeId">> {
+export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId> {
   if ("plugin" in callInput) {
     return await this.createWithPlugin(callInput);
   } else if ("abi" in callInput) {
@@ -58,8 +55,8 @@ export async function create(
   }
 }
 
-export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInput[]> {
-  const callsCreated: IMSCallInput[] = [];
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {
+  const callsCreated: IMSCallInputWithNodeId[] = [];
   for (const [index, call] of calls.entries()) {
     try {
       const createdCall = await this.create(call);
@@ -128,6 +125,12 @@ export async function createWithEncodedData(
   this.calls.push(data);
 
   return data;
+}
+
+export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
+  return new Plugin({
+    chainId: this.chainId,
+  });
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
