@@ -12,6 +12,7 @@ import {
   create,
   createMultiple,
   createWithEncodedData,
+  createWithPlugin,
   exportFCT,
   getCall,
   importEncodedFCT,
@@ -114,6 +115,7 @@ export class BatchMultiSigCall {
   // FCT Functions
   public create = create;
   public createWithEncodedData = createWithEncodedData;
+  public createWithPlugin = createWithPlugin;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
   public importFCT = importFCT;
