@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const fct_1 = require("batchMultiSigCall/helpers/fct");
@@ -89,6 +89,12 @@ async function createWithEncodedData(callWithEncodedData) {
     return data;
 }
 exports.createWithEncodedData = createWithEncodedData;
+function createPlugin(Plugin) {
+    return new Plugin({
+        chainId: this.chainId,
+    });
+}
+exports.createPlugin = createPlugin;
 function getCall(index) {
     if (index < 0 || index >= this.calls.length) {
         throw new Error("Index out of range");
