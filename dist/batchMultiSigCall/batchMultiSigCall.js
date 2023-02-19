@@ -39,6 +39,8 @@ class BatchMultiSigCall {
         this.getPluginClass = plugins_1.getPluginClass;
         // FCT Functions
         this.create = FCT_1.create;
+        this.createWithEncodedData = FCT_1.createWithEncodedData;
+        this.createWithPlugin = FCT_1.createWithPlugin;
         this.createMultiple = FCT_1.createMultiple;
         this.exportFCT = FCT_1.exportFCT;
         this.importFCT = FCT_1.importFCT;

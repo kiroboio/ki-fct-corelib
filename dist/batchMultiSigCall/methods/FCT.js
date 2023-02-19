@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const fct_1 = require("batchMultiSigCall/helpers/fct");
@@ -18,47 +18,20 @@ function generateNodeId() {
 }
 exports.generateNodeId = generateNodeId;
 async function create(callInput) {
-    let call;
     if ("plugin" in callInput) {
-        const pluginCall = await callInput.plugin.create();
-        if (pluginCall === undefined) {
-            throw new Error("Error creating call with plugin. Make sure input values are valid");
-        }
-        call = {
-            ...pluginCall,
-            from: callInput.from,
-            options: { ...pluginCall.options, ...callInput.options },
-            nodeId: callInput.nodeId || generateNodeId(),
-        };
+        return await this.createWithPlugin(callInput);
     }
     else if ("abi" in callInput) {
-        const { value, encodedData, abi, options, nodeId } = callInput;
-        const iface = new ethers_1.ethers.utils.Interface(abi);
-        const { name, args, value: txValue, functionFragment: { inputs }, } = iface.parseTransaction({
-            data: encodedData,
-            value: typeof value === "string" ? value : "0",
-        });
-        call = {
-            from: callInput.from,
-            to: callInput.to,
-            method: name,
-            params: (0, fct_1.getParamsFromInputs)(inputs, args),
-            options,
-            value: txValue?.toString(),
-            nodeId: nodeId || generateNodeId(),
-        };
+        return await this.createWithEncodedData(callInput);
     }
     else {
-        call = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
+        // Else we create a call with the inputs
+        const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
+        // Before adding the call, we check if it is valid
+        this.verifyCall(data);
+        this.calls.push(data);
+        return data;
     }
-    // Check if call doesnt have nodeId. If not, generate one
-    if (!call.nodeId) {
-        call.nodeId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    }
-    // Before adding the call, we check if it is valid
-    this.verifyCall(call);
-    this.calls.push(call);
-    return call;
 }
 exports.create = create;
 async function createMultiple(calls) {
@@ -77,6 +50,45 @@ async function createMultiple(calls) {
     return this.calls;
 }
 exports.createMultiple = createMultiple;
+async function createWithPlugin(callWithPlugin) {
+    const pluginCall = await callWithPlugin.plugin.create();
+    if (pluginCall === undefined) {
+        throw new Error("Error creating call with plugin. Make sure input values are valid");
+    }
+    const data = {
+        ...pluginCall,
+        from: callWithPlugin.from,
+        options: { ...pluginCall.options, ...callWithPlugin.options },
+        nodeId: callWithPlugin.nodeId || generateNodeId(),
+    };
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+    return data;
+}
+exports.createWithPlugin = createWithPlugin;
+async function createWithEncodedData(callWithEncodedData) {
+    const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
+    const iface = new ethers_1.ethers.utils.Interface(abi);
+    const { name, args, value: txValue, functionFragment: { inputs }, } = iface.parseTransaction({
+        data: encodedData,
+        value: typeof value === "string" ? value : "0",
+    });
+    const data = {
+        from: callWithEncodedData.from,
+        to: callWithEncodedData.to,
+        method: name,
+        params: (0, fct_1.getParamsFromInputs)(inputs, args),
+        options,
+        value: txValue?.toString(),
+        nodeId: nodeId || generateNodeId(),
+    };
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+    return data;
+}
+exports.createWithEncodedData = createWithEncodedData;
 function getCall(index) {
     if (index < 0 || index >= this.calls.length) {
         throw new Error("Index out of range");
