@@ -5,9 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
+const lodash_1 = __importDefault(require("lodash"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
+const constants_1 = require("./constants");
 const checkers_1 = require("./methods/checkers");
 const FCT_1 = require("./methods/FCT");
 const helpers_2 = require("./methods/helpers");
@@ -29,14 +31,17 @@ class BatchMultiSigCall {
             blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
         };
-        // Helpers
-        // Options
+        // Set methods
         this.setOptions = helpers_2.setOptions;
+        this.setFromAddress = FCT_1.setFromAddress;
         // Plugin functions
         this.getPlugin = plugins_1.getPlugin;
         this.getPluginClass = plugins_1.getPluginClass;
+        this.createPlugin = FCT_1.createPlugin;
         // FCT Functions
         this.create = FCT_1.create;
+        this.createWithEncodedData = FCT_1.createWithEncodedData;
+        this.createWithPlugin = FCT_1.createWithPlugin;
         this.createMultiple = FCT_1.createMultiple;
         this.exportFCT = FCT_1.exportFCT;
         this.importFCT = FCT_1.importFCT;
@@ -67,6 +72,7 @@ class BatchMultiSigCall {
         if (input.options)
             this.setOptions(input.options);
     }
+    // Getters
     get options() {
         return {
             ...this._options,
@@ -82,8 +88,22 @@ class BatchMultiSigCall {
             },
         };
     }
-    get length() {
-        return this.calls.length;
+    get strictCalls() {
+        const fromAddress = this.fromAddress;
+        return this.calls.map((call) => {
+            if (!call.from) {
+                if (!fromAddress)
+                    throw new Error("No from address provided");
+                call.from = fromAddress;
+            }
+            const options = lodash_1.default.merge({}, constants_1.DEFAULT_CALL_OPTIONS, call.options);
+            return {
+                ...call,
+                from: this.fromAddress || call.from,
+                value: call.value || "0",
+                options,
+            };
+        });
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;

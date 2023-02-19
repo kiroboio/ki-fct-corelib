@@ -11,3 +11,7 @@ export function instanceOfParams(objectOrArray: any): objectOrArray is Param | P
 
   return typeof objectOrArray === "object" && "type" in objectOrArray && "name" in objectOrArray;
 }
+
+export function valueNotUndefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
+}

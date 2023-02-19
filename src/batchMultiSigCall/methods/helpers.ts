@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { CALL_TYPE_MSG, FCT_VAULT_ADDRESS, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
-import { Param, Variable } from "../../types";
+import { DeepPartial, Param, Variable } from "../../types";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -13,14 +13,8 @@ import {
   verifyParam,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
-import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY } from "../index";
+import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
-
-type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
 
 export function getCalldataForActuator(
   this: BatchMultiSigCall,
@@ -124,7 +118,7 @@ export function setOptions(this: BatchMultiSigCall, options: DeepPartial<IFCTOpt
 }
 
 export function createTypedData(this: BatchMultiSigCall, salt: string, version: string): BatchMultiSigCallTypedData {
-  const typedDataMessage = this.calls.reduce((acc: object, call: IMSCallInput, index: number) => {
+  const typedDataMessage = this.strictCalls.reduce((acc: object, call, index: number) => {
     let paramsData = {};
     if (call.params) {
       paramsData = this.getParamsFromCall(call, index);
@@ -137,7 +131,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
 
-    if (options.jumpOnSuccess) {
+    if (options.jumpOnSuccess !== NO_JUMP) {
       const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
 
       if (jumpOnSuccessIndex === -1) {
@@ -153,7 +147,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       jumpOnSuccess = jumpOnSuccessIndex - index - 1;
     }
 
-    if (options.jumpOnFail) {
+    if (options.jumpOnFail !== NO_JUMP) {
       const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
 
       if (jumpOnFailIndex === -1) {

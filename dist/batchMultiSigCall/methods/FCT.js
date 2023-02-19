@@ -3,41 +3,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createMultiple = exports.create = void 0;
+exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const fct_1 = require("batchMultiSigCall/helpers/fct");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
+// Generate nodeId for a call
+function generateNodeId() {
+    return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+}
+exports.generateNodeId = generateNodeId;
 async function create(callInput) {
-    let call;
     if ("plugin" in callInput) {
-        const pluginCall = await callInput.plugin.create();
-        if (pluginCall === undefined) {
-            throw new Error("Error creating call with plugin. Make sure input values are valid");
-        }
-        call = {
-            ...pluginCall,
-            from: callInput.from,
-            options: { ...pluginCall.options, ...callInput.options },
-            nodeId: callInput.nodeId,
-        };
+        return await this.createWithPlugin(callInput);
+    }
+    else if ("abi" in callInput) {
+        return await this.createWithEncodedData(callInput);
     }
     else {
-        call = { ...callInput };
+        // Else we create a call with the inputs
+        const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
+        // Before adding the call, we check if it is valid
+        this.verifyCall(data);
+        this.calls.push(data);
+        return data;
     }
-    // Before adding the call, we check if it is valid
-    this.verifyCall(call);
-    this.calls.push(call);
-    return this.calls;
 }
 exports.create = create;
 async function createMultiple(calls) {
+    const callsCreated = [];
     for (const [index, call] of calls.entries()) {
         try {
-            await this.create(call);
+            const createdCall = await this.create(call);
+            callsCreated.push(createdCall);
         }
         catch (err) {
             if (err instanceof Error) {
@@ -48,6 +50,51 @@ async function createMultiple(calls) {
     return this.calls;
 }
 exports.createMultiple = createMultiple;
+async function createWithPlugin(callWithPlugin) {
+    const pluginCall = await callWithPlugin.plugin.create();
+    if (pluginCall === undefined) {
+        throw new Error("Error creating call with plugin. Make sure input values are valid");
+    }
+    const data = {
+        ...pluginCall,
+        from: callWithPlugin.from,
+        options: { ...pluginCall.options, ...callWithPlugin.options },
+        nodeId: callWithPlugin.nodeId || generateNodeId(),
+    };
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+    return data;
+}
+exports.createWithPlugin = createWithPlugin;
+async function createWithEncodedData(callWithEncodedData) {
+    const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
+    const iface = new ethers_1.ethers.utils.Interface(abi);
+    const { name, args, value: txValue, functionFragment: { inputs }, } = iface.parseTransaction({
+        data: encodedData,
+        value: typeof value === "string" ? value : "0",
+    });
+    const data = {
+        from: callWithEncodedData.from,
+        to: callWithEncodedData.to,
+        method: name,
+        params: (0, fct_1.getParamsFromInputs)(inputs, args),
+        options,
+        value: txValue?.toString(),
+        nodeId: nodeId || generateNodeId(),
+    };
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+    return data;
+}
+exports.createWithEncodedData = createWithEncodedData;
+function createPlugin(Plugin) {
+    return new Plugin({
+        chainId: this.chainId,
+    });
+}
+exports.createPlugin = createPlugin;
 function getCall(index) {
     if (index < 0 || index >= this.calls.length) {
         throw new Error("Index out of range");
@@ -57,6 +104,7 @@ function getCall(index) {
 exports.getCall = getCall;
 function exportFCT() {
     this.computedVariables = [];
+    const calls = this.strictCalls;
     if (this.calls.length === 0) {
         throw new Error("No calls added");
     }
@@ -64,7 +112,7 @@ function exportFCT() {
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const typedData = this.createTypedData(salt, this.version);
     const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);
-    const mcall = this.calls.map((call, index) => {
+    const mcall = calls.map((call, index) => {
         const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
         return {
             typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
@@ -258,3 +306,7 @@ async function importEncodedFCT(calldata) {
     return this.calls;
 }
 exports.importEncodedFCT = importEncodedFCT;
+function setFromAddress(address) {
+    this.fromAddress = address;
+}
+exports.setFromAddress = setFromAddress;

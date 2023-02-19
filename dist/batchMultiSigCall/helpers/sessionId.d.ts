@@ -1,6 +1,6 @@
 import { Flow } from "../../constants";
-import { IMSCallInput, RequiredFCTOptions } from "../types";
-export declare const manageCallId: (calls: IMSCallInput[], call: IMSCallInput, index: number) => string;
+import { IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
+export declare const manageCallId: (calls: IMSCallInput[], call: StrictMSCallInput, index: number) => string;
 export declare const getSessionId: (salt: string, versionHex: string, options: RequiredFCTOptions) => string;
 export declare const parseSessionID: (sessionId: string, builder: string) => {
     builder: string;

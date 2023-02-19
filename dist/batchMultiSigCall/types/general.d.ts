@@ -1,6 +1,8 @@
+import { JsonFragment } from "@ethersproject/abi";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { CallOptions, DeepRequired, IPluginCall, Param, Variable } from "../../types";
+import { Fragment } from "ethers/lib/utils";
+import { CallOptions, DeepRequired, IPluginCall, Param, RequiredKeys, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
@@ -28,16 +30,34 @@ export interface IBatchMultiSigCallFCT {
     signatures: SignatureLike[];
 }
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
-export interface IMSCallInput {
-    nodeId: string;
+export interface MSCallMandatory {
+    nodeId?: string;
+    from?: string | Variable;
     value?: string | Variable;
+    options?: CallOptions;
+}
+export type IMSCallInput = {
     to: string | Variable;
-    from: string | Variable;
     params?: Param[];
     method?: string;
     toENS?: string;
-    options?: CallOptions;
-}
+} & MSCallMandatory;
+export type IMSCallInputWithNodeId = RequiredKeys<IMSCallInput, "nodeId">;
+export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
+    options: DeepRequired<CallOptions>;
+};
+export type IWithPlugin = {
+    plugin: {
+        create(): Promise<IPluginCall | undefined>;
+    };
+} & MSCallMandatory;
+export type IMSCallWithEncodedData = {
+    nodeId?: string;
+    abi: ReadonlyArray<Fragment | JsonFragment>;
+    encodedData: string;
+    to: string | Variable;
+} & MSCallMandatory;
+export type FCTCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData;
 export interface MSCall {
     typeHash: string;
     ensHash: string;
@@ -69,14 +89,6 @@ export interface IFCTOptions {
     };
 }
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
-export interface IWithPlugin {
-    nodeId: string;
-    plugin: {
-        create(): Promise<IPluginCall | undefined>;
-    };
-    from: string;
-    options?: CallOptions;
-}
 export interface IComputed {
     variable: string | Variable;
     add?: string;

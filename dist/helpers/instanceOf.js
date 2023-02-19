@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.instanceOfParams = exports.instanceOfVariable = void 0;
+exports.valueNotUndefined = exports.instanceOfParams = exports.instanceOfVariable = void 0;
 const instanceOfVariable = (object) => {
     return typeof object === "object" && "type" in object && "id" in object;
 };
@@ -12,3 +12,7 @@ function instanceOfParams(objectOrArray) {
     return typeof objectOrArray === "object" && "type" in objectOrArray && "name" in objectOrArray;
 }
 exports.instanceOfParams = instanceOfParams;
+function valueNotUndefined(value) {
+    return value !== undefined;
+}
+exports.valueNotUndefined = valueNotUndefined;

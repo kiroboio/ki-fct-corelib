@@ -1,11 +1,13 @@
+import { NO_JUMP } from "batchMultiSigCall/constants";
+
 import { CALL_TYPE, Flow, flows } from "../../constants";
-import { IFCTOptions, IMSCallInput, RequiredFCTOptions } from "../types";
+import { IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");
 };
 
-export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: number) => {
+export const manageCallId = (calls: IMSCallInput[], call: StrictMSCallInput, index: number) => {
   // This is the structure of callId string
   // 4 - Permissions
   // 2 - Flow
@@ -19,14 +21,14 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
 
   const permissions = "0000";
-  const flow = call?.options?.flow ? valueWithPadStart(flows[call.options.flow].value, 2) : "00";
+  const flow = valueWithPadStart(flows[call.options.flow].value, 2);
   const payerIndex = valueWithPadStart(index + 1, 4);
   const callIndex = valueWithPadStart(index + 1, 4);
-  const gasLimit = call?.options?.gasLimit ? valueWithPadStart(call.options.gasLimit, 8) : "00000000";
+  const gasLimit = valueWithPadStart(call.options.gasLimit, 8);
 
   const flags = () => {
-    const callType = call?.options?.callType ? CALL_TYPE[call.options.callType] : CALL_TYPE.ACTION;
-    const falseMeansFail = call?.options?.falseMeansFail ? 4 : 0;
+    const callType = CALL_TYPE[call.options.callType];
+    const falseMeansFail = call.options.falseMeansFail ? 4 : 0;
 
     return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
   };
@@ -35,7 +37,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
   let failJump = "0000";
 
   if (call.options) {
-    if (call.options.jumpOnFail) {
+    if (call.options.jumpOnFail !== NO_JUMP) {
       const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
 
       failJump = Number(nodeIndex - index - 1)
@@ -43,7 +45,7 @@ export const manageCallId = (calls: IMSCallInput[], call: IMSCallInput, index: n
         .padStart(4, "0");
     }
 
-    if (call.options.jumpOnSuccess) {
+    if (call.options.jumpOnSuccess !== NO_JUMP) {
       const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
 
       successJump = Number(nodeIndex - index - 1)
