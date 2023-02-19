@@ -8,7 +8,16 @@ import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
-import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT, setFromAddress } from "./methods/FCT";
+import {
+  create,
+  createMultiple,
+  createWithEncodedData,
+  exportFCT,
+  getCall,
+  importEncodedFCT,
+  importFCT,
+  setFromAddress,
+} from "./methods/FCT";
 import {
   createTypedData,
   getAllRequiredApprovals,
@@ -104,6 +113,7 @@ export class BatchMultiSigCall {
 
   // FCT Functions
   public create = create;
+  public createWithEncodedData = createWithEncodedData;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
   public importFCT = importFCT;

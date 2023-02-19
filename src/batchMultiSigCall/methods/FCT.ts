@@ -20,7 +20,15 @@ import {
   parseSessionID,
   verifyOptions,
 } from "../helpers";
-import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
+import {
+  FCTCall,
+  IBatchMultiSigCallFCT,
+  IMSCallInput,
+  IMSCallInputWithNodeId,
+  IMSCallWithEncodedData,
+  IWithPlugin,
+  TypedDataMessageTransaction,
+} from "../types";
 
 // Generate nodeId for a call
 export function generateNodeId(): string {
@@ -31,57 +39,23 @@ export async function create(
   this: BatchMultiSigCall,
   callInput: FCTCall
 ): Promise<RequiredKeys<IMSCallInput, "nodeId">> {
-  let call: RequiredKeys<IMSCallInput, "nodeId">;
-
   if ("plugin" in callInput) {
-    const pluginCall = await callInput.plugin.create();
-    if (pluginCall === undefined) {
-      throw new Error("Error creating call with plugin. Make sure input values are valid");
-    }
-
-    call = {
-      ...pluginCall,
-      from: callInput.from,
-      options: { ...pluginCall.options, ...callInput.options },
-      nodeId: callInput.nodeId || generateNodeId(),
-    };
+    return await this.createWithPlugin(callInput);
   } else if ("abi" in callInput) {
-    const { value, encodedData, abi, options, nodeId } = callInput;
-    const iface = new ethers.utils.Interface(abi);
-
-    const {
-      name,
-      args,
-      value: txValue,
-      functionFragment: { inputs },
-    } = iface.parseTransaction({
-      data: encodedData,
-      value: typeof value === "string" ? value : "0",
-    });
-
-    call = {
-      from: callInput.from,
-      to: callInput.to,
-      method: name,
-      params: getParamsFromInputs(inputs, args),
-      options,
-      value: txValue?.toString(),
-      nodeId: nodeId || generateNodeId(),
-    };
+    return await this.createWithEncodedData(callInput);
   } else {
-    call = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
+    // Else we create a call with the inputs
+    const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() } satisfies RequiredKeys<
+      IMSCallInput,
+      "nodeId"
+    >;
+
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+
+    return data;
   }
-
-  // Check if call doesnt have nodeId. If not, generate one
-  if (!call.nodeId) {
-    call.nodeId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-  }
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(call);
-  this.calls.push(call);
-
-  return call;
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInput[]> {
@@ -97,6 +71,63 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
     }
   }
   return this.calls;
+}
+
+export async function createWithPlugin(
+  this: BatchMultiSigCall,
+  callWithPlugin: IWithPlugin
+): Promise<IMSCallInputWithNodeId> {
+  const pluginCall = await callWithPlugin.plugin.create();
+  if (pluginCall === undefined) {
+    throw new Error("Error creating call with plugin. Make sure input values are valid");
+  }
+
+  const data = {
+    ...pluginCall,
+    from: callWithPlugin.from,
+    options: { ...pluginCall.options, ...callWithPlugin.options },
+    nodeId: callWithPlugin.nodeId || generateNodeId(),
+  } satisfies IMSCallInputWithNodeId;
+
+  // Before adding the call, we check if it is valid
+  this.verifyCall(data);
+  this.calls.push(data);
+
+  return data;
+}
+
+export async function createWithEncodedData(
+  this: BatchMultiSigCall,
+  callWithEncodedData: IMSCallWithEncodedData
+): Promise<IMSCallInputWithNodeId> {
+  const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
+  const iface = new ethers.utils.Interface(abi);
+
+  const {
+    name,
+    args,
+    value: txValue,
+    functionFragment: { inputs },
+  } = iface.parseTransaction({
+    data: encodedData,
+    value: typeof value === "string" ? value : "0",
+  });
+
+  const data = {
+    from: callWithEncodedData.from,
+    to: callWithEncodedData.to,
+    method: name,
+    params: getParamsFromInputs(inputs, args),
+    options,
+    value: txValue?.toString(),
+    nodeId: nodeId || generateNodeId(),
+  } satisfies IMSCallInputWithNodeId;
+
+  // Before adding the call, we check if it is valid
+  this.verifyCall(data);
+  this.calls.push(data);
+
+  return data;
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
