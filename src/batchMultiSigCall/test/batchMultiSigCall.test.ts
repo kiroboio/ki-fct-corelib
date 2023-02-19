@@ -313,6 +313,13 @@ describe("BatchMultiSigCall", () => {
       abi: ABI,
       to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     });
+
+    const call2 = await FCT.createWithEncodedData({
+      encodedData,
+      abi: ABI,
+      to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    });
+
     const params = call.params as any;
 
     expect(call).to.be.an("object");
