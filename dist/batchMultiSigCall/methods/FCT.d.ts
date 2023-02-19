@@ -1,9 +1,11 @@
 import { RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput } from "../types";
+import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IWithPlugin } from "../types";
 export declare function generateNodeId(): string;
 export declare function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<RequiredKeys<IMSCallInput, "nodeId">>;
 export declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInput[]>;
+export declare function createWithPlugin(this: BatchMultiSigCall, callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId>;
+export declare function createWithEncodedData(this: BatchMultiSigCall, callWithEncodedData: IMSCallWithEncodedData): Promise<IMSCallInputWithNodeId>;
 export declare function getCall(this: BatchMultiSigCall, index: number): IMSCallInput;
 export declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
 export declare function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[];

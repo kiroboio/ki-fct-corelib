@@ -42,6 +42,7 @@ export type IMSCallInput = {
     method?: string;
     toENS?: string;
 } & MSCallMandatory;
+export type IMSCallInputWithNodeId = RequiredKeys<IMSCallInput, "nodeId">;
 export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
     options: DeepRequired<CallOptions>;
 };
