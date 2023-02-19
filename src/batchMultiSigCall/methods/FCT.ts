@@ -1,11 +1,12 @@
-import { getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
+import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { BigNumber, utils } from "ethers";
+import { getParamsFromInputs } from "batchMultiSigCall/helpers/fct";
+import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { Param } from "../../types";
+import { Param, RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,
@@ -19,40 +20,47 @@ import {
   parseSessionID,
   verifyOptions,
 } from "../helpers";
-import { IBatchMultiSigCallFCT, IMSCallInput, IWithPlugin, TypedDataMessageTransaction } from "../types";
+import {
+  FCTCall,
+  IBatchMultiSigCallFCT,
+  IMSCallInput,
+  IMSCallInputWithNodeId,
+  IMSCallWithEncodedData,
+  IWithPlugin,
+  TypedDataMessageTransaction,
+} from "../types";
 
-export async function create(this: BatchMultiSigCall, callInput: IMSCallInput | IWithPlugin): Promise<IMSCallInput[]> {
-  let call: IMSCallInput;
-  if ("plugin" in callInput) {
-    const pluginCall = await callInput.plugin.create();
-    if (pluginCall === undefined) {
-      throw new Error("Error creating call with plugin. Make sure input values are valid");
-    }
-    call = {
-      ...pluginCall,
-      from: callInput.from,
-      options: { ...pluginCall.options, ...callInput.options },
-      nodeId: callInput.nodeId,
-    };
-  } else {
-    call = { ...callInput };
-  }
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(call);
-
-  this.calls.push(call);
-
-  return this.calls;
+// Generate nodeId for a call
+export function generateNodeId(): string {
+  return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
-export async function createMultiple(
-  this: BatchMultiSigCall,
-  calls: (IMSCallInput | IWithPlugin)[]
-): Promise<IMSCallInput[]> {
+export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId> {
+  if ("plugin" in callInput) {
+    return await this.createWithPlugin(callInput);
+  } else if ("abi" in callInput) {
+    return await this.createWithEncodedData(callInput);
+  } else {
+    // Else we create a call with the inputs
+    const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() } satisfies RequiredKeys<
+      IMSCallInput,
+      "nodeId"
+    >;
+
+    // Before adding the call, we check if it is valid
+    this.verifyCall(data);
+    this.calls.push(data);
+
+    return data;
+  }
+}
+
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {
+  const callsCreated: IMSCallInputWithNodeId[] = [];
   for (const [index, call] of calls.entries()) {
     try {
-      await this.create(call);
+      const createdCall = await this.create(call);
+      callsCreated.push(createdCall);
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(`Error creating call ${index + 1}: ${err.message}`);
@@ -60,6 +68,69 @@ export async function createMultiple(
     }
   }
   return this.calls;
+}
+
+export async function createWithPlugin(
+  this: BatchMultiSigCall,
+  callWithPlugin: IWithPlugin
+): Promise<IMSCallInputWithNodeId> {
+  const pluginCall = await callWithPlugin.plugin.create();
+  if (pluginCall === undefined) {
+    throw new Error("Error creating call with plugin. Make sure input values are valid");
+  }
+
+  const data = {
+    ...pluginCall,
+    from: callWithPlugin.from,
+    options: { ...pluginCall.options, ...callWithPlugin.options },
+    nodeId: callWithPlugin.nodeId || generateNodeId(),
+  } satisfies IMSCallInputWithNodeId;
+
+  // Before adding the call, we check if it is valid
+  this.verifyCall(data);
+  this.calls.push(data);
+
+  return data;
+}
+
+export async function createWithEncodedData(
+  this: BatchMultiSigCall,
+  callWithEncodedData: IMSCallWithEncodedData
+): Promise<IMSCallInputWithNodeId> {
+  const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
+  const iface = new ethers.utils.Interface(abi);
+
+  const {
+    name,
+    args,
+    value: txValue,
+    functionFragment: { inputs },
+  } = iface.parseTransaction({
+    data: encodedData,
+    value: typeof value === "string" ? value : "0",
+  });
+
+  const data = {
+    from: callWithEncodedData.from,
+    to: callWithEncodedData.to,
+    method: name,
+    params: getParamsFromInputs(inputs, args),
+    options,
+    value: txValue?.toString(),
+    nodeId: nodeId || generateNodeId(),
+  } satisfies IMSCallInputWithNodeId;
+
+  // Before adding the call, we check if it is valid
+  this.verifyCall(data);
+  this.calls.push(data);
+
+  return data;
+}
+
+export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
+  return new Plugin({
+    chainId: this.chainId,
+  });
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
@@ -71,6 +142,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   this.computedVariables = [];
+  const calls = this.strictCalls;
 
   if (this.calls.length === 0) {
     throw new Error("No calls added");
@@ -82,7 +154,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   const typedData = this.createTypedData(salt, this.version);
   const sessionId: string = getSessionId(salt, this.version, this.options);
 
-  const mcall = this.calls.map((call, index) => {
+  const mcall = calls.map((call, index) => {
     const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
 
     return {
@@ -323,4 +395,8 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   }
 
   return this.calls;
+}
+
+export function setFromAddress(this: BatchMultiSigCall, address: string) {
+  this.fromAddress = address;
 }

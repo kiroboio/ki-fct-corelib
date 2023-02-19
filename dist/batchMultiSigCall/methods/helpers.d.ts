@@ -1,9 +1,6 @@
-import { Param } from "../../types";
+import { DeepPartial, Param } from "../../types";
 import { BatchMultiSigCall } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
-type DeepPartial<T> = T extends object ? {
-    [P in keyof T]?: DeepPartial<T[P]>;
-} : T;
 export declare function getCalldataForActuator(this: BatchMultiSigCall, { signedFCT, purgedFCT, investor, activator, version, }: {
     signedFCT: object;
     purgedFCT: string;
@@ -18,4 +15,3 @@ export declare function getParamsFromCall(this: BatchMultiSigCall, call: IMSCall
 export declare function verifyParams(this: BatchMultiSigCall, params: Param[]): void;
 export declare function handleTo(this: BatchMultiSigCall, call: IMSCallInput): string;
 export declare function handleValue(this: BatchMultiSigCall, call: IMSCallInput): string;
-export {};

@@ -1,11 +1,25 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
+import _ from "lodash";
+import { RequiredKeys } from "types";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
+import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
-import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
+import {
+  create,
+  createMultiple,
+  createPlugin,
+  createWithEncodedData,
+  createWithPlugin,
+  exportFCT,
+  getCall,
+  importEncodedFCT,
+  importFCT,
+  setFromAddress,
+} from "./methods/FCT";
 import {
   createTypedData,
   getAllRequiredApprovals,
@@ -23,6 +37,7 @@ import {
   IFCTOptions,
   IMSCallInput,
   RequiredFCTOptions,
+  StrictMSCallInput,
 } from "./types";
 
 export class BatchMultiSigCall {
@@ -32,8 +47,9 @@ export class BatchMultiSigCall {
   protected version = "0x010102";
   protected chainId: ChainId;
 
+  public fromAddress: string;
   protected computedVariables: ComputedVariables[] = [];
-  calls: IMSCallInput[] = [];
+  protected calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
   protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
@@ -53,10 +69,7 @@ export class BatchMultiSigCall {
     if (input.options) this.setOptions(input.options);
   }
 
-  // Helpers
-
-  // Options
-  public setOptions = setOptions;
+  // Getters
   get options(): RequiredFCTOptions {
     return {
       ...this._options,
@@ -73,12 +86,38 @@ export class BatchMultiSigCall {
     };
   }
 
+  get strictCalls(): StrictMSCallInput[] {
+    const fromAddress = this.fromAddress;
+    return this.calls.map((call) => {
+      if (!call.from) {
+        if (!fromAddress) throw new Error("No from address provided");
+        call.from = fromAddress;
+      }
+
+      const options = _.merge({}, DEFAULT_CALL_OPTIONS, call.options);
+
+      return {
+        ...call,
+        from: this.fromAddress || call.from,
+        value: call.value || "0",
+        options,
+      };
+    });
+  }
+
+  // Set methods
+  public setOptions = setOptions;
+  public setFromAddress = setFromAddress;
+
   // Plugin functions
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
+  public createPlugin = createPlugin;
 
   // FCT Functions
   public create = create;
+  public createWithEncodedData = createWithEncodedData;
+  public createWithPlugin = createWithPlugin;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
   public importFCT = importFCT;
@@ -88,10 +127,6 @@ export class BatchMultiSigCall {
   // Utility functions
   public getPluginData = getPluginData;
   public getAllRequiredApprovals = getAllRequiredApprovals;
-
-  get length(): number {
-    return this.calls.length;
-  }
 
   // Variables
   protected getVariable = getVariable;

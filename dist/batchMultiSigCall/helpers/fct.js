@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateTxType = exports.getTypedDataDomain = void 0;
+exports.getParamsFromInputs = exports.generateTxType = exports.getTypedDataDomain = void 0;
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
 // TODO: Change salt to be a buffer
 const TYPED_DATA_DOMAIN = {
@@ -36,3 +36,29 @@ const generateTxType = (item) => {
     return [{ name: "details", type: "Transaction_" }];
 };
 exports.generateTxType = generateTxType;
+const getParamsFromInputs = (inputs, values) => {
+    return inputs.map((input) => {
+        if (input.type === "tuple") {
+            return {
+                name: input.name,
+                type: input.type,
+                customType: true,
+                value: (0, exports.getParamsFromInputs)(input.components, values[input.name]),
+            };
+        }
+        if (input.type === "tuple[]") {
+            return {
+                name: input.name,
+                type: input.type,
+                customType: true,
+                value: values[input.name].map((tuple) => (0, exports.getParamsFromInputs)(input.components, tuple)),
+            };
+        }
+        return {
+            name: input.name,
+            type: input.type,
+            value: values[input.name],
+        };
+    });
+};
+exports.getParamsFromInputs = getParamsFromInputs;
