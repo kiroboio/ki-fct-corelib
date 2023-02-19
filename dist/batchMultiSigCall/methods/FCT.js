@@ -6,12 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const fct_1 = require("batchMultiSigCall/helpers/fct");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
+const fct_1 = require("../helpers/fct");
 // Generate nodeId for a call
 function generateNodeId() {
     return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");

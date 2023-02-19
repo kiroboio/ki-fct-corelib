@@ -1,6 +1,5 @@
 import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { getParamsFromInputs } from "batchMultiSigCall/helpers/fct";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
@@ -20,6 +19,7 @@ import {
   parseSessionID,
   verifyOptions,
 } from "../helpers";
+import { getParamsFromInputs } from "../helpers/fct";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
