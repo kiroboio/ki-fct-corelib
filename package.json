@@ -1,13 +1,13 @@
 {
   "name": "ki-fct-corelib",
   "version": "1.0.2",
-  "description": "Kirobo.io FCT Core library",
+  "description": "Kirobo.io FCT Core Library",
   "files": [
     "dist"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
-  "module": "index.mjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
   "scripts": {
     "test": "mocha -r ts-node/register \"src/**/*.test.ts\" --timeout 100000",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/test/*.test.ts",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ttps://github.com/kiroboio/ki-fct-corelib.git"
+    "url": "git+https://github.com/kiroboio/ki-fct-corelib.git"
   },
   "keywords": [],
   "author": "",
