@@ -1,33 +1,46 @@
 // Contents of the file /rollup.config.js
 import json from "@rollup/plugin-json";
-import dts from "rollup-plugin-dts";
-import esbuild from "rollup-plugin-esbuild";
+import typescript from "@rollup/plugin-typescript";
 
 const config = [
   {
     input: "src/index.ts",
     output: {
-      dir: "dist",
+      file: "dist/index.mjs",
       format: "esm",
-      sourcemap: false,
     },
-    plugins: [esbuild(), json()],
+    plugins: [
+      typescript({
+        tsconfig: "tsconfig.build.json",
+      }),
+      json(),
+    ],
   },
   {
     input: "src/index.ts",
     output: {
-      dir: "dist/cjs",
+      file: "dist/index.js",
       format: "cjs",
-      sourcemap: false,
     },
-    watch: false,
-    plugins: [esbuild(), json()],
+    plugins: [
+      typescript({
+        tsconfig: "tsconfig.build.json",
+      }),
+      json(),
+    ],
   },
-  {
-    input: "dts/index.d.ts",
-    output: { file: "dist/index.d.ts" },
-    plugins: [dts({ compilerOptions: { baseUrl: "dts" } })],
-    watch: false,
-  },
+  // {
+  //   input: "src/index.ts",
+  //   output: {
+  //     dir: "dist/cjs",
+  //     format: "cjs",
+  //   },
+  //   plugins: [
+  //     typescript({
+  //       tsconfig: "tsconfig.build.json",
+  //     }),
+  //     json(),
+  //   ],
+  // },
 ];
 export default config;

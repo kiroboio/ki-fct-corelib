@@ -5,14 +5,14 @@
   "files": [
     "dist"
   ],
-  "main": "cjs/index.js",
+  "main": "index.js",
   "types": "index.d.ts",
-  "module": "index.js",
+  "module": "index.mjs",
   "scripts": {
     "test": "mocha -r ts-node/register \"src/**/*.test.ts\" --timeout 100000",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/test/*.test.ts",
     "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
-    "build": "rm -rf dist/ & tsc --project tsconfig.build.json & rollup -c",
+    "build": "rm -rf dist/ & rollup -c",
     "fct": "ts-node scripts/fct.script.ts",
     "fct:struct": "ts-node scripts/fct_struct.script.ts",
     "fct:get": "ts-node scripts/fct_get.script.ts",
@@ -62,6 +62,7 @@
     "rollup": "^2.63.0",
     "rollup-plugin-dts": "^5.2.0",
     "rollup-plugin-esbuild": "^5.0.0",
+    "rollup-plugin-ts": "^3.2.0",
     "solidity-coverage": "^0.8.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
