@@ -4,6 +4,8 @@ import _ from "lodash";
 import { CALL_TYPE_MSG, FCT_VAULT_ADDRESS, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
 import { DeepPartial, Param, Variable } from "../../types";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
+import { EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../constants";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -13,7 +15,7 @@ import {
   verifyParam,
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
-import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
+// import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
 export function getCalldataForActuator(
@@ -126,7 +128,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
 
     const options = call.options || {};
     const gasLimit = options.gasLimit ?? "0";
-    const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
+    const flow = options.flow ? flows[options.flow as keyof typeof flows].text : "continue on success, revert on fail";
 
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;

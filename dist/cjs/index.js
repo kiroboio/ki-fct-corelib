@@ -1,13 +1,19 @@
-import { getPlugin as getPlugin$1 } from '@kirobo/ki-eth-fct-provider-ts';
-export * from '@kirobo/ki-eth-fct-provider-ts';
-export { utils as pluginUtils } from '@kirobo/ki-eth-fct-provider-ts';
-import { utils, ethers, BigNumber as BigNumber$1 } from 'ethers';
-export { ethers } from 'ethers';
-import { TypedDataUtils, recoverTypedSignature, SignTypedDataVersion, signTypedData } from '@metamask/eth-sig-util';
-import { Graph } from 'graphlib';
-import BigNumber from 'bignumber.js';
-import { isAddress as isAddress$1, toUtf8Bytes, defaultAbiCoder, AbiCoder, splitSignature, hexlify } from 'ethers/lib/utils';
-import _ from 'lodash';
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var kiEthFctProviderTs = require('@kirobo/ki-eth-fct-provider-ts');
+var ethers = require('ethers');
+var ethSigUtil = require('@metamask/eth-sig-util');
+var graphlib = require('graphlib');
+var BigNumber = require('bignumber.js');
+var utils = require('ethers/lib/utils');
+var _ = require('lodash');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var BigNumber__default = /*#__PURE__*/_interopDefaultLegacy(BigNumber);
+var ___default = /*#__PURE__*/_interopDefaultLegacy(_);
 
 var Flow = /* @__PURE__ */ ((Flow2) => {
   Flow2["OK_CONT_FAIL_REVERT"] = "OK_CONT_FAIL_REVERT";
@@ -118,7 +124,7 @@ const validateInteger = (value, keys) => {
   }
 };
 const validateAddress = (value, keys) => {
-  if (!isAddress$1(value)) {
+  if (!utils.isAddress(value)) {
     throw new Error(`Options: ${keys.join(".")} is not a valid address`);
   }
 };
@@ -141,10 +147,10 @@ const validateOptionsValues = (value, parentKeys = []) => {
       const expiresAt = Number(value[objKey]);
       const now = Number((/* @__PURE__ */ new Date()).getTime() / 1e3).toFixed();
       const validFrom = value.validFrom;
-      if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+      if (BigNumber__default["default"](expiresAt).isLessThanOrEqualTo(now)) {
         throw new Error(`Options: expiresAt must be in the future`);
       }
-      if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+      if (validFrom && BigNumber__default["default"](expiresAt).isLessThanOrEqualTo(validFrom)) {
         throw new Error(`Options: expiresAt must be greater than validFrom`);
       }
     }
@@ -174,7 +180,7 @@ const verifyParam = (param) => {
     }
   }
   if (param.type === "address") {
-    if (!isAddress$1(param.value)) {
+    if (!utils.isAddress(param.value)) {
       throw new Error(`Param ${param.name} is not a valid address`);
     }
   }
@@ -313,13 +319,13 @@ const getEncodedMethodParams = (call, withFunction) => {
     const ABI = [
       `function ${call.method}(${call.params ? call.params.map((item) => item.hashed ? "bytes32" : item.type).join(",") : ""})`
     ];
-    const iface = new utils.Interface(ABI);
+    const iface = new ethers.utils.Interface(ABI);
     return iface.encodeFunctionData(
       call.method,
       call.params ? call.params.map((item) => {
         if (item.hashed) {
           if (typeof item.value === "string") {
-            return utils.keccak256(toUtf8Bytes(item.value));
+            return ethers.utils.keccak256(utils.toUtf8Bytes(item.value));
           }
           throw new Error("Hashed value must be a string");
         }
@@ -359,7 +365,7 @@ const getEncodedMethodParams = (call, withFunction) => {
     }
     if (param.hashed) {
       if (typeof param.value === "string") {
-        return utils.keccak256(toUtf8Bytes(param.value));
+        return ethers.utils.keccak256(utils.toUtf8Bytes(param.value));
       }
       throw new Error("Hashed value must be a string");
     }
@@ -367,7 +373,7 @@ const getEncodedMethodParams = (call, withFunction) => {
   };
   if (!call.params)
     return "0x";
-  return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+  return utils.defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
 };
 
 function getDate(days = 0) {
@@ -421,7 +427,7 @@ const getTypedHashes = (params, typedData) => {
   return params.reduce((acc, item) => {
     if (item.customType) {
       const type = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
-      return [...acc, utils.hexlify(utils.hexlify(TypedDataUtils.hashType(type, typedData.types)))];
+      return [...acc, ethers.utils.hexlify(ethers.utils.hexlify(ethSigUtil.TypedDataUtils.hashType(type, typedData.types)))];
     }
     return acc;
   }, []);
@@ -436,13 +442,13 @@ const handleMethodInterface = (call) => {
 const handleFunctionSignature = (call) => {
   if (call.method) {
     const value = getMethodInterface(call);
-    return utils.id(value);
+    return ethers.utils.id(value);
   }
   return nullValue;
 };
 const handleEnsHash = (call) => {
   if (call.toENS) {
-    return utils.id(call.toENS);
+    return ethers.utils.id(call.toENS);
   }
   return nullValue;
 };
@@ -712,10 +718,10 @@ function validateFCTKeys(keys) {
 }
 const recoverAddressFromEIP712 = (typedData, signature) => {
   try {
-    const signatureString = utils.joinSignature(signature);
-    const address = recoverTypedSignature({
+    const signatureString = ethers.utils.joinSignature(signature);
+    const address = ethSigUtil.recoverTypedSignature({
       data: typedData,
-      version: SignTypedDataVersion.V4,
+      version: ethSigUtil.SignTypedDataVersion.V4,
       signature: signatureString
     });
     return address;
@@ -724,8 +730,8 @@ const recoverAddressFromEIP712 = (typedData, signature) => {
   }
 };
 const getFCTMessageHash = (typedData) => {
-  return ethers.utils.hexlify(
-    TypedDataUtils.eip712Hash(typedData, SignTypedDataVersion.V4)
+  return ethers.ethers.utils.hexlify(
+    ethSigUtil.TypedDataUtils.eip712Hash(typedData, ethSigUtil.SignTypedDataVersion.V4)
   );
 };
 const validateFCT = (FCT, softValidation = false) => {
@@ -776,14 +782,14 @@ const validateFCT = (FCT, softValidation = false) => {
 };
 const getVariablesAsBytes32 = (variables) => {
   return variables.map((v) => {
-    if (isNaN(Number(v)) || utils.isAddress(v)) {
+    if (isNaN(Number(v)) || ethers.utils.isAddress(v)) {
       return `0x${String(v).replace("0x", "").padStart(64, "0")}`;
     }
     return `0x${Number(v).toString(16).padStart(64, "0")}`;
   });
 };
 const getAllFCTPaths = (fct) => {
-  const g = new Graph({ directed: true });
+  const g = new graphlib.Graph({ directed: true });
   fct.mcall.forEach((_, index) => {
     g.setNode(index.toString());
   });
@@ -837,13 +843,13 @@ const fetchCurrentApprovals = async ({
     if (!rpcUrl) {
       throw new Error("No provider or rpcUrl provided");
     }
-    provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
   }
   const chainId = (await provider.getNetwork()).chainId.toString();
   if (!multicallContracts[Number(chainId)]) {
     throw new Error("Multicall contract not found for this chain");
   }
-  const multiCallContract = new ethers.Contract(
+  const multiCallContract = new ethers.ethers.Contract(
     multicallContracts[Number(chainId)],
     [
       "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)"
@@ -853,14 +859,14 @@ const fetchCurrentApprovals = async ({
   const calls = data.map((approval) => {
     return {
       target: approval.token,
-      callData: new ethers.utils.Interface([
+      callData: new ethers.ethers.utils.Interface([
         "function allowance(address owner, address spender) view returns (uint256)"
       ]).encodeFunctionData("allowance", [approval.from, approval.spender])
     };
   });
   const [, returnData] = await multiCallContract.callStatic.aggregate(calls);
   const approvals = returnData.map((appr, index) => {
-    const decoded = utils.defaultAbiCoder.decode(["uint256"], appr);
+    const decoded = ethers.utils.defaultAbiCoder.decode(["uint256"], appr);
     return {
       ...data[index],
       value: decoded[0].toString()
@@ -3992,7 +3998,7 @@ const isAddress = (value, key) => {
   if (value.length === 0) {
     throw new Error(`${key} address cannot be empty string`);
   }
-  if (!utils.isAddress(value)) {
+  if (!ethers.utils.isAddress(value)) {
     throw new Error(`${key} address is not a valid address`);
   }
 };
@@ -4127,7 +4133,7 @@ async function createWithPlugin(callWithPlugin) {
 }
 async function createWithEncodedData(callWithEncodedData) {
   const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-  const iface = new ethers.utils.Interface(abi);
+  const iface = new ethers.ethers.utils.Interface(abi);
   const {
     name,
     args,
@@ -4174,7 +4180,7 @@ function exportFCT() {
   const mcall = calls.map((call, index) => {
     const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
     return {
-      typeHash: utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+      typeHash: ethers.utils.hexlify(ethSigUtil.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
       ensHash: handleEnsHash(call),
       functionSignature: handleFunctionSignature(call),
       value: this.handleValue(call),
@@ -4183,15 +4189,15 @@ function exportFCT() {
       to: this.handleTo(call),
       data: handleData(call),
       types: handleTypes(call),
-      typedHashes: usedTypeStructs.length > 0 ? usedTypeStructs.map((hash) => utils.hexlify(TypedDataUtils.hashType(hash, typedData.types))) : []
+      typedHashes: usedTypeStructs.length > 0 ? usedTypeStructs.map((hash) => ethers.utils.hexlify(ethSigUtil.TypedDataUtils.hashType(hash, typedData.types))) : []
     };
   });
   const FCTData = {
     typedData,
     builder: this.options.builder || "0x0000000000000000000000000000000000000000",
-    typeHash: utils.hexlify(TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
+    typeHash: ethers.utils.hexlify(ethSigUtil.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
     sessionId,
-    nameHash: utils.id(this.options.name || ""),
+    nameHash: ethers.utils.id(this.options.name || ""),
     mcall,
     variables: [],
     externalSigners: [],
@@ -4210,9 +4216,9 @@ function importFCT(fct) {
     let params = [];
     if (dataTypes.length > 0) {
       const types = meta.method_interface.slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")")).split(",").map((type, i) => `${type} ${dataTypes[i].name}`);
-      const decodedParams = new AbiCoder().decode(types, call.data);
+      const decodedParams = new utils.AbiCoder().decode(types, call.data);
       const handleValue = (value) => {
-        if (BigNumber$1.isBigNumber(value) || typeof value === "number") {
+        if (ethers.BigNumber.isBigNumber(value) || typeof value === "number") {
           return value.toString();
         }
         return value;
@@ -4257,7 +4263,7 @@ function importFCT(fct) {
 }
 async function importEncodedFCT(calldata) {
   const ABI = BatchMultiSigCallABI;
-  const iface = new utils.Interface(ABI);
+  const iface = new ethers.utils.Interface(ABI);
   const chainId = this.chainId;
   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
   const arrayKeys = ["signatures", "mcall"];
@@ -4293,7 +4299,7 @@ async function importEncodedFCT(calldata) {
       }
       return {
         ...acc,
-        [key]: BigNumber$1.isBigNumber(value) ? value.toHexString() : value
+        [key]: ethers.BigNumber.isBigNumber(value) ? value.toHexString() : value
       };
     }, {});
   };
@@ -4302,7 +4308,7 @@ async function importEncodedFCT(calldata) {
   this.setOptions(FCTOptions);
   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
     try {
-      const pluginData = getPlugin$1({
+      const pluginData = kiEthFctProviderTs.getPlugin({
         address: call.to,
         chainId,
         signature: call.functionSignature
@@ -4314,7 +4320,7 @@ async function importEncodedFCT(calldata) {
         chainId
       });
       const params = plugin.methodParams;
-      const decodedParams = params.length > 0 ? new AbiCoder().decode(
+      const decodedParams = params.length > 0 ? new utils.AbiCoder().decode(
         params.map((type) => `${type.type} ${type.name}`),
         call.data
       ) : [];
@@ -4324,7 +4330,7 @@ async function importEncodedFCT(calldata) {
         methodParams: params.reduce((acc, param) => {
           const getValue = (value2) => {
             const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber$1.isBigNumber(value2)) {
+            if (ethers.BigNumber.isBigNumber(value2)) {
               const hexString = value2.toHexString();
               if (variables.some((v) => hexString.startsWith(v))) {
                 return hexString;
@@ -4368,7 +4374,7 @@ function getAllRequiredApprovals() {
     if (typeof call.to !== "string") {
       continue;
     }
-    const pluginData = getPlugin$1({
+    const pluginData = kiEthFctProviderTs.getPlugin({
       signature: handleFunctionSignature(call),
       address: call.to,
       chainId
@@ -4411,7 +4417,7 @@ function getAllRequiredApprovals() {
   return requiredApprovals;
 }
 function setOptions(options) {
-  const mergedOptions = _.merge({ ...this._options }, options);
+  const mergedOptions = ___default["default"].merge({ ...this._options }, options);
   verifyOptions(mergedOptions);
   this._options = mergedOptions;
   return this.options;
@@ -4480,24 +4486,24 @@ function createTypedData(salt, version) {
   let optionalTypes = {};
   const primaryType = [];
   if (Number(recurrency.maxRepeats) > 1) {
-    optionalMessage = _.merge(optionalMessage, {
+    optionalMessage = ___default["default"].merge(optionalMessage, {
       recurrency: {
         max_repeats: recurrency.maxRepeats,
         chill_time: recurrency.chillTime,
         accumetable: recurrency.accumetable
       }
     });
-    optionalTypes = _.merge(optionalTypes, { Recurrency: EIP712_RECURRENCY });
+    optionalTypes = ___default["default"].merge(optionalTypes, { Recurrency: EIP712_RECURRENCY });
     primaryType.push({ name: "recurrency", type: "Recurrency" });
   }
   if (multisig.externalSigners.length > 0) {
-    optionalMessage = _.merge(optionalMessage, {
+    optionalMessage = ___default["default"].merge(optionalMessage, {
       multisig: {
         external_signers: multisig.externalSigners,
         minimum_approvals: multisig.minimumApprovals || "2"
       }
     });
-    optionalTypes = _.merge(optionalTypes, { Multisig: EIP712_MULTISIG });
+    optionalTypes = ___default["default"].merge(optionalTypes, { Multisig: EIP712_MULTISIG });
     primaryType.push({ name: "multisig", type: "Multisig" });
   }
   const { structTypes, txTypes } = getTxEIP712Types(this.calls);
@@ -4669,7 +4675,7 @@ async function getPlugin(index) {
   if (instanceOfVariable(call.to)) {
     throw new Error("To value cannot be a variable");
   }
-  const pluginData = getPlugin$1({
+  const pluginData = kiEthFctProviderTs.getPlugin({
     signature: handleFunctionSignature(call),
     address: call.to,
     chainId
@@ -4696,7 +4702,7 @@ async function getPluginClass(index) {
   if (instanceOfVariable(call.to)) {
     throw new Error("To value cannot be a variable");
   }
-  const pluginData = getPlugin$1({
+  const pluginData = kiEthFctProviderTs.getPlugin({
     signature: handleFunctionSignature(call),
     address: call.to,
     chainId: chainId.toString()
@@ -4828,8 +4834,8 @@ function getComputedVariable(index, type) {
 
 class BatchMultiSigCall {
   constructor(input = {}) {
-    this.FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
-    this.FCT_BatchMultiSigCall = new ethers.utils.Interface(BatchMultiSigCallABI);
+    this.FCT_Controller = new ethers.ethers.utils.Interface(FCTControllerABI);
+    this.FCT_BatchMultiSigCall = new ethers.ethers.utils.Interface(BatchMultiSigCallABI);
     this.batchMultiSigSelector = "0x2409a934";
     this.version = "0x010102";
     this.computedVariables = [];
@@ -4909,7 +4915,7 @@ class BatchMultiSigCall {
           throw new Error("No from address provided");
         call.from = fromAddress;
       }
-      const options = _.merge({}, DEFAULT_CALL_OPTIONS, call.options);
+      const options = ___default["default"].merge({}, DEFAULT_CALL_OPTIONS, call.options);
       return {
         ...call,
         from: this.fromAddress || call.from,
@@ -4927,7 +4933,7 @@ function getCalldataForActuator({
   activator,
   version
 }) {
-  const FCT_BatchMultiSigCall = new utils.Interface(BatchMultiSigCallABI);
+  const FCT_BatchMultiSigCall = new ethers.utils.Interface(BatchMultiSigCallABI);
   return FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
     `0x${version}`.padEnd(66, "0"),
     signedFCT,
@@ -4939,12 +4945,12 @@ function getCalldataForActuator({
 
 const AUTHENTICATOR_PRIVATE_KEY = "5c35caeef2837c989ca02120f70b439b1f3266b779db6eb38ccabba24a2522b3";
 const getAuthenticatorSignature = (typedData) => {
-  const signature = signTypedData({
+  const signature = ethSigUtil.signTypedData({
     data: typedData,
     privateKey: Buffer.from(AUTHENTICATOR_PRIVATE_KEY, "hex"),
-    version: SignTypedDataVersion.V4
+    version: ethSigUtil.SignTypedDataVersion.V4
   });
-  return splitSignature(signature);
+  return utils.splitSignature(signature);
 };
 
 var index$2 = /*#__PURE__*/Object.freeze({
@@ -4967,9 +4973,9 @@ var index$1 = /*#__PURE__*/Object.freeze({
 
 const transactionValidator = async (txVal, pureGas = false) => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+  const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
+  const signer = new ethers.ethers.Wallet(actuatorPrivateKey, provider);
+  const actuatorContract = new ethers.ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
   try {
     let gas;
     if (activateForFree) {
@@ -5012,7 +5018,7 @@ const getGasPrices = async ({
     const sum = arr.reduce((a, v) => a + v);
     return Math.round(sum / arr.length);
   }
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
   let keepTrying = true;
   let returnValue;
   do {
@@ -5031,7 +5037,7 @@ const getGasPrices = async ({
         body: JSON.stringify({
           jsonrpc: "2.0",
           method: "eth_feeHistory",
-          params: [historicalBlocks, hexlify(blockNumber), [2, 5, 10, 25]],
+          params: [historicalBlocks, utils.hexlify(blockNumber), [2, 5, 10, 25]],
           id: 1
         })
       });
@@ -5097,9 +5103,9 @@ const estimateFCTGasCost = async ({
   const FCTOverhead = 135500;
   const callOverhead = 16370;
   const numOfCalls = fct.mcall.length;
-  const actuator = new ethers.utils.Interface(FCTActuatorABI);
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const batchMultiSigCallContract = new ethers.Contract(batchMultiSigCallAddress, BatchMultiSigCallABI, provider);
+  const actuator = new ethers.ethers.utils.Interface(FCTActuatorABI);
+  const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
+  const batchMultiSigCallContract = new ethers.ethers.Contract(batchMultiSigCallAddress, BatchMultiSigCallABI, provider);
   const chainId = (await provider.getNetwork()).chainId;
   const calcMemory = (input) => {
     return input * 3 + input * input / 512;
@@ -5117,7 +5123,7 @@ const estimateFCTGasCost = async ({
     return accumulator + 0;
   }, 0);
   const dataLength = actuator.encodeFunctionData("activate", [callData, "0x0000000000000000000000000000000000000000"]).length / 2;
-  let totalCallGas = new BigNumber(0);
+  let totalCallGas = new BigNumber__default["default"](0);
   for (const call of fct.mcall) {
     if (call.types.length > 0) {
       const gasForCall = await batchMultiSigCallContract.estimateGas.abiToEIP712(
@@ -5126,7 +5132,7 @@ const estimateFCTGasCost = async ({
         call.typedHashes,
         { data: 0, types: 0 }
       );
-      const pluginData = getPlugin$1({
+      const pluginData = kiEthFctProviderTs.getPlugin({
         address: call.to,
         chainId: chainId.toString(),
         signature: call.functionSignature
@@ -5140,7 +5146,7 @@ const estimateFCTGasCost = async ({
       totalCallGas = totalCallGas.plus(gasForCall.toString());
     }
   }
-  const gasEstimation = new BigNumber(FCTOverhead).plus(new BigNumber(callOverhead).times(numOfCalls)).plus(totalCallDataCost).plus(calcMemory(dataLength)).minus(calcMemory(nonZero)).plus(new BigNumber(dataLength).times(600).div(32)).plus(totalCallGas);
+  const gasEstimation = new BigNumber__default["default"](FCTOverhead).plus(new BigNumber__default["default"](callOverhead).times(numOfCalls)).plus(totalCallDataCost).plus(calcMemory(dataLength)).minus(calcMemory(nonZero)).plus(new BigNumber__default["default"](dataLength).times(600).div(32)).plus(totalCallGas);
   return gasEstimation.toString();
 };
 const getKIROPayment = ({
@@ -5203,10 +5209,10 @@ const getPaymentPerPayer = ({
       const callCost = totalGasForCall * BigInt(FCTgasPrice);
       const callFee = totalGasForCall * BigInt(effectiveGasPrice);
       const totalCallCost = callCost + callFee;
-      const kiroCost = new BigNumber(totalCallCost.toString()).multipliedBy(new BigNumber(kiroPriceInETH)).shiftedBy(-18 - 18).toNumber();
+      const kiroCost = new BigNumber__default["default"](totalCallCost.toString()).multipliedBy(new BigNumber__default["default"](kiroPriceInETH)).shiftedBy(-18 - 18).toNumber();
       return {
         ...acc,
-        [payer]: BigNumber(acc[payer] || 0).plus(kiroCost).toString()
+        [payer]: BigNumber__default["default"](acc[payer] || 0).plus(kiroCost).toString()
       };
     }, {});
   });
@@ -5222,12 +5228,12 @@ const getPaymentPerPayer = ({
   ];
   return allPayers.map((payer) => {
     const amount = data.reduce((acc, path) => {
-      return BigNumber(acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
+      return BigNumber__default["default"](acc).isGreaterThan(path[payer] || "0") ? acc : path[payer] || "0";
     }, "0");
     return {
       payer,
       amount,
-      amountInETH: BigNumber(amount).div(BigNumber(kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty || 1).toString()
+      amountInETH: BigNumber__default["default"](amount).div(BigNumber__default["default"](kiroPriceInETH).shiftedBy(18)).multipliedBy(penalty || 1).toString()
     };
   });
 };
@@ -5247,4 +5253,22 @@ var index = /*#__PURE__*/Object.freeze({
   getPaymentPerPayer: getPaymentPerPayer
 });
 
-export { BatchMultiSigCall, index$1 as FCTBatchMultiSigCall, index$5 as constants, index as utils, index$3 as variables };
+Object.defineProperty(exports, 'pluginUtils', {
+  enumerable: true,
+  get: function () { return kiEthFctProviderTs.utils; }
+});
+Object.defineProperty(exports, 'ethers', {
+  enumerable: true,
+  get: function () { return ethers.ethers; }
+});
+exports.BatchMultiSigCall = BatchMultiSigCall;
+exports.FCTBatchMultiSigCall = index$1;
+exports.constants = index$5;
+exports.utils = index;
+exports.variables = index$3;
+Object.keys(kiEthFctProviderTs).forEach(function (k) {
+  if (k !== 'default' && !exports.hasOwnProperty(k)) Object.defineProperty(exports, k, {
+    enumerable: true,
+    get: function () { return kiEthFctProviderTs[k]; }
+  });
+});
