@@ -32,6 +32,15 @@
     "branches": [
       "master",
       "develop"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
+      "@semantic-release/github"
     ]
   },
   "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
