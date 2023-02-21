@@ -64,7 +64,6 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
     const approvals = returnData.map((res, index) => {
         const functionName = calls[index].functionName;
         const decoded = iface.decodeFunctionResult(functionName, res);
-        console.log(decoded);
         return {
             ...data[index],
             value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
