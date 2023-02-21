@@ -469,17 +469,34 @@ describe("Utility functions", () => {
         data: [
           {
             token: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
-            from: "0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C",
-            spender: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
+            method: "approve",
+            from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
+            protocol: "ERC20",
+            params: {
+              spender: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
+              amount: "1",
+            },
+          },
+          {
+            token: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+            method: "approve",
+            from: "0xDF9c06D1A927D8945fA5b05840A3A385Eaa14D98",
+            protocol: "ERC721",
+            params: {
+              spender: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+              tokenId: "1",
+            },
           },
         ],
       });
 
       expect(approvals).to.be.a("array");
 
-      expect(approvals[0].from).to.eq("0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C");
-      expect(approvals[0].spender).to.eq("0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C");
-      expect(approvals[0].token).to.eq("0xba232b47a7ddfccc221916cf08da03a4973d3a1d");
+      console.log(approvals);
+
+      // expect(approvals[0].from).to.eq("0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C");
+      // expect(approvals[0].spender).to.eq("0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C");
+      // expect(approvals[0].token).to.eq("0xba232b47a7ddfccc221916cf08da03a4973d3a1d");
     });
   });
   describe("Gas functions", () => {

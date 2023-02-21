@@ -103,9 +103,28 @@ export interface ComputedVariables {
     mul: string;
     div: string;
 }
-export interface IRequiredApproval {
-    requiredAmount: string;
+export type IRequiredApproval = ({
+    protocol: "ERC20";
+    method: "approve";
+    params: {
+        spender: string;
+        amount: string;
+    };
+} | {
+    protocol: "ERC721";
+    method: "approve";
+    params: {
+        spender: string;
+        tokenId: string;
+    };
+} | {
+    protocol: "ERC1155" | "ERC721";
+    method: "setApprovalForAll";
+    params: {
+        spender: string;
+        approved: boolean;
+    };
+}) & {
     token: string;
-    spender: string;
     from: string;
-}
+};
