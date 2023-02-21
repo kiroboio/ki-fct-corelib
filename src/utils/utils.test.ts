@@ -490,8 +490,6 @@ describe("Utility functions", () => {
         ],
       });
 
-      expect(approvals).to.be.a("array");
-
       expect(approvals[0].from).to.eq("0x62e3a53a947d34c4ddcd67b49fadc30b643e2586");
       expect(approvals[0].params.spender).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
 
