@@ -132,7 +132,7 @@ function createTypedData(salt, version) {
         const flow = options.flow ? constants_1.flows[options.flow].text : "continue on success, revert on fail";
         let jumpOnSuccess = 0;
         let jumpOnFail = 0;
-        if (options.jumpOnSuccess !== index_1.NO_JUMP) {
+        if (options.jumpOnSuccess && options.jumpOnSuccess !== index_1.NO_JUMP) {
             const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
             if (jumpOnSuccessIndex === -1) {
                 throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
@@ -142,7 +142,7 @@ function createTypedData(salt, version) {
             }
             jumpOnSuccess = jumpOnSuccessIndex - index - 1;
         }
-        if (options.jumpOnFail !== index_1.NO_JUMP) {
+        if (options.jumpOnFail && options.jumpOnFail !== index_1.NO_JUMP) {
             const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
             if (jumpOnFailIndex === -1) {
                 throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
