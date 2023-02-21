@@ -89,7 +89,6 @@ export const fetchCurrentApprovals = async ({
     const functionName = calls[index].functionName;
 
     const decoded = iface.decodeFunctionResult(functionName, res);
-    console.log(decoded);
 
     return {
       ...data[index],
