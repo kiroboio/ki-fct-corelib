@@ -1,6 +1,6 @@
 {
   "name": "ki-fct-corelib",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Kirobo.io FCT Core library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,12 +34,35 @@
     ],
     "plugins": [
       [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "eslint",
+          "releaseRules": [
+            {
+              "tag": "Docs",
+              "message": "*README*",
+              "release": "patch"
+            },
+            {
+              "tag": "New",
+              "release": "patch"
+            }
+          ]
+        }
+      ],
+      [
         "@semantic-release/npm",
         {
           "npmPublish": false
         }
       ],
-      "@semantic-release/github"
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "successComment": false
+        }
+      ]
     ]
   },
   "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
@@ -49,6 +72,10 @@
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/github": "^8.0.7",
+    "@semantic-release/npm": "^9.0.2",
+    "@semantic-release/release-notes-generator": "^10.0.3",
     "@types/chai": "^4.3.4",
     "@types/graphlib": "^2.1.8",
     "@types/lodash": "^4.14.191",
@@ -56,6 +83,7 @@
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
     "chai": "^4.3.7",
+    "conventional-changelog-eslint": "^3.0.9",
     "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",

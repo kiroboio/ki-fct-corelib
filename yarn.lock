@@ -1418,7 +1418,7 @@
   resolved "https://registry.yarnpkg.com/@semantic-release/error/-/error-3.0.0.tgz#30a3b97bbb5844d695eb22f9d3aa40f6a92770c2"
   integrity sha512-5hiM4Un+tpl4cKw3lV4UgzJj+SmfNIDCLLw0TepzQxz9ZGV5ixnqkzIVF+3tp0ZHgcMKE+VNGHJjEeyFG2dcSw==
 
-"@semantic-release/github@^8.0.0":
+"@semantic-release/github@^8.0.0", "@semantic-release/github@^8.0.7":
   version "8.0.7"
   resolved "https://registry.yarnpkg.com/@semantic-release/github/-/github-8.0.7.tgz#643aee7a5cdd2acd3ae643bb90ad4ac796901de6"
   integrity sha512-VtgicRIKGvmTHwm//iqTh/5NGQwsncOMR5vQK9pMT92Aem7dv37JFKKRuulUsAnUOIlO4G8wH3gPiBAA0iW0ww==
@@ -1440,7 +1440,7 @@
     p-retry "^4.0.0"
     url-join "^4.0.0"
 
-"@semantic-release/npm@^9.0.0":
+"@semantic-release/npm@^9.0.0", "@semantic-release/npm@^9.0.2":
   version "9.0.2"
   resolved "https://registry.yarnpkg.com/@semantic-release/npm/-/npm-9.0.2.tgz#0f0903b4df6e93ef237372146bc376087fed4e1d"
   integrity sha512-zgsynF6McdzxPnFet+a4iO9HpAlARXOM5adz7VGVCvj0ne8wtL2ZOQoDV2wZPDmdEotDIbVeJjafhelZjs9j6g==
@@ -1459,7 +1459,7 @@
     semver "^7.1.2"
     tempy "^1.0.0"
 
-"@semantic-release/release-notes-generator@^10.0.0":
+"@semantic-release/release-notes-generator@^10.0.0", "@semantic-release/release-notes-generator@^10.0.3":
   version "10.0.3"
   resolved "https://registry.yarnpkg.com/@semantic-release/release-notes-generator/-/release-notes-generator-10.0.3.tgz#85f7ca78bfa6b01fb5fda0ac48112855d69171dc"
   integrity sha512-k4x4VhIKneOWoBGHkx0qZogNjCldLPRiAjnIpMnlUh6PtaWXp/T+C9U7/TaNDDtgDa5HMbHl4WlREdxHio6/3w==
@@ -3510,6 +3510,13 @@ conventional-changelog-angular@^5.0.0:
   integrity sha512-i/gipMxs7s8L/QeuavPF2hLnJgH6pEZAttySB6aiQLWcX3puWDL3ACVmvBhJGxnAy52Qc15ua26BufY6KpmrVA==
   dependencies:
     compare-func "^2.0.0"
+    q "^1.5.1"
+
+conventional-changelog-eslint@^3.0.9:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/conventional-changelog-eslint/-/conventional-changelog-eslint-3.0.9.tgz#689bd0a470e02f7baafe21a495880deea18b7cdb"
+  integrity sha512-6NpUCMgU8qmWmyAMSZO5NrRd7rTgErjrm4VASam2u5jrZS0n38V7Y9CzTtLT2qwz5xEChDR4BduoWIr8TfwvXA==
+  dependencies:
     q "^1.5.1"
 
 conventional-changelog-writer@^5.0.0:
