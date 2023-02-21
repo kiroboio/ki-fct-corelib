@@ -1,9 +1,8 @@
-import { AaveV2 } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC20, ERC721 } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import fs from "fs";
-import util from "util";
 
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 // import util from "util";
@@ -45,22 +44,42 @@ async function main() {
     },
   });
 
-  const deposit = new AaveV2.actions.Deposit({
+  const transfer = new ERC20.actions.TransferFrom({
     chainId,
   });
 
-  deposit.input.set({
+  transfer.input.set({
+    to: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     methodParams: {
-      amount: "1000000000000000000",
-      asset: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-      onBehalfOf: vault,
+      amount: "1",
+      from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
+      to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     },
   });
 
-  await batchMultiSigCall.createMultiple([{ plugin: deposit, from: vault, nodeId: "3" }]);
+  const erc721TransferFrom = new ERC721.actions.SafeTransferFrom({
+    chainId,
+    initParams: {
+      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+      methodParams: {
+        from: "0xDF9c06D1A927D8945fA5b05840A3A385Eaa14D98",
+        to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+        tokenId: "1",
+      },
+    },
+  });
+
+  await batchMultiSigCall.createMultiple([
+    { plugin: transfer, from: vault, nodeId: "3" },
+    {
+      plugin: erc721TransferFrom,
+      from: vault,
+      nodeId: "4",
+    },
+  ]);
 
   const FCT = batchMultiSigCall.exportFCT();
-  console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -103,8 +122,8 @@ async function main() {
     gas: 462109,
   });
 
-  // const requireApprovals = await batchMultiSigCall.getAllRequiredApprovals();
-  // console.log(requireApprovals);
+  const requireApprovals = batchMultiSigCall.getAllRequiredApprovals();
+  console.log(requireApprovals);
 
   // const fees = utils.getPaymentPerPayer({
   //   fct: signedFCT,

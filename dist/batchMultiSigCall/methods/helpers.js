@@ -51,11 +51,11 @@ function getAllRequiredApprovals() {
             const approvals = initPlugin.getRequiredApprovals();
             if (approvals.length > 0 && typeof call.from === "string") {
                 const manageValue = (value) => {
+                    if ((0, helpers_1.instanceOfVariable)(value) || !value) {
+                        return "";
+                    }
                     if (value === constants_1.FCT_VAULT_ADDRESS && typeof call.from === "string") {
                         return call.from;
-                    }
-                    if (!value) {
-                        return "";
                     }
                     return value;
                 };
@@ -64,14 +64,50 @@ function getAllRequiredApprovals() {
                     return Object.values(approval).every((value) => typeof value !== "undefined");
                 })
                     .map((approval) => {
-                    return {
-                        token: approval.to ?? "",
-                        spender: manageValue(approval.spender),
-                        requiredAmount: approval.amount ?? "",
-                        from: approval.from || (typeof call.from === "string" ? call.from : ""),
-                    };
+                    // If method is approve
+                    if (approval.method === "approve") {
+                        const data = {
+                            token: manageValue(approval.to),
+                            method: approval.method,
+                            from: manageValue(approval.from || call.from),
+                        };
+                        if (approval.protocol === "ERC20") {
+                            return {
+                                ...data,
+                                protocol: approval.protocol,
+                                params: {
+                                    spender: manageValue(approval.params[0]),
+                                    amount: approval.params[1],
+                                },
+                            };
+                        }
+                        else if (approval.protocol === "ERC721") {
+                            return {
+                                ...data,
+                                protocol: approval.protocol,
+                                params: {
+                                    spender: manageValue(approval.params[0]),
+                                    tokenId: approval.params[1],
+                                },
+                            };
+                        }
+                    }
+                    if (approval.method === "setApprovalForAll" &&
+                        (approval.protocol === "ERC721" || approval.protocol === "ERC1155")) {
+                        return {
+                            protocol: approval.protocol,
+                            token: manageValue(approval.to),
+                            method: approval.method,
+                            params: {
+                                spender: manageValue(approval.params[0]),
+                                approved: approval.params[1],
+                            },
+                            from: manageValue(approval.from || call.from),
+                        };
+                    }
+                    throw new Error("Unknown method for plugin");
                 });
-                requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
+                requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
             }
         }
     }
@@ -96,7 +132,7 @@ function createTypedData(salt, version) {
         const flow = options.flow ? constants_1.flows[options.flow].text : "continue on success, revert on fail";
         let jumpOnSuccess = 0;
         let jumpOnFail = 0;
-        if (options.jumpOnSuccess !== index_1.NO_JUMP) {
+        if (options.jumpOnSuccess && options.jumpOnSuccess !== index_1.NO_JUMP) {
             const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
             if (jumpOnSuccessIndex === -1) {
                 throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
@@ -106,7 +142,7 @@ function createTypedData(salt, version) {
             }
             jumpOnSuccess = jumpOnSuccessIndex - index - 1;
         }
-        if (options.jumpOnFail !== index_1.NO_JUMP) {
+        if (options.jumpOnFail && options.jumpOnFail !== index_1.NO_JUMP) {
             const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
             if (jumpOnFailIndex === -1) {
                 throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
