@@ -30,8 +30,7 @@
   },
   "release": {
     "branches": [
-      "main",
-      "develop"
+      "main"
     ],
     "plugins": [
       [
