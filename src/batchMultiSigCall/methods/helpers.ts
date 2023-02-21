@@ -76,13 +76,14 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
       });
 
       const approvals = initPlugin.getRequiredApprovals();
+
       if (approvals.length > 0 && typeof call.from === "string") {
-        const manageValue = (value: string | undefined) => {
+        const manageValue = (value: string | Variable | undefined) => {
+          if (instanceOfVariable(value) || !value) {
+            return "";
+          }
           if (value === FCT_VAULT_ADDRESS && typeof call.from === "string") {
             return call.from;
-          }
-          if (!value) {
-            return "";
           }
 
           return value;
@@ -92,16 +93,54 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
           .filter((approval) => {
             return Object.values(approval).every((value) => typeof value !== "undefined");
           })
-          .map((approval) => {
-            return {
-              token: approval.to ?? "",
-              spender: manageValue(approval.spender),
-              requiredAmount: approval.amount ?? "",
-              from: approval.from || (typeof call.from === "string" ? call.from : ""),
-            };
+          .map((approval): IRequiredApproval => {
+            // If method is approve
+            if (approval.method === "approve") {
+              const data = {
+                token: manageValue(approval.to),
+                method: approval.method,
+                from: manageValue(approval.from || call.from),
+              };
+              if (approval.protocol === "ERC20") {
+                return {
+                  ...data,
+                  protocol: approval.protocol,
+                  params: {
+                    spender: manageValue(approval.params[0] as string),
+                    amount: approval.params[1] as string,
+                  },
+                };
+              } else if (approval.protocol === "ERC721") {
+                return {
+                  ...data,
+                  protocol: approval.protocol,
+                  params: {
+                    spender: manageValue(approval.params[0] as string),
+                    tokenId: approval.params[1] as string,
+                  },
+                };
+              }
+            }
+            if (
+              approval.method === "setApprovalForAll" &&
+              (approval.protocol === "ERC721" || approval.protocol === "ERC1155")
+            ) {
+              return {
+                protocol: approval.protocol,
+                token: manageValue(approval.to),
+                method: approval.method,
+                params: {
+                  spender: manageValue(approval.params[0] as string),
+                  approved: approval.params[1] as boolean,
+                },
+                from: manageValue(approval.from || call.from),
+              };
+            }
+
+            throw new Error("Unknown method for plugin");
           });
 
-        requiredApprovals = requiredApprovals.concat(requiredApprovalsWithFrom);
+        requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
       }
     }
   }
