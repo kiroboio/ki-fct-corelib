@@ -170,7 +170,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
 
-    if (options.jumpOnSuccess !== NO_JUMP) {
+    if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
       const jumpOnSuccessIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
 
       if (jumpOnSuccessIndex === -1) {
@@ -186,7 +186,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       jumpOnSuccess = jumpOnSuccessIndex - index - 1;
     }
 
-    if (options.jumpOnFail !== NO_JUMP) {
+    if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
       const jumpOnFailIndex = this.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
 
       if (jumpOnFailIndex === -1) {
