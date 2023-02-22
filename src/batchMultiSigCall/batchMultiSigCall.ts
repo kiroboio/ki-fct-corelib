@@ -5,7 +5,7 @@ import _ from "lodash";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
-import { CallOptions, DeepRequired, RequiredKeys } from "../types";
+import { RequiredKeys } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
 import {
@@ -18,7 +18,7 @@ import {
   getCall,
   importEncodedFCT,
   importFCT,
-  setFromAddress,
+  setCallDefaults,
 } from "./methods/FCT";
 import {
   createTypedData,
@@ -34,9 +34,9 @@ import { getComputedVariable, getExternalVariable, getOutputVariable, getVariabl
 import {
   BatchMultiSigCallConstructor,
   ComputedVariables,
+  ICallDefaults,
   IFCTOptions,
   IMSCallInput,
-  MSCallMandatory,
   RequiredFCTOptions,
   StrictMSCallInput,
 } from "./types";
@@ -60,9 +60,7 @@ export class BatchMultiSigCall {
     builder: "0x0000000000000000000000000000000000000000",
   };
 
-  protected _callDefault: Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
-    options: DeepRequired<CallOptions>;
-  } = {
+  protected _callDefault: ICallDefaults = {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
   };
@@ -95,23 +93,22 @@ export class BatchMultiSigCall {
   }
 
   get strictCalls(): StrictMSCallInput[] {
-    const fromAddress = this.fromAddress;
-    return this.calls.map((call) => {
+    return this.calls.map((call): StrictMSCallInput => {
       const fullCall = _.merge({}, this._callDefault, call);
 
-      if (!call.from) {
+      if (typeof fullCall.from === "undefined") {
         throw new Error("From address is required");
       }
 
-      return {
-        ...fullCall,
-      };
+      const from = fullCall.from;
+
+      return { ...fullCall, from };
     });
   }
 
   // Set methods
   public setOptions = setOptions;
-  public setFromAddress = setFromAddress;
+  public setCallDefaults = setCallDefaults;
 
   // Plugin functions
   public getPlugin = getPlugin;

@@ -302,7 +302,9 @@ describe("BatchMultiSigCall", () => {
       chainId: "5",
     });
 
-    FCT.setFromAddress("0x4f631612941F710db646B8290dB097bFB8657dC2");
+    FCT.setCallDefaults({
+      from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    });
 
     const iface = new ethers.utils.Interface(ABI);
 
@@ -312,12 +314,6 @@ describe("BatchMultiSigCall", () => {
     ]);
 
     const call = await FCT.create({
-      encodedData,
-      abi: ABI,
-      to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-    });
-
-    const call2 = await FCT.createWithEncodedData({
       encodedData,
       abi: ABI,
       to: "0x4f631612941F710db646B8290dB097bFB8657dC2",

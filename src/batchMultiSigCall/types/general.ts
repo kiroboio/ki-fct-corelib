@@ -146,10 +146,6 @@ export type IRequiredApproval = (
   token: string;
   from: string;
 };
-
-//               {
-//   requiredAmount: string;
-//   token: string;
-//   spender: string;
-//   from: string;
-// }
+export type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+  options: DeepRequired<CallOptions>;
+};

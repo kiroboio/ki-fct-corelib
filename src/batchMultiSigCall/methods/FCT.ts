@@ -2,10 +2,11 @@ import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-p
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
+import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { Param, RequiredKeys } from "../../types";
+import { DeepPartial, Param, RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,
@@ -23,6 +24,7 @@ import { getParamsFromInputs } from "../helpers/fct";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
+  ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
@@ -143,6 +145,8 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   this.computedVariables = [];
   const calls = this.strictCalls;
+
+  console.log("calls", JSON.stringify(calls, null, 2));
 
   if (this.calls.length === 0) {
     throw new Error("No calls added");
@@ -399,4 +403,8 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 
 export function setFromAddress(this: BatchMultiSigCall, address: string) {
   this.fromAddress = address;
+}
+
+export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
+  this._callDefault = _.merge({}, this._callDefault, callDefault);
 }
