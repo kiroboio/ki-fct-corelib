@@ -157,7 +157,7 @@ export function setOptions(this: BatchMultiSigCall, options: DeepPartial<IFCTOpt
 }
 
 export function createTypedData(this: BatchMultiSigCall, salt: string, version: string): BatchMultiSigCallTypedData {
-  const typedDataMessage = this.strictCalls.reduce((acc: object, call, index: number) => {
+  const typedDataMessage = this.decodedCalls.reduce((acc: object, call, index: number) => {
     let paramsData = {};
     if (call.params) {
       paramsData = this.getParamsFromCall(call, index);
@@ -381,9 +381,6 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, i
                 throw new Error(`Error in call ${index + 1}: ${err.message}`);
               }
             }
-            if (instanceOfVariable(param.value)) {
-              param.value = this.getVariable(param.value, param.type);
-            }
             value = param.value as string[] | string | boolean;
           }
           return {
@@ -397,26 +394,6 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, i
     return getParams(call.params);
   }
   return {};
-}
-
-export function verifyParams(this: BatchMultiSigCall, params: Param[]) {
-  params.forEach((param: Param) => {
-    // If parameter is a variable
-
-    if (instanceOfVariable(param.value)) {
-      param.value = this.getVariable(param.value, param.type);
-    }
-
-    if (param.customType || param.type.includes("tuple")) {
-      if (param.type.lastIndexOf("[") > 0) {
-        for (const parameter of param.value as Param[][]) {
-          this.verifyParams(parameter as Param[]);
-        }
-      } else {
-        this.verifyParams(param.value as Param[]);
-      }
-    }
-  });
 }
 
 export function handleTo(this: BatchMultiSigCall, call: IMSCallInput) {

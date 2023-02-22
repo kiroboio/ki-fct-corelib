@@ -20,14 +20,13 @@ function getVariable(variable, type) {
         return globalVariable;
     }
     if (variable.type === "computed") {
-        const length = this.computedVariables.push({
-            variable: typeof variable.id.variable === "string" ? variable.id.variable : this.getVariable(variable.id.variable, type),
-            add: variable.id.add || "",
-            sub: variable.id.sub || "",
-            mul: variable.id.mul || "",
-            div: variable.id.div || "",
+        const computedVariables = this.computedVariables;
+        const index = computedVariables.findIndex((computedVariable) => {
+            if (typeof variable.id.variable === "string") {
+                return computedVariable.variable === variable.id.variable;
+            }
+            return computedVariable.variable === this.getVariable(variable.id.variable, type);
         });
-        const index = length - 1;
         return this.getComputedVariable(index, type);
     }
     throw new Error("Variable type not found");
