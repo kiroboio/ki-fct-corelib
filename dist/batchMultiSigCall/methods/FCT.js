@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCallDefaults = exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
@@ -306,11 +306,8 @@ async function importEncodedFCT(calldata) {
     return this.calls;
 }
 exports.importEncodedFCT = importEncodedFCT;
-function setFromAddress(address) {
-    this.fromAddress = address;
-}
-exports.setFromAddress = setFromAddress;
 function setCallDefaults(callDefault) {
     this._callDefault = lodash_1.default.merge({}, this._callDefault, callDefault);
+    return this._callDefault;
 }
 exports.setCallDefaults = setCallDefaults;

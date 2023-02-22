@@ -305,5 +305,4 @@ export declare function getCall(this: BatchMultiSigCall, index: number): IMSCall
 export declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
 export declare function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[];
 export declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<import("../types").StrictMSCallInput[]>;
-export declare function setFromAddress(this: BatchMultiSigCall, address: string): void;
-export declare function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>): void;
+export declare function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>): ICallDefaults;
