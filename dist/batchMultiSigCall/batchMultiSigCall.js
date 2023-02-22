@@ -21,8 +21,7 @@ class BatchMultiSigCall {
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.batchMultiSigSelector = "0x2409a934";
         this.version = "0x010102";
-        this.computedVariables = [];
-        this.calls = [];
+        this._calls = [];
         this._options = {
             maxGasPrice: "30000000000",
             validFrom: (0, helpers_1.getDate)(),
@@ -31,9 +30,13 @@ class BatchMultiSigCall {
             blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
         };
+        this._callDefault = {
+            value: "0",
+            options: constants_1.DEFAULT_CALL_OPTIONS,
+        };
         // Set methods
         this.setOptions = helpers_2.setOptions;
-        this.setFromAddress = FCT_1.setFromAddress;
+        this.setCallDefaults = FCT_1.setCallDefaults;
         // Plugin functions
         this.getPlugin = plugins_1.getPlugin;
         this.getPluginClass = plugins_1.getPluginClass;
@@ -58,7 +61,6 @@ class BatchMultiSigCall {
         // Internal helper functions
         this.createTypedData = helpers_2.createTypedData;
         this.getParamsFromCall = helpers_2.getParamsFromCall;
-        this.verifyParams = helpers_2.verifyParams;
         this.handleTo = helpers_2.handleTo;
         this.handleValue = helpers_2.handleValue;
         // Validation functions
@@ -71,6 +73,8 @@ class BatchMultiSigCall {
         }
         if (input.options)
             this.setOptions(input.options);
+        if (input.defaults)
+            this.setCallDefaults(input.defaults);
     }
     // Getters
     get options() {
@@ -88,22 +92,51 @@ class BatchMultiSigCall {
             },
         };
     }
-    get strictCalls() {
-        const fromAddress = this.fromAddress;
-        return this.calls.map((call) => {
-            if (!call.from) {
-                if (!fromAddress)
-                    throw new Error("No from address provided");
-                call.from = fromAddress;
+    get calls() {
+        return this._calls.map((call) => {
+            const fullCall = lodash_1.default.merge({}, this._callDefault, call);
+            if (typeof fullCall.from === "undefined") {
+                throw new Error("From address is required");
             }
-            const options = lodash_1.default.merge({}, constants_1.DEFAULT_CALL_OPTIONS, call.options);
-            return {
-                ...call,
-                from: this.fromAddress || call.from,
-                value: call.value || "0",
-                options,
-            };
+            const from = fullCall.from;
+            return { ...fullCall, from };
         });
+    }
+    get decodedCalls() {
+        const decodeParams = (params) => {
+            params.forEach((param) => {
+                if ((0, helpers_1.instanceOfVariable)(param.value)) {
+                    param.value = this.getVariable(param.value, param.type);
+                }
+            });
+        };
+        return this.calls.map((call) => {
+            if (call.params) {
+                decodeParams(call.params);
+            }
+            return call;
+        });
+    }
+    get computedVariables() {
+        return this.calls.reduce((acc, call) => {
+            if (call.params) {
+                call.params.forEach((param) => {
+                    if ((0, helpers_1.instanceOfVariable)(param.value) && param.value.type === "computed") {
+                        const variable = param.value;
+                        acc.push({
+                            variable: typeof variable.id.variable === "string"
+                                ? variable.id.variable
+                                : this.getVariable(variable.id.variable, param.type),
+                            add: variable.id.add || "",
+                            sub: variable.id.sub || "",
+                            mul: variable.id.mul || "",
+                            div: variable.id.div || "",
+                        });
+                    }
+                });
+            }
+            return acc;
+        }, []);
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;
