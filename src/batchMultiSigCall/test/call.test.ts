@@ -21,7 +21,6 @@ const defaultCall: IMSCallInput = {
       hashed: false,
     },
   ],
-  nodeId: "15",
 };
 
 const getCall = (call: Partial<IMSCallInput>) => _.merge({}, defaultCall, call);

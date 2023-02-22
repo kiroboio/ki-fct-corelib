@@ -14,7 +14,7 @@ const helpers_1 = require("../helpers");
 const fct_1 = require("../helpers/fct");
 // Generate nodeId for a call
 function generateNodeId() {
-    return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 exports.generateNodeId = generateNodeId;
 async function create(callInput) {
