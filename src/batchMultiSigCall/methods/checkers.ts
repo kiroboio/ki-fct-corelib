@@ -54,7 +54,8 @@ export function verifyCall(this: BatchMultiSigCall, call: IMSCallInput) {
   // Node ID validator
   if (call.nodeId) {
     const index = this.calls.findIndex((item) => item.nodeId === call.nodeId);
-    if (index > 0) {
+
+    if (index > -1) {
       throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
     }
   }

@@ -32,7 +32,7 @@ import {
 
 // Generate nodeId for a call
 export function generateNodeId(): string {
-  return [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+  return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
 export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId> {
