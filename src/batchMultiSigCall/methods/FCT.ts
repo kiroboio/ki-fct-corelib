@@ -400,10 +400,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   return this.calls;
 }
 
-export function setFromAddress(this: BatchMultiSigCall, address: string) {
-  this.fromAddress = address;
-}
-
 export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
   this._callDefault = _.merge({}, this._callDefault, callDefault);
+  return this._callDefault;
 }
