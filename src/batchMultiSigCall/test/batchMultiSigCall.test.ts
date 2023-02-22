@@ -12,6 +12,8 @@ function getDate(days = 0) {
   return Number(result.getTime() / 1000).toFixed();
 }
 
+// Should create an FCT with 3 non-plugin calls:
+// Should create FCT with Computed Variables:
 describe("BatchMultiSigCall", () => {
   let batchMultiSigCall: BatchMultiSigCall;
 

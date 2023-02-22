@@ -4,8 +4,8 @@ import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
-import { getDate } from "../helpers";
-import { RequiredKeys } from "../types";
+import { getDate, instanceOfVariable } from "../helpers";
+import { Param, RequiredKeys } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
 import {
@@ -27,7 +27,6 @@ import {
   handleTo,
   handleValue,
   setOptions,
-  verifyParams,
 } from "./methods/helpers";
 import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
 import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
@@ -49,8 +48,7 @@ export class BatchMultiSigCall {
   protected chainId: ChainId;
 
   public fromAddress: string;
-  protected computedVariables: ComputedVariables[] = [];
-  protected calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
+  protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
   protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
     validFrom: getDate(), // Valid from now
@@ -73,6 +71,7 @@ export class BatchMultiSigCall {
     }
 
     if (input.options) this.setOptions(input.options);
+    if (input.defaults) this.setCallDefaults(input.defaults);
   }
 
   // Getters
@@ -92,8 +91,8 @@ export class BatchMultiSigCall {
     };
   }
 
-  get strictCalls(): StrictMSCallInput[] {
-    return this.calls.map((call): StrictMSCallInput => {
+  get calls(): StrictMSCallInput[] {
+    return this._calls.map((call): StrictMSCallInput => {
       const fullCall = _.merge({}, this._callDefault, call);
 
       if (typeof fullCall.from === "undefined") {
@@ -104,6 +103,45 @@ export class BatchMultiSigCall {
 
       return { ...fullCall, from };
     });
+  }
+
+  get decodedCalls() {
+    const decodeParams = (params: Param[]) => {
+      params.forEach((param) => {
+        if (instanceOfVariable(param.value)) {
+          param.value = this.getVariable(param.value, param.type);
+        }
+      });
+    };
+    return this.calls.map((call) => {
+      if (call.params) {
+        decodeParams(call.params);
+      }
+      return call;
+    });
+  }
+
+  get computedVariables() {
+    return this.calls.reduce((acc, call) => {
+      if (call.params) {
+        call.params.forEach((param) => {
+          if (instanceOfVariable(param.value) && param.value.type === "computed") {
+            const variable = param.value;
+            acc.push({
+              variable:
+                typeof variable.id.variable === "string"
+                  ? variable.id.variable
+                  : this.getVariable(variable.id.variable, param.type),
+              add: variable.id.add || "",
+              sub: variable.id.sub || "",
+              mul: variable.id.mul || "",
+              div: variable.id.div || "",
+            });
+          }
+        });
+      }
+      return acc;
+    }, [] as ComputedVariables[]);
   }
 
   // Set methods
@@ -138,7 +176,6 @@ export class BatchMultiSigCall {
   // Internal helper functions
   protected createTypedData = createTypedData;
   protected getParamsFromCall = getParamsFromCall;
-  protected verifyParams = verifyParams;
   protected handleTo = handleTo;
   protected handleValue = handleValue;
 

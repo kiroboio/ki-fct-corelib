@@ -51,7 +51,8 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
 
     // Before adding the call, we check if it is valid
     this.verifyCall(data);
-    this.calls.push(data);
+
+    this._calls.push(data);
 
     return data;
   }
@@ -69,7 +70,7 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
       }
     }
   }
-  return this.calls;
+  return this._calls;
 }
 
 export async function createWithPlugin(
@@ -90,7 +91,7 @@ export async function createWithPlugin(
 
   // Before adding the call, we check if it is valid
   this.verifyCall(data);
-  this.calls.push(data);
+  this._calls.push(data);
 
   return data;
 }
@@ -124,7 +125,7 @@ export async function createWithEncodedData(
 
   // Before adding the call, we check if it is valid
   this.verifyCall(data);
-  this.calls.push(data);
+  this._calls.push(data);
 
   return data;
 }
@@ -143,10 +144,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 }
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  this.computedVariables = [];
-  const calls = this.strictCalls;
-
-  console.log("calls", JSON.stringify(calls, null, 2));
+  const calls = this.decodedCalls;
 
   if (this.calls.length === 0) {
     throw new Error("No calls added");
@@ -156,6 +154,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const typedData = this.createTypedData(salt, this.version);
+
   const sessionId: string = getSessionId(salt, this.version, this.options);
 
   const mcall = calls.map((call, index) => {

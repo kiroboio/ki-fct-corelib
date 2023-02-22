@@ -3,7 +3,7 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { Fragment } from "ethers/lib/utils";
 
-import { CallOptions, DeepRequired, IPluginCall, Param, RequiredKeys, Variable } from "../../types";
+import { CallOptions, DeepPartial, DeepRequired, IPluginCall, Param, RequiredKeys, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
@@ -11,6 +11,7 @@ export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: 
 export interface BatchMultiSigCallConstructor {
   chainId?: ChainId;
   options?: Partial<IFCTOptions>;
+  defaults?: DeepPartial<ICallDefaults>;
 }
 
 export interface IBatchMultiSigCallFCT {
