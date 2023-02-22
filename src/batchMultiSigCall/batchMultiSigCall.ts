@@ -1,11 +1,11 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
 import _ from "lodash";
-import { RequiredKeys } from "types";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
+import { CallOptions, DeepRequired, RequiredKeys } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { verifyCall } from "./methods/checkers";
 import {
@@ -36,6 +36,7 @@ import {
   ComputedVariables,
   IFCTOptions,
   IMSCallInput,
+  MSCallMandatory,
   RequiredFCTOptions,
   StrictMSCallInput,
 } from "./types";
@@ -57,6 +58,13 @@ export class BatchMultiSigCall {
     purgeable: false,
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
+  };
+
+  protected _callDefault: Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+    options: DeepRequired<CallOptions>;
+  } = {
+    value: "0",
+    options: DEFAULT_CALL_OPTIONS,
   };
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
@@ -89,18 +97,14 @@ export class BatchMultiSigCall {
   get strictCalls(): StrictMSCallInput[] {
     const fromAddress = this.fromAddress;
     return this.calls.map((call) => {
+      const fullCall = _.merge({}, this._callDefault, call);
+
       if (!call.from) {
-        if (!fromAddress) throw new Error("No from address provided");
-        call.from = fromAddress;
+        throw new Error("From address is required");
       }
 
-      const options = _.merge({}, DEFAULT_CALL_OPTIONS, call.options);
-
       return {
-        ...call,
-        from: this.fromAddress || call.from,
-        value: call.value || "0",
-        options,
+        ...fullCall,
       };
     });
   }
