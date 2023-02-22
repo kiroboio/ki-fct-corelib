@@ -115,6 +115,9 @@ describe("BatchMultiSigCall", () => {
         nodeId: "node2",
         plugin: balanceOf,
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        options: {
+          flow: Flow.OK_CONT_FAIL_CONT,
+        },
       },
       {
         nodeId: "node3",
