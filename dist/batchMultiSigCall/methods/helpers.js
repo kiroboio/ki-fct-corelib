@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleValue = exports.handleTo = exports.verifyParams = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
+exports.handleValue = exports.handleTo = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
@@ -122,7 +122,7 @@ function setOptions(options) {
 }
 exports.setOptions = setOptions;
 function createTypedData(salt, version) {
-    const typedDataMessage = this.strictCalls.reduce((acc, call, index) => {
+    const typedDataMessage = this.decodedCalls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
             paramsData = this.getParamsFromCall(call, index);
@@ -326,9 +326,6 @@ function getParamsFromCall(call, index) {
                                 throw new Error(`Error in call ${index + 1}: ${err.message}`);
                             }
                         }
-                        if ((0, helpers_1.instanceOfVariable)(param.value)) {
-                            param.value = this.getVariable(param.value, param.type);
-                        }
                         value = param.value;
                     }
                     return {
@@ -343,25 +340,6 @@ function getParamsFromCall(call, index) {
     return {};
 }
 exports.getParamsFromCall = getParamsFromCall;
-function verifyParams(params) {
-    params.forEach((param) => {
-        // If parameter is a variable
-        if ((0, helpers_1.instanceOfVariable)(param.value)) {
-            param.value = this.getVariable(param.value, param.type);
-        }
-        if (param.customType || param.type.includes("tuple")) {
-            if (param.type.lastIndexOf("[") > 0) {
-                for (const parameter of param.value) {
-                    this.verifyParams(parameter);
-                }
-            }
-            else {
-                this.verifyParams(param.value);
-            }
-        }
-    });
-}
-exports.verifyParams = verifyParams;
 function handleTo(call) {
     if (typeof call.to === "string") {
         return call.to;

@@ -1,7 +1,7 @@
 import { AllPlugins } from "@kirobo/ki-eth-fct-provider-ts";
-import { RequiredKeys } from "../../types";
+import { DeepPartial } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IWithPlugin } from "../types";
+import { FCTCall, IBatchMultiSigCallFCT, ICallDefaults, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IWithPlugin } from "../types";
 export declare function generateNodeId(): string;
 export declare function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId>;
 export declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
@@ -304,5 +304,6 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
 export declare function getCall(this: BatchMultiSigCall, index: number): IMSCallInput;
 export declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
 export declare function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[];
-export declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<RequiredKeys<IMSCallInput, "nodeId">[]>;
+export declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<import("../types").StrictMSCallInput[]>;
 export declare function setFromAddress(this: BatchMultiSigCall, address: string): void;
+export declare function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>): void;
