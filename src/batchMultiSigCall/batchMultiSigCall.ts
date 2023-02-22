@@ -47,7 +47,6 @@ export class BatchMultiSigCall {
   protected version = "0x010102";
   protected chainId: ChainId;
 
-  public fromAddress: string;
   protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
   protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
