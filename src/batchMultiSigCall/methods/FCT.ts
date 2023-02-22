@@ -2,10 +2,11 @@ import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-p
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
+import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { Param, RequiredKeys } from "../../types";
+import { DeepPartial, Param, RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import {
   getSessionId,
@@ -23,6 +24,7 @@ import { getParamsFromInputs } from "../helpers/fct";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
+  ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
@@ -49,7 +51,8 @@ export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promi
 
     // Before adding the call, we check if it is valid
     this.verifyCall(data);
-    this.calls.push(data);
+
+    this._calls.push(data);
 
     return data;
   }
@@ -67,7 +70,7 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
       }
     }
   }
-  return this.calls;
+  return this._calls;
 }
 
 export async function createWithPlugin(
@@ -88,7 +91,7 @@ export async function createWithPlugin(
 
   // Before adding the call, we check if it is valid
   this.verifyCall(data);
-  this.calls.push(data);
+  this._calls.push(data);
 
   return data;
 }
@@ -122,7 +125,7 @@ export async function createWithEncodedData(
 
   // Before adding the call, we check if it is valid
   this.verifyCall(data);
-  this.calls.push(data);
+  this._calls.push(data);
 
   return data;
 }
@@ -141,8 +144,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 }
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  this.computedVariables = [];
-  const calls = this.strictCalls;
+  const calls = this.decodedCalls;
 
   if (this.calls.length === 0) {
     throw new Error("No calls added");
@@ -152,6 +154,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 
   const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
   const typedData = this.createTypedData(salt, this.version);
+
   const sessionId: string = getSessionId(salt, this.version, this.options);
 
   const mcall = calls.map((call, index) => {
@@ -397,6 +400,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   return this.calls;
 }
 
-export function setFromAddress(this: BatchMultiSigCall, address: string) {
-  this.fromAddress = address;
+export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
+  this._callDefault = _.merge({}, this._callDefault, callDefault);
+  return this._callDefault;
 }

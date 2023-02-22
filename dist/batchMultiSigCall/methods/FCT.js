@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setFromAddress = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
+const lodash_1 = __importDefault(require("lodash"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
@@ -29,7 +30,7 @@ async function create(callInput) {
         const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
         // Before adding the call, we check if it is valid
         this.verifyCall(data);
-        this.calls.push(data);
+        this._calls.push(data);
         return data;
     }
 }
@@ -47,7 +48,7 @@ async function createMultiple(calls) {
             }
         }
     }
-    return this.calls;
+    return this._calls;
 }
 exports.createMultiple = createMultiple;
 async function createWithPlugin(callWithPlugin) {
@@ -63,7 +64,7 @@ async function createWithPlugin(callWithPlugin) {
     };
     // Before adding the call, we check if it is valid
     this.verifyCall(data);
-    this.calls.push(data);
+    this._calls.push(data);
     return data;
 }
 exports.createWithPlugin = createWithPlugin;
@@ -85,7 +86,7 @@ async function createWithEncodedData(callWithEncodedData) {
     };
     // Before adding the call, we check if it is valid
     this.verifyCall(data);
-    this.calls.push(data);
+    this._calls.push(data);
     return data;
 }
 exports.createWithEncodedData = createWithEncodedData;
@@ -103,8 +104,7 @@ function getCall(index) {
 }
 exports.getCall = getCall;
 function exportFCT() {
-    this.computedVariables = [];
-    const calls = this.strictCalls;
+    const calls = this.decodedCalls;
     if (this.calls.length === 0) {
         throw new Error("No calls added");
     }
@@ -306,7 +306,8 @@ async function importEncodedFCT(calldata) {
     return this.calls;
 }
 exports.importEncodedFCT = importEncodedFCT;
-function setFromAddress(address) {
-    this.fromAddress = address;
+function setCallDefaults(callDefault) {
+    this._callDefault = lodash_1.default.merge({}, this._callDefault, callDefault);
+    return this._callDefault;
 }
-exports.setFromAddress = setFromAddress;
+exports.setCallDefaults = setCallDefaults;
