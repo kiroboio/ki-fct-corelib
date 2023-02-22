@@ -13,7 +13,6 @@ export declare class BatchMultiSigCall {
     protected batchMultiSigSelector: string;
     protected version: string;
     protected chainId: ChainId;
-    fromAddress: string;
     protected _calls: RequiredKeys<IMSCallInput, "nodeId">[];
     protected _options: IFCTOptions;
     protected _callDefault: ICallDefaults;
