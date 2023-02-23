@@ -30,16 +30,14 @@ const manageCallId = (calls, call, index) => {
     let successJump = "0000";
     let failJump = "0000";
     if (call.options) {
-        if (call.options.jumpOnFail !== constants_2.NO_JUMP) {
+        const { jumpOnFail, jumpOnSuccess } = call.options;
+        if (jumpOnFail && jumpOnFail !== constants_2.NO_JUMP) {
             const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
-            if (nodeIndex === -1) {
-                throw new Error("Jump on fail not found");
-            }
             failJump = Number(nodeIndex - index - 1)
                 .toString(16)
                 .padStart(4, "0");
         }
-        if (call.options.jumpOnSuccess !== constants_2.NO_JUMP) {
+        if (jumpOnSuccess && jumpOnSuccess !== constants_2.NO_JUMP) {
             const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
             successJump = Number(nodeIndex - index - 1)
                 .toString(16)
