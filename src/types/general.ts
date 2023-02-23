@@ -2,8 +2,6 @@ import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
 
-// export type ChainId = "1" | "5";
-
 export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
