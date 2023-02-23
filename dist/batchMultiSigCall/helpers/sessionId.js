@@ -32,6 +32,9 @@ const manageCallId = (calls, call, index) => {
     if (call.options) {
         if (call.options.jumpOnFail !== constants_2.NO_JUMP) {
             const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
+            if (nodeIndex === -1) {
+                throw new Error("Jump on fail not found");
+            }
             failJump = Number(nodeIndex - index - 1)
                 .toString(16)
                 .padStart(4, "0");
