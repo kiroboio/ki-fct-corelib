@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleValue = exports.handleTo = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
+exports.decodeParams = exports.handleValue = exports.handleTo = exports.getParamsFromCall = exports.createTypedData = exports.setOptions = exports.getAllRequiredApprovals = exports.getCalldataForActuator = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
@@ -306,13 +306,11 @@ function getParamsFromCall(call, index) {
                     let value;
                     // If parameter is a custom type (struct)
                     if (param.customType || param.type.includes("tuple")) {
-                        // If parameter is an array of custom types
                         if (param.type.lastIndexOf("[") > 0) {
                             const valueArray = param.value;
                             value = valueArray.map((item) => getParams(item));
                         }
                         else {
-                            // If parameter is a custom type
                             const valueArray = param.value;
                             value = getParams(valueArray);
                         }
@@ -361,3 +359,23 @@ function handleValue(call) {
     return this.getVariable(call.value, "uint256");
 }
 exports.handleValue = handleValue;
+function decodeParams(params) {
+    return params.reduce((acc, param) => {
+        if (param.type === "tuple" || param.customType) {
+            if (param.type.lastIndexOf("[") > 0) {
+                const value = param.value;
+                const decodedValue = value.map((tuple) => this.decodeParams(tuple));
+                return [...acc, { ...param, value: decodedValue }];
+            }
+            const value = this.decodeParams(param.value);
+            return [...acc, { ...param, value }];
+        }
+        if ((0, helpers_1.instanceOfVariable)(param.value)) {
+            const value = this.getVariable(param.value, param.type);
+            const updatedParam = { ...param, value };
+            return [...acc, updatedParam];
+        }
+        return [...acc, param];
+    }, []);
+}
+exports.decodeParams = decodeParams;
