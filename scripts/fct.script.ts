@@ -77,6 +77,9 @@ async function main() {
       plugin: erc721TransferFrom,
       from: vault,
       nodeId: "4",
+      options: {
+        jumpOnFail: "",
+      },
     },
     {
       from: vault,
@@ -117,9 +120,10 @@ async function main() {
     },
   ]);
 
+  const FCT = batchMultiSigCall.exportFCT();
   console.log(util.inspect(batchMultiSigCall.decodedCalls, false, null, true /* enable colors */));
 
-  const FCT = batchMultiSigCall.exportFCT();
+  console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,

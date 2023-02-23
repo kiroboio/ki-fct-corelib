@@ -36,19 +36,16 @@ export const manageCallId = (calls: IMSCallInput[], call: StrictMSCallInput, ind
   let failJump = "0000";
 
   if (call.options) {
-    if (call.options.jumpOnFail !== NO_JUMP) {
+    const { jumpOnFail, jumpOnSuccess } = call.options;
+    if (jumpOnFail && jumpOnFail !== NO_JUMP) {
       const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
-
-      if (nodeIndex === -1) {
-        throw new Error("Jump on fail not found");
-      }
 
       failJump = Number(nodeIndex - index - 1)
         .toString(16)
         .padStart(4, "0");
     }
 
-    if (call.options.jumpOnSuccess !== NO_JUMP) {
+    if (jumpOnSuccess && jumpOnSuccess !== NO_JUMP) {
       const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
 
       successJump = Number(nodeIndex - index - 1)
