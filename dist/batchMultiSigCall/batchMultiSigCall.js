@@ -5,16 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
-const lodash_1 = __importDefault(require("lodash"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
 const constants_1 = require("./constants");
-const checkers_1 = require("./methods/checkers");
-const FCT_1 = require("./methods/FCT");
-const helpers_2 = require("./methods/helpers");
-const plugins_1 = require("./methods/plugins");
-const variables_1 = require("./methods/variables");
+const methods_1 = require("./methods");
 class BatchMultiSigCall {
     constructor(input = {}) {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
@@ -35,36 +30,41 @@ class BatchMultiSigCall {
             options: constants_1.DEFAULT_CALL_OPTIONS,
         };
         // Set methods
-        this.setOptions = helpers_2.setOptions;
-        this.setCallDefaults = FCT_1.setCallDefaults;
+        this.setOptions = methods_1.setOptions;
+        this.setCallDefaults = methods_1.setCallDefaults;
         // Plugin functions
-        this.getPlugin = plugins_1.getPlugin;
-        this.getPluginClass = plugins_1.getPluginClass;
-        this.createPlugin = FCT_1.createPlugin;
+        this.getPlugin = methods_1.getPlugin;
+        this.getPluginClass = methods_1.getPluginClass;
+        this.createPlugin = methods_1.createPlugin;
         // FCT Functions
-        this.create = FCT_1.create;
-        this.createWithEncodedData = FCT_1.createWithEncodedData;
-        this.createWithPlugin = FCT_1.createWithPlugin;
-        this.createMultiple = FCT_1.createMultiple;
-        this.exportFCT = FCT_1.exportFCT;
-        this.importFCT = FCT_1.importFCT;
-        this.importEncodedFCT = FCT_1.importEncodedFCT;
-        this.getCall = FCT_1.getCall;
+        this.create = methods_1.create;
+        this.createWithEncodedData = methods_1.createWithEncodedData;
+        this.createWithPlugin = methods_1.createWithPlugin;
+        this.createMultiple = methods_1.createMultiple;
+        this.exportFCT = methods_1.exportFCT;
+        this.importFCT = methods_1.importFCT;
+        this.importEncodedFCT = methods_1.importEncodedFCT;
+        this.getCall = methods_1.getCall;
         // Utility functions
-        this.getPluginData = plugins_1.getPluginData;
-        this.getAllRequiredApprovals = helpers_2.getAllRequiredApprovals;
+        this.getPluginData = methods_1.getPluginData;
+        this.getAllRequiredApprovals = methods_1.getAllRequiredApprovals;
         // Variables
-        this.getVariable = variables_1.getVariable;
-        this.getOutputVariable = variables_1.getOutputVariable;
-        this.getExternalVariable = variables_1.getExternalVariable;
-        this.getComputedVariable = variables_1.getComputedVariable;
+        this.getVariable = methods_1.getVariable;
+        this.getOutputVariable = methods_1.getOutputVariable;
+        this.getExternalVariable = methods_1.getExternalVariable;
+        this.getComputedVariable = methods_1.getComputedVariable;
         // Internal helper functions
-        this.createTypedData = helpers_2.createTypedData;
-        this.getParamsFromCall = helpers_2.getParamsFromCall;
-        this.handleTo = helpers_2.handleTo;
-        this.handleValue = helpers_2.handleValue;
+        this.createTypedData = methods_1.createTypedData;
+        this.getParamsFromCall = methods_1.getParamsFromCall;
+        this.handleTo = methods_1.handleTo;
+        this.handleValue = methods_1.handleValue;
+        this.decodeParams = methods_1.decodeParams;
         // Validation functions
-        this.verifyCall = checkers_1.verifyCall;
+        this.verifyCall = methods_1.verifyCall;
+        // Getter functions
+        this._getComputedVariables = methods_1._getComputedVariables;
+        this._getDecodedCalls = methods_1._getDecodedCalls;
+        this._getCalls = methods_1._getCalls;
         if (input.chainId) {
             this.chainId = input.chainId;
         }
@@ -93,50 +93,13 @@ class BatchMultiSigCall {
         };
     }
     get calls() {
-        return this._calls.map((call) => {
-            const fullCall = lodash_1.default.merge({}, this._callDefault, call);
-            if (typeof fullCall.from === "undefined") {
-                throw new Error("From address is required");
-            }
-            const from = fullCall.from;
-            return { ...fullCall, from };
-        });
+        return this._getCalls();
     }
     get decodedCalls() {
-        const decodeParams = (params) => {
-            params.forEach((param) => {
-                if ((0, helpers_1.instanceOfVariable)(param.value)) {
-                    param.value = this.getVariable(param.value, param.type);
-                }
-            });
-        };
-        return this.calls.map((call) => {
-            if (call.params) {
-                decodeParams(call.params);
-            }
-            return call;
-        });
+        return this._getDecodedCalls();
     }
     get computedVariables() {
-        return this.calls.reduce((acc, call) => {
-            if (call.params) {
-                call.params.forEach((param) => {
-                    if ((0, helpers_1.instanceOfVariable)(param.value) && param.value.type === "computed") {
-                        const variable = param.value;
-                        acc.push({
-                            variable: typeof variable.id.variable === "string"
-                                ? variable.id.variable
-                                : this.getVariable(variable.id.variable, param.type),
-                            add: variable.id.add || "",
-                            sub: variable.id.sub || "",
-                            mul: variable.id.mul || "",
-                            div: variable.id.div || "",
-                        });
-                    }
-                });
-            }
-            return acc;
-        }, []);
+        return this._getComputedVariables();
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;
