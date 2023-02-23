@@ -1,38 +1,44 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
-import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
-import { getDate, instanceOfVariable } from "../helpers";
-import { Param, RequiredKeys } from "../types";
+import { getDate } from "../helpers";
+import { RequiredKeys } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
-import { verifyCall } from "./methods/checkers";
 import {
+  _getCalls,
+  _getComputedVariables,
+  _getDecodedCalls,
   create,
   createMultiple,
   createPlugin,
+  createTypedData,
   createWithEncodedData,
   createWithPlugin,
+  decodeParams,
   exportFCT,
+  getAllRequiredApprovals,
   getCall,
+  getComputedVariable,
+  getExternalVariable,
+  getOutputVariable,
+  getParamsFromCall,
+  getPlugin,
+  getPluginClass,
+  getPluginData,
+  getVariable,
+  handleTo,
+  handleValue,
   importEncodedFCT,
   importFCT,
   setCallDefaults,
-} from "./methods/FCT";
-import {
-  createTypedData,
-  getAllRequiredApprovals,
-  getParamsFromCall,
-  handleTo,
-  handleValue,
   setOptions,
-} from "./methods/helpers";
-import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
-import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
+  verifyCall,
+} from "./methods";
 import {
   BatchMultiSigCallConstructor,
-  ComputedVariables,
+  DecodedCalls,
   ICallDefaults,
   IFCTOptions,
   IMSCallInput,
@@ -91,56 +97,15 @@ export class BatchMultiSigCall {
   }
 
   get calls(): StrictMSCallInput[] {
-    return this._calls.map((call): StrictMSCallInput => {
-      const fullCall = _.merge({}, this._callDefault, call);
-
-      if (typeof fullCall.from === "undefined") {
-        throw new Error("From address is required");
-      }
-
-      const from = fullCall.from;
-
-      return { ...fullCall, from };
-    });
+    return this._getCalls();
   }
 
-  get decodedCalls() {
-    const decodeParams = (params: Param[]) => {
-      params.forEach((param) => {
-        if (instanceOfVariable(param.value)) {
-          param.value = this.getVariable(param.value, param.type);
-        }
-      });
-    };
-    return this.calls.map((call) => {
-      if (call.params) {
-        decodeParams(call.params);
-      }
-      return call;
-    });
+  get decodedCalls(): DecodedCalls[] {
+    return this._getDecodedCalls();
   }
 
   get computedVariables() {
-    return this.calls.reduce((acc, call) => {
-      if (call.params) {
-        call.params.forEach((param) => {
-          if (instanceOfVariable(param.value) && param.value.type === "computed") {
-            const variable = param.value;
-            acc.push({
-              variable:
-                typeof variable.id.variable === "string"
-                  ? variable.id.variable
-                  : this.getVariable(variable.id.variable, param.type),
-              add: variable.id.add || "",
-              sub: variable.id.sub || "",
-              mul: variable.id.mul || "",
-              div: variable.id.div || "",
-            });
-          }
-        });
-      }
-      return acc;
-    }, [] as ComputedVariables[]);
+    return this._getComputedVariables();
   }
 
   // Set methods
@@ -177,7 +142,13 @@ export class BatchMultiSigCall {
   protected getParamsFromCall = getParamsFromCall;
   protected handleTo = handleTo;
   protected handleValue = handleValue;
+  protected decodeParams = decodeParams;
 
   // Validation functions
   protected verifyCall = verifyCall;
+
+  // Getter functions
+  protected _getComputedVariables = _getComputedVariables;
+  protected _getDecodedCalls = _getDecodedCalls;
+  protected _getCalls = _getCalls;
 }

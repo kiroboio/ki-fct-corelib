@@ -3,7 +3,9 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import fs from "fs";
+import util from "util";
 
+// import util from "util"
 import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 // import util from "util";
 
@@ -76,10 +78,48 @@ async function main() {
       from: vault,
       nodeId: "4",
     },
+    {
+      from: vault,
+      method: "transfer",
+      to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+      params: [
+        {
+          name: "data",
+          type: "tuple",
+          customType: true,
+          value: [
+            {
+              name: "to",
+              type: "address",
+              value: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+            },
+            {
+              name: "value",
+              type: "uint256",
+              value: { type: "external", id: 1 },
+            },
+            {
+              name: "value2",
+              type: "tuple",
+              customType: true,
+              value: [
+                {
+                  name: "to",
+                  type: "address",
+                  value: { type: "external", id: 2 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      nodeId: "5",
+    },
   ]);
 
+  console.log(util.inspect(batchMultiSigCall.decodedCalls, false, null, true /* enable colors */));
+
   const FCT = batchMultiSigCall.exportFCT();
-  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,

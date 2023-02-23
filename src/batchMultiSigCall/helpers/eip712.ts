@@ -71,7 +71,7 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
       ? call.params.map((param: Param) => {
           if (param.customType || param.type === "tuple") {
             const type = getStructType(param, index);
-            return { name: param.name, type };
+            return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
           }
           return {
             name: param.name,
@@ -90,11 +90,12 @@ export const getTxEIP712Types = (calls: IMSCallInput[]) => {
 };
 
 export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeName: string) => {
-  const mainType = typedData.types[typeName];
+  const mainType = typedData.types[typeName.replace("[]", "")];
 
   const usedStructTypes: string[] = mainType.reduce<string[]>((acc, item) => {
     if (item.type.includes("Struct")) {
-      return [...acc, item.type, ...getUsedStructTypes(typedData, item.type)];
+      const type = item.type.replace("[]", "");
+      return [...acc, type, ...getUsedStructTypes(typedData, type)];
     }
     return acc;
   }, []);

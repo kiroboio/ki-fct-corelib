@@ -18,6 +18,10 @@ export interface Param {
   hashed?: boolean;
 }
 
+export interface ParamWithoutVariable extends Param {
+  value?: boolean | string | string[] | Param[] | Param[][];
+}
+
 export interface MethodParamsInterface {
   method: string;
   params: Param[];
