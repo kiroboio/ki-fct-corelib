@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { CALL_TYPE_MSG, FCT_VAULT_ADDRESS, flows } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
-import { DeepPartial, Param, Variable } from "../../types";
+import { DeepPartial, Param, ParamWithoutVariable, Variable } from "../../types";
 import {
   getComputedVariableMessage,
   getTxEIP712Types,
@@ -364,12 +364,10 @@ export function getParamsFromCall(this: BatchMultiSigCall, call: IMSCallInput, i
 
           // If parameter is a custom type (struct)
           if (param.customType || param.type.includes("tuple")) {
-            // If parameter is an array of custom types
             if (param.type.lastIndexOf("[") > 0) {
               const valueArray = param.value as Param[][];
               value = valueArray.map((item) => getParams(item));
             } else {
-              // If parameter is a custom type
               const valueArray = param.value as Param[];
               value = getParams(valueArray);
             }
@@ -418,4 +416,25 @@ export function handleValue(this: BatchMultiSigCall, call: IMSCallInput): string
 
   // Else it is a variable
   return this.getVariable(call.value as Variable, "uint256");
+}
+
+export function decodeParams(this: BatchMultiSigCall, params: Param[]): ParamWithoutVariable[] {
+  return params.reduce((acc, param) => {
+    if (param.type === "tuple" || param.customType) {
+      if (param.type.lastIndexOf("[") > 0) {
+        const value = param.value as Param[][];
+        const decodedValue = value.map((tuple) => this.decodeParams(tuple));
+        return [...acc, { ...param, value: decodedValue }];
+      }
+
+      const value = this.decodeParams(param.value as Param[]);
+      return [...acc, { ...param, value }];
+    }
+    if (instanceOfVariable(param.value)) {
+      const value = this.getVariable(param.value, param.type);
+      const updatedParam = { ...param, value };
+      return [...acc, updatedParam];
+    }
+    return [...acc, param as ParamWithoutVariable];
+  }, [] as ParamWithoutVariable[]);
 }

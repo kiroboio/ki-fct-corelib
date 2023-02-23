@@ -61,7 +61,7 @@ const getTxEIP712Types = (calls) => {
             ? call.params.map((param) => {
                 if (param.customType || param.type === "tuple") {
                     const type = getStructType(param, index);
-                    return { name: param.name, type };
+                    return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
                 }
                 return {
                     name: param.name,
@@ -78,10 +78,11 @@ const getTxEIP712Types = (calls) => {
 };
 exports.getTxEIP712Types = getTxEIP712Types;
 const getUsedStructTypes = (typedData, typeName) => {
-    const mainType = typedData.types[typeName];
+    const mainType = typedData.types[typeName.replace("[]", "")];
     const usedStructTypes = mainType.reduce((acc, item) => {
         if (item.type.includes("Struct")) {
-            return [...acc, item.type, ...(0, exports.getUsedStructTypes)(typedData, item.type)];
+            const type = item.type.replace("[]", "");
+            return [...acc, type, ...(0, exports.getUsedStructTypes)(typedData, type)];
         }
         return acc;
     }, []);

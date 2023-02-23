@@ -119,7 +119,7 @@ function exportFCT() {
             ensHash: (0, helpers_1.handleEnsHash)(call),
             functionSignature: (0, helpers_1.handleFunctionSignature)(call),
             value: this.handleValue(call),
-            callId: (0, helpers_1.manageCallId)(this.calls, call, index),
+            callId: (0, helpers_1.manageCallId)(calls, call, index),
             from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
             to: this.handleTo(call),
             data: (0, helpers_1.handleData)(call),
