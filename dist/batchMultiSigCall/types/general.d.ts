@@ -2,7 +2,7 @@ import { JsonFragment } from "@ethersproject/abi";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { Fragment } from "ethers/lib/utils";
-import { CallOptions, DeepPartial, DeepRequired, IPluginCall, Param, RequiredKeys, Variable } from "../../types";
+import { CallOptions, DeepPartial, DeepRequired, IPluginCall, Param, ParamWithoutVariable, RequiredKeys, Variable } from "../../types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
@@ -47,6 +47,9 @@ export type IMSCallInputWithNodeId = RequiredKeys<IMSCallInput, "nodeId">;
 export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
     options: DeepRequired<CallOptions>;
 };
+export interface DecodedCalls extends StrictMSCallInput {
+    params?: ParamWithoutVariable[];
+}
 export type IWithPlugin = {
     plugin: {
         create(): Promise<IPluginCall | undefined>;
