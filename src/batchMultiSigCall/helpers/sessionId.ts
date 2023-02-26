@@ -2,6 +2,14 @@ import { CALL_TYPE, Flow, flows } from "../../constants";
 import { NO_JUMP } from "../constants";
 import { IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
 
+const sessionIdFlag = {
+  accumetable: 0x1,
+  purgeable: 0x2,
+  blockable: 0x4,
+  eip712: 0x8,
+  authEnabled: 0x10,
+} as const;
+
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");
 };
@@ -60,6 +68,7 @@ export const manageCallId = (calls: IMSCallInput[], call: StrictMSCallInput, ind
   );
 };
 
+// TODO: Update sessionID to include auth_enabled value
 // Deconstructed sessionID
 // 6 - Salt
 // 2 - External signers
@@ -92,17 +101,19 @@ export const getSessionId = (salt: string, versionHex: string, options: Required
   const afterTimestamp = Number(options.validFrom).toString(16).padStart(10, "0");
   const maxGasPrice = Number(options.maxGasPrice).toString(16).padStart(16, "0");
 
-  let flagValue = 8; // EIP712 true by default
-  if (options.recurrency?.accumetable) flagValue += 1;
-  if (options.purgeable) flagValue += 2;
-  if (options.blockable) flagValue += 4;
+  let flagValue = 0;
+  flagValue += sessionIdFlag.eip712; // EIP712 true by default
+  if (options.recurrency?.accumetable) flagValue += sessionIdFlag.accumetable;
+  if (options.purgeable) flagValue += sessionIdFlag.purgeable;
+  if (options.blockable) flagValue += sessionIdFlag.blockable;
+  if (options.authEnabled) flagValue += sessionIdFlag.authEnabled;
 
   const flags = flagValue.toString(16).padStart(2, "0");
 
   return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 
-export const parseSessionID = (sessionId: string, builder: string) => {
+export const parseSessionID = (sessionId: string, builder: string, externalSigners: string[] = []): IFCTOptions => {
   // const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
   // const version = sessionId.slice(10, 16);
@@ -113,76 +124,31 @@ export const parseSessionID = (sessionId: string, builder: string) => {
   const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
   const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
 
-  let flags = {
-    eip712: true,
-    accumetable: false,
-    purgeable: false,
-    blockable: false,
+  const flags = {
+    eip712: (flagsNumber & sessionIdFlag.eip712) !== 0,
+    accumetable: (flagsNumber & sessionIdFlag.accumetable) !== 0,
+    purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
+    blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
+    authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
   };
 
-  if (flagsNumber === 9) {
-    flags = {
-      ...flags,
-      accumetable: true,
-    };
-  } else if (flagsNumber === 10) {
-    flags = {
-      ...flags,
-      purgeable: true,
-    };
-  } else if (flagsNumber === 11) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      purgeable: true,
-    };
-  } else if (flagsNumber === 12) {
-    flags = {
-      ...flags,
-      blockable: true,
-    };
-  } else if (flagsNumber === 13) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      blockable: true,
-    };
-  } else if (flagsNumber === 14) {
-    flags = {
-      ...flags,
-      purgeable: true,
-      blockable: true,
-    };
-  } else if (flagsNumber === 15) {
-    flags = {
-      ...flags,
-      accumetable: true,
-      purgeable: true,
-      blockable: true,
-    };
-  }
-
-  const data = {
+  return {
     validFrom,
     expiresAt,
     maxGasPrice,
     blockable: flags.blockable,
     purgeable: flags.purgeable,
-  };
-
-  const recurrency: Partial<IFCTOptions["recurrency"]> = {};
-  recurrency.accumetable = flags.accumetable;
-  if (maxRepeats !== "0") recurrency.maxRepeats = maxRepeats;
-  if (chillTime !== "0") recurrency.chillTime = chillTime;
-
-  const multisig: IFCTOptions["multisig"] = {};
-  if (minimumApprovals !== "0") multisig.minimumApprovals = minimumApprovals;
-
-  return {
-    ...data,
+    authEnabled: flags.authEnabled,
     builder,
-    recurrency,
-    multisig,
+    recurrency: {
+      accumetable: flags.accumetable,
+      chillTime,
+      maxRepeats,
+    },
+    multisig: {
+      minimumApprovals,
+      externalSigners,
+    },
   };
 };
 

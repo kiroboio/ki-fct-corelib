@@ -26,6 +26,7 @@ export type TypedDataTypes = {
     Call: MessageTypeProperty[];
     Recurrency?: MessageTypeProperty[];
     MultiSig?: MessageTypeProperty[];
+    Computed?: MessageTypeProperty[];
 } & {
     [key: string]: MessageTypeProperty[];
 };
@@ -70,6 +71,7 @@ export interface TypedDataMeta {
     version: string;
     random_id: string;
     eip712: boolean;
+    auth_enabled: boolean;
 }
 export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 export type MessageMeta = Record<"meta", TypedDataMeta>;

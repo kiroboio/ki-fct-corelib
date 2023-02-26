@@ -31,6 +31,7 @@ import {
   IWithPlugin,
   TypedDataMessageTransaction,
 } from "../types";
+import { getAuthenticatorSignature } from "../utils";
 
 // Generate nodeId for a call
 export function generateNodeId(): string {
@@ -186,8 +187,13 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     mcall,
     variables: [],
     externalSigners: [],
-    signatures: [],
-    computed: this.computedVariables,
+    signatures: [getAuthenticatorSignature(typedData)],
+    computed: this.convertedComputed.map((c) => {
+      // Return everything except the index
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { index, ...rest } = c;
+      return rest;
+    }),
   };
 
   return FCTData;
@@ -195,7 +201,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
   // Here we import FCT and add all the data inside BatchMultiSigCall
-  const options = parseSessionID(fct.sessionId, fct.builder);
+  const options = parseSessionID(fct.sessionId, fct.builder, fct.externalSigners);
   this.setOptions(options);
   const typedData = fct.typedData;
 
@@ -381,7 +387,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 
       const { options } = parseCallID(call.callId);
 
-      const callInput: IWithPlugin = {
+      const callInput: any = {
         nodeId: `node${index + 1}`,
         plugin,
         from: call.from,

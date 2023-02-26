@@ -1,14 +1,17 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
 import { RequiredKeys } from "../types";
-import { _getCalls, _getComputedVariables, _getDecodedCalls, create, createMultiple, createPlugin, createTypedData, createWithEncodedData, createWithPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getParamsFromCall, getPlugin, getPluginClass, getPluginData, getVariable, handleTo, handleValue, importEncodedFCT, importFCT, setCallDefaults, setOptions, verifyCall } from "./methods";
-import { BatchMultiSigCallConstructor, DecodedCalls, ICallDefaults, IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "./types";
+import { _getCalls, _getDecodedCalls, create, createMultiple, createPlugin, createTypedData, createWithEncodedData, createWithPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getParamsFromCall, getPlugin, getPluginClass, getPluginData, getVariable, handleTo, handleValue, importEncodedFCT, importFCT, setCallDefaults, setOptions, verifyCall } from "./methods";
+import { addComputed } from "./methods/computed";
+import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
     protected batchMultiSigSelector: string;
     protected version: string;
     protected chainId: ChainId;
+    protected domain: TypedDataDomain;
+    protected _computed: Required<IComputed>[];
     protected _calls: RequiredKeys<IMSCallInput, "nodeId">[];
     protected _options: IFCTOptions;
     protected _callDefault: ICallDefaults;
@@ -16,9 +19,12 @@ export declare class BatchMultiSigCall {
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];
     get decodedCalls(): DecodedCalls[];
-    get computedVariables(): import("./types").ComputedVariables[];
+    get computedVariables(): never[];
+    get computed(): Required<IComputed>[];
+    get convertedComputed(): ComputedVariable[];
     setOptions: typeof setOptions;
     setCallDefaults: typeof setCallDefaults;
+    addComputed: typeof addComputed;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;
     createPlugin: typeof createPlugin;
@@ -42,7 +48,6 @@ export declare class BatchMultiSigCall {
     protected handleValue: typeof handleValue;
     protected decodeParams: typeof decodeParams;
     protected verifyCall: typeof verifyCall;
-    protected _getComputedVariables: typeof _getComputedVariables;
     protected _getDecodedCalls: typeof _getDecodedCalls;
     protected _getCalls: typeof _getCalls;
 }

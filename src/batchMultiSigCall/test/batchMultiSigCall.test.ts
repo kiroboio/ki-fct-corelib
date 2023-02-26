@@ -1,9 +1,10 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import { ethers } from "ethers";
+import util from "util";
 
 import { Flow } from "../../constants";
-import { parseCallID } from "../helpers";
+import { parseCallID, parseSessionID } from "../helpers";
 import { BatchMultiSigCall } from "../index";
 
 function getDate(days = 0) {
@@ -194,6 +195,28 @@ describe("BatchMultiSigCall", () => {
 
     expect(FCT).to.be.an("object");
 
+    // parse SessionId
+    const sessionId = parseSessionID(FCT.sessionId, "0x4f631612941F710db646B8290dB097bFB8657dC2");
+    expect(sessionId).to.be.an("object");
+    expect(sessionId).to.be.eql({
+      validFrom: batchMultiSigCall.options.validFrom,
+      expiresAt: batchMultiSigCall.options.expiresAt,
+      maxGasPrice: "30000000000",
+      blockable: true,
+      purgeable: false,
+      authEnabled: true,
+      builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      recurrency: {
+        accumetable: false,
+        chillTime: "0",
+        maxRepeats: "0",
+      },
+      multisig: {
+        minimumApprovals: "0",
+        externalSigners: [],
+      },
+    });
+
     expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
     expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);
     expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
@@ -232,6 +255,18 @@ describe("BatchMultiSigCall", () => {
       },
     });
 
+    batchMultiSigCall.addComputed({
+      id: "test",
+      value: {
+        type: "output",
+        id: {
+          nodeId: "node2",
+          innerIndex: 0,
+        },
+      },
+      sub: "10",
+    });
+
     await batchMultiSigCall.createMultiple([
       {
         nodeId: "node2",
@@ -250,16 +285,7 @@ describe("BatchMultiSigCall", () => {
             type: "uint256",
             value: {
               type: "computed",
-              id: {
-                variable: {
-                  type: "output",
-                  id: {
-                    nodeId: "node2",
-                    innerIndex: 0,
-                  },
-                },
-                sub: "10",
-              },
+              id: "test",
             },
           },
         ],
@@ -269,11 +295,13 @@ describe("BatchMultiSigCall", () => {
 
     const FCT = batchMultiSigCall.exportFCT();
 
+    console.log(util.inspect(FCT, false, null, true /* enable colors */));
+
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFE00000000000000000000000000000000000001");
 
-    expect(FCT.computed[0].variable).to.eq("0xFD00000000000000000000000000000000000001");
+    expect(FCT.computed[0].value).to.eq("0xFD00000000000000000000000000000000000001");
     expect(FCT.computed[0].sub).to.eq("10");
   });
   it("Should create FCT with encoded data and ABI", async () => {

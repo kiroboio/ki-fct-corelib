@@ -1,4 +1,3 @@
-import { IComputed } from "../batchMultiSigCall/types";
 import { CALL_TYPE, Flow } from "../constants/index";
 import { GlobalVariable } from "../variables/index";
 
@@ -6,7 +5,9 @@ export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
   | { type: "global"; id: GlobalVariable }
-  | { type: "computed"; id: IComputed };
+  | { type: "computed"; id: string };
+
+export type VariableWithoutComputed = Exclude<Variable, { type: "computed" }>;
 
 export interface Param {
   name: string;

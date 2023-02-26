@@ -10,15 +10,15 @@ export declare const validateFCT: <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT
         blockable: boolean;
         purgeable: boolean;
         builder: string;
-        recurrency: Partial<{
+        recurrency: {
             maxRepeats: string;
             chillTime: string;
             accumetable: boolean;
-        }>;
+        } | undefined;
         multisig: {
             externalSigners?: string[] | undefined;
             minimumApprovals?: string | undefined;
-        };
+        } | undefined;
     };
     getFCTMessageHash: () => string;
     getSigners: () => string[];

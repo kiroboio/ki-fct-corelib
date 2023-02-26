@@ -9,13 +9,16 @@ const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_Bat
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
 const constants_1 = require("./constants");
+const fct_1 = require("./helpers/fct");
 const methods_1 = require("./methods");
+const computed_1 = require("./methods/computed");
 class BatchMultiSigCall {
     constructor(input = {}) {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
-        this.batchMultiSigSelector = "0x2409a934";
-        this.version = "0x010102";
+        this.batchMultiSigSelector = "0xf6407ddd";
+        this.version = "0x010101";
+        this._computed = [];
         this._calls = [];
         this._options = {
             maxGasPrice: "30000000000",
@@ -24,6 +27,7 @@ class BatchMultiSigCall {
             purgeable: false,
             blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
+            authEnabled: true,
         };
         this._callDefault = {
             value: "0",
@@ -32,6 +36,8 @@ class BatchMultiSigCall {
         // Set methods
         this.setOptions = methods_1.setOptions;
         this.setCallDefaults = methods_1.setCallDefaults;
+        // Add Computed
+        this.addComputed = computed_1.addComputed;
         // Plugin functions
         this.getPlugin = methods_1.getPlugin;
         this.getPluginClass = methods_1.getPluginClass;
@@ -62,7 +68,6 @@ class BatchMultiSigCall {
         // Validation functions
         this.verifyCall = methods_1.verifyCall;
         // Getter functions
-        this._getComputedVariables = methods_1._getComputedVariables;
         this._getDecodedCalls = methods_1._getDecodedCalls;
         this._getCalls = methods_1._getCalls;
         if (input.chainId) {
@@ -71,6 +76,14 @@ class BatchMultiSigCall {
         else {
             this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
         }
+        if (input.domain) {
+            this.domain = input.domain;
+        }
+        else {
+            this.domain = fct_1.TYPED_DATA_DOMAIN[this.chainId];
+        }
+        if (input.version)
+            this.version = input.version;
         if (input.options)
             this.setOptions(input.options);
         if (input.defaults)
@@ -99,7 +112,28 @@ class BatchMultiSigCall {
         return this._getDecodedCalls();
     }
     get computedVariables() {
-        return this._getComputedVariables();
+        return [];
+    }
+    get computed() {
+        return this._computed;
+    }
+    get convertedComputed() {
+        const handleVariable = (value) => {
+            if ((0, helpers_1.instanceOfVariable)(value)) {
+                return this.getVariable(value, "uint256");
+            }
+            return value;
+        };
+        return this._computed.map((c, i) => ({
+            index: (i + 1).toString(),
+            value: handleVariable(c.value),
+            add: handleVariable(c.add),
+            sub: handleVariable(c.sub),
+            mul: handleVariable(c.mul),
+            pow: handleVariable(c.pow),
+            div: handleVariable(c.div),
+            mod: handleVariable(c.mod),
+        }));
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;

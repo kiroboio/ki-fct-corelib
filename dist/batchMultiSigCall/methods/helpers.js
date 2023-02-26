@@ -9,7 +9,6 @@ const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
-const fct_1 = require("../helpers/fct");
 const index_1 = require("../index");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
@@ -215,7 +214,7 @@ function createTypedData(salt, version) {
                 { name: "meta", type: "Meta" },
                 { name: "limits", type: "Limits" },
                 ...primaryType,
-                ...this.computedVariables.map((_, index) => ({
+                ...this.computed.map((_, index) => ({
                     name: `computed_${index + 1}`,
                     type: `Computed`,
                 })),
@@ -231,6 +230,7 @@ function createTypedData(salt, version) {
                 { name: "version", type: "bytes3" },
                 { name: "random_id", type: "bytes3" },
                 { name: "eip712", type: "bool" },
+                { name: "auth_enabled", type: "bool" },
             ],
             Limits: [
                 { name: "valid_from", type: "uint40" },
@@ -242,15 +242,17 @@ function createTypedData(salt, version) {
             ...optionalTypes,
             ...txTypes,
             ...structTypes,
-            ...(this.computedVariables.length > 0
+            ...(this.computed.length > 0
                 ? {
                     Computed: [
                         { name: "index", type: "uint256" },
-                        { name: "var", type: "uint256" },
+                        { name: "value", type: "uint256" },
                         { name: "add", type: "uint256" },
                         { name: "sub", type: "uint256" },
+                        { name: "pow", type: "uint256" },
                         { name: "mul", type: "uint256" },
                         { name: "div", type: "uint256" },
+                        { name: "mod", type: "uint256" },
                     ],
                 }
                 : {}),
@@ -272,7 +274,8 @@ function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: (0, fct_1.getTypedDataDomain)(this.chainId),
+        // domain: getTypedDataDomain(this.chainId),
+        domain: this.domain,
         message: {
             meta: {
                 name: this.options.name || "",
@@ -281,6 +284,7 @@ function createTypedData(salt, version) {
                 version,
                 random_id: `0x${salt}`,
                 eip712: true,
+                auth_enabled: this.options.authEnabled || true,
             },
             limits: {
                 valid_from: this.options.validFrom,
@@ -290,7 +294,7 @@ function createTypedData(salt, version) {
                 blockable: this.options.blockable,
             },
             ...optionalMessage,
-            ...(0, helpers_2.getComputedVariableMessage)(this.computedVariables),
+            ...(0, helpers_2.getComputedVariableMessage)(this.convertedComputed),
             ...typedDataMessage,
         },
     };
