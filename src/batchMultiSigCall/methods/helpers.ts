@@ -271,7 +271,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         { name: "meta", type: "Meta" },
         { name: "limits", type: "Limits" },
         ...primaryType,
-        ...this.computedVariables.map((_, index) => ({
+        ...this.computed.map((_, index) => ({
           name: `computed_${index + 1}`,
           type: `Computed`,
         })),
