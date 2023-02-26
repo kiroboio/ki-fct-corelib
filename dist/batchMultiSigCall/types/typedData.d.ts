@@ -1,14 +1,6 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 import { CALL_TYPE_MSG } from "../../constants";
-import { FCTCallParam } from "./general";
-export interface IComputedVariable {
-    index: string;
-    var: string;
-    add: string;
-    sub: string;
-    mul: string;
-    div: string;
-}
+import { ComputedVariable, FCTCallParam } from "./general";
 export interface TypedDataRecurrency {
     max_repeats: string;
     chill_time: string;
@@ -78,7 +70,7 @@ export type MessageMeta = Record<"meta", TypedDataMeta>;
 export type MessageLimits = Record<"limits", TypedDataLimits>;
 export type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 export type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
-export type MessageComputed = Record<`computed_${number}`, IComputedVariable>;
+export type MessageComputed = Record<`computed_${number}`, Omit<ComputedVariable, "index">>;
 export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
 export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 export type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
