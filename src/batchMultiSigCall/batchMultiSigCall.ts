@@ -6,6 +6,7 @@ import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { getDate } from "../helpers";
 import { RequiredKeys } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
+import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
   _getCalls,
   _getComputedVariables,
@@ -45,6 +46,7 @@ import {
   IMSCallInput,
   RequiredFCTOptions,
   StrictMSCallInput,
+  TypedDataDomain,
 } from "./types";
 
 export class BatchMultiSigCall {
@@ -53,6 +55,7 @@ export class BatchMultiSigCall {
   protected batchMultiSigSelector = "0xf6407ddd";
   protected version = "0x010101";
   protected chainId: ChainId;
+  protected domain: TypedDataDomain;
 
   protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
   protected _options: IFCTOptions = {
@@ -62,6 +65,7 @@ export class BatchMultiSigCall {
     purgeable: false,
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
+    authEnabled: true,
   };
 
   protected _callDefault: ICallDefaults = {
@@ -75,6 +79,13 @@ export class BatchMultiSigCall {
     } else {
       this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
     }
+    if (input.domain) {
+      this.domain = input.domain;
+    } else {
+      this.domain = TYPED_DATA_DOMAIN[this.chainId];
+    }
+
+    if (input.version) this.version = input.version;
 
     if (input.options) this.setOptions(input.options);
     if (input.defaults) this.setCallDefaults(input.defaults);

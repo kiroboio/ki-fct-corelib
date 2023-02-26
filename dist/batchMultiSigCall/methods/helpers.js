@@ -9,8 +9,6 @@ const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
-const fct_1 = require("../helpers/fct");
-const index_1 = require("../index");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
@@ -125,7 +123,7 @@ function createTypedData(salt, version) {
     const typedDataMessage = this.decodedCalls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            paramsData = this.getParamsFromCall(call, index);
+            paramsData = this.getParamsFromCall(call);
         }
         const options = call.options || {};
         const gasLimit = options.gasLimit ?? "0";
@@ -231,6 +229,7 @@ function createTypedData(salt, version) {
                 { name: "version", type: "bytes3" },
                 { name: "random_id", type: "bytes3" },
                 { name: "eip712", type: "bool" },
+                { name: "auth_enabled", type: "bool" },
             ],
             Limits: [
                 { name: "valid_from", type: "uint40" },
@@ -272,7 +271,8 @@ function createTypedData(salt, version) {
             ],
         },
         primaryType: "BatchMultiSigCall",
-        domain: (0, fct_1.getTypedDataDomain)(this.chainId),
+        // domain: getTypedDataDomain(this.chainId),
+        domain: this.domain,
         message: {
             meta: {
                 name: this.options.name || "",
@@ -281,6 +281,7 @@ function createTypedData(salt, version) {
                 version,
                 random_id: `0x${salt}`,
                 eip712: true,
+                auth_enabled: this.options.authEnabled || true,
             },
             limits: {
                 valid_from: this.options.validFrom,

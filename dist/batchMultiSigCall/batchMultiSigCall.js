@@ -8,8 +8,11 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
-const constants_1 = require("./constants");
-const methods_1 = require("./methods");
+const fct_1 = require("./helpers/fct");
+const FCT_1 = require("./methods/FCT");
+const helpers_2 = require("./methods/helpers");
+const plugins_1 = require("./methods/plugins");
+const variables_1 = require("./methods/variables");
 class BatchMultiSigCall {
     constructor(input = {}) {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
@@ -24,6 +27,7 @@ class BatchMultiSigCall {
             purgeable: false,
             blockable: true,
             builder: "0x0000000000000000000000000000000000000000",
+            authEnabled: true,
         };
         this._callDefault = {
             value: "0",
@@ -71,6 +75,14 @@ class BatchMultiSigCall {
         else {
             this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
         }
+        if (input.domain) {
+            this.domain = input.domain;
+        }
+        else {
+            this.domain = fct_1.TYPED_DATA_DOMAIN[this.chainId];
+        }
+        if (input.version)
+            this.version = input.version;
         if (input.options)
             this.setOptions(input.options);
         if (input.defaults)

@@ -1,17 +1,20 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
-import { RequiredKeys } from "../types";
-import { _getCalls, _getComputedVariables, _getDecodedCalls, create, createMultiple, createPlugin, createTypedData, createWithEncodedData, createWithPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getParamsFromCall, getPlugin, getPluginClass, getPluginData, getVariable, handleTo, handleValue, importEncodedFCT, importFCT, setCallDefaults, setOptions, verifyCall } from "./methods";
-import { BatchMultiSigCallConstructor, DecodedCalls, ICallDefaults, IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "./types";
+import { create, createMultiple, exportFCT, getCall, importEncodedFCT, importFCT } from "./methods/FCT";
+import { createTypedData, getAllRequiredApprovals, getParamsFromCall, handleTo, handleValue, setOptions, verifyParams } from "./methods/helpers";
+import { getPlugin, getPluginClass, getPluginData } from "./methods/plugins";
+import { getComputedVariable, getExternalVariable, getOutputVariable, getVariable } from "./methods/variables";
+import { BatchMultiSigCallConstructor, ComputedVariables, IFCTOptions, IMSCallInput, TypedDataDomain } from "./types";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
     protected FCT_BatchMultiSigCall: ethers.utils.Interface;
     protected batchMultiSigSelector: string;
     protected version: string;
     protected chainId: ChainId;
-    protected _calls: RequiredKeys<IMSCallInput, "nodeId">[];
-    protected _options: IFCTOptions;
-    protected _callDefault: ICallDefaults;
+    protected domain: TypedDataDomain;
+    protected computedVariables: ComputedVariables[];
+    calls: IMSCallInput[];
+    options: IFCTOptions;
     constructor(input?: BatchMultiSigCallConstructor);
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];

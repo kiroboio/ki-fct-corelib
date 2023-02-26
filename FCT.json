@@ -2,26 +2,11 @@
   "typedData": {
     "types": {
       "EIP712Domain": [
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "version",
-          "type": "string"
-        },
-        {
-          "name": "chainId",
-          "type": "uint256"
-        },
-        {
-          "name": "verifyingContract",
-          "type": "address"
-        },
-        {
-          "name": "salt",
-          "type": "bytes32"
-        }
+        { "name": "name", "type": "string" },
+        { "name": "version", "type": "string" },
+        { "name": "chainId", "type": "uint256" },
+        { "name": "verifyingContract", "type": "address" },
+        { "name": "salt", "type": "bytes32" }
       ],
       "BatchMultiSigCall": [
         {
@@ -50,52 +35,20 @@
         }
       ],
       "Meta": [
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "builder",
-          "type": "address"
-        },
-        {
-          "name": "selector",
-          "type": "bytes4"
-        },
-        {
-          "name": "version",
-          "type": "bytes3"
-        },
-        {
-          "name": "random_id",
-          "type": "bytes3"
-        },
-        {
-          "name": "eip712",
-          "type": "bool"
-        }
+        { "name": "name", "type": "string" },
+        { "name": "builder", "type": "address" },
+        { "name": "selector", "type": "bytes4" },
+        { "name": "version", "type": "bytes3" },
+        { "name": "random_id", "type": "bytes3" },
+        { "name": "eip712", "type": "bool" },
+        { "name": "auth_enabled", "type": "bool" }
       ],
       "Limits": [
-        {
-          "name": "valid_from",
-          "type": "uint40"
-        },
-        {
-          "name": "expires_at",
-          "type": "uint40"
-        },
-        {
-          "name": "gas_price_limit",
-          "type": "uint64"
-        },
-        {
-          "name": "purgeable",
-          "type": "bool"
-        },
-        {
-          "name": "blockable",
-          "type": "bool"
-        }
+        { "name": "valid_from", "type": "uint40" },
+        { "name": "expires_at", "type": "uint40" },
+        { "name": "gas_price_limit", "type": "uint64" },
+        { "name": "purgeable", "type": "bool" },
+        { "name": "blockable", "type": "bool" }
       ],
       "Recurrency": [
         {
@@ -178,62 +131,20 @@
         }
       ],
       "Call": [
-        {
-          "name": "call_index",
-          "type": "uint16"
-        },
-        {
-          "name": "payer_index",
-          "type": "uint16"
-        },
-        {
-          "name": "call_type",
-          "type": "string"
-        },
-        {
-          "name": "from",
-          "type": "address"
-        },
-        {
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "name": "to_ens",
-          "type": "string"
-        },
-        {
-          "name": "eth_value",
-          "type": "uint256"
-        },
-        {
-          "name": "gas_limit",
-          "type": "uint32"
-        },
-        {
-          "name": "permissions",
-          "type": "uint16"
-        },
-        {
-          "name": "flow_control",
-          "type": "string"
-        },
-        {
-          "name": "returned_false_means_fail",
-          "type": "bool"
-        },
-        {
-          "name": "jump_on_success",
-          "type": "uint16"
-        },
-        {
-          "name": "jump_on_fail",
-          "type": "uint16"
-        },
-        {
-          "name": "method_interface",
-          "type": "string"
-        }
+        { "name": "call_index", "type": "uint16" },
+        { "name": "payer_index", "type": "uint16" },
+        { "name": "call_type", "type": "string" },
+        { "name": "from", "type": "address" },
+        { "name": "to", "type": "address" },
+        { "name": "to_ens", "type": "string" },
+        { "name": "eth_value", "type": "uint256" },
+        { "name": "gas_limit", "type": "uint32" },
+        { "name": "permissions", "type": "uint16" },
+        { "name": "flow_control", "type": "string" },
+        { "name": "returned_false_means_fail", "type": "bool" },
+        { "name": "jump_on_success", "type": "uint16" },
+        { "name": "jump_on_fail", "type": "uint16" },
+        { "name": "method_interface", "type": "string" }
       ]
     },
     "primaryType": "BatchMultiSigCall",
@@ -316,7 +227,7 @@
           "to": "0x9650578ebd1b08f98af81a84372ece4b448d7526",
           "to_ens": "",
           "eth_value": "0",
-          "gas_limit": "0",
+          "gas_limit": "400000",
           "permissions": 0,
           "flow_control": "continue on success, revert on fail",
           "returned_false_means_fail": false,
@@ -372,13 +283,7 @@
       "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
       "to": "0x9650578ebd1b08f98af81a84372ece4b448d7526",
       "data": "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526000000000000000000000000fc00000000000000000000000000000000000002000000000000000000000000fc00000000000000000000000000000000000003",
-      "types": [
-        3,
-        1000,
-        1000,
-        1,
-        1000
-      ],
+      "types": [3, 1000, 1000, 1, 1000],
       "typedHashes": [
         "0x6a18c09429b5825b2db19fe0b022c94d9511ad79d6e07b111101fa69a06ba5ee",
         "0x687a1f96bfb73a26708451086838e7f7e4a7a7ac17aebf96f887006d26dca612"

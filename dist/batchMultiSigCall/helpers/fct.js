@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParamsFromInputs = exports.generateTxType = exports.getTypedDataDomain = void 0;
+exports.generateTxType = exports.getTypedDataDomain = exports.TYPED_DATA_DOMAIN = void 0;
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
 // TODO: Change salt to be a buffer
-const TYPED_DATA_DOMAIN = {
+exports.TYPED_DATA_DOMAIN = {
     "1": {
         name: "FCT Controller",
         version: "1",
@@ -22,7 +22,7 @@ const TYPED_DATA_DOMAIN = {
     },
 };
 const getTypedDataDomain = (chainId) => {
-    return TYPED_DATA_DOMAIN[chainId];
+    return exports.TYPED_DATA_DOMAIN[chainId];
 };
 exports.getTypedDataDomain = getTypedDataDomain;
 const generateTxType = (item) => {

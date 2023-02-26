@@ -112,7 +112,7 @@ function exportFCT() {
     const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     const typedData = this.createTypedData(salt, this.version);
     const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);
-    const mcall = calls.map((call, index) => {
+    const mcall = this.calls.map((call, index) => {
         const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
         return {
             typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
@@ -146,7 +146,7 @@ function exportFCT() {
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
     // Here we import FCT and add all the data inside BatchMultiSigCall
-    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder);
+    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
     this.setOptions(options);
     const typedData = fct.typedData;
     for (const [index, call] of fct.mcall.entries()) {

@@ -12,7 +12,6 @@ import {
   verifyOptions,
   verifyParam,
 } from "../helpers";
-import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
 import {
   BatchMultiSigCallTypedData,
@@ -295,6 +294,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         { name: "version", type: "bytes3" },
         { name: "random_id", type: "bytes3" },
         { name: "eip712", type: "bool" },
+        { name: "auth_enabled", type: "bool" },
       ],
       Limits: [
         { name: "valid_from", type: "uint40" },
@@ -338,7 +338,8 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       ],
     },
     primaryType: "BatchMultiSigCall",
-    domain: getTypedDataDomain(this.chainId),
+    // domain: getTypedDataDomain(this.chainId),
+    domain: this.domain,
     message: {
       meta: {
         name: this.options.name || "",
@@ -347,6 +348,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         version,
         random_id: `0x${salt}`,
         eip712: true,
+        auth_enabled: this.options.authEnabled || true,
       },
       limits: {
         valid_from: this.options.validFrom,
