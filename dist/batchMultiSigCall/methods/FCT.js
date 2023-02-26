@@ -9,6 +9,7 @@ const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const lodash_1 = __importDefault(require("lodash"));
+const util_1 = __importDefault(require("util"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
@@ -155,6 +156,7 @@ function importFCT(fct) {
     const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
     this.setOptions(options);
     const typedData = fct.typedData;
+    const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
@@ -163,67 +165,49 @@ function importFCT(fct) {
             // Getting types from method_interface, because parameter might be hashed and inside
             // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
             const typeString = meta.method_interface.slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"));
-            // Add `tuple` infront of every (
-            const tupleString = typeString.replace(/\(/g, "tuple(");
-            // Convert this array [{ to: "address", value: "uint256", value2: { to: "address" } }];
-            // Into tuple(address to, uint256 value, tuple(address to) value2)
-            const convertObjectToTuple = (obj) => {
-                const tuple = `tuple(${Object.entries(obj)
-                    .map(([key, value]) => {
-                    if (value.includes("tuple")) {
-                        return `${value} ${key}`;
-                    }
-                    return `${value} ${key}`;
-                })
-                    .join(",")})`;
-                return tuple;
+            const signatureToTypes = (signature, typesData) => {
+                // Check if ( is the first character
+                const first = signature[0];
+                if (first === "(") {
+                    // Remove first and last character
+                    signature = signature.slice(1, -1);
+                    const type = typesObject[typesData[0].type];
+                    return [signatureToTypes(signature, type)];
+                }
+                // Check if , is in the string
+                const comma = signature.indexOf(",");
+                if (comma !== -1) {
+                    // Split first and rest
+                    const first = signature.slice(0, comma);
+                    const rest = signature.slice(comma + 1);
+                    const name = typesData[0].name;
+                    return [`${first} ${name}`, ...signatureToTypes(rest, typesData.slice(1))];
+                }
+                return [`${signature} ${typesData[0].name}`];
             };
-            const getTypeStruct = (type) => {
-                const typeStruct = typedData.types[type];
-                if (!typeStruct) {
+            const convertTypes = (types, typesData) => {
+                return types.map((type, index) => {
+                    if (Array.isArray(type)) {
+                        const name = typesData[index].name;
+                        const typesDataArray = typesObject[typesData[index].type];
+                        return `tuple(${convertTypes(type, typesDataArray)}) ${name}`;
+                    }
                     return type;
-                }
-                const typesAsObjects = typeStruct.reduce((acc, { name, type }) => {
-                    if (typedData.types[type]) {
-                        return {
-                            ...acc,
-                            [name]: getTypeStruct(type),
-                        };
-                    }
-                    return {
-                        ...acc,
-                        [name]: type,
-                    };
-                }, {});
-                // Convert typesAsObjects to tuple string
-                return convertObjectToTuple(typesAsObjects);
+                });
             };
-            const decodeTypeArray = dataTypes.map((type) => getTypeStruct(type.type));
-            // const types = meta.method_interface
-            //   .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-            //   .split(",")
-            //   .map((type, i) => {
-            //     return `${type} ${dataTypes[i].name}`;
-            //   });
-            console.log(decodeTypeArray);
-            const decodedParams = new utils_1.AbiCoder().decode(decodeTypeArray, call.data);
-            const handleValue = (value) => {
-                if (ethers_1.BigNumber.isBigNumber(value) || typeof value === "number") {
-                    return value.toString();
-                }
-                return value;
-            };
-            params = dataTypes.map((t, i) => {
-                // const realType = types[i].split(" ")[0];
-                const realType = "";
-                return {
-                    name: t.name,
-                    type: t.type,
-                    hashed: t.type === realType ? false : true,
-                    value: handleValue(decodedParams[i]),
-                };
+            const array = signatureToTypes(typeString, dataTypes);
+            const decodeTypesArray = convertTypes(array, dataTypes);
+            const iface = new ethers_1.utils.Interface([
+                `function ${meta.method_interface.split("(")[0]}(${decodeTypesArray.join(", ")})`,
+            ]);
+            const dataWithFunctionSignature = `${(0, utils_1.id)(meta.method_interface).slice(0, 10)}${call.data.slice(2)}`;
+            const { args, functionFragment: { inputs }, } = iface.parseTransaction({
+                data: dataWithFunctionSignature,
+                value: typeof call.value === "string" ? call.value : "0",
             });
-            console.log(params);
+            console.log("args", args);
+            console.log("inputs", util_1.default.inspect(inputs, false, null, true /* enable colors */));
+            params = (0, fct_1.getParamsFromInputs)(inputs, args);
         }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getParamsFromInputs = exports.generateTxType = exports.getTypedDataDomain = exports.TYPED_DATA_DOMAIN = void 0;
+const ethers_1 = require("ethers");
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
 // TODO: Change salt to be a buffer
 exports.TYPED_DATA_DOMAIN = {
@@ -54,10 +55,20 @@ const getParamsFromInputs = (inputs, values) => {
                 value: values[input.name].map((tuple) => (0, exports.getParamsFromInputs)(input.components, tuple)),
             };
         }
+        let value = values[input.name];
+        // Check if value isn't a variable
+        const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+        if (ethers_1.BigNumber.isBigNumber(value)) {
+            const hexString = value.toHexString().toLowerCase();
+            if (variables.some((v) => hexString.startsWith(v))) {
+                value = hexString;
+            }
+            value = value.toString();
+        }
         return {
             name: input.name,
             type: input.type,
-            value: values[input.name],
+            value,
         };
     });
 };
