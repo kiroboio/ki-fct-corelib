@@ -11,18 +11,16 @@ export const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
     name: "FCT Controller",
     version: "1",
-    chainId: 1,
-    verifyingContract: "0x087550a787B2720AAC06351065afC1F413D82572",
-    // salt: getSaltBuffer("0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572"),
-    salt: "0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572",
+    chainId: 5,
+    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
   },
   "5": {
     name: "FCT Controller",
     version: "1",
     chainId: 5,
-    verifyingContract: "0x087550a787B2720AAC06351065afC1F413D82572",
-    // salt: getSaltBuffer("0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572"),
-    salt: "0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572",
+    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
   },
 };
 
