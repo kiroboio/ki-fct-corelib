@@ -201,7 +201,7 @@ describe("BatchMultiSigCall", () => {
     expect(sessionId).to.be.eql({
       validFrom: batchMultiSigCall.options.validFrom,
       expiresAt: batchMultiSigCall.options.expiresAt,
-      maxGasPrice: "100000000000",
+      maxGasPrice: "30000000000",
       blockable: true,
       purgeable: false,
       authEnabled: true,
@@ -212,7 +212,7 @@ describe("BatchMultiSigCall", () => {
         maxRepeats: "0",
       },
       multisig: {
-        minimumApprovals: 0,
+        minimumApprovals: "0",
         externalSigners: [],
       },
     });
