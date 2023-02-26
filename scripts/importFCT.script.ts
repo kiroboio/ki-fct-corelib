@@ -1,123 +1,54 @@
 import * as dotenv from "dotenv";
 import util from "util";
 
-import { BatchMultiSigCall, ethers, utils } from "../src";
-import scriptData from "./scriptData";
+import FCTData from "../FCT.json";
+import { BatchMultiSigCall, ethers } from "../src";
 
-const ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "operator", type: "address" },
-      {
-        components: [
-          { internalType: "bool", name: "activate", type: "bool" },
-          { internalType: "bool", name: "activateBatch", type: "bool" },
-          { internalType: "bool", name: "activateForFree", type: "bool" },
-          { internalType: "bool", name: "activateForFreeBatch", type: "bool" },
-        ],
-        internalType: "struct IFCT_ActuatorStorage.Approvals",
-        name: "approvals",
-        type: "tuple",
-      },
-    ],
-    name: "setActivationApproval",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+const encoded =
+  "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526000000000000000000000000fc00000000000000000000000000000000000002000000000000000000000000fc00000000000000000000000000000000000003";
 
-// const ABI = [
-//   // Constructor
-//   "constructor(string symbol, string name)",
-
-//   // State mutating method
-//   "function transferFrom(address from, address to, uint amount)",
-
-//   // State mutating method, which is payable
-//   "function mint(uint amount) payable",
-
-//   // Constant method (i.e. "view" or "pure")
-//   "function balanceOf(address owner) view returns (uint)",
-
-//   // An Event
-//   "event Transfer(address indexed from, address indexed to, uint256 amount)",
-
-//   // A Custom Solidity Error
-//   "error AccountLocked(address owner, uint256 balance)",
-
-//   // Examples with structured types
-//   "function addUser(tuple(string name, address addr) user) returns (uint id)",
-//   "function addUsers(tuple(string name, address addr)[] user) returns (uint[] id)",
-//   "function getUser(uint id) view returns (tuple(string name, address addr) user)",
-// ];
+const typedData = FCTData.typedData;
 
 dotenv.config();
 const key = process.env.PRIVATE_KEY as string;
 
 async function main() {
-  const gasPrices = await utils.getGasPrices({
-    rpcUrl: scriptData[5].rpcUrl,
-  });
+  const FCT = new BatchMultiSigCall();
+  FCT.importFCT(FCTData);
 
-  const FCT = new BatchMultiSigCall({
-    chainId: "5",
-  });
+  const exportFCT = FCT.exportFCT();
+  console.log(util.inspect(exportFCT, false, null, true /* enable colors */));
 
-  const iface = new ethers.utils.Interface(ABI);
+  // Deconstruct type
 
-  const encodedData = iface.encodeFunctionData("setActivationApproval", [
-    "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-    [true, true, true, true],
-  ]);
+  const type = "Struct1";
+  const getTypeStruct = (type: string): any => {
+    const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as { name: string; type: string }[];
 
-  console.log(encodedData);
+    if (!typeStruct) {
+      return type;
+    }
+    return typeStruct.reduce((acc, { name, type }) => {
+      if (typedData.types[type as keyof (typeof typedData)["types"]]) {
+        return {
+          ...acc,
+          [name]: getTypeStruct(type),
+        };
+      }
+      return {
+        ...acc,
+        [name]: type,
+      };
+    }, {} as Record<string, string>);
+  };
 
-  await FCT.create({
-    abi: ABI,
-    encodedData: encodedData,
-    to: "0x00ab7c8803962c0f2f5bbbe3fa8bf41cd82aa1923c",
-  });
+  const typeStructObject = getTypeStruct(type);
 
-  // const data =
-  //   "0x23b872dd0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72000000000000000000000000ab7c8803962c0f2f5bbbe3fa8bf41cd82aa1923c0000000000000000000000000000000000000000000000000de0b6b3a7640000";
-  // const value = parseEther("1.0");
+  // Genarate tuple string from typeStructObject
 
-  // const tx = iface.parseTransaction({ data, value });
-  // console.log(tx.args);
-  // // Transfor tx.args into a JSON object
-  // console.log(
-  //   Object.entries(tx.args)
-  //     .filter(([key]) => {
-  //       // Check if key is a number. If it is number, return false
-  //       return !Number.isInteger(Number(key));
-  //     })
-  //     .reduce((acc, [key, value]) => {
-  //       acc[key] = value.toString();
-  //       return acc;
-  //     }, {} as any)
-  // );
+  const decoded = ethers.utils.defaultAbiCoder.decode(["tuple(address,uint256,tuple(address))"], encoded);
 
-  // console.log(tx.functionFragment.inputs);
-
-  const functionFragment = iface.getFunction("setActivationApproval");
-
-  const tx = iface.parseTransaction({ data: encodedData });
-
-  console.log(JSON.stringify(functionFragment.inputs, null, 2));
-  console.log(tx.args.map((arg) => arg));
-
-  await FCT.create({
-    abi: ABI,
-    encodedData: encodedData,
-    from: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-    to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-  });
-
-  console.log(util.inspect(FCT.calls, false, null, true));
-
-  const fct = FCT.exportFCT();
-  console.log(util.inspect(fct, false, null, true));
+  console.log(decoded);
 }
 
 main()
