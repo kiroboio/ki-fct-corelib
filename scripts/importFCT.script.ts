@@ -1,8 +1,7 @@
 import * as dotenv from "dotenv";
-import util from "util";
 
 import FCTData from "../FCT.json";
-import { BatchMultiSigCall, ethers } from "../src";
+import { BatchMultiSigCall } from "../src";
 
 const encoded =
   "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526000000000000000000000000fc00000000000000000000000000000000000002000000000000000000000000fc00000000000000000000000000000000000003";
@@ -16,39 +15,39 @@ async function main() {
   const FCT = new BatchMultiSigCall();
   FCT.importFCT(FCTData);
 
-  const exportFCT = FCT.exportFCT();
-  console.log(util.inspect(exportFCT, false, null, true /* enable colors */));
+  // const exportFCT = FCT.exportFCT();
+  // console.log(util.inspect(exportFCT, false, null, true /* enable colors */));
 
   // Deconstruct type
 
-  const type = "Struct1";
-  const getTypeStruct = (type: string): any => {
-    const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as { name: string; type: string }[];
+  // const type = "Struct1";
+  // const getTypeStruct = (type: string): any => {
+  //   const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as { name: string; type: string }[];
 
-    if (!typeStruct) {
-      return type;
-    }
-    return typeStruct.reduce((acc, { name, type }) => {
-      if (typedData.types[type as keyof (typeof typedData)["types"]]) {
-        return {
-          ...acc,
-          [name]: getTypeStruct(type),
-        };
-      }
-      return {
-        ...acc,
-        [name]: type,
-      };
-    }, {} as Record<string, string>);
-  };
+  //   if (!typeStruct) {
+  //     return type;
+  //   }
+  //   return typeStruct.reduce((acc, { name, type }) => {
+  //     if (typedData.types[type as keyof (typeof typedData)["types"]]) {
+  //       return {
+  //         ...acc,
+  //         [name]: getTypeStruct(type),
+  //       };
+  //     }
+  //     return {
+  //       ...acc,
+  //       [name]: type,
+  //     };
+  //   }, {} as Record<string, string>);
+  // };
 
-  const typeStructObject = getTypeStruct(type);
+  // const typeStructObject = getTypeStruct(type);
 
-  // Genarate tuple string from typeStructObject
+  // // Genarate tuple string from typeStructObject
 
-  const decoded = ethers.utils.defaultAbiCoder.decode(["tuple(address,uint256,tuple(address))"], encoded);
+  // const decoded = ethers.utils.defaultAbiCoder.decode(["tuple(address,uint256,tuple(address))"], encoded);
 
-  console.log(decoded);
+  // console.log(decoded);
 }
 
 main()

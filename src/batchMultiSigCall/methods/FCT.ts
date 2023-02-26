@@ -223,49 +223,61 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       // Add `tuple` infront of every (
       const tupleString = typeString.replace(/\(/g, "tuple(");
 
-      const createTypeArray = (typeString: string) => {
-        if (typeString.startsWith("tuple(")) {
-          const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
-          const tupleTypes = tupleString.split(",").map((type) => {
-            if (type.includes("tuple")) {
-              return createTypeArray(type);
-            }
-            return type;
-          }) as any[];
-          return [tupleTypes];
-        }
+      // Convert this array [{ to: "address", value: "uint256", value2: { to: "address" } }];
+      // Into tuple(address to, uint256 value, tuple(address to) value2)
 
-        const tupleTypes = typeString.split(",").map((type) => {
-          if (type.includes("tuple")) {
-            return createTypeArray(type);
-          }
-          return type;
-        }) as any[];
-        return tupleTypes;
+      const convertObjectToTuple = (obj: Record<string, string>): string => {
+        const tuple = `tuple(${Object.entries(obj)
+          .map(([key, value]) => {
+            if (value.includes("tuple")) {
+              return `${value} ${key}`;
+            }
+            return `${value} ${key}`;
+          })
+          .join(",")})`;
+
+        return tuple;
       };
 
-      console.log(createTypeArray(tupleString));
+      const getTypeStruct = (type: string): any => {
+        const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as {
+          name: string;
+          type: string;
+        }[];
 
-      // const getArrayOfTypes = (typeString: string) => {
-      //   // Check if value is a tuple
-      //   if (typeString.includes("tuple(")) {
-      //     // Remove "tuple(" and ")" from string
-      //     const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
-      //     console.log(tupleString);
-      //   }
-      // };
+        if (!typeStruct) {
+          return type;
+        }
 
-      // getArrayOfTypes(tupleString);
+        const typesAsObjects = typeStruct.reduce((acc, { name, type }) => {
+          if (typedData.types[type as keyof (typeof typedData)["types"]]) {
+            return {
+              ...acc,
+              [name]: getTypeStruct(type),
+            };
+          }
+          return {
+            ...acc,
+            [name]: type,
+          };
+        }, {} as Record<string, string>);
 
-      const types = meta.method_interface
-        .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-        .split(",")
-        .map((type, i) => {
-          console.log(type, dataTypes[i]);
-          return `${type} ${dataTypes[i].name}`;
-        });
+        // Convert typesAsObjects to tuple string
+        return convertObjectToTuple(typesAsObjects);
+      };
 
-      const decodedParams = new AbiCoder().decode(types, call.data);
+      const decodeTypeArray = dataTypes.map((type) => getTypeStruct(type.type));
+
+      // const types = meta.method_interface
+      //   .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
+      //   .split(",")
+      //   .map((type, i) => {
+      //     return `${type} ${dataTypes[i].name}`;
+      //   });
+
+      console.log(decodeTypeArray);
+
+      const decodedParams = new AbiCoder().decode(decodeTypeArray, call.data);
 
       const handleValue = (value: any) => {
         if (BigNumber.isBigNumber(value) || typeof value === "number") {
@@ -275,7 +287,8 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       };
 
       params = dataTypes.map((t, i) => {
-        const realType = types[i].split(" ")[0];
+        // const realType = types[i].split(" ")[0];
+        const realType = "";
 
         return {
           name: t.name,
@@ -284,6 +297,8 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
           value: handleValue(decodedParams[i]),
         };
       });
+
+      console.log(params);
     }
 
     const getFlow = () => {
