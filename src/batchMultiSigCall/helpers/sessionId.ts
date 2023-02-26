@@ -140,6 +140,15 @@ export const parseSessionID = (sessionId: string, builder: string, externalSigne
     purgeable: flags.purgeable,
     authEnabled: flags.authEnabled,
     builder,
+    recurrency: {
+      accumetable: flags.accumetable,
+      chillTime,
+      maxRepeats,
+    },
+    multisig: {
+      minimumApprovals,
+      externalSigners,
+    },
   };
 };
 
