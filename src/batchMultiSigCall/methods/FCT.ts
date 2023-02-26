@@ -31,6 +31,7 @@ import {
   IWithPlugin,
   TypedDataMessageTransaction,
 } from "../types";
+import { getAuthenticatorSignature } from "../utils";
 
 // Generate nodeId for a call
 export function generateNodeId(): string {
@@ -186,7 +187,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     mcall,
     variables: [],
     externalSigners: [],
-    signatures: [],
+    signatures: [getAuthenticatorSignature(typedData)],
     computed: this.computedVariables,
   };
 
