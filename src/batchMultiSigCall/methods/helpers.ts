@@ -12,7 +12,6 @@ import {
   verifyOptions,
   verifyParam,
 } from "../helpers";
-import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
 import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
 
@@ -272,7 +271,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         { name: "meta", type: "Meta" },
         { name: "limits", type: "Limits" },
         ...primaryType,
-        ...this.computedVariables.map((_, index) => ({
+        ...this.computed.map((_, index) => ({
           name: `computed_${index + 1}`,
           type: `Computed`,
         })),
@@ -288,6 +287,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         { name: "version", type: "bytes3" },
         { name: "random_id", type: "bytes3" },
         { name: "eip712", type: "bool" },
+        { name: "auth_enabled", type: "bool" },
       ],
       Limits: [
         { name: "valid_from", type: "uint40" },
@@ -299,15 +299,17 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       ...optionalTypes,
       ...txTypes,
       ...structTypes,
-      ...(this.computedVariables.length > 0
+      ...(this.computed.length > 0
         ? {
             Computed: [
               { name: "index", type: "uint256" },
-              { name: "var", type: "uint256" },
+              { name: "value", type: "uint256" },
               { name: "add", type: "uint256" },
               { name: "sub", type: "uint256" },
+              { name: "pow", type: "uint256" },
               { name: "mul", type: "uint256" },
               { name: "div", type: "uint256" },
+              { name: "mod", type: "uint256" },
             ],
           }
         : {}),
@@ -329,7 +331,8 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
       ],
     },
     primaryType: "BatchMultiSigCall",
-    domain: getTypedDataDomain(this.chainId),
+    // domain: getTypedDataDomain(this.chainId),
+    domain: this.domain,
     message: {
       meta: {
         name: this.options.name || "",
@@ -338,6 +341,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         version,
         random_id: `0x${salt}`,
         eip712: true,
+        auth_enabled: this.options.authEnabled || true,
       },
       limits: {
         valid_from: this.options.validFrom,
@@ -347,7 +351,7 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         blockable: this.options.blockable,
       },
       ...optionalMessage,
-      ...getComputedVariableMessage(this.computedVariables),
+      ...getComputedVariableMessage(this.convertedComputed),
       ...typedDataMessage,
     },
   };

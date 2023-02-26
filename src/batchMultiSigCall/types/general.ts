@@ -21,6 +21,8 @@ export interface BatchMultiSigCallConstructor {
   chainId?: ChainId;
   options?: Partial<IFCTOptions>;
   defaults?: DeepPartial<ICallDefaults>;
+  domain?: BatchMultiSigCallTypedData["domain"];
+  version?: `0x${string}`;
 }
 
 export interface IBatchMultiSigCallFCT {
@@ -32,13 +34,7 @@ export interface IBatchMultiSigCallFCT {
   builder: string;
   variables: string[];
   externalSigners: string[];
-  computed: {
-    variable: string;
-    add: string;
-    sub: string;
-    mul: string;
-    div: string;
-  }[];
+  computed: Omit<ComputedVariable, "index">[];
   signatures: SignatureLike[];
 }
 
@@ -103,6 +99,7 @@ export interface IFCTOptions {
   blockable: boolean;
   purgeable: boolean;
   builder: string;
+  authEnabled: boolean;
   recurrency?: {
     maxRepeats: string;
     chillTime: string;
@@ -116,20 +113,28 @@ export interface IFCTOptions {
 
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 
+type IComputedValue = string | Variable;
+
 export interface IComputed {
-  variable: string | Variable;
-  add?: string;
-  sub?: string;
-  mul?: string;
-  div?: string;
+  id?: string;
+  value: IComputedValue;
+  add?: IComputedValue;
+  sub?: IComputedValue;
+  pow?: IComputedValue;
+  mul?: IComputedValue;
+  div?: IComputedValue;
+  mod?: IComputedValue;
 }
 
-export interface ComputedVariables {
-  variable: string;
+export interface ComputedVariable {
+  index: string;
+  value: string;
   add: string;
   sub: string;
+  pow: string;
   mul: string;
   div: string;
+  mod: string;
 }
 
 export type IRequiredApproval = (

@@ -1,24 +1,8 @@
 import { Flow } from "../../constants";
-import { IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
+import { IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
 export declare const manageCallId: (calls: IMSCallInput[], call: StrictMSCallInput, index: number) => string;
 export declare const getSessionId: (salt: string, versionHex: string, options: RequiredFCTOptions) => string;
-export declare const parseSessionID: (sessionId: string, builder: string) => {
-    builder: string;
-    recurrency: Partial<{
-        maxRepeats: string;
-        chillTime: string;
-        accumetable: boolean;
-    }>;
-    multisig: {
-        externalSigners?: string[] | undefined;
-        minimumApprovals?: string | undefined;
-    };
-    validFrom: string;
-    expiresAt: string;
-    maxGasPrice: string;
-    blockable: boolean;
-    purgeable: boolean;
-};
+export declare const parseSessionID: (sessionId: string, builder: string, externalSigners?: string[]) => IFCTOptions;
 type CallIdResult<T extends boolean> = T extends true ? number : string;
 export declare const parseCallID: (callId: string, jumpsAsNumbers?: boolean) => {
     options: {

@@ -13,6 +13,7 @@ const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
 const fct_1 = require("../helpers/fct");
+const utils_2 = require("../utils");
 // Generate nodeId for a call
 function generateNodeId() {
     return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -138,15 +139,20 @@ function exportFCT() {
         mcall,
         variables: [],
         externalSigners: [],
-        signatures: [],
-        computed: this.computedVariables,
+        signatures: [(0, utils_2.getAuthenticatorSignature)(typedData)],
+        computed: this.convertedComputed.map((c) => {
+            // Return everything except the index
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { index, ...rest } = c;
+            return rest;
+        }),
     };
     return FCTData;
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
     // Here we import FCT and add all the data inside BatchMultiSigCall
-    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder);
+    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
     this.setOptions(options);
     const typedData = fct.typedData;
     for (const [index, call] of fct.mcall.entries()) {

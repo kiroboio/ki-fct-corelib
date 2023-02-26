@@ -40,25 +40,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
         id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
     } | {
         type: "computed";
-        id: {
-            variable: string | ({
-                type: "output";
-                id: {
-                    nodeId: string;
-                    innerIndex: number;
-                };
-            } | {
-                type: "external";
-                id: number;
-            } | {
-                type: "global";
-                id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-            } | any);
-            add?: string | undefined;
-            sub?: string | undefined;
-            mul?: string | undefined;
-            div?: string | undefined;
-        };
+        id: string;
     }) | undefined;
     value: string | ({
         type: "output";
@@ -74,25 +56,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
         id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
     } | {
         type: "computed";
-        id: {
-            variable: string | ({
-                type: "output";
-                id: {
-                    nodeId: string;
-                    innerIndex: number;
-                };
-            } | {
-                type: "external";
-                id: number;
-            } | {
-                type: "global";
-                id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-            } | any);
-            add?: string | undefined;
-            sub?: string | undefined;
-            mul?: string | undefined;
-            div?: string | undefined;
-        };
+        id: string;
     }) | undefined;
     methodParams: Partial<{
         token: string | ({
@@ -109,25 +73,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
         amountTokenDesired: string | ({
             type: "output";
@@ -143,25 +89,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
         amountTokenMin: string | ({
             type: "output";
@@ -177,25 +105,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
         amountETHMin: string | ({
             type: "output";
@@ -211,25 +121,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
         to: string | ({
             type: "output";
@@ -245,25 +137,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
         deadline: string | ({
             type: "output";
@@ -279,25 +153,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             type: "computed";
-            id: {
-                variable: string | ({
-                    type: "output";
-                    id: {
-                        nodeId: string;
-                        innerIndex: number;
-                    };
-                } | {
-                    type: "external";
-                    id: number;
-                } | {
-                    type: "global";
-                    id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-                } | any);
-                add?: string | undefined;
-                sub?: string | undefined;
-                mul?: string | undefined;
-                div?: string | undefined;
-            };
+            id: string;
         }) | undefined;
     }>;
 }>>;

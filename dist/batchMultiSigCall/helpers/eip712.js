@@ -93,14 +93,7 @@ const getComputedVariableMessage = (computedVariables) => {
     return computedVariables.reduce((acc, item, i) => {
         return {
             ...acc,
-            [`computed_${i + 1}`]: {
-                index: (i + 1).toString(),
-                var: item.variable,
-                add: item.add,
-                sub: item.sub,
-                mul: item.mul,
-                div: item.div,
-            },
+            [`computed_${i + 1}`]: item,
         };
     }, {});
 };
