@@ -11,7 +11,7 @@ const chainId = 5;
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
 
-  const FCTController = new ethers.Contract("0x087550a787B2720AAC06351065afC1F413D82572", FCTControllerABI, provider);
+  const FCTController = new ethers.Contract("0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7", FCTControllerABI, provider);
 
   const data = {
     name: await FCTController.NAME(),
