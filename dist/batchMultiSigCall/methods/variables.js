@@ -20,12 +20,9 @@ function getVariable(variable, type) {
         return globalVariable;
     }
     if (variable.type === "computed") {
-        const computedVariables = this.computedVariables;
+        const computedVariables = this.computed;
         const index = computedVariables.findIndex((computedVariable) => {
-            if (typeof variable.id.variable === "string") {
-                return computedVariable.variable === variable.id.variable;
-            }
-            return computedVariable.variable === this.getVariable(variable.id.variable, type);
+            return computedVariable.id === variable.id;
         });
         return this.getComputedVariable(index, type);
     }

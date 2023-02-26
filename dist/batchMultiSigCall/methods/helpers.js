@@ -9,6 +9,7 @@ const lodash_1 = __importDefault(require("lodash"));
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
+const index_1 = require("../index");
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
     return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
@@ -123,7 +124,7 @@ function createTypedData(salt, version) {
     const typedDataMessage = this.decodedCalls.reduce((acc, call, index) => {
         let paramsData = {};
         if (call.params) {
-            paramsData = this.getParamsFromCall(call);
+            paramsData = this.getParamsFromCall(call, index);
         }
         const options = call.options || {};
         const gasLimit = options.gasLimit ?? "0";
@@ -241,15 +242,17 @@ function createTypedData(salt, version) {
             ...optionalTypes,
             ...txTypes,
             ...structTypes,
-            ...(this.computedVariables.length > 0
+            ...(this.computed.length > 0
                 ? {
                     Computed: [
                         { name: "index", type: "uint256" },
-                        { name: "var", type: "uint256" },
+                        { name: "value", type: "uint256" },
                         { name: "add", type: "uint256" },
                         { name: "sub", type: "uint256" },
+                        { name: "pow", type: "uint256" },
                         { name: "mul", type: "uint256" },
                         { name: "div", type: "uint256" },
+                        { name: "mod", type: "uint256" },
                     ],
                 }
                 : {}),
@@ -291,7 +294,7 @@ function createTypedData(salt, version) {
                 blockable: this.options.blockable,
             },
             ...optionalMessage,
-            ...(0, helpers_2.getComputedVariableMessage)(this.computedVariables),
+            ...(0, helpers_2.getComputedVariableMessage)(this.convertedComputed),
             ...typedDataMessage,
         },
     };

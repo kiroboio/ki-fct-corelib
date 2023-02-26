@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseCallID = exports.parseSessionID = exports.getSessionId = exports.manageCallId = void 0;
 const constants_1 = require("../../constants");
+const constants_2 = require("../constants");
 const sessionIdFlag = {
     accumetable: 0x1,
     purgeable: 0x2,
@@ -75,15 +76,11 @@ const getSessionId = (salt, versionHex, options) => {
         ? Number(options.multisig.minimumApprovals).toString(16).padStart(2, "0")
         : "00";
     const version = versionHex.slice(2);
-    const maxRepeats = options.recurrency ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
-    const chillTime = options.recurrency
-        ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0")
-        : "00000000";
-    const beforeTimestamp = options.expiresAt ? Number(options.expiresAt).toString(16).padStart(10, "0") : "ffffffffff";
-    const afterTimestamp = options.validFrom ? Number(options.validFrom).toString(16).padStart(10, "0") : "0000000000";
-    const maxGasPrice = options.maxGasPrice
-        ? Number(options.maxGasPrice).toString(16).padStart(16, "0")
-        : "00000005D21DBA00"; // 25 Gwei
+    const maxRepeats = Number(recurrency.maxRepeats) > 1 ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
+    const chillTime = Number(recurrency.maxRepeats) > 0 ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0") : "00000000";
+    const beforeTimestamp = Number(options.expiresAt).toString(16).padStart(10, "0");
+    const afterTimestamp = Number(options.validFrom).toString(16).padStart(10, "0");
+    const maxGasPrice = Number(options.maxGasPrice).toString(16).padStart(16, "0");
     let flagValue = 0;
     flagValue += sessionIdFlag.eip712; // EIP712 true by default
     if (options.recurrency?.accumetable)

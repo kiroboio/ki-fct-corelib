@@ -7,16 +7,10 @@ import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | {
     [key: string]: FCTCallParam;
 };
-export interface ComuptedVariable {
-    variable: string;
-    add: string;
-    sub: string;
-    mul: string;
-    div: string;
-}
 export interface BatchMultiSigCallConstructor {
     chainId?: ChainId;
     options?: Partial<IFCTOptions>;
+    defaults?: DeepPartial<ICallDefaults>;
     domain?: BatchMultiSigCallTypedData["domain"];
     version?: `0x${string}`;
 }
@@ -29,7 +23,7 @@ export interface IBatchMultiSigCallFCT {
     builder: string;
     variables: string[];
     externalSigners: string[];
-    computed: ComuptedVariable[];
+    computed: ComputedVariable[];
     signatures: SignatureLike[];
 }
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
@@ -96,19 +90,26 @@ export interface IFCTOptions {
     };
 }
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
+type IComputedValue = string | Variable;
 export interface IComputed {
-    variable: string | Variable;
-    add?: string;
-    sub?: string;
-    mul?: string;
-    div?: string;
+    id?: string;
+    value: IComputedValue;
+    add?: IComputedValue;
+    sub?: IComputedValue;
+    pow?: IComputedValue;
+    mul?: IComputedValue;
+    div?: IComputedValue;
+    mod?: IComputedValue;
 }
-export interface ComputedVariables {
-    variable: string;
+export interface ComputedVariable {
+    index: string;
+    value: string;
     add: string;
     sub: string;
+    pow: string;
     mul: string;
     div: string;
+    mod: string;
 }
 export type IRequiredApproval = ({
     protocol: "ERC20";
@@ -138,3 +139,4 @@ export type IRequiredApproval = ({
 export type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
     options: DeepRequired<CallOptions>;
 };
+export {};

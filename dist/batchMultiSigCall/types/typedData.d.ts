@@ -26,6 +26,7 @@ export type TypedDataTypes = {
     Call: MessageTypeProperty[];
     Recurrency?: MessageTypeProperty[];
     MultiSig?: MessageTypeProperty[];
+    Computed?: MessageTypeProperty[];
 } & {
     [key: string]: MessageTypeProperty[];
 };
