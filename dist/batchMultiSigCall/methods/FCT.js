@@ -162,10 +162,45 @@ function importFCT(fct) {
         if (dataTypes.length > 0) {
             // Getting types from method_interface, because parameter might be hashed and inside
             // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
+            const typeString = meta.method_interface.slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"));
+            // Add `tuple` infront of every (
+            const tupleString = typeString.replace(/\(/g, "tuple(");
+            const createTypeArray = (typeString) => {
+                if (typeString.startsWith("tuple(")) {
+                    const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
+                    const tupleTypes = tupleString.split(",").map((type) => {
+                        if (type.includes("tuple")) {
+                            return createTypeArray(type);
+                        }
+                        return type;
+                    });
+                    return [tupleTypes];
+                }
+                const tupleTypes = typeString.split(",").map((type) => {
+                    if (type.includes("tuple")) {
+                        return createTypeArray(type);
+                    }
+                    return type;
+                });
+                return tupleTypes;
+            };
+            console.log(createTypeArray(tupleString));
+            // const getArrayOfTypes = (typeString: string) => {
+            //   // Check if value is a tuple
+            //   if (typeString.includes("tuple(")) {
+            //     // Remove "tuple(" and ")" from string
+            //     const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
+            //     console.log(tupleString);
+            //   }
+            // };
+            // getArrayOfTypes(tupleString);
             const types = meta.method_interface
                 .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
                 .split(",")
-                .map((type, i) => `${type} ${dataTypes[i].name}`);
+                .map((type, i) => {
+                console.log(type, dataTypes[i]);
+                return `${type} ${dataTypes[i].name}`;
+            });
             const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
             const handleValue = (value) => {
                 if (ethers_1.BigNumber.isBigNumber(value) || typeof value === "number") {
