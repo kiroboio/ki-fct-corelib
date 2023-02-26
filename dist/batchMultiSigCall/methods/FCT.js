@@ -165,43 +165,48 @@ function importFCT(fct) {
             const typeString = meta.method_interface.slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"));
             // Add `tuple` infront of every (
             const tupleString = typeString.replace(/\(/g, "tuple(");
-            const createTypeArray = (typeString) => {
-                if (typeString.startsWith("tuple(")) {
-                    const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
-                    const tupleTypes = tupleString.split(",").map((type) => {
-                        if (type.includes("tuple")) {
-                            return createTypeArray(type);
-                        }
-                        return type;
-                    });
-                    return [tupleTypes];
-                }
-                const tupleTypes = typeString.split(",").map((type) => {
-                    if (type.includes("tuple")) {
-                        return createTypeArray(type);
+            // Convert this array [{ to: "address", value: "uint256", value2: { to: "address" } }];
+            // Into tuple(address to, uint256 value, tuple(address to) value2)
+            const convertObjectToTuple = (obj) => {
+                const tuple = `tuple(${Object.entries(obj)
+                    .map(([key, value]) => {
+                    if (value.includes("tuple")) {
+                        return `${value} ${key}`;
                     }
-                    return type;
-                });
-                return tupleTypes;
+                    return `${value} ${key}`;
+                })
+                    .join(",")})`;
+                return tuple;
             };
-            console.log(createTypeArray(tupleString));
-            // const getArrayOfTypes = (typeString: string) => {
-            //   // Check if value is a tuple
-            //   if (typeString.includes("tuple(")) {
-            //     // Remove "tuple(" and ")" from string
-            //     const tupleString = typeString.slice(typeString.indexOf("(") + 1, typeString.lastIndexOf(")"));
-            //     console.log(tupleString);
-            //   }
-            // };
-            // getArrayOfTypes(tupleString);
-            const types = meta.method_interface
-                .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-                .split(",")
-                .map((type, i) => {
-                console.log(type, dataTypes[i]);
-                return `${type} ${dataTypes[i].name}`;
-            });
-            const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
+            const getTypeStruct = (type) => {
+                const typeStruct = typedData.types[type];
+                if (!typeStruct) {
+                    return type;
+                }
+                const typesAsObjects = typeStruct.reduce((acc, { name, type }) => {
+                    if (typedData.types[type]) {
+                        return {
+                            ...acc,
+                            [name]: getTypeStruct(type),
+                        };
+                    }
+                    return {
+                        ...acc,
+                        [name]: type,
+                    };
+                }, {});
+                // Convert typesAsObjects to tuple string
+                return convertObjectToTuple(typesAsObjects);
+            };
+            const decodeTypeArray = dataTypes.map((type) => getTypeStruct(type.type));
+            // const types = meta.method_interface
+            //   .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
+            //   .split(",")
+            //   .map((type, i) => {
+            //     return `${type} ${dataTypes[i].name}`;
+            //   });
+            console.log(decodeTypeArray);
+            const decodedParams = new utils_1.AbiCoder().decode(decodeTypeArray, call.data);
             const handleValue = (value) => {
                 if (ethers_1.BigNumber.isBigNumber(value) || typeof value === "number") {
                     return value.toString();
@@ -209,7 +214,8 @@ function importFCT(fct) {
                 return value;
             };
             params = dataTypes.map((t, i) => {
-                const realType = types[i].split(" ")[0];
+                // const realType = types[i].split(" ")[0];
+                const realType = "";
                 return {
                     name: t.name,
                     type: t.type,
@@ -217,6 +223,7 @@ function importFCT(fct) {
                     value: handleValue(decodedParams[i]),
                 };
             });
+            console.log(params);
         }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
