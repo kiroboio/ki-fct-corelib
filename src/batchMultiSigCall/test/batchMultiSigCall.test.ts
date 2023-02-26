@@ -1,6 +1,7 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import { ethers } from "ethers";
+import util from "util";
 
 import { Flow } from "../../constants";
 import { parseCallID } from "../helpers";
@@ -251,7 +252,7 @@ describe("BatchMultiSigCall", () => {
             value: {
               type: "computed",
               id: {
-                variable: {
+                value: {
                   type: "output",
                   id: {
                     nodeId: "node2",
@@ -269,11 +270,13 @@ describe("BatchMultiSigCall", () => {
 
     const FCT = batchMultiSigCall.exportFCT();
 
+    console.log(util.inspect(FCT, false, null, true /* enable colors */));
+
     expect(FCT).to.be.an("object");
 
     expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFE00000000000000000000000000000000000001");
 
-    expect(FCT.computed[0].variable).to.eq("0xFD00000000000000000000000000000000000001");
+    expect(FCT.computed[0].value).to.eq("0xFD00000000000000000000000000000000000001");
     expect(FCT.computed[0].sub).to.eq("10");
   });
   it("Should create FCT with encoded data and ABI", async () => {

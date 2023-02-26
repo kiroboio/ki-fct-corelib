@@ -14,7 +14,14 @@ import {
 } from "../helpers";
 import { getTypedDataDomain } from "../helpers/fct";
 import { BatchMultiSigCall, EIP712_MULTISIG, EIP712_RECURRENCY, NO_JUMP } from "../index";
-import { BatchMultiSigCallTypedData, FCTCallParam, IFCTOptions, IMSCallInput, IRequiredApproval } from "../types";
+import {
+  BatchMultiSigCallTypedData,
+  ComputedVariable,
+  FCTCallParam,
+  IFCTOptions,
+  IMSCallInput,
+  IRequiredApproval,
+} from "../types";
 
 export function getCalldataForActuator(
   this: BatchMultiSigCall,
@@ -303,11 +310,13 @@ export function createTypedData(this: BatchMultiSigCall, salt: string, version: 
         ? {
             Computed: [
               { name: "index", type: "uint256" },
-              { name: "var", type: "uint256" },
+              { name: "value", type: "uint256" },
               { name: "add", type: "uint256" },
               { name: "sub", type: "uint256" },
+              { name: "pow", type: "uint256" },
               { name: "mul", type: "uint256" },
               { name: "div", type: "uint256" },
+              { name: "mod", type: "uint256" },
             ],
           }
         : {}),
@@ -437,4 +446,32 @@ export function decodeParams(this: BatchMultiSigCall, params: Param[]): ParamWit
     }
     return [...acc, param as ParamWithoutVariable];
   }, [] as ParamWithoutVariable[]);
+}
+
+export function handleComputedVariable(this: BatchMultiSigCall, variable: Variable, type: string): ComputedVariable {
+  if (variable.type !== "computed") {
+    throw new Error("Variable is not a computed variable");
+  }
+  const handleVariable = (variable: string | Variable | undefined, type: string) => {
+    if (!variable) {
+      return "";
+    }
+    if (typeof variable === "string") {
+      return variable;
+    }
+    if (variable.type === "computed") {
+      throw new Error("Computed variables cannot be nested");
+    }
+
+    return this.getVariable(variable, type);
+  };
+  return {
+    value: handleVariable(variable.id.value, type),
+    add: handleVariable(variable.id.add, type),
+    sub: handleVariable(variable.id.sub, type),
+    pow: handleVariable(variable.id.pow, type),
+    mul: handleVariable(variable.id.mul, type),
+    div: handleVariable(variable.id.div, type),
+    mod: handleVariable(variable.id.mod, type),
+  };
 }

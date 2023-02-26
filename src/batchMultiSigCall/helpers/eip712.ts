@@ -1,5 +1,5 @@
 import { Param } from "../../types";
-import { BatchMultiSigCallTypedData, ComputedVariables, IComputedVariable, IMSCallInput } from "../types";
+import { BatchMultiSigCallTypedData, ComputedVariable, IComputedVariable, IMSCallInput } from "../types";
 
 type EIP712Types = Record<string, { name: string; type: string }[]>;
 
@@ -103,14 +103,14 @@ export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeNa
 };
 
 export const getComputedVariableMessage = (
-  computedVariables: ComputedVariables[]
+  computedVariables: ComputedVariable[]
 ): Record<`computed_${number}`, IComputedVariable> => {
   return computedVariables.reduce((acc, item, i) => {
     return {
       ...acc,
       [`computed_${i + 1}`]: {
         index: (i + 1).toString(),
-        var: item.variable,
+        var: item.value,
         add: item.add,
         sub: item.sub,
         mul: item.mul,

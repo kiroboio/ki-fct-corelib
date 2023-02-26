@@ -28,6 +28,7 @@ import {
   getPluginClass,
   getPluginData,
   getVariable,
+  handleComputedVariable,
   handleTo,
   handleValue,
   importEncodedFCT,
@@ -49,8 +50,8 @@ import {
 export class BatchMultiSigCall {
   protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
   protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-  protected batchMultiSigSelector = "0x2409a934";
-  protected version = "0x010102";
+  protected batchMultiSigSelector = "0xf6407ddd";
+  protected version = "0x010101";
   protected chainId: ChainId;
 
   protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
@@ -143,6 +144,7 @@ export class BatchMultiSigCall {
   protected handleTo = handleTo;
   protected handleValue = handleValue;
   protected decodeParams = decodeParams;
+  protected handleComputedVariable = handleComputedVariable;
 
   // Validation functions
   protected verifyCall = verifyCall;

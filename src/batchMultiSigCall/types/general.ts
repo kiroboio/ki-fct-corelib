@@ -32,13 +32,7 @@ export interface IBatchMultiSigCallFCT {
   builder: string;
   variables: string[];
   externalSigners: string[];
-  computed: {
-    variable: string;
-    add: string;
-    sub: string;
-    mul: string;
-    div: string;
-  }[];
+  computed: ComputedVariable[];
   signatures: SignatureLike[];
 }
 
@@ -117,19 +111,23 @@ export interface IFCTOptions {
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 
 export interface IComputed {
-  variable: string | Variable;
-  add?: string;
-  sub?: string;
-  mul?: string;
-  div?: string;
+  value: string | Variable;
+  add?: string | Variable;
+  sub?: string | Variable;
+  pow?: string | Variable;
+  mul?: string | Variable;
+  div?: string | Variable;
+  mod?: string | Variable;
 }
 
-export interface ComputedVariables {
-  variable: string;
+export interface ComputedVariable {
+  value: string;
   add: string;
   sub: string;
+  pow: string;
   mul: string;
   div: string;
+  mod: string;
 }
 
 export type IRequiredApproval = (

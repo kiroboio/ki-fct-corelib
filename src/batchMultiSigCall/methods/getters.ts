@@ -3,29 +3,22 @@ import _ from "lodash";
 import { instanceOfVariable } from "../../helpers";
 import { ParamWithoutVariable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { ComputedVariables, DecodedCalls, StrictMSCallInput } from "../types";
+import { ComputedVariable, DecodedCalls, StrictMSCallInput } from "../types";
 
-export function _getComputedVariables(this: BatchMultiSigCall): ComputedVariables[] {
+export function _getComputedVariables(this: BatchMultiSigCall): ComputedVariable[] {
   return this.calls.reduce((acc, call) => {
     if (call.params) {
       call.params.forEach((param) => {
         if (instanceOfVariable(param.value) && param.value.type === "computed") {
           const variable = param.value;
-          acc.push({
-            variable:
-              typeof variable.id.variable === "string"
-                ? variable.id.variable
-                : this.getVariable(variable.id.variable, param.type),
-            add: variable.id.add || "",
-            sub: variable.id.sub || "",
-            mul: variable.id.mul || "",
-            div: variable.id.div || "",
-          });
+
+          const varObject = this.handleComputedVariable(variable, param.type);
+          acc.push(varObject);
         }
       });
     }
     return acc;
-  }, [] as ComputedVariables[]);
+  }, [] as ComputedVariable[]);
 }
 
 export function _getDecodedCalls(this: BatchMultiSigCall): DecodedCalls[] {

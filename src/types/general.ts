@@ -8,6 +8,8 @@ export type Variable =
   | { type: "global"; id: GlobalVariable }
   | { type: "computed"; id: IComputed };
 
+export type VariableWithoutComputed = Exclude<Variable, { type: "computed" }>;
+
 export interface Param {
   name: string;
   type: string;
