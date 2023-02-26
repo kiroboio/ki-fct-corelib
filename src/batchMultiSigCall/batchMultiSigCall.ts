@@ -3,13 +3,12 @@ import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
-import { getDate } from "../helpers";
-import { RequiredKeys } from "../types";
+import { getDate, instanceOfVariable } from "../helpers";
+import { RequiredKeys, Variable } from "../types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
   _getCalls,
-  _getComputedVariables,
   _getDecodedCalls,
   create,
   createMultiple,
@@ -29,7 +28,6 @@ import {
   getPluginClass,
   getPluginData,
   getVariable,
-  handleComputedVariable,
   handleTo,
   handleValue,
   importEncodedFCT,
@@ -38,10 +36,13 @@ import {
   setOptions,
   verifyCall,
 } from "./methods";
+import { addComputed } from "./methods/computed";
 import {
   BatchMultiSigCallConstructor,
+  ComputedVariable,
   DecodedCalls,
   ICallDefaults,
+  IComputed,
   IFCTOptions,
   IMSCallInput,
   RequiredFCTOptions,
@@ -57,6 +58,7 @@ export class BatchMultiSigCall {
   protected chainId: ChainId;
   protected domain: TypedDataDomain;
 
+  protected _computed: Required<IComputed>[] = [];
   protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
   protected _options: IFCTOptions = {
     maxGasPrice: "30000000000", // 30 Gwei as default
@@ -117,12 +119,38 @@ export class BatchMultiSigCall {
   }
 
   get computedVariables() {
-    return this._getComputedVariables();
+    return [];
+  }
+
+  get computed() {
+    return this._computed;
+  }
+
+  get convertedComputed(): ComputedVariable[] {
+    const handleVariable = (value: string | Variable) => {
+      if (instanceOfVariable(value)) {
+        return this.getVariable(value, "uint256");
+      }
+      return value;
+    };
+    return this._computed.map((c, i) => ({
+      index: (i + 1).toString(),
+      value: handleVariable(c.value),
+      add: handleVariable(c.add),
+      sub: handleVariable(c.sub),
+      mul: handleVariable(c.mul),
+      pow: handleVariable(c.pow),
+      div: handleVariable(c.div),
+      mod: handleVariable(c.mod),
+    }));
   }
 
   // Set methods
   public setOptions = setOptions;
   public setCallDefaults = setCallDefaults;
+
+  // Add Computed
+  public addComputed = addComputed;
 
   // Plugin functions
   public getPlugin = getPlugin;
@@ -155,13 +183,11 @@ export class BatchMultiSigCall {
   protected handleTo = handleTo;
   protected handleValue = handleValue;
   protected decodeParams = decodeParams;
-  protected handleComputedVariable = handleComputedVariable;
 
   // Validation functions
   protected verifyCall = verifyCall;
 
   // Getter functions
-  protected _getComputedVariables = _getComputedVariables;
   protected _getDecodedCalls = _getDecodedCalls;
   protected _getCalls = _getCalls;
 }

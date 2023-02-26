@@ -188,7 +188,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     variables: [],
     externalSigners: [],
     signatures: [getAuthenticatorSignature(typedData)],
-    computed: this.computedVariables,
+    computed: this.convertedComputed,
   };
 
   return FCTData;
@@ -382,7 +382,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 
       const { options } = parseCallID(call.callId);
 
-      const callInput: IWithPlugin = {
+      const callInput: any = {
         nodeId: `node${index + 1}`,
         plugin,
         from: call.from,

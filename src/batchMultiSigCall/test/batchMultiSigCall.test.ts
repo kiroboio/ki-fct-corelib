@@ -255,6 +255,18 @@ describe("BatchMultiSigCall", () => {
       },
     });
 
+    batchMultiSigCall.addComputed({
+      id: "test",
+      value: {
+        type: "output",
+        id: {
+          nodeId: "node2",
+          innerIndex: 0,
+        },
+      },
+      sub: "10",
+    });
+
     await batchMultiSigCall.createMultiple([
       {
         nodeId: "node2",
@@ -273,16 +285,7 @@ describe("BatchMultiSigCall", () => {
             type: "uint256",
             value: {
               type: "computed",
-              id: {
-                value: {
-                  type: "output",
-                  id: {
-                    nodeId: "node2",
-                    innerIndex: 0,
-                  },
-                },
-                sub: "10",
-              },
+              id: "test",
             },
           },
         ],

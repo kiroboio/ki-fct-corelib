@@ -113,17 +113,21 @@ export interface IFCTOptions {
 
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 
+type IComputedValue = string | Variable;
+
 export interface IComputed {
-  value: string | Variable;
-  add?: string | Variable;
-  sub?: string | Variable;
-  pow?: string | Variable;
-  mul?: string | Variable;
-  div?: string | Variable;
-  mod?: string | Variable;
+  id?: string;
+  value: IComputedValue;
+  add?: IComputedValue;
+  sub?: IComputedValue;
+  pow?: IComputedValue;
+  mul?: IComputedValue;
+  div?: IComputedValue;
+  mod?: IComputedValue;
 }
 
 export interface ComputedVariable {
+  index: string;
   value: string;
   add: string;
   sub: string;

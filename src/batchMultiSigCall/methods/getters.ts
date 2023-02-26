@@ -1,25 +1,8 @@
 import _ from "lodash";
 
-import { instanceOfVariable } from "../../helpers";
 import { ParamWithoutVariable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { ComputedVariable, DecodedCalls, StrictMSCallInput } from "../types";
-
-export function _getComputedVariables(this: BatchMultiSigCall): ComputedVariable[] {
-  return this.calls.reduce((acc, call) => {
-    if (call.params) {
-      call.params.forEach((param) => {
-        if (instanceOfVariable(param.value) && param.value.type === "computed") {
-          const variable = param.value;
-
-          const varObject = this.handleComputedVariable(variable, param.type);
-          acc.push(varObject);
-        }
-      });
-    }
-    return acc;
-  }, [] as ComputedVariable[]);
-}
+import { DecodedCalls, StrictMSCallInput } from "../types";
 
 export function _getDecodedCalls(this: BatchMultiSigCall): DecodedCalls[] {
   return this.calls.map((call) => {

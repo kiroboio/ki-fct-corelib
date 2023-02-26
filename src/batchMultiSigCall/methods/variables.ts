@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import {
   ComputedBase,
   ComputedBaseBytes,
@@ -34,10 +32,9 @@ export function getVariable(this: BatchMultiSigCall, variable: Variable, type: s
     return globalVariable;
   }
   if (variable.type === "computed") {
-    const computedVariables = this.computedVariables;
-    const variableObject = this.handleComputedVariable(variable, type);
+    const computedVariables = this.computed;
     const index = computedVariables.findIndex((computedVariable) => {
-      return _.isEqual(computedVariable, variableObject);
+      return computedVariable.id === variable.id;
     });
 
     return this.getComputedVariable(index, type);
