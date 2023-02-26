@@ -1,5 +1,5 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import { MethodParamsInterface, Param } from "../../types";
 import { TypedDataDomain } from "../types";
@@ -62,10 +62,22 @@ export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: et
         value: values[input.name].map((tuple: ethers.utils.Result) => getParamsFromInputs(input.components, tuple)),
       };
     }
+    let value = values[input.name];
+    // Check if value isn't a variable
+    const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+
+    if (BigNumber.isBigNumber(value)) {
+      const hexString = value.toHexString().toLowerCase();
+      if (variables.some((v) => hexString.startsWith(v))) {
+        value = hexString;
+      }
+      value = value.toString();
+    }
+
     return {
       name: input.name,
       type: input.type,
-      value: values[input.name],
+      value,
     };
   });
 };

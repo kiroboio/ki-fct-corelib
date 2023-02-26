@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
+import util from "util";
 
 import FCTData from "../FCT.json";
+import { BatchMultiSigCall } from "../src";
 // import { BatchMultiSigCall } from "../src";
 
 const encoded =
@@ -8,7 +10,7 @@ const encoded =
 
 const typedData = FCTData.typedData;
 
-const types = {
+const typesObject = {
   EIP712Domain: [
     {
       name: "name",
@@ -253,25 +255,51 @@ dotenv.config();
 const key = process.env.PRIVATE_KEY as string;
 
 async function main() {
-  const signature = "(address,uint256,(address))";
-  const dataTypes = typedData.types[`transaction3`].slice(1);
+  const FCT = new BatchMultiSigCall();
 
-  const signatureToTypes = (signature: string, types: { name: string; type: string }[]) => {
-    // Check what is first ( or ,
-    const first = signature[0];
-    const rest = signature.slice(1);
-    if (first === "(") {
-      const [type, restSignature] = rest.split(")");
-      const restTypes = signatureToTypes(restSignature, types);
-      return [type, ...restTypes];
-    }
-  };
+  FCT.importFCT(FCTData);
 
-  console.log(signatureToTypes(signature, dataTypes));
+  // const exportFCT = FCT.exportFCT();
 
-  // const decoded = ethers.utils.defaultAbiCoder.decode(["tuple(address,uint256,tuple(address))"], encoded);
+  console.log(util.inspect(FCT.calls, false, null, true));
 
-  // console.log(decoded);
+  // const signature = "(address,uint256,(address))";
+  // // const signature = "address,uint256,address";
+  // const dataTypes = typedData.types[`transaction3`].slice(1);
+  // const signatureToTypes = (signature: string, types: { name: string; type: string }[]): any => {
+  //   // Check if ( is the first character
+  //   const first = signature[0];
+  //   if (first === "(") {
+  //     // Remove first and last character
+  //     signature = signature.slice(1, -1);
+  //     const type = typesObject[types[0].type as keyof typeof typesObject];
+  //     return [signatureToTypes(signature, type)];
+  //   }
+  //   // Check if , is in the string
+  //   const comma = signature.indexOf(",");
+  //   if (comma !== -1) {
+  //     // Split first and rest
+  //     const first = signature.slice(0, comma);
+  //     const rest = signature.slice(comma + 1);
+  //     const name = types[0].name;
+  //     return [`${first} ${name}`, ...signatureToTypes(rest, types.slice(1))];
+  //   }
+  //   return [`${signature} ${types[0].name}`];
+  // };
+  // const array = signatureToTypes(signature, dataTypes);
+  // // Convert [[ 'address to', 'uint256 value', [ 'address to' ]]]
+  // // to ["tuple(address to, uint256 value, tuple(address to))"]
+  // const convertTypes = (types: any[], typesData: { name: string; type: string }[]): any => {
+  //   return types.map((type, index) => {
+  //     if (Array.isArray(type)) {
+  //       const name = typesData[index].name;
+  //       const typesDataArray = typesObject[typesData[index].type as keyof typeof typesObject];
+  //       return `tuple(${convertTypes(type, typesDataArray)}) ${name}`;
+  //     }
+  //     return type;
+  //   });
+  // };
+  // console.log(convertTypes(array, dataTypes));
 }
 
 main()

@@ -1,8 +1,9 @@
 import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
-import { AbiCoder } from "ethers/lib/utils";
+import { AbiCoder, id } from "ethers/lib/utils";
 import _ from "lodash";
+import util from "util";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
@@ -204,6 +205,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
   const options = parseSessionID(fct.sessionId, fct.builder, fct.externalSigners);
   this.setOptions(options);
   const typedData = fct.typedData;
+  const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
     const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
@@ -220,85 +222,63 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
         meta.method_interface.lastIndexOf(")")
       );
 
-      // Add `tuple` infront of every (
-      const tupleString = typeString.replace(/\(/g, "tuple(");
+      const signatureToTypes = (signature: string, typesData: { name: string; type: string }[]): any => {
+        // Check if ( is the first character
+        const first = signature[0];
+        if (first === "(") {
+          // Remove first and last character
+          signature = signature.slice(1, -1);
 
-      // Convert this array [{ to: "address", value: "uint256", value2: { to: "address" } }];
-      // Into tuple(address to, uint256 value, tuple(address to) value2)
+          const type = typesObject[typesData[0].type as keyof typeof typesObject];
 
-      const convertObjectToTuple = (obj: Record<string, string>): string => {
-        const tuple = `tuple(${Object.entries(obj)
-          .map(([key, value]) => {
-            if (value.includes("tuple")) {
-              return `${value} ${key}`;
-            }
-            return `${value} ${key}`;
-          })
-          .join(",")})`;
+          return [signatureToTypes(signature, type)];
+        }
+        // Check if , is in the string
+        const comma = signature.indexOf(",");
 
-        return tuple;
+        if (comma !== -1) {
+          // Split first and rest
+          const first = signature.slice(0, comma);
+          const rest = signature.slice(comma + 1);
+
+          const name = typesData[0].name;
+          return [`${first} ${name}`, ...signatureToTypes(rest, typesData.slice(1))];
+        }
+        return [`${signature} ${typesData[0].name}`];
       };
 
-      const getTypeStruct = (type: string): any => {
-        const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as {
-          name: string;
-          type: string;
-        }[];
-
-        if (!typeStruct) {
-          return type;
-        }
-
-        const typesAsObjects = typeStruct.reduce((acc, { name, type }) => {
-          if (typedData.types[type as keyof (typeof typedData)["types"]]) {
-            return {
-              ...acc,
-              [name]: getTypeStruct(type),
-            };
+      const convertTypes = (types: any[], typesData: { name: string; type: string }[]): any => {
+        return types.map((type, index) => {
+          if (Array.isArray(type)) {
+            const name = typesData[index].name;
+            const typesDataArray = typesObject[typesData[index].type as keyof typeof typesObject];
+            return `tuple(${convertTypes(type, typesDataArray)}) ${name}`;
           }
-          return {
-            ...acc,
-            [name]: type,
-          };
-        }, {} as Record<string, string>);
-
-        // Convert typesAsObjects to tuple string
-        return convertObjectToTuple(typesAsObjects);
+          return type;
+        });
       };
 
-      const decodeTypeArray = dataTypes.map((type) => getTypeStruct(type.type));
+      const array = signatureToTypes(typeString, dataTypes);
+      const decodeTypesArray = convertTypes(array, dataTypes);
 
-      // const types = meta.method_interface
-      //   .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-      //   .split(",")
-      //   .map((type, i) => {
-      //     return `${type} ${dataTypes[i].name}`;
-      //   });
+      const iface = new utils.Interface([
+        `function ${meta.method_interface.split("(")[0]}(${decodeTypesArray.join(", ")})`,
+      ]);
 
-      console.log(decodeTypeArray);
+      const dataWithFunctionSignature = `${id(meta.method_interface).slice(0, 10)}${call.data.slice(2)}`;
 
-      const decodedParams = new AbiCoder().decode(decodeTypeArray, call.data);
-
-      const handleValue = (value: any) => {
-        if (BigNumber.isBigNumber(value) || typeof value === "number") {
-          return value.toString();
-        }
-        return value;
-      };
-
-      params = dataTypes.map((t, i) => {
-        // const realType = types[i].split(" ")[0];
-        const realType = "";
-
-        return {
-          name: t.name,
-          type: t.type,
-          hashed: t.type === realType ? false : true,
-          value: handleValue(decodedParams[i]),
-        };
+      const {
+        args,
+        functionFragment: { inputs },
+      } = iface.parseTransaction({
+        data: dataWithFunctionSignature,
+        value: typeof call.value === "string" ? call.value : "0",
       });
 
-      console.log(params);
+      console.log("args", args);
+      console.log("inputs", util.inspect(inputs, false, null, true /* enable colors */));
+
+      params = getParamsFromInputs(inputs, args);
     }
 
     const getFlow = () => {
