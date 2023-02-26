@@ -1,3 +1,6 @@
+import _ from "lodash";
+import util from "util";
+
 import { BatchMultiSigCall } from "../src";
 
 async function main() {
@@ -38,7 +41,33 @@ async function main() {
 
   const exportedFCT = FCT.exportFCT();
 
-  console.log(exportedFCT);
+  console.log(util.inspect(exportedFCT, false, null, true));
+
+  const test = {
+    something: {
+      is: {
+        here: {
+          and: {
+            here: "test",
+          },
+        },
+      },
+    },
+  };
+
+  const hasTest = (obj: object) => {
+    if (_.has(obj, "test")) {
+      return true;
+    }
+    return _.some(obj, (value) => {
+      if (_.isObject(value)) {
+        return hasTest(value);
+      }
+      return false;
+    });
+  };
+
+  console.log(_.has(test, "test"));
 }
 
 main()

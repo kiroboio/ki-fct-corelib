@@ -188,7 +188,12 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
     variables: [],
     externalSigners: [],
     signatures: [getAuthenticatorSignature(typedData)],
-    computed: this.convertedComputed,
+    computed: this.convertedComputed.map((c) => {
+      // Return everything except the index
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { index, ...rest } = c;
+      return rest;
+    }),
   };
 
   return FCTData;

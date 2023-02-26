@@ -34,7 +34,7 @@ export interface IBatchMultiSigCallFCT {
   builder: string;
   variables: string[];
   externalSigners: string[];
-  computed: ComputedVariable[];
+  computed: Omit<ComputedVariable, "index">[];
   signatures: SignatureLike[];
 }
 
