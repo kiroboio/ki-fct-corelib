@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 
 import FCTData from "../FCT.json";
-import { BatchMultiSigCall } from "../src";
+// import { BatchMultiSigCall } from "../src";
 
 const encoded =
   "0x0000000000000000000000009650578ebd1b08f98af81a84372ece4b448d7526000000000000000000000000fc00000000000000000000000000000000000002000000000000000000000000fc00000000000000000000000000000000000003";
@@ -12,38 +12,23 @@ dotenv.config();
 const key = process.env.PRIVATE_KEY as string;
 
 async function main() {
-  const FCT = new BatchMultiSigCall();
-  FCT.importFCT(FCTData);
+  // const FCT = new BatchMultiSigCall();
+  // FCT.importFCT(FCTData);
 
   // const exportFCT = FCT.exportFCT();
   // console.log(util.inspect(exportFCT, false, null, true /* enable colors */));
 
-  // Deconstruct type
+  const signature = "transfer((address,uint256,(address)))";
 
-  // const type = "Struct1";
-  // const getTypeStruct = (type: string): any => {
-  //   const typeStruct = typedData.types[type as keyof (typeof typedData)["types"]] as { name: string; type: string }[];
+  // Create a function that converts signature
+  // Into [["address", "uint256", ["address"]]]
+  const signatureToTypes = (signature: string) => {
+    // Check what is first ( or ,
+    const firstParen = signature.indexOf("(");
+    const firstComma = signature.indexOf(",");
+  };
 
-  //   if (!typeStruct) {
-  //     return type;
-  //   }
-  //   return typeStruct.reduce((acc, { name, type }) => {
-  //     if (typedData.types[type as keyof (typeof typedData)["types"]]) {
-  //       return {
-  //         ...acc,
-  //         [name]: getTypeStruct(type),
-  //       };
-  //     }
-  //     return {
-  //       ...acc,
-  //       [name]: type,
-  //     };
-  //   }, {} as Record<string, string>);
-  // };
-
-  // const typeStructObject = getTypeStruct(type);
-
-  // // Genarate tuple string from typeStructObject
+  console.log(signatureToTypes(signature));
 
   // const decoded = ethers.utils.defaultAbiCoder.decode(["tuple(address,uint256,tuple(address))"], encoded);
 
