@@ -15,6 +15,7 @@ async function main() {
   const exportFCT = FCT.exportFCT();
 
   console.log(util.inspect(exportFCT, false, null, true));
+
   // const signature = "transfer((address,uint256,(address)))";
   // const dataTypes = [{ name: "data", type: "Struct1" }];
 
