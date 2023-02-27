@@ -161,8 +161,6 @@ function importFCT(fct) {
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
         let params = [];
         if (dataTypes.length > 0) {
-            // Getting types from method_interface, because parameter might be hashed and inside
-            // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
             const signature = meta.method_interface;
             const functionName = signature.split("(")[0];
             const iface = new ethers_1.ethers.utils.Interface([`function ${signature}`]);

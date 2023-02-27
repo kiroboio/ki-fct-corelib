@@ -213,9 +213,6 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
     let params: Param[] = [];
 
     if (dataTypes.length > 0) {
-      // Getting types from method_interface, because parameter might be hashed and inside
-      // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
-
       const signature = meta.method_interface;
       const functionName = signature.split("(")[0];
 
@@ -248,6 +245,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 
       const functionSignatureHash = ethers.utils.id(signature);
       const updatedInputs = addNameToParameter(inputs, dataTypes);
+
       const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
       const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
 
