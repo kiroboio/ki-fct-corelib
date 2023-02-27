@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import util from "util";
 
 import FCTData from "../FCT.json";
 import { BatchMultiSigCall } from "../src";
