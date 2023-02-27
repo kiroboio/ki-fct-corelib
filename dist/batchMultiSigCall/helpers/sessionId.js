@@ -77,7 +77,7 @@ const getSessionId = (salt, versionHex, options) => {
         : "00";
     const version = versionHex.slice(2);
     const maxRepeats = Number(recurrency.maxRepeats) > 1 ? Number(options.recurrency.maxRepeats).toString(16).padStart(4, "0") : "0000";
-    const chillTime = Number(recurrency.maxRepeats) > 0 ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0") : "00000000";
+    const chillTime = Number(recurrency.maxRepeats) > 1 ? Number(options.recurrency.chillTime).toString(16).padStart(8, "0") : "00000000";
     const beforeTimestamp = Number(options.expiresAt).toString(16).padStart(10, "0");
     const afterTimestamp = Number(options.validFrom).toString(16).padStart(10, "0");
     const maxGasPrice = Number(options.maxGasPrice).toString(16).padStart(16, "0");

@@ -16,11 +16,11 @@ const validateInteger = (value: string, keys: string[]) => {
   if (value.startsWith("-")) {
     throw new Error(`Options: ${keys.join(".")} cannot be negative`);
   }
-  if (currentKey === "maxRepeats" && Number(value) < 1) {
+  if (currentKey === "maxRepeats" && Number(value) < 0) {
     throw new Error(
       `Options: ${keys.join(
         "."
-      )} should be at least 1. If value is 1, recurrency will not be enabled in order to save gas`
+      )} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`
     );
   }
 };
