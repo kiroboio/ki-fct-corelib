@@ -1,9 +1,8 @@
 import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
-import { AbiCoder, id } from "ethers/lib/utils";
+import { AbiCoder, ParamType } from "ethers/lib/utils";
 import _ from "lodash";
-import util from "util";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
@@ -217,68 +216,42 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       // Getting types from method_interface, because parameter might be hashed and inside
       // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
 
-      const typeString = meta.method_interface.slice(
-        meta.method_interface.indexOf("(") + 1,
-        meta.method_interface.lastIndexOf(")")
-      );
+      const signature = meta.method_interface;
+      const functionName = signature.split("(")[0];
 
-      const signatureToTypes = (signature: string, typesData: { name: string; type: string }[]): any => {
-        // Check if ( is the first character
-        const first = signature[0];
-        if (first === "(") {
-          // Remove first and last character
-          signature = signature.slice(1, -1);
+      const iface = new ethers.utils.Interface([`function ${signature}`]);
 
-          const type = typesObject[typesData[0].type as keyof typeof typesObject];
+      const ifaceFunction = iface.getFunction(functionName);
+      const inputs = ifaceFunction.inputs;
 
-          return [signatureToTypes(signature, type)];
-        }
-        // Check if , is in the string
-        const comma = signature.indexOf(",");
-
-        if (comma !== -1) {
-          // Split first and rest
-          const first = signature.slice(0, comma);
-          const rest = signature.slice(comma + 1);
-
-          const name = typesData[0].name;
-          return [`${first} ${name}`, ...signatureToTypes(rest, typesData.slice(1))];
-        }
-        return [`${signature} ${typesData[0].name}`];
-      };
-
-      const convertTypes = (types: any[], typesData: { name: string; type: string }[]): any => {
-        return types.map((type, index) => {
-          if (Array.isArray(type)) {
-            const name = typesData[index].name;
-            const typesDataArray = typesObject[typesData[index].type as keyof typeof typesObject];
-            return `tuple(${convertTypes(type, typesDataArray)}) ${name}`;
+      //Create a functions that goes through all the inputs and adds the name of the parameter
+      const addNameToParameter = (
+        inputs: ethers.utils.ParamType[],
+        dataTypes: { name: string; type: string }[]
+      ): ParamType[] => {
+        return inputs.map((input, index) => {
+          const dataType = dataTypes[index];
+          if (input.type.includes("tuple")) {
+            const data = {
+              ...input,
+              name: dataType.name,
+              components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
+            };
+            return ParamType.from(data);
           }
-          return type;
+          return ParamType.from({
+            ...input,
+            name: dataType.name,
+          });
         });
       };
 
-      const array = signatureToTypes(typeString, dataTypes);
-      const decodeTypesArray = convertTypes(array, dataTypes);
+      const functionSignatureHash = ethers.utils.id(signature);
+      const updatedInputs = addNameToParameter(inputs, dataTypes);
+      const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
+      const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
 
-      const iface = new utils.Interface([
-        `function ${meta.method_interface.split("(")[0]}(${decodeTypesArray.join(", ")})`,
-      ]);
-
-      const dataWithFunctionSignature = `${id(meta.method_interface).slice(0, 10)}${call.data.slice(2)}`;
-
-      const {
-        args,
-        functionFragment: { inputs },
-      } = iface.parseTransaction({
-        data: dataWithFunctionSignature,
-        value: typeof call.value === "string" ? call.value : "0",
-      });
-
-      console.log("args", args);
-      console.log("inputs", util.inspect(inputs, false, null, true /* enable colors */));
-
-      params = getParamsFromInputs(inputs, args);
+      params = getParamsFromInputs(updatedInputs, decodedResult);
     }
 
     const getFlow = () => {
