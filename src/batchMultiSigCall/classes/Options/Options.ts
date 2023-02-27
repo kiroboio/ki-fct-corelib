@@ -1,7 +1,8 @@
-import { verifyOptions } from "batchMultiSigCall/helpers";
-import { getDate } from "helpers";
 import _ from "lodash";
-import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "types";
+
+import { getDate } from "../../../helpers";
+import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
+import { verifyOptions } from "./helpers";
 
 const initOptions = {
   maxGasPrice: "30000000000", // 30 Gwei as default

@@ -1,7 +1,6 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import util from "util";
 
 import { Flow } from "../../constants";
 import { parseCallID, parseSessionID } from "../helpers";
@@ -294,8 +293,6 @@ describe("BatchMultiSigCall", () => {
     ]);
 
     const FCT = batchMultiSigCall.exportFCT();
-
-    console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
     expect(FCT).to.be.an("object");
 

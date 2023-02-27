@@ -1,7 +1,6 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
-import { BigNumber, ethers } from "ethers";
 
-import { MethodParamsInterface, Param } from "../../types";
+import { MethodParamsInterface } from "../../types";
 import { TypedDataDomain } from "../types";
 
 // const getSaltBuffer = (salt: string) => new Uint8Array(Buffer.from(salt.slice(2), "hex"));
@@ -40,46 +39,4 @@ export const generateTxType = (item: Partial<MethodParamsInterface>): { name: st
   }
 
   return [{ name: "details", type: "Transaction_" }];
-};
-
-export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: ethers.utils.Result): Param[] => {
-  return inputs.map((input, i) => {
-    if (input.type === "tuple") {
-      return {
-        name: input.name,
-        type: input.type,
-        customType: true,
-        value: getParamsFromInputs(input.components, values[i]),
-      };
-    }
-    if (input.type === "tuple[]") {
-      return {
-        name: input.name,
-        type: input.type,
-        customType: true,
-        value: values[i].map((tuple: ethers.utils.Result) => getParamsFromInputs(input.components, tuple)),
-      };
-    }
-    let value = values[i];
-    // Check if value isn't a variable
-    const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-
-    if (BigNumber.isBigNumber(value)) {
-      const hexString = value.toHexString().toLowerCase();
-      if (variables.some((v) => hexString.startsWith(v))) {
-        value = hexString;
-      }
-      value = value.toString();
-    }
-
-    if (typeof value === "number") {
-      value = value.toString();
-    }
-
-    return {
-      name: input.name,
-      type: input.type,
-      value,
-    };
-  });
 };

@@ -1,23 +1,19 @@
 import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
-import { ExportFCT } from "batchMultiSigCall/classes/ExportFCT/ExportFCT";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
-import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { DeepPartial, Param, RequiredKeys } from "../../types";
+import { DeepPartial, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
+import { ExportFCT, getParamsFromInputs } from "../classes";
 import { parseCallID, parseSessionID } from "../helpers";
-import { getParamsFromInputs } from "../helpers/fct";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
   ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
-  IMSCallWithEncodedData,
-  IWithPlugin,
   TypedDataMessageTransaction,
 } from "../types";
 
@@ -26,25 +22,8 @@ export function generateNodeId(): string {
   return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
-export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId> {
-  if ("plugin" in callInput) {
-    return await this.createWithPlugin(callInput);
-  } else if ("abi" in callInput) {
-    return await this.createWithEncodedData(callInput);
-  } else {
-    // Else we create a call with the inputs
-    const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() } satisfies RequiredKeys<
-      IMSCallInput,
-      "nodeId"
-    >;
-
-    // Before adding the call, we check if it is valid
-    this.verifyCall(data);
-
-    this._calls.push(data);
-
-    return data;
-  }
+export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
+  return this._calls.create(call);
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {
@@ -59,64 +38,7 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
       }
     }
   }
-  return this._calls;
-}
-
-export async function createWithPlugin(
-  this: BatchMultiSigCall,
-  callWithPlugin: IWithPlugin
-): Promise<IMSCallInputWithNodeId> {
-  const pluginCall = await callWithPlugin.plugin.create();
-  if (pluginCall === undefined) {
-    throw new Error("Error creating call with plugin. Make sure input values are valid");
-  }
-
-  const data = {
-    ...pluginCall,
-    from: callWithPlugin.from,
-    options: { ...pluginCall.options, ...callWithPlugin.options },
-    nodeId: callWithPlugin.nodeId || generateNodeId(),
-  } satisfies IMSCallInputWithNodeId;
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(data);
-  this._calls.push(data);
-
-  return data;
-}
-
-export async function createWithEncodedData(
-  this: BatchMultiSigCall,
-  callWithEncodedData: IMSCallWithEncodedData
-): Promise<IMSCallInputWithNodeId> {
-  const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-  const iface = new ethers.utils.Interface(abi);
-
-  const {
-    name,
-    args,
-    value: txValue,
-    functionFragment: { inputs },
-  } = iface.parseTransaction({
-    data: encodedData,
-    value: typeof value === "string" ? value : "0",
-  });
-
-  const data = {
-    from: callWithEncodedData.from,
-    to: callWithEncodedData.to,
-    method: name,
-    params: getParamsFromInputs(inputs, args),
-    options,
-    value: txValue?.toString(),
-    nodeId: nodeId || generateNodeId(),
-  } satisfies IMSCallInputWithNodeId;
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(data);
-  this._calls.push(data);
-
-  return data;
+  return this._calls.get();
 }
 
 export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
@@ -356,6 +278,5 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 }
 
 export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
-  this._callDefault = _.merge({}, this._callDefault, callDefault);
-  return this._callDefault;
+  return this._calls.setCallDefaults(callDefault);
 }

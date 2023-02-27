@@ -2,8 +2,8 @@ import { utils } from "ethers";
 
 import { CALL_TYPE } from "../../constants";
 import { IMSCallInput } from "../../types";
-import { verifyParam } from "..//helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
+import { verifyParam } from "../classes";
 
 const isInteger = (value: string, key: string) => {
   if (value.length === 0) {

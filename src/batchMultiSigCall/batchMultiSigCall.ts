@@ -4,18 +4,15 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { instanceOfVariable } from "../helpers";
-import { RequiredKeys, Variable } from "../types";
+import { Variable } from "../types";
+import { FCTCalls } from "./classes/FCTCalls";
 import { Options } from "./classes/Options/Options";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
-  _getCalls,
-  _getDecodedCalls,
   create,
   createMultiple,
   createPlugin,
-  createWithEncodedData,
-  createWithPlugin,
   decodeParams,
   exportFCT,
   getAllRequiredApprovals,
@@ -32,16 +29,13 @@ import {
   importFCT,
   setCallDefaults,
   setOptions,
-  verifyCall,
 } from "./methods";
 import { addComputed } from "./methods/computed";
 import {
   BatchMultiSigCallConstructor,
   ComputedVariable,
   DecodedCalls,
-  ICallDefaults,
   IComputed,
-  IMSCallInput,
   RequiredFCTOptions,
   StrictMSCallInput,
   TypedDataDomain,
@@ -55,15 +49,9 @@ export class BatchMultiSigCall {
   public chainId: ChainId;
   public domain: TypedDataDomain;
 
-  protected _computed: Required<IComputed>[] = [];
-  protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
-
+  public _computed: Required<IComputed>[] = [];
+  public _calls: FCTCalls;
   public _options = new Options();
-
-  protected _callDefault: ICallDefaults = {
-    value: "0",
-    options: DEFAULT_CALL_OPTIONS,
-  };
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
     if (input.chainId) {
@@ -78,9 +66,13 @@ export class BatchMultiSigCall {
     }
 
     if (input.version) this.version = input.version;
-
     if (input.options) this.setOptions(input.options);
     if (input.defaults) this.setCallDefaults(input.defaults);
+
+    this._calls = new FCTCalls(this, {
+      value: "0",
+      options: DEFAULT_CALL_OPTIONS,
+    });
   }
 
   // Getters
@@ -89,15 +81,11 @@ export class BatchMultiSigCall {
   }
 
   get calls(): StrictMSCallInput[] {
-    return this._getCalls();
+    return this._calls.get();
   }
 
   get decodedCalls(): DecodedCalls[] {
-    return this._getDecodedCalls();
-  }
-
-  get computedVariables() {
-    return [];
+    return this._calls.getWithDecodedVariables();
   }
 
   get computed() {
@@ -137,8 +125,6 @@ export class BatchMultiSigCall {
 
   // FCT Functions
   public create = create;
-  public createWithEncodedData = createWithEncodedData;
-  public createWithPlugin = createWithPlugin;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
   public importFCT = importFCT;
@@ -158,11 +144,4 @@ export class BatchMultiSigCall {
   // Internal helper functions
   public decodeParams = decodeParams;
   public handleVariableValue = handleVariableValue;
-
-  // Validation functions
-  public verifyCall = verifyCall;
-
-  // Getter functions
-  protected _getDecodedCalls = _getDecodedCalls;
-  protected _getCalls = _getCalls;
 }
