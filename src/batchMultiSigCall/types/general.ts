@@ -71,7 +71,7 @@ export type IWithPlugin = {
 
 export type IMSCallWithEncodedData = {
   nodeId?: string;
-  abi: ReadonlyArray<Fragment | JsonFragment>;
+  abi: ReadonlyArray<Fragment | JsonFragment> | string[];
   encodedData: string;
   to: string | Variable;
 } & MSCallMandatory;

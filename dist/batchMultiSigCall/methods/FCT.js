@@ -155,6 +155,7 @@ function importFCT(fct) {
     const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
     this.setOptions(options);
     const typedData = fct.typedData;
+    const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
@@ -162,26 +163,34 @@ function importFCT(fct) {
         if (dataTypes.length > 0) {
             // Getting types from method_interface, because parameter might be hashed and inside
             // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
-            const types = meta.method_interface
-                .slice(meta.method_interface.indexOf("(") + 1, meta.method_interface.lastIndexOf(")"))
-                .split(",")
-                .map((type, i) => `${type} ${dataTypes[i].name}`);
-            const decodedParams = new utils_1.AbiCoder().decode(types, call.data);
-            const handleValue = (value) => {
-                if (ethers_1.BigNumber.isBigNumber(value) || typeof value === "number") {
-                    return value.toString();
-                }
-                return value;
+            const signature = meta.method_interface;
+            const functionName = signature.split("(")[0];
+            const iface = new ethers_1.ethers.utils.Interface([`function ${signature}`]);
+            const ifaceFunction = iface.getFunction(functionName);
+            const inputs = ifaceFunction.inputs;
+            //Create a functions that goes through all the inputs and adds the name of the parameter
+            const addNameToParameter = (inputs, dataTypes) => {
+                return inputs.map((input, index) => {
+                    const dataType = dataTypes[index];
+                    if (input.type.includes("tuple")) {
+                        const data = {
+                            ...input,
+                            name: dataType.name,
+                            components: addNameToParameter(input.components, typesObject[dataType.type]),
+                        };
+                        return utils_1.ParamType.from(data);
+                    }
+                    return utils_1.ParamType.from({
+                        ...input,
+                        name: dataType.name,
+                    });
+                });
             };
-            params = dataTypes.map((t, i) => {
-                const realType = types[i].split(" ")[0];
-                return {
-                    name: t.name,
-                    type: t.type,
-                    hashed: t.type === realType ? false : true,
-                    value: handleValue(decodedParams[i]),
-                };
-            });
+            const functionSignatureHash = ethers_1.ethers.utils.id(signature);
+            const updatedInputs = addNameToParameter(inputs, dataTypes);
+            const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
+            const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
+            params = (0, fct_1.getParamsFromInputs)(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {

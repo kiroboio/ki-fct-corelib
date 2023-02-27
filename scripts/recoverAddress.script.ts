@@ -1,10 +1,6 @@
-import * as dotenv from "dotenv";
-import util from "util";
+import { utils } from "../src";
 
-import { BatchMultiSigCall } from "../src";
-// import { BatchMultiSigCall } from "../src";
-
-const FCTFailing = {
+const FCT = {
   typedData: {
     types: {
       EIP712Domain: [
@@ -173,8 +169,8 @@ const FCTFailing = {
       name: "FCT Controller",
       version: "1",
       chainId: 5,
-      verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-      salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+      verifyingContract: "0x087550a787B2720AAC06351065afC1F413D82572",
+      salt: "0x01005fc59cf4781ce0b30000087550a787b2720aac06351065afc1f413d82572",
     },
     message: {
       meta: {
@@ -182,14 +178,14 @@ const FCTFailing = {
         builder: "0x0000000000000000000000000000000000000000",
         selector: "0xf6407ddd",
         version: "0x010101",
-        random_id: "0xc5c982",
+        random_id: "0x8db96a",
         eip712: true,
-        auth_enabled: false,
+        auth_enabled: true,
       },
       limits: {
-        valid_from: "1677448800",
-        expires_at: "1678139999",
-        gas_price_limit: "11523350748",
+        valid_from: "1677362400",
+        expires_at: "1678053599",
+        gas_price_limit: "2000000000",
         purgeable: false,
         blockable: true,
       },
@@ -217,7 +213,7 @@ const FCTFailing = {
   },
   builder: "0x0000000000000000000000000000000000000000",
   typeHash: "0x4788192ebf31e69ab2b0afa2484d5b285235311fd1feadf4d2714ef859ffc723",
-  sessionId: "0xc5c98200010101000000000000006406625f0063fbd66000000002aed860dc0c",
+  sessionId: "0x8db96a0001010100000000000000640510df0063fa84e000000000773594000c",
   nameHash: "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   mcall: [
     {
@@ -237,90 +233,33 @@ const FCTFailing = {
   externalSigners: [],
   signatures: [
     {
-      r: "0x6ac5847a4d0f52f4bd443f5a3c4bb7e0ca3677c70dd160b11680abe24747ee86",
-      s: "0x6eb5a27f4e4e23cb4692e22b0ac7af8cd8c6a9ce829f275fc166a18adfd1193b",
-      _vs: "0xeeb5a27f4e4e23cb4692e22b0ac7af8cd8c6a9ce829f275fc166a18adfd1193b",
+      r: "0x85febcdbc476f8df3402c2822c8dfce5e09eec44b0c36d88a3f3c67168465b36",
+      s: "0x3097d4068fa144b5f3122ecc861ddf5a5ecbb29853132719a3db8b7c4422553f",
+      _vs: "0xb097d4068fa144b5f3122ecc861ddf5a5ecbb29853132719a3db8b7c4422553f",
       recoveryParam: 1,
       v: 28,
-      yParityAndS: "0xeeb5a27f4e4e23cb4692e22b0ac7af8cd8c6a9ce829f275fc166a18adfd1193b",
+      yParityAndS: "0xb097d4068fa144b5f3122ecc861ddf5a5ecbb29853132719a3db8b7c4422553f",
       compact:
-        "0x6ac5847a4d0f52f4bd443f5a3c4bb7e0ca3677c70dd160b11680abe24747ee86eeb5a27f4e4e23cb4692e22b0ac7af8cd8c6a9ce829f275fc166a18adfd1193b",
+        "0x85febcdbc476f8df3402c2822c8dfce5e09eec44b0c36d88a3f3c67168465b36b097d4068fa144b5f3122ecc861ddf5a5ecbb29853132719a3db8b7c4422553f",
+    },
+    {
+      r: "0x8e27d1c1188402016c766b77c59cdfd0aa859bec181b6a4dcf80a7c48fa7d1e0",
+      s: "0x18a1c9c665d8e1be27f0ea1b89b7120e1aeada49ec8d6f8653449abbe248f96b",
+      v: 27,
     },
   ],
   computed: [],
 };
 
-dotenv.config();
-
 async function main() {
-  const FCT = new BatchMultiSigCall();
-
-  FCT.importFCT(FCTFailing);
-
-  const exportFCT = FCT.exportFCT();
-
-  console.log(util.inspect(exportFCT, false, null, true));
-  // const signature = "transfer((address,uint256,(address)))";
-  // const dataTypes = [{ name: "data", type: "Struct1" }];
-
-  // const iface = new ethers.utils.Interface([`function ${signature}`]);
-
-  // const ifaceFunction = iface.getFunction("transfer");
-  // const inputs = ifaceFunction.inputs;
-
-  // //Create a functions that goes through all the inputs and adds the name of the parameter
-  // const addNameToParameter = (
-  //   inputs: ethers.utils.ParamType[],
-  //   dataTypes: { name: string; type: string }[]
-  // ): ParamType[] => {
-  //   return inputs.map((input, index) => {
-  //     const dataType = dataTypes[index];
-  //     if (input.type.includes("tuple")) {
-  //       const data = {
-  //         ...input,
-  //         name: dataType.name,
-  //         components: addNameToParameter(input.components, types[dataType.type as keyof typeof types]),
-  //       };
-  //       return ParamType.from(data);
-  //     }
-  //     return ParamType.from({
-  //       ...input,
-  //       name: dataType.name,
-  //     });
-  //   });
-  // };
-
-  // const functionSignatureHash = ethers.utils.id(signature);
-  // const updatedInputs = addNameToParameter(inputs, dataTypes);
-  // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + encodedData.slice(2);
-  // const decodedResult = iface.decodeFunctionData("transfer", encodedDataWithSignatureHash);
-  // console.log(util.inspect(updatedInputs, false, null, true));
-
-  // const params = getParamsFromInputs(updatedInputs, decodedResult);
-  // console.log(util.inspect(params, false, null, true));
+  const address = utils.recoverAddressFromEIP712(FCT.typedData, FCT.signatures[0]);
+  const address2 = utils.recoverAddressFromEIP712(FCT.typedData, FCT.signatures[1]);
+  console.log(address, address2);
 }
 
 main()
-  .then(() => {
-    console.log("Done");
-  })
-  .catch((e) => {
-    console.error(e);
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   });
-
-// TransactionDescription {
-//   args: [
-//     '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//     '0xaB7C8803962c0f2F5BBBe3FA8bf41cd82AA1923C',
-//     { BigNumber: "1000000000000000000" },
-//     amount: { BigNumber: "1000000000000000000" },
-//     from: '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//     to: '0xaB7C8803962c0f2F5BBBe3FA8bf41cd82AA1923C'
-//   ],
-//   functionFragment: [class FunctionFragment],
-//   name: 'transferFrom',
-//   sighash: '0x23b872dd',
-//   signature: 'transferFrom(address,address,uint256)',
-//   value: { BigNumber: "1000000000000000000" }
-// }
