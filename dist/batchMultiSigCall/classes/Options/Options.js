@@ -4,13 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Options = void 0;
-const helpers_1 = require("batchMultiSigCall/helpers");
-const helpers_2 = require("helpers");
 const lodash_1 = __importDefault(require("lodash"));
+const helpers_1 = require("../../../helpers");
+const helpers_2 = require("./helpers");
 const initOptions = {
     maxGasPrice: "30000000000",
-    validFrom: (0, helpers_2.getDate)(),
-    expiresAt: (0, helpers_2.getDate)(7),
+    validFrom: (0, helpers_1.getDate)(),
+    expiresAt: (0, helpers_1.getDate)(7),
     purgeable: false,
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
@@ -45,7 +45,7 @@ class Options {
         this._options = initOptions;
     }
     static verify(options) {
-        (0, helpers_1.verifyOptions)(options);
+        (0, helpers_2.verifyOptions)(options);
     }
     static fromObject(options) {
         const instance = new Options();

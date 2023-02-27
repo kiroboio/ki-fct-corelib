@@ -3,36 +3,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const ExportFCT_1 = require("batchMultiSigCall/classes/ExportFCT/ExportFCT");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
-const lodash_1 = __importDefault(require("lodash"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
+const classes_1 = require("../classes");
 const helpers_1 = require("../helpers");
-const fct_1 = require("../helpers/fct");
 // Generate nodeId for a call
 function generateNodeId() {
     return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 exports.generateNodeId = generateNodeId;
-async function create(callInput) {
-    if ("plugin" in callInput) {
-        return await this.createWithPlugin(callInput);
-    }
-    else if ("abi" in callInput) {
-        return await this.createWithEncodedData(callInput);
-    }
-    else {
-        // Else we create a call with the inputs
-        const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() };
-        // Before adding the call, we check if it is valid
-        this.verifyCall(data);
-        this._calls.push(data);
-        return data;
-    }
+async function create(call) {
+    return this._calls.create(call);
 }
 exports.create = create;
 async function createMultiple(calls) {
@@ -48,48 +33,9 @@ async function createMultiple(calls) {
             }
         }
     }
-    return this._calls;
+    return this._calls.get();
 }
 exports.createMultiple = createMultiple;
-async function createWithPlugin(callWithPlugin) {
-    const pluginCall = await callWithPlugin.plugin.create();
-    if (pluginCall === undefined) {
-        throw new Error("Error creating call with plugin. Make sure input values are valid");
-    }
-    const data = {
-        ...pluginCall,
-        from: callWithPlugin.from,
-        options: { ...pluginCall.options, ...callWithPlugin.options },
-        nodeId: callWithPlugin.nodeId || generateNodeId(),
-    };
-    // Before adding the call, we check if it is valid
-    this.verifyCall(data);
-    this._calls.push(data);
-    return data;
-}
-exports.createWithPlugin = createWithPlugin;
-async function createWithEncodedData(callWithEncodedData) {
-    const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-    const iface = new ethers_1.ethers.utils.Interface(abi);
-    const { name, args, value: txValue, functionFragment: { inputs }, } = iface.parseTransaction({
-        data: encodedData,
-        value: typeof value === "string" ? value : "0",
-    });
-    const data = {
-        from: callWithEncodedData.from,
-        to: callWithEncodedData.to,
-        method: name,
-        params: (0, fct_1.getParamsFromInputs)(inputs, args),
-        options,
-        value: txValue?.toString(),
-        nodeId: nodeId || generateNodeId(),
-    };
-    // Before adding the call, we check if it is valid
-    this.verifyCall(data);
-    this._calls.push(data);
-    return data;
-}
-exports.createWithEncodedData = createWithEncodedData;
 function createPlugin(Plugin) {
     return new Plugin({
         chainId: this.chainId,
@@ -104,7 +50,7 @@ function getCall(index) {
 }
 exports.getCall = getCall;
 function exportFCT() {
-    return new ExportFCT_1.ExportFCT(this).get();
+    return new classes_1.ExportFCT(this).get();
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
@@ -145,7 +91,7 @@ function importFCT(fct) {
             const updatedInputs = addNameToParameter(inputs, dataTypes);
             const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
             const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-            params = (0, fct_1.getParamsFromInputs)(updatedInputs, decodedResult);
+            params = (0, classes_1.getParamsFromInputs)(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
@@ -277,7 +223,6 @@ async function importEncodedFCT(calldata) {
 }
 exports.importEncodedFCT = importEncodedFCT;
 function setCallDefaults(callDefault) {
-    this._callDefault = lodash_1.default.merge({}, this._callDefault, callDefault);
-    return this._callDefault;
+    return this._calls.setCallDefaults(callDefault);
 }
 exports.setCallDefaults = setCallDefaults;

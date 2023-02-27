@@ -16,4 +16,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./EIP712"), exports);
 __exportStar(require("./ExportFCT"), exports);
+__exportStar(require("./FCTCalls"), exports);
 __exportStar(require("./Options"), exports);

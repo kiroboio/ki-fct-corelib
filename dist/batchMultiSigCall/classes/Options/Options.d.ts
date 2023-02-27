@@ -1,4 +1,4 @@
-import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "types";
+import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 export declare class Options {
     private _options;
     set(options: DeepPartial<IFCTOptions>): IFCTOptions;

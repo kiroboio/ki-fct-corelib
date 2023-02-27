@@ -1,10 +1,10 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
-import { RequiredKeys } from "../types";
+import { FCTCalls } from "./classes/FCTCalls";
 import { Options } from "./classes/Options/Options";
-import { _getCalls, _getDecodedCalls, create, createMultiple, createPlugin, createWithEncodedData, createWithPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getPlugin, getPluginClass, getPluginData, getVariable, handleVariableValue, importEncodedFCT, importFCT, setCallDefaults, setOptions, verifyCall } from "./methods";
+import { create, createMultiple, createPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getPlugin, getPluginClass, getPluginData, getVariable, handleVariableValue, importEncodedFCT, importFCT, setCallDefaults, setOptions } from "./methods";
 import { addComputed } from "./methods/computed";
-import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, ICallDefaults, IComputed, IMSCallInput, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, IComputed, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
 export declare class BatchMultiSigCall {
     FCT_Controller: ethers.utils.Interface;
     FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -12,15 +12,13 @@ export declare class BatchMultiSigCall {
     version: string;
     chainId: ChainId;
     domain: TypedDataDomain;
-    protected _computed: Required<IComputed>[];
-    protected _calls: RequiredKeys<IMSCallInput, "nodeId">[];
+    _computed: Required<IComputed>[];
+    _calls: FCTCalls;
     _options: Options;
-    protected _callDefault: ICallDefaults;
     constructor(input?: BatchMultiSigCallConstructor);
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];
     get decodedCalls(): DecodedCalls[];
-    get computedVariables(): never[];
     get computed(): Required<IComputed>[];
     get convertedComputed(): ComputedVariable[];
     setOptions: typeof setOptions;
@@ -30,8 +28,6 @@ export declare class BatchMultiSigCall {
     getPluginClass: typeof getPluginClass;
     createPlugin: typeof createPlugin;
     create: typeof create;
-    createWithEncodedData: typeof createWithEncodedData;
-    createWithPlugin: typeof createWithPlugin;
     createMultiple: typeof createMultiple;
     exportFCT: typeof exportFCT;
     importFCT: typeof importFCT;
@@ -45,7 +41,4 @@ export declare class BatchMultiSigCall {
     getComputedVariable: typeof getComputedVariable;
     decodeParams: typeof decodeParams;
     handleVariableValue: typeof handleVariableValue;
-    verifyCall: typeof verifyCall;
-    protected _getDecodedCalls: typeof _getDecodedCalls;
-    protected _getCalls: typeof _getCalls;
 }

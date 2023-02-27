@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCall = void 0;
 const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
-const helpers_1 = require("..//helpers");
+const classes_1 = require("../classes");
 const isInteger = (value, key) => {
     if (value.length === 0) {
         throw new Error(`${key} cannot be empty string`);
@@ -69,7 +69,7 @@ function verifyCall(call) {
         if (!call.method) {
             throw new Error("Method is required when params are present");
         }
-        call.params.map(helpers_1.verifyParam);
+        call.params.map(classes_1.verifyParam);
     }
 }
 exports.verifyCall = verifyCall;

@@ -8,6 +8,7 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
+const FCTCalls_1 = require("./classes/FCTCalls");
 const Options_1 = require("./classes/Options/Options");
 const constants_1 = require("./constants");
 const fct_1 = require("./helpers/fct");
@@ -20,12 +21,7 @@ class BatchMultiSigCall {
         this.batchMultiSigSelector = "0xf6407ddd";
         this.version = "0x010101";
         this._computed = [];
-        this._calls = [];
         this._options = new Options_1.Options();
-        this._callDefault = {
-            value: "0",
-            options: constants_1.DEFAULT_CALL_OPTIONS,
-        };
         // Set methods
         this.setOptions = methods_1.setOptions;
         this.setCallDefaults = methods_1.setCallDefaults;
@@ -37,8 +33,6 @@ class BatchMultiSigCall {
         this.createPlugin = methods_1.createPlugin;
         // FCT Functions
         this.create = methods_1.create;
-        this.createWithEncodedData = methods_1.createWithEncodedData;
-        this.createWithPlugin = methods_1.createWithPlugin;
         this.createMultiple = methods_1.createMultiple;
         this.exportFCT = methods_1.exportFCT;
         this.importFCT = methods_1.importFCT;
@@ -55,11 +49,6 @@ class BatchMultiSigCall {
         // Internal helper functions
         this.decodeParams = methods_1.decodeParams;
         this.handleVariableValue = methods_1.handleVariableValue;
-        // Validation functions
-        this.verifyCall = methods_1.verifyCall;
-        // Getter functions
-        this._getDecodedCalls = methods_1._getDecodedCalls;
-        this._getCalls = methods_1._getCalls;
         if (input.chainId) {
             this.chainId = input.chainId;
         }
@@ -78,19 +67,20 @@ class BatchMultiSigCall {
             this.setOptions(input.options);
         if (input.defaults)
             this.setCallDefaults(input.defaults);
+        this._calls = new FCTCalls_1.FCTCalls(this, {
+            value: "0",
+            options: constants_1.DEFAULT_CALL_OPTIONS,
+        });
     }
     // Getters
     get options() {
         return this._options.get();
     }
     get calls() {
-        return this._getCalls();
+        return this._calls.get();
     }
     get decodedCalls() {
-        return this._getDecodedCalls();
-    }
-    get computedVariables() {
-        return [];
+        return this._calls.getWithDecodedVariables();
     }
     get computed() {
         return this._computed;
