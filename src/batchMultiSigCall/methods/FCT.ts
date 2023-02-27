@@ -207,16 +207,12 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
-    console.log("call", call);
-
     const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
     const { call: meta } = typedData.message[`transaction_${index + 1}`] as TypedDataMessageTransaction;
 
     let params: Param[] = [];
 
     if (dataTypes.length > 0) {
-      console.log("dataTypes", dataTypes);
-
       const signature = meta.method_interface;
       const functionName = signature.split("(")[0];
 
@@ -249,12 +245,9 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 
       const functionSignatureHash = ethers.utils.id(signature);
       const updatedInputs = addNameToParameter(inputs, dataTypes);
-      console.log("updatedInputs", updatedInputs);
 
       const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
       const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-
-      console.log("decodedResult", decodedResult);
 
       params = getParamsFromInputs(updatedInputs, decodedResult);
     }
