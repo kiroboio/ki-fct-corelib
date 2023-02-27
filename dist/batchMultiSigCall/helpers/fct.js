@@ -36,13 +36,13 @@ const generateTxType = (item) => {
 };
 exports.generateTxType = generateTxType;
 const getParamsFromInputs = (inputs, values) => {
-    return inputs.map((input) => {
+    return inputs.map((input, i) => {
         if (input.type === "tuple") {
             return {
                 name: input.name,
                 type: input.type,
                 customType: true,
-                value: (0, exports.getParamsFromInputs)(input.components, values[input.name]),
+                value: (0, exports.getParamsFromInputs)(input.components, values[i]),
             };
         }
         if (input.type === "tuple[]") {
@@ -50,10 +50,10 @@ const getParamsFromInputs = (inputs, values) => {
                 name: input.name,
                 type: input.type,
                 customType: true,
-                value: values[input.name].map((tuple) => (0, exports.getParamsFromInputs)(input.components, tuple)),
+                value: values[i].map((tuple) => (0, exports.getParamsFromInputs)(input.components, tuple)),
             };
         }
-        let value = values[input.name];
+        let value = values[i];
         // Check if value isn't a variable
         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
         if (ethers_1.BigNumber.isBigNumber(value)) {
