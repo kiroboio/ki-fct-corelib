@@ -63,6 +63,9 @@ const getParamsFromInputs = (inputs, values) => {
             }
             value = value.toString();
         }
+        if (typeof value === "number") {
+            value = value.toString();
+        }
         return {
             name: input.name,
             type: input.type,

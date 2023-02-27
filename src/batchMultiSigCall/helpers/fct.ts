@@ -72,6 +72,10 @@ export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: et
       value = value.toString();
     }
 
+    if (typeof value === "number") {
+      value = value.toString();
+    }
+
     return {
       name: input.name,
       type: input.type,
