@@ -157,12 +157,12 @@ function importFCT(fct) {
     const typedData = fct.typedData;
     const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
+        console.log("call", call);
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
         const { call: meta } = typedData.message[`transaction_${index + 1}`];
         let params = [];
         if (dataTypes.length > 0) {
-            // Getting types from method_interface, because parameter might be hashed and inside
-            // EIP712 types it will be indicated as "string", but actually it is meant to be "bytes32"
+            console.log("dataTypes", dataTypes);
             const signature = meta.method_interface;
             const functionName = signature.split("(")[0];
             const iface = new ethers_1.ethers.utils.Interface([`function ${signature}`]);
@@ -188,8 +188,10 @@ function importFCT(fct) {
             };
             const functionSignatureHash = ethers_1.ethers.utils.id(signature);
             const updatedInputs = addNameToParameter(inputs, dataTypes);
+            console.log("updatedInputs", updatedInputs);
             const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
             const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
+            console.log("decodedResult", decodedResult);
             params = (0, fct_1.getParamsFromInputs)(updatedInputs, decodedResult);
         }
         const getFlow = () => {
