@@ -1,17 +1,58 @@
 import * as dotenv from "dotenv";
+import util from "util";
 
-import { parseSessionID } from "../src/batchMultiSigCall/helpers";
+import FCTData from "../FCT.json";
+import { BatchMultiSigCall } from "../src";
+// import { BatchMultiSigCall } from "../src";
 
 dotenv.config();
-const key = process.env.PRIVATE_KEY as string;
 
 async function main() {
-  const data = parseSessionID(
-    "0xb1abd30001010100000000000000640510df0063fa84e000000001dbcb06a80c",
-    "0x0000000000000000000000000000000000000000"
-  );
+  const FCT = new BatchMultiSigCall();
 
-  console.log(data);
+  FCT.importFCT(FCTData);
+
+  const exportFCT = FCT.exportFCT();
+
+  console.log(util.inspect(exportFCT, false, null, true));
+  // const signature = "transfer((address,uint256,(address)))";
+  // const dataTypes = [{ name: "data", type: "Struct1" }];
+
+  // const iface = new ethers.utils.Interface([`function ${signature}`]);
+
+  // const ifaceFunction = iface.getFunction("transfer");
+  // const inputs = ifaceFunction.inputs;
+
+  // //Create a functions that goes through all the inputs and adds the name of the parameter
+  // const addNameToParameter = (
+  //   inputs: ethers.utils.ParamType[],
+  //   dataTypes: { name: string; type: string }[]
+  // ): ParamType[] => {
+  //   return inputs.map((input, index) => {
+  //     const dataType = dataTypes[index];
+  //     if (input.type.includes("tuple")) {
+  //       const data = {
+  //         ...input,
+  //         name: dataType.name,
+  //         components: addNameToParameter(input.components, types[dataType.type as keyof typeof types]),
+  //       };
+  //       return ParamType.from(data);
+  //     }
+  //     return ParamType.from({
+  //       ...input,
+  //       name: dataType.name,
+  //     });
+  //   });
+  // };
+
+  // const functionSignatureHash = ethers.utils.id(signature);
+  // const updatedInputs = addNameToParameter(inputs, dataTypes);
+  // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + encodedData.slice(2);
+  // const decodedResult = iface.decodeFunctionData("transfer", encodedDataWithSignatureHash);
+  // console.log(util.inspect(updatedInputs, false, null, true));
+
+  // const params = getParamsFromInputs(updatedInputs, decodedResult);
+  // console.log(util.inspect(params, false, null, true));
 }
 
 main()
