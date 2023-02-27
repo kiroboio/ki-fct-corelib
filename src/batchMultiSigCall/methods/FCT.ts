@@ -1,5 +1,5 @@
 import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
-import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { ExportFCT } from "batchMultiSigCall/classes/ExportFCT/ExportFCT";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
 import _ from "lodash";
@@ -8,18 +8,7 @@ import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
 import { DeepPartial, Param, RequiredKeys } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import {
-  getSessionId,
-  getUsedStructTypes,
-  handleData,
-  handleEnsHash,
-  handleFunctionSignature,
-  handleTypes,
-  manageCallId,
-  parseCallID,
-  parseSessionID,
-  verifyOptions,
-} from "../helpers";
+import { parseCallID, parseSessionID } from "../helpers";
 import { getParamsFromInputs } from "../helpers/fct";
 import {
   FCTCall,
@@ -31,7 +20,6 @@ import {
   IWithPlugin,
   TypedDataMessageTransaction,
 } from "../types";
-import { getAuthenticatorSignature } from "../utils";
 
 // Generate nodeId for a call
 export function generateNodeId(): string {
@@ -145,58 +133,7 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 }
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  const calls = this.decodedCalls;
-
-  if (this.calls.length === 0) {
-    throw new Error("No calls added");
-  }
-
-  verifyOptions(this._options);
-
-  const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-  const typedData = this.createTypedData(salt, this.version);
-
-  const sessionId: string = getSessionId(salt, this.version, this.options);
-
-  const mcall = calls.map((call, index) => {
-    const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
-
-    return {
-      typeHash: utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: handleEnsHash(call),
-      functionSignature: handleFunctionSignature(call),
-      value: this.handleValue(call),
-      callId: manageCallId(calls, call, index),
-      from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
-      to: this.handleTo(call),
-      data: handleData(call),
-      types: handleTypes(call),
-      typedHashes:
-        usedTypeStructs.length > 0
-          ? usedTypeStructs.map((hash) => utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
-          : [],
-    };
-  });
-
-  const FCTData = {
-    typedData,
-    builder: this.options.builder || "0x0000000000000000000000000000000000000000",
-    typeHash: utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
-    sessionId,
-    nameHash: utils.id(this.options.name || ""),
-    mcall,
-    variables: [],
-    externalSigners: [],
-    signatures: [getAuthenticatorSignature(typedData)],
-    computed: this.convertedComputed.map((c) => {
-      // Return everything except the index
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { index, ...rest } = c;
-      return rest;
-    }),
-  };
-
-  return FCTData;
+  return new ExportFCT(this).get();
 }
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {

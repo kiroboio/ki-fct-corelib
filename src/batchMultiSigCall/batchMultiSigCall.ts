@@ -3,8 +3,9 @@ import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
-import { getDate, instanceOfVariable } from "../helpers";
+import { instanceOfVariable } from "../helpers";
 import { RequiredKeys, Variable } from "../types";
+import { Options } from "./classes/Options/Options";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
@@ -13,7 +14,6 @@ import {
   create,
   createMultiple,
   createPlugin,
-  createTypedData,
   createWithEncodedData,
   createWithPlugin,
   decodeParams,
@@ -23,13 +23,11 @@ import {
   getComputedVariable,
   getExternalVariable,
   getOutputVariable,
-  getParamsFromCall,
   getPlugin,
   getPluginClass,
   getPluginData,
   getVariable,
-  handleTo,
-  handleValue,
+  handleVariableValue,
   importEncodedFCT,
   importFCT,
   setCallDefaults,
@@ -43,7 +41,6 @@ import {
   DecodedCalls,
   ICallDefaults,
   IComputed,
-  IFCTOptions,
   IMSCallInput,
   RequiredFCTOptions,
   StrictMSCallInput,
@@ -51,24 +48,17 @@ import {
 } from "./types";
 
 export class BatchMultiSigCall {
-  protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
-  protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-  protected batchMultiSigSelector = "0xf6407ddd";
-  protected version = "0x010101";
-  protected chainId: ChainId;
-  protected domain: TypedDataDomain;
+  public FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
+  public FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
+  public batchMultiSigSelector = "0xf6407ddd";
+  public version = "0x010101";
+  public chainId: ChainId;
+  public domain: TypedDataDomain;
 
   protected _computed: Required<IComputed>[] = [];
   protected _calls: RequiredKeys<IMSCallInput, "nodeId">[] = [];
-  protected _options: IFCTOptions = {
-    maxGasPrice: "30000000000", // 30 Gwei as default
-    validFrom: getDate(), // Valid from now
-    expiresAt: getDate(7), // Expires after 7 days
-    purgeable: false,
-    blockable: true,
-    builder: "0x0000000000000000000000000000000000000000",
-    authEnabled: true,
-  };
+
+  public _options = new Options();
 
   protected _callDefault: ICallDefaults = {
     value: "0",
@@ -95,19 +85,7 @@ export class BatchMultiSigCall {
 
   // Getters
   get options(): RequiredFCTOptions {
-    return {
-      ...this._options,
-      name: this._options.name || "",
-      recurrency: {
-        maxRepeats: this._options.recurrency?.maxRepeats || "1",
-        chillTime: this._options.recurrency?.chillTime || "0",
-        accumetable: this._options.recurrency?.accumetable || false,
-      },
-      multisig: {
-        externalSigners: this._options.multisig?.externalSigners || [],
-        minimumApprovals: this._options.multisig?.minimumApprovals || "1",
-      },
-    };
+    return this._options.get();
   }
 
   get calls(): StrictMSCallInput[] {
@@ -172,20 +150,17 @@ export class BatchMultiSigCall {
   public getAllRequiredApprovals = getAllRequiredApprovals;
 
   // Variables
-  protected getVariable = getVariable;
-  protected getOutputVariable = getOutputVariable;
-  protected getExternalVariable = getExternalVariable;
-  protected getComputedVariable = getComputedVariable;
+  public getVariable = getVariable;
+  public getOutputVariable = getOutputVariable;
+  public getExternalVariable = getExternalVariable;
+  public getComputedVariable = getComputedVariable;
 
   // Internal helper functions
-  protected createTypedData = createTypedData;
-  protected getParamsFromCall = getParamsFromCall;
-  protected handleTo = handleTo;
-  protected handleValue = handleValue;
-  protected decodeParams = decodeParams;
+  public decodeParams = decodeParams;
+  public handleVariableValue = handleVariableValue;
 
   // Validation functions
-  protected verifyCall = verifyCall;
+  public verifyCall = verifyCall;
 
   // Getter functions
   protected _getDecodedCalls = _getDecodedCalls;
