@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createWithEncodedData = exports.createWithPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const ExportFCT_1 = require("batchMultiSigCall/classes/ExportFCT/ExportFCT");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
 const lodash_1 = __importDefault(require("lodash"));
@@ -13,7 +13,6 @@ const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_
 const constants_1 = require("../../constants");
 const helpers_1 = require("../helpers");
 const fct_1 = require("../helpers/fct");
-const utils_2 = require("../utils");
 // Generate nodeId for a call
 function generateNodeId() {
     return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -105,49 +104,7 @@ function getCall(index) {
 }
 exports.getCall = getCall;
 function exportFCT() {
-    const calls = this.decodedCalls;
-    if (this.calls.length === 0) {
-        throw new Error("No calls added");
-    }
-    (0, helpers_1.verifyOptions)(this._options);
-    const salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-    const typedData = this.createTypedData(salt, this.version);
-    const sessionId = (0, helpers_1.getSessionId)(salt, this.version, this.options);
-    const mcall = calls.map((call, index) => {
-        const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
-        return {
-            typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-            ensHash: (0, helpers_1.handleEnsHash)(call),
-            functionSignature: (0, helpers_1.handleFunctionSignature)(call),
-            value: this.handleValue(call),
-            callId: (0, helpers_1.manageCallId)(calls, call, index),
-            from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
-            to: this.handleTo(call),
-            data: (0, helpers_1.handleData)(call),
-            types: (0, helpers_1.handleTypes)(call),
-            typedHashes: usedTypeStructs.length > 0
-                ? usedTypeStructs.map((hash) => ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
-                : [],
-        };
-    });
-    const FCTData = {
-        typedData,
-        builder: this.options.builder || "0x0000000000000000000000000000000000000000",
-        typeHash: ethers_1.utils.hexlify(eth_sig_util_1.TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
-        sessionId,
-        nameHash: ethers_1.utils.id(this.options.name || ""),
-        mcall,
-        variables: [],
-        externalSigners: [],
-        signatures: [(0, utils_2.getAuthenticatorSignature)(typedData)],
-        computed: this.convertedComputed.map((c) => {
-            // Return everything except the index
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { index, ...rest } = c;
-            return rest;
-        }),
-    };
-    return FCTData;
+    return new ExportFCT_1.ExportFCT(this).get();
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {

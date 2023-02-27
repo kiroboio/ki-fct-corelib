@@ -8,6 +8,7 @@ const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
+const Options_1 = require("./classes/Options/Options");
 const constants_1 = require("./constants");
 const fct_1 = require("./helpers/fct");
 const methods_1 = require("./methods");
@@ -20,15 +21,7 @@ class BatchMultiSigCall {
         this.version = "0x010101";
         this._computed = [];
         this._calls = [];
-        this._options = {
-            maxGasPrice: "30000000000",
-            validFrom: (0, helpers_1.getDate)(),
-            expiresAt: (0, helpers_1.getDate)(7),
-            purgeable: false,
-            blockable: true,
-            builder: "0x0000000000000000000000000000000000000000",
-            authEnabled: true,
-        };
+        this._options = new Options_1.Options();
         this._callDefault = {
             value: "0",
             options: constants_1.DEFAULT_CALL_OPTIONS,
@@ -60,11 +53,8 @@ class BatchMultiSigCall {
         this.getExternalVariable = methods_1.getExternalVariable;
         this.getComputedVariable = methods_1.getComputedVariable;
         // Internal helper functions
-        this.createTypedData = methods_1.createTypedData;
-        this.getParamsFromCall = methods_1.getParamsFromCall;
-        this.handleTo = methods_1.handleTo;
-        this.handleValue = methods_1.handleValue;
         this.decodeParams = methods_1.decodeParams;
+        this.handleVariableValue = methods_1.handleVariableValue;
         // Validation functions
         this.verifyCall = methods_1.verifyCall;
         // Getter functions
@@ -91,19 +81,7 @@ class BatchMultiSigCall {
     }
     // Getters
     get options() {
-        return {
-            ...this._options,
-            name: this._options.name || "",
-            recurrency: {
-                maxRepeats: this._options.recurrency?.maxRepeats || "1",
-                chillTime: this._options.recurrency?.chillTime || "0",
-                accumetable: this._options.recurrency?.accumetable || false,
-            },
-            multisig: {
-                externalSigners: this._options.multisig?.externalSigners || [],
-                minimumApprovals: this._options.multisig?.minimumApprovals || "1",
-            },
-        };
+        return this._options.get();
     }
     get calls() {
         return this._getCalls();
