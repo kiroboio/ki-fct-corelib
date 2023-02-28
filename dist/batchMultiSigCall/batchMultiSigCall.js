@@ -9,7 +9,7 @@ const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_Bat
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const helpers_1 = require("../helpers");
 const FCTCalls_1 = require("./classes/FCTCalls");
-const Options_1 = require("./classes/Options/Options");
+const Options_1 = require("./classes/Options");
 const constants_1 = require("./constants");
 const fct_1 = require("./helpers/fct");
 const methods_1 = require("./methods");
@@ -23,8 +23,12 @@ class BatchMultiSigCall {
         this._computed = [];
         this._options = new Options_1.Options();
         // Set methods
-        this.setOptions = methods_1.setOptions;
-        this.setCallDefaults = methods_1.setCallDefaults;
+        this.setOptions = (options) => {
+            return this._options.set(options);
+        };
+        this.setCallDefaults = (callDefault) => {
+            return this._calls.setCallDefaults(callDefault);
+        };
         // Add Computed
         this.addComputed = computed_1.addComputed;
         // Plugin functions

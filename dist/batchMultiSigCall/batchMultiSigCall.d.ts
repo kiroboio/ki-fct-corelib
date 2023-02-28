@@ -1,10 +1,11 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
+import { DeepPartial } from "../types";
 import { FCTCalls } from "./classes/FCTCalls";
-import { Options } from "./classes/Options/Options";
-import { create, createMultiple, createPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getPlugin, getPluginClass, getPluginData, getVariable, handleVariableValue, importEncodedFCT, importFCT, setCallDefaults, setOptions } from "./methods";
+import { Options } from "./classes/Options";
+import { create, createMultiple, createPlugin, decodeParams, exportFCT, getAllRequiredApprovals, getCall, getComputedVariable, getExternalVariable, getOutputVariable, getPlugin, getPluginClass, getPluginData, getVariable, handleVariableValue, importEncodedFCT, importFCT } from "./methods";
 import { addComputed } from "./methods/computed";
-import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, IComputed, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, ICallDefaults, IComputed, IFCTOptions, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
 export declare class BatchMultiSigCall {
     FCT_Controller: ethers.utils.Interface;
     FCT_BatchMultiSigCall: ethers.utils.Interface;
@@ -21,8 +22,8 @@ export declare class BatchMultiSigCall {
     get decodedCalls(): DecodedCalls[];
     get computed(): Required<IComputed>[];
     get convertedComputed(): ComputedVariable[];
-    setOptions: typeof setOptions;
-    setCallDefaults: typeof setCallDefaults;
+    setOptions: (options: DeepPartial<IFCTOptions>) => IFCTOptions;
+    setCallDefaults: (callDefault: DeepPartial<ICallDefaults>) => ICallDefaults;
     addComputed: typeof addComputed;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;

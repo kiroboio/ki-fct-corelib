@@ -1,8 +1,6 @@
 import { AllPlugins } from "@kirobo/ki-eth-fct-provider-ts";
-import { DeepPartial } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { FCTCall, IBatchMultiSigCallFCT, ICallDefaults, IMSCallInput, IMSCallInputWithNodeId } from "../types";
-export declare function generateNodeId(): string;
+import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, IMSCallInputWithNodeId } from "../types";
 export declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
 export declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
 export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): import("@kirobo/ki-eth-fct-provider-ts").NewPluginType<"UNISWAP", "ACTION", "addLiquidityETH", string, {
@@ -159,4 +157,3 @@ export declare function getCall(this: BatchMultiSigCall, index: number): IMSCall
 export declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
 export declare function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[];
 export declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<import("../types").StrictMSCallInput[]>;
-export declare function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>): ICallDefaults;

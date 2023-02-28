@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCallDefaults = exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createMultiple = exports.create = exports.generateNodeId = void 0;
+exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createMultiple = exports.create = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
@@ -11,11 +11,6 @@ const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_
 const constants_1 = require("../../constants");
 const classes_1 = require("../classes");
 const helpers_1 = require("../helpers");
-// Generate nodeId for a call
-function generateNodeId() {
-    return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
-exports.generateNodeId = generateNodeId;
 async function create(call) {
     return this._calls.create(call);
 }
@@ -91,7 +86,7 @@ function importFCT(fct) {
             const updatedInputs = addNameToParameter(inputs, dataTypes);
             const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
             const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-            params = (0, classes_1.getParamsFromInputs)(updatedInputs, decodedResult);
+            params = classes_1.FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(constants_1.flows).find(([, value]) => {
@@ -222,7 +217,3 @@ async function importEncodedFCT(calldata) {
     return this.calls;
 }
 exports.importEncodedFCT = importEncodedFCT;
-function setCallDefaults(callDefault) {
-    return this._calls.setCallDefaults(callDefault);
-}
-exports.setCallDefaults = setCallDefaults;
