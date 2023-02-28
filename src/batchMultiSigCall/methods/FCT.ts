@@ -4,23 +4,17 @@ import { AbiCoder, ParamType } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
-import { DeepPartial, Param } from "../../types";
+import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { ExportFCT, getParamsFromInputs } from "../classes";
+import { ExportFCT, FCTCalls } from "../classes";
 import { parseCallID, parseSessionID } from "../helpers";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
-  ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
   TypedDataMessageTransaction,
 } from "../types";
-
-// Generate nodeId for a call
-export function generateNodeId(): string {
-  return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
 
 export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
   return this._calls.create(call);
@@ -108,7 +102,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
       const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
 
-      params = getParamsFromInputs(updatedInputs, decodedResult);
+      params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
     }
 
     const getFlow = () => {
@@ -275,8 +269,4 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   }
 
   return this.calls;
-}
-
-export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
-  return this._calls.setCallDefaults(callDefault);
 }

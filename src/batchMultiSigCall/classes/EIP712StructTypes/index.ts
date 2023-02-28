@@ -1,19 +1,14 @@
 import { IMSCallInput, Param } from "types";
 
+import * as helpers from "./helpers";
+
 type EIP712TypesObject = Record<string, { name: string; type: string }[]>;
-
-// Create a function that checks if the param type last index of [ is greater than 0. If true - value is Param[][] else - value is Param[]
-const isInstanceOfTupleArray = (value: Param["value"], param: Param): value is Param[][] => {
-  return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
-};
-
-const isInstanceOfTuple = (value: Param["value"], param: Param): value is Param[] => {
-  return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
-};
 
 export class EIP712StructTypes {
   transactionTypes: EIP712TypesObject = {};
   structTypes: EIP712TypesObject = {};
+
+  static helpers = helpers;
 
   constructor(calls: IMSCallInput[]) {
     calls.forEach((call: IMSCallInput, index: number) => {
@@ -41,9 +36,9 @@ export class EIP712StructTypes {
 
     let paramValue: Param[] | Param[][];
 
-    if (isInstanceOfTupleArray(param.value, param)) {
+    if (helpers.isInstanceOfTupleArray(param.value, param)) {
       paramValue = param.value[0];
-    } else if (isInstanceOfTuple(param.value, param)) {
+    } else if (helpers.isInstanceOfTuple(param.value, param)) {
       paramValue = param.value;
     } else {
       throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);

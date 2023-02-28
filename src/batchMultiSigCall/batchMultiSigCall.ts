@@ -4,9 +4,9 @@ import { ethers } from "ethers";
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { instanceOfVariable } from "../helpers";
-import { Variable } from "../types";
+import { DeepPartial, Variable } from "../types";
 import { FCTCalls } from "./classes/FCTCalls";
-import { Options } from "./classes/Options/Options";
+import { Options } from "./classes/Options";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
@@ -27,15 +27,15 @@ import {
   handleVariableValue,
   importEncodedFCT,
   importFCT,
-  setCallDefaults,
-  setOptions,
 } from "./methods";
 import { addComputed } from "./methods/computed";
 import {
   BatchMultiSigCallConstructor,
   ComputedVariable,
   DecodedCalls,
+  ICallDefaults,
   IComputed,
+  IFCTOptions,
   RequiredFCTOptions,
   StrictMSCallInput,
   TypedDataDomain,
@@ -112,8 +112,12 @@ export class BatchMultiSigCall {
   }
 
   // Set methods
-  public setOptions = setOptions;
-  public setCallDefaults = setCallDefaults;
+  public setOptions = (options: DeepPartial<IFCTOptions>): IFCTOptions => {
+    return this._options.set(options);
+  };
+  public setCallDefaults = (callDefault: DeepPartial<ICallDefaults>) => {
+    return this._calls.setCallDefaults(callDefault);
+  };
 
   // Add Computed
   public addComputed = addComputed;
