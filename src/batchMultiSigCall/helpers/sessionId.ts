@@ -1,6 +1,6 @@
 import { CALL_TYPE, Flow, flows } from "../../constants";
 import { NO_JUMP } from "../constants";
-import { IFCTOptions, IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
+import { IMSCallInput, RequiredFCTOptions, StrictMSCallInput } from "../types";
 
 const sessionIdFlag = {
   accumetable: 0x1,
@@ -113,7 +113,11 @@ export const getSessionId = (salt: string, versionHex: string, options: Required
   return `0x${salt}${minimumApprovals}${version}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
 };
 
-export const parseSessionID = (sessionId: string, builder: string, externalSigners: string[] = []): IFCTOptions => {
+export const parseSessionID = (
+  sessionId: string,
+  builder: string,
+  externalSigners: string[] = []
+): RequiredFCTOptions => {
   // const salt = sessionId.slice(2, 8);
   const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
   // const version = sessionId.slice(10, 16);
@@ -133,6 +137,7 @@ export const parseSessionID = (sessionId: string, builder: string, externalSigne
   };
 
   return {
+    name: "",
     validFrom,
     expiresAt,
     maxGasPrice,

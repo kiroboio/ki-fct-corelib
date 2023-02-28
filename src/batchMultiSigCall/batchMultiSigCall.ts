@@ -48,6 +48,7 @@ export class BatchMultiSigCall {
   public version = "0x010101";
   public chainId: ChainId;
   public domain: TypedDataDomain;
+  public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
   public _computed: Required<IComputed>[] = [];
   public _calls: FCTCalls;
