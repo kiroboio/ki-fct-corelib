@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 
 import FCTControllerABI from "../src/abi/FCT_Controller.abi.json";
-import { ethers } from "../src/index";
+import { ethers, utils } from "../src/index";
 import scriptData from "./scriptData";
 
 dotenv.config();
@@ -22,6 +22,14 @@ async function main() {
   };
 
   console.log(data);
+
+  const fetchUtil = new utils.FetchUtility({
+    rpcUrl: scriptData[5].rpcUrl,
+    provider: new ethers.providers.JsonRpcProvider(scriptData[5].rpcUrl),
+    chainId: 5,
+  });
+
+  const totalSupplies = await fetchUtil.getTokensTotalSupply([]);
 }
 
 main().catch((error) => {
