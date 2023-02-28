@@ -1,18 +1,16 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./EIP712"), exports);
-__exportStar(require("./helpers"), exports);
+exports.EIP712 = void 0;
+const constants_1 = require("./constants");
+class EIP712 {
+}
+exports.EIP712 = EIP712;
+EIP712.types = {
+    domain: constants_1.EIP712Domain,
+    meta: constants_1.Meta,
+    limits: constants_1.Limits,
+    computed: constants_1.Computed,
+    call: constants_1.Call,
+    recurrency: constants_1.Recurrency,
+    multisig: constants_1.Multisig,
+};
