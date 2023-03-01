@@ -5,11 +5,10 @@ import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 import { instanceOfVariable } from "../helpers";
 import { DeepPartial, Variable } from "../types";
-import { FCTCalls } from "./classes/FCTCalls";
-import { Options } from "./classes/Options";
+import { EIP712, FCTCalls, Options } from "./classes";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
-import { TYPED_DATA_DOMAIN } from "./helpers/fct";
 import {
+  addComputed,
   create,
   createMultiple,
   createPlugin,
@@ -28,7 +27,6 @@ import {
   importEncodedFCT,
   importFCT,
 } from "./methods";
-import { addComputed } from "./methods/computed";
 import {
   BatchMultiSigCallConstructor,
   ComputedVariable,
@@ -40,6 +38,7 @@ import {
   StrictMSCallInput,
   TypedDataDomain,
 } from "./types";
+import * as utils from "./utils";
 
 export class BatchMultiSigCall {
   public FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
@@ -63,7 +62,7 @@ export class BatchMultiSigCall {
     if (input.domain) {
       this.domain = input.domain;
     } else {
-      this.domain = TYPED_DATA_DOMAIN[this.chainId];
+      this.domain = EIP712.getTypedDataDomain(this.chainId);
     }
 
     if (input.version) this.version = input.version;
@@ -149,4 +148,7 @@ export class BatchMultiSigCall {
   // Internal helper functions
   public decodeParams = decodeParams;
   public handleVariableValue = handleVariableValue;
+
+  // Static methods
+  static utils = utils;
 }

@@ -1,9 +1,10 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
+import { SessionID } from "batchMultiSigCall/classes";
 import { expect } from "chai";
 import { ethers } from "ethers";
 
 import { Flow } from "../../constants";
-import { parseCallID, parseSessionID } from "../helpers";
+import { parseCallID } from "../helpers";
 import { BatchMultiSigCall } from "../index";
 
 function getDate(days = 0) {
@@ -144,10 +145,6 @@ describe("BatchMultiSigCall", () => {
   });
 
   it("Should create an FCT with 3 non-plugin calls", async () => {
-    batchMultiSigCall = new BatchMultiSigCall({
-      chainId: "5",
-    });
-
     await batchMultiSigCall.createMultiple([
       {
         nodeId: "node1",
@@ -195,16 +192,21 @@ describe("BatchMultiSigCall", () => {
     expect(FCT).to.be.an("object");
 
     // parse SessionId
-    const sessionId = parseSessionID(FCT.sessionId, "0x4f631612941F710db646B8290dB097bFB8657dC2");
+    const sessionId = SessionID.asOptions({
+      sessionId: FCT.sessionId,
+      builder: FCT.builder,
+      name: FCT.typedData.message.meta.name,
+    });
     expect(sessionId).to.be.an("object");
     expect(sessionId).to.be.eql({
+      name: "",
       validFrom: batchMultiSigCall.options.validFrom,
       expiresAt: batchMultiSigCall.options.expiresAt,
-      maxGasPrice: "30000000000",
+      maxGasPrice: batchMultiSigCall.options.maxGasPrice,
       blockable: true,
       purgeable: false,
       authEnabled: true,
-      builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      builder: FCT.builder,
       recurrency: {
         accumetable: false,
         chillTime: "0",

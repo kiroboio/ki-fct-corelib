@@ -13,18 +13,13 @@ import {
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
-import {
-  getComputedVariableMessage,
-  getSessionId,
-  getUsedStructTypes,
-  handleMethodInterface,
-  manageCallId,
-} from "../../helpers";
+import { getComputedVariableMessage, handleMethodInterface, manageCallId } from "../../helpers";
 import { handleData, handleFunctionSignature, handleTypes } from "../../helpers/handlers";
 import { MSCall } from "../../types/general";
 import { EIP712 } from "../EIP712";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { Options } from "../Options";
+import { SessionID } from "../SessionID";
 import * as helpers from "./helpers";
 
 export class ExportFCT {
@@ -40,11 +35,11 @@ export class ExportFCT {
 
   constructor(FCT: BatchMultiSigCall) {
     this.FCT = FCT;
-    this.salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+    this.salt = FCT.randomId;
     this.calls = FCT.decodedCalls;
     this.version = FCT.version;
     this.typedData = this.getTypedData();
-    this.sessionId = getSessionId(this.salt, this.version, this.FCT.options);
+    this.sessionId = SessionID.asStringFromExportFCT(this);
     this.mcall = this.getCalls();
 
     if (this.FCT.calls.length === 0) {
@@ -77,7 +72,7 @@ export class ExportFCT {
     const typedData = this.typedData;
     const calls = this.calls;
     return calls.map((call, index) => {
-      const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
+      const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
 
       return {
         typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
