@@ -1,10 +1,10 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
-import { SessionID } from "batchMultiSigCall/classes";
+import { CallID, SessionID } from "batchMultiSigCall/classes";
 import { expect } from "chai";
 import { ethers } from "ethers";
+import { Param } from "types";
 
 import { Flow } from "../../constants";
-import { parseCallID } from "../helpers";
 import { BatchMultiSigCall } from "../index";
 
 function getDate(days = 0) {
@@ -223,7 +223,7 @@ describe("BatchMultiSigCall", () => {
     expect(FCT.typedData.message["transaction_1"].call.jump_on_fail).to.eq(1);
 
     const callId = FCT.mcall[0].callId;
-    const parsedCallId = parseCallID(callId, true);
+    const parsedCallId = CallID.parseWithNumbers(callId);
 
     expect(parsedCallId).to.be.eql({
       options: {
@@ -348,7 +348,7 @@ describe("BatchMultiSigCall", () => {
       to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
     });
 
-    const params = call.params as any;
+    const params = call.params as Param[];
 
     expect(call).to.be.an("object");
 

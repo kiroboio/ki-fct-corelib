@@ -13,9 +13,10 @@ import {
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
-import { getComputedVariableMessage, handleMethodInterface, manageCallId } from "../../helpers";
+import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
 import { handleData, handleFunctionSignature, handleTypes } from "../../helpers/handlers";
 import { MSCall } from "../../types/general";
+import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { Options } from "../Options";
@@ -79,7 +80,11 @@ export class ExportFCT {
         ensHash: id(call.toENS || ""),
         functionSignature: handleFunctionSignature(call),
         value: this.FCT.handleVariableValue(call.to, "uint256", "0"),
-        callId: manageCallId(calls, call, index),
+        callId: CallID.asString({
+          calls,
+          call,
+          index,
+        }),
         from: this.FCT.handleVariableValue(call.from, "address"),
         to: this.FCT.handleVariableValue(call.to, "address"),
         data: handleData(call),

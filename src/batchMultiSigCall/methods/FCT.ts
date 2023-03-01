@@ -6,8 +6,7 @@ import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { Flow, flows } from "../../constants";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { ExportFCT, FCTCalls } from "../classes";
-import { parseCallID, parseSessionID } from "../helpers";
+import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
@@ -53,10 +52,15 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 }
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
-  // Here we import FCT and add all the data inside BatchMultiSigCall
-  const options = parseSessionID(fct.sessionId, fct.builder, fct.externalSigners);
-  this.setOptions(options);
   const typedData = fct.typedData;
+  this.setOptions(
+    SessionID.asOptions({
+      sessionId: fct.sessionId,
+      builder: fct.builder,
+      externalSigners: fct.externalSigners,
+      name: typedData.message.meta.name,
+    })
+  );
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
@@ -197,7 +201,13 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     activator: string;
   } = getFCT(decoded);
 
-  const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+  // const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+  const FCTOptions = SessionID.asOptions({
+    sessionId: decodedFCT.tr.sessionId,
+    builder: decodedFCT.tr.builder,
+    name: "",
+    externalSigners: decodedFCT.tr.externalSigners,
+  });
   this.setOptions(FCTOptions);
 
   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
@@ -250,9 +260,9 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         }, {}),
       });
 
-      const { options } = parseCallID(call.callId);
+      const { options } = CallID.parse(call.callId);
 
-      const callInput: any = {
+      const callInput = {
         nodeId: `node${index + 1}`,
         plugin,
         from: call.from,

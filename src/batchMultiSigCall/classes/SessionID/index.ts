@@ -1,4 +1,4 @@
-import { RequiredFCTOptions } from "types";
+import { IBatchMultiSigCallFCT, RequiredFCTOptions } from "types";
 
 import { ExportFCT } from "../ExportFCT";
 
@@ -112,6 +112,15 @@ export class SessionID {
       salt: exportFCT.salt,
       version: exportFCT.version,
       options: exportFCT.FCT.options,
+    });
+  }
+
+  static fromFCT(FCT: IBatchMultiSigCallFCT): RequiredFCTOptions {
+    return this.asOptions({
+      sessionId: FCT.sessionId,
+      builder: FCT.builder,
+      name: FCT.typedData.message.meta.name,
+      externalSigners: FCT.externalSigners,
     });
   }
 }
