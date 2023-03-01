@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.comp = void 0;
+exports.getComputedVariableMessage = exports.comp = void 0;
 const add = (comp) => ({
     add: (add) => ({ comp: { ...comp, add }, ...sub({ ...comp, add }) }),
     ...sub(comp),
@@ -52,3 +52,12 @@ const comp = (value) => {
     };
 };
 exports.comp = comp;
+const getComputedVariableMessage = (computedVariables) => {
+    return computedVariables.reduce((acc, item, i) => {
+        return {
+            ...acc,
+            [`computed_${i + 1}`]: item,
+        };
+    }, {});
+};
+exports.getComputedVariableMessage = getComputedVariableMessage;

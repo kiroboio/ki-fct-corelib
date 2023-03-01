@@ -113,6 +113,7 @@ const parseSessionID = (sessionId, builder, externalSigners = []) => {
         authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
     };
     return {
+        name: "",
         validFrom,
         expiresAt,
         maxGasPrice,

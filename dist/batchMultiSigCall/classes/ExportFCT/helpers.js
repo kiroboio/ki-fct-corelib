@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = void 0;
+exports.getUsedStructTypes = exports.getParams = void 0;
 const getParams = (params) => {
     return {
         ...params.reduce((acc, param) => {
@@ -26,3 +26,15 @@ const getParams = (params) => {
     };
 };
 exports.getParams = getParams;
+const getUsedStructTypes = (typedData, typeName) => {
+    const mainType = typedData.types[typeName.replace("[]", "")];
+    const usedStructTypes = mainType.reduce((acc, item) => {
+        if (item.type.includes("Struct")) {
+            const type = item.type.replace("[]", "");
+            return [...acc, type, ...(0, exports.getUsedStructTypes)(typedData, type)];
+        }
+        return acc;
+    }, []);
+    return usedStructTypes;
+};
+exports.getUsedStructTypes = getUsedStructTypes;

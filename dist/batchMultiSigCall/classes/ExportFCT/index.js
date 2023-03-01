@@ -38,15 +38,16 @@ const handlers_1 = require("../../helpers/handlers");
 const EIP712_1 = require("../EIP712");
 const EIP712StructTypes_1 = require("../EIP712StructTypes");
 const Options_1 = require("../Options");
+const SessionID_1 = require("../SessionID");
 const helpers = __importStar(require("./helpers"));
 class ExportFCT {
     constructor(FCT) {
         this.FCT = FCT;
-        this.salt = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        this.salt = FCT.randomId;
         this.calls = FCT.decodedCalls;
         this.version = FCT.version;
         this.typedData = this.getTypedData();
-        this.sessionId = (0, helpers_1.getSessionId)(this.salt, this.version, this.FCT.options);
+        this.sessionId = SessionID_1.SessionID.asStringFromExportFCT(this);
         this.mcall = this.getCalls();
         if (this.FCT.calls.length === 0) {
             throw new Error("FCT has no calls");
@@ -75,7 +76,7 @@ class ExportFCT {
         const typedData = this.typedData;
         const calls = this.calls;
         return calls.map((call, index) => {
-            const usedTypeStructs = (0, helpers_1.getUsedStructTypes)(typedData, `transaction${index + 1}`);
+            const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
             return {
                 typeHash: (0, utils_2.hexlify)(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: (0, utils_2.id)(call.toENS || ""),
