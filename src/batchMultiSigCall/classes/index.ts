@@ -3,5 +3,7 @@ export * from "./EIP712";
 export * from "./EIP712StructTypes";
 export * from "./ExportFCT";
 export * from "./FCTCalls";
+export * from "./FCTUtils";
 export * from "./Options";
 export * from "./SessionID";
+export * from "./Variables";

@@ -109,8 +109,8 @@ export class SessionID {
 
   static asStringFromExportFCT(exportFCT: ExportFCT): string {
     return this.asString({
-      salt: exportFCT.salt,
-      version: exportFCT.version,
+      salt: exportFCT.FCT.randomId,
+      version: exportFCT.FCT.version,
       options: exportFCT.FCT.options,
     });
   }

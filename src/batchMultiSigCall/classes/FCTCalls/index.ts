@@ -1,5 +1,6 @@
 import { DEFAULT_CALL_OPTIONS } from "batchMultiSigCall/constants";
 import { Interface } from "ethers/lib/utils";
+import { instanceOfVariable } from "helpers";
 import _ from "lodash";
 import {
   DecodedCalls,
@@ -10,6 +11,7 @@ import {
   IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
   IWithPlugin,
+  Param,
   ParamWithoutVariable,
   RequiredKeys,
   StrictMSCallInput,
@@ -17,16 +19,16 @@ import {
 
 import { CALL_TYPE } from "../../../constants";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { FCTBase } from "../FCTBase";
 import * as helpers from "./helpers";
 
 function generateNodeId(): string {
   return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
-export class FCTCalls {
+export class FCTCalls extends FCTBase {
   static helpers = helpers;
 
-  public FCT: BatchMultiSigCall;
   private _calls: IMSCallInputWithNodeId[] = [];
   private _callDefault: ICallDefaults = {
     value: "0",
@@ -34,7 +36,7 @@ export class FCTCalls {
   };
 
   constructor(FCT: BatchMultiSigCall, callDefault?: DeepPartial<ICallDefaults>) {
-    this.FCT = FCT;
+    super(FCT);
 
     if (callDefault) {
       this._callDefault = _.merge({}, this._callDefault, callDefault);
@@ -59,7 +61,7 @@ export class FCTCalls {
     return this.get().map((call) => {
       const params = call.params;
       if (params && params.length > 0) {
-        const parameters = this.FCT.decodeParams(params);
+        const parameters = this.decodeParams(params);
         return { ...call, params: parameters };
       }
       return {
@@ -188,5 +190,26 @@ export class FCTCalls {
       }
       call.params.map(helpers.verifyParam);
     }
+  }
+
+  public decodeParams(params: Param[]): ParamWithoutVariable[] {
+    return params.reduce((acc, param) => {
+      if (param.type === "tuple" || param.customType) {
+        if (param.type.lastIndexOf("[") > 0) {
+          const value = param.value as Param[][];
+          const decodedValue = value.map((tuple) => this.decodeParams(tuple));
+          return [...acc, { ...param, value: decodedValue }];
+        }
+
+        const value = this.decodeParams(param.value as Param[]);
+        return [...acc, { ...param, value }];
+      }
+      if (instanceOfVariable(param.value)) {
+        const value = this.FCT._variables.getVariable(param.value, param.type);
+        const updatedParam = { ...param, value };
+        return [...acc, updatedParam];
+      }
+      return [...acc, param as ParamWithoutVariable];
+    }, [] as ParamWithoutVariable[]);
   }
 }

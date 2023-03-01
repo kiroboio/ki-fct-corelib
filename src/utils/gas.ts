@@ -1,4 +1,5 @@
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { CallID } from "batchMultiSigCall/classes";
 import BigNumber from "bignumber.js";
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
@@ -6,7 +7,6 @@ import { hexlify } from "ethers/lib/utils";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { utils } from "../batchMultiSigCall";
-import { parseCallID } from "../batchMultiSigCall/helpers";
 import { IBatchMultiSigCallFCT, PartialBatchMultiSigCall, TypedDataLimits } from "../batchMultiSigCall/types";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { getAllFCTPaths } from "./FCT";
@@ -345,12 +345,12 @@ export const getPaymentPerPayer = ({
 
     return path.reduce((acc, callIndex) => {
       const call = fct.mcall[Number(callIndex)];
-      const callId = parseCallID(call.callId);
+      const callId = CallID.parse(call.callId);
       const payerIndex = callId.payerIndex;
       const payer = fct.mcall[payerIndex - 1].from;
 
       // 21000 - base fee of the call on EVMs
-      const gasForCall = (BigInt(parseCallID(call.callId).options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
+      const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
       const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
 
       const callCost = totalGasForCall * BigInt(FCTgasPrice);
@@ -374,7 +374,7 @@ export const getPaymentPerPayer = ({
   const allPayers = [
     ...new Set(
       fct.mcall.map((call) => {
-        const callId = parseCallID(call.callId);
+        const callId = CallID.parse(call.callId);
         const payerIndex = callId.payerIndex;
         const payer = fct.mcall[payerIndex - 1].from;
         return payer;

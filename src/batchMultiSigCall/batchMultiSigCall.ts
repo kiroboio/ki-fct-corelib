@@ -3,32 +3,23 @@ import { ethers } from "ethers";
 
 import FCTBatchMultiSigCallABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import FCTControllerABI from "../abi/FCT_Controller.abi.json";
-import { instanceOfVariable } from "../helpers";
-import { DeepPartial, Variable } from "../types";
-import { EIP712, FCTCalls, Options } from "./classes";
+import { DeepPartial } from "../types";
+import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
-  addComputed,
   create,
   createMultiple,
   createPlugin,
-  decodeParams,
   exportFCT,
   getCall,
-  getComputedVariable,
-  getExternalVariable,
-  getOutputVariable,
   getPlugin,
   getPluginClass,
   getPluginData,
-  getVariable,
-  handleVariableValue,
   importEncodedFCT,
   importFCT,
 } from "./methods";
 import {
   BatchMultiSigCallConstructor,
-  ComputedVariable,
   DecodedCalls,
   IBatchMultiSigCallFCT,
   ICallDefaults,
@@ -49,9 +40,15 @@ export class BatchMultiSigCall {
   public domain: TypedDataDomain;
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
-  public _computed: Required<IComputed>[] = [];
-  public _calls: FCTCalls;
+  // Utils
+  public utils = new FCTUtils(this);
   public _options = new Options();
+  public _variables = new Variables(this);
+  public _eip712 = new EIP712(this);
+  public _calls = new FCTCalls(this, {
+    value: "0",
+    options: DEFAULT_CALL_OPTIONS,
+  });
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
     if (input.chainId) {
@@ -68,11 +65,6 @@ export class BatchMultiSigCall {
     if (input.version) this.version = input.version;
     if (input.options) this.setOptions(input.options);
     if (input.defaults) this.setCallDefaults(input.defaults);
-
-    this._calls = new FCTCalls(this, {
-      value: "0",
-      options: DEFAULT_CALL_OPTIONS,
-    });
   }
 
   // Getters
@@ -89,28 +81,14 @@ export class BatchMultiSigCall {
   }
 
   get computed() {
-    return this._computed;
+    return this._variables.computed;
   }
 
-  get convertedComputed(): ComputedVariable[] {
-    const handleVariable = (value: string | Variable) => {
-      if (instanceOfVariable(value)) {
-        return this.getVariable(value, "uint256");
-      }
-      return value;
-    };
-    return this._computed.map((c, i) => ({
-      index: (i + 1).toString(),
-      value: handleVariable(c.value),
-      add: handleVariable(c.add),
-      sub: handleVariable(c.sub),
-      mul: handleVariable(c.mul),
-      pow: handleVariable(c.pow),
-      div: handleVariable(c.div),
-      mod: handleVariable(c.mod),
-    }));
+  get computedWithValues() {
+    return this._variables.computedWithValues;
   }
 
+  // Setters
   public setOptions = (options: DeepPartial<IFCTOptions>): IFCTOptions => {
     return this._options.set(options);
   };
@@ -119,8 +97,10 @@ export class BatchMultiSigCall {
     return this._calls.setCallDefaults(callDefault);
   };
 
-  // Add Computed
-  public addComputed = addComputed;
+  // Variables
+  public addComputed = (computed: IComputed) => {
+    return this._variables.addComputed(computed);
+  };
 
   // Plugin functions
   public getPlugin = getPlugin;
@@ -136,19 +116,8 @@ export class BatchMultiSigCall {
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
 
-  // Variables
-  public getVariable = getVariable;
-  public getOutputVariable = getOutputVariable;
-  public getExternalVariable = getExternalVariable;
-  public getComputedVariable = getComputedVariable;
-
-  // Internal helper functions
-  public decodeParams = decodeParams;
-  public handleVariableValue = handleVariableValue;
-
-  // Static methods
+  // Static functions
   static utils = utils;
-
   static from = (input: IBatchMultiSigCallFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);

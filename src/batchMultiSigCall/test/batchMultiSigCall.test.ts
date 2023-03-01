@@ -2,19 +2,12 @@ import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
 import { CallID, SessionID } from "batchMultiSigCall/classes";
 import { expect } from "chai";
 import { ethers } from "ethers";
+import { getDate } from "helpers";
 import { Param } from "types";
 
 import { Flow } from "../../constants";
 import { BatchMultiSigCall } from "../index";
 
-function getDate(days = 0) {
-  const result = new Date();
-  result.setDate(result.getDate() + days);
-  return Number(result.getTime() / 1000).toFixed();
-}
-
-// Should create an FCT with 3 non-plugin calls:
-// Should create FCT with Computed Variables:
 describe("BatchMultiSigCall", () => {
   let batchMultiSigCall: BatchMultiSigCall;
 

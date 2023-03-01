@@ -2,35 +2,10 @@ import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 
 import { FCT_VAULT_ADDRESS } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
-import { DeepPartial, Param, ParamWithoutVariable, Variable } from "../../types";
+import { Param, Variable } from "../../types";
 import { handleFunctionSignature } from "../helpers";
 import { BatchMultiSigCall } from "../index";
-import { IFCTOptions, IRequiredApproval } from "../types";
-
-export function getCalldataForActuator(
-  this: BatchMultiSigCall,
-  {
-    signedFCT,
-    purgedFCT,
-    investor,
-    activator,
-    version,
-  }: {
-    signedFCT: object;
-    purgedFCT: string;
-    investor: string;
-    activator: string;
-    version: string;
-  }
-): string {
-  return this.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
-    `0x${version}`.padEnd(66, "0"),
-    signedFCT,
-    purgedFCT,
-    investor,
-    activator,
-  ]);
-}
+import { IRequiredApproval } from "../types";
 
 export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];
@@ -137,45 +112,4 @@ export function getAllRequiredApprovals(this: BatchMultiSigCall): IRequiredAppro
   }
 
   return requiredApprovals;
-}
-
-export function setOptions(this: BatchMultiSigCall, options: DeepPartial<IFCTOptions>): IFCTOptions {
-  return this._options.set(options);
-}
-
-export function handleVariableValue(
-  this: BatchMultiSigCall,
-  value: undefined | Variable | string,
-  type: string,
-  returnIfUndefined = ""
-) {
-  if (!value) {
-    return returnIfUndefined;
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-
-  return this.getVariable(value, type);
-}
-
-export function decodeParams(this: BatchMultiSigCall, params: Param[]): ParamWithoutVariable[] {
-  return params.reduce((acc, param) => {
-    if (param.type === "tuple" || param.customType) {
-      if (param.type.lastIndexOf("[") > 0) {
-        const value = param.value as Param[][];
-        const decodedValue = value.map((tuple) => this.decodeParams(tuple));
-        return [...acc, { ...param, value: decodedValue }];
-      }
-
-      const value = this.decodeParams(param.value as Param[]);
-      return [...acc, { ...param, value }];
-    }
-    if (instanceOfVariable(param.value)) {
-      const value = this.getVariable(param.value, param.type);
-      const updatedParam = { ...param, value };
-      return [...acc, updatedParam];
-    }
-    return [...acc, param as ParamWithoutVariable];
-  }, [] as ParamWithoutVariable[]);
 }

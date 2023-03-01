@@ -213,7 +213,6 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     activator: string;
   } = getFCT(decoded);
 
-  // const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
   const FCTOptions = SessionID.asOptions({
     sessionId: decodedFCT.tr.sessionId,
     builder: decodedFCT.tr.builder,

@@ -1,9 +1,10 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import { CallID, SessionID } from "batchMultiSigCall/classes";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
-import { parseCallID, parseSessionID } from "../batchMultiSigCall/helpers";
+// import { parseCallID, parseSessionID } from "../batchMultiSigCall/helpers";
 import {
   BatchMultiSigCallTypedData,
   IBatchMultiSigCallFCT,
@@ -85,8 +86,11 @@ export const validateFCT = <IFCT extends IBatchMultiSigCallFCT>(FCT: IFCT, softV
 
   return {
     getOptions: () => {
-      const parsedSessionID = parseSessionID(FCT.sessionId, fctData.builder);
-
+      const parsedSessionID = SessionID.asOptions({
+        builder: FCT.builder,
+        sessionId: FCT.sessionId,
+        name: "",
+      });
       return {
         valid_from: parsedSessionID.validFrom,
         expires_at: parsedSessionID.expiresAt,
@@ -128,7 +132,7 @@ export const getAllFCTPaths = (fct: PartialBatchMultiSigCall) => {
   });
 
   for (let i = 0; i < fct.mcall.length - 1; i++) {
-    const callID = parseCallID(fct.mcall[i].callId, true);
+    const callID = CallID.parseWithNumbers(fct.mcall[i].callId);
     const jumpOnSuccess = callID.options.jumpOnSuccess;
     const jumpOnFail = callID.options.jumpOnFail;
 
