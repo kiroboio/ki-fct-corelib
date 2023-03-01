@@ -1,12 +1,6 @@
 import { IComputed, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
-/**
- * Add a computed value to the batch call.
- *
- * @param computed - The computed value to add.
- * @returns The variable representing the computed value.
- */
 export function addComputed(this: BatchMultiSigCall, computed: IComputed): Variable & { type: "computed" } {
   // Add the computed value to the batch call.
   const data = {
