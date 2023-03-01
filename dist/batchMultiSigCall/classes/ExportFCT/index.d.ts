@@ -1,26 +1,15 @@
-import { BatchMultiSigCallTypedData, DecodedCalls, IBatchMultiSigCallFCT, TypedDataMessage, TypedDataTypes } from "../../../types";
+import { DecodedCalls, IBatchMultiSigCallFCT } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { MSCall } from "../../types/general";
+import { FCTBase } from "../FCTBase";
 import * as helpers from "./helpers";
-export declare class ExportFCT {
-    FCT: BatchMultiSigCall;
-    salt: string;
+export declare class ExportFCT extends FCTBase {
     calls: DecodedCalls[];
-    version: string;
-    sessionId: string;
-    typedData: BatchMultiSigCallTypedData;
-    mcall: MSCall[];
     static helpers: typeof helpers;
     constructor(FCT: BatchMultiSigCall);
+    get typedData(): import("../../types/typedData").BatchMultiSigCallTypedData;
+    get mcall(): MSCall[];
+    get sessionId(): string;
     get(): IBatchMultiSigCallFCT;
     getCalls(): MSCall[];
-    getTypedData(): BatchMultiSigCallTypedData;
-    getTypedDataMessage(): TypedDataMessage;
-    getTypedDataTypes(): TypedDataTypes;
-    getTypedDataDomain(): import("../../types/typedData").TypedDataDomain;
-    getPrimaryType(): string;
-    private getPrimaryTypeTypes;
-    private getCallsPrimaryType;
-    private getComputedPrimaryType;
-    private getTransactionTypedDataMessage;
 }

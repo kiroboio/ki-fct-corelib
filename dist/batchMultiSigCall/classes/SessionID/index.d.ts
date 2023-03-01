@@ -1,4 +1,4 @@
-import { RequiredFCTOptions } from "types";
+import { IBatchMultiSigCallFCT, RequiredFCTOptions } from "types";
 import { ExportFCT } from "../ExportFCT";
 export declare class SessionID {
     static asString({ salt, version, options }: {
@@ -31,4 +31,5 @@ export declare class SessionID {
         };
     };
     static asStringFromExportFCT(exportFCT: ExportFCT): string;
+    static fromFCT(FCT: IBatchMultiSigCallFCT): RequiredFCTOptions;
 }

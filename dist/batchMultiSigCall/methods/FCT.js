@@ -10,7 +10,6 @@ const utils_1 = require("ethers/lib/utils");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
 const classes_1 = require("../classes");
-const helpers_1 = require("../helpers");
 async function create(call) {
     return this._calls.create(call);
 }
@@ -28,13 +27,19 @@ async function createMultiple(calls) {
             }
         }
     }
-    return this._calls.get();
+    return callsCreated;
 }
 exports.createMultiple = createMultiple;
 function createPlugin(Plugin) {
-    return new Plugin({
+    const plugin = new Plugin({
         chainId: this.chainId,
     });
+    if (plugin instanceof Plugin) {
+        return plugin;
+    }
+    else {
+        throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
+    }
 }
 exports.createPlugin = createPlugin;
 function getCall(index) {
@@ -49,10 +54,20 @@ function exportFCT() {
 }
 exports.exportFCT = exportFCT;
 function importFCT(fct) {
-    // Here we import FCT and add all the data inside BatchMultiSigCall
-    const options = (0, helpers_1.parseSessionID)(fct.sessionId, fct.builder, fct.externalSigners);
-    this.setOptions(options);
     const typedData = fct.typedData;
+    const domain = typedData.domain;
+    const { meta } = typedData.message;
+    this.batchMultiSigSelector = meta.selector;
+    this.version = meta.version;
+    this.chainId = domain.chainId.toString();
+    this.domain = domain;
+    this.randomId = meta.random_id.slice(2);
+    this.setOptions(classes_1.SessionID.asOptions({
+        sessionId: fct.sessionId,
+        builder: fct.builder,
+        externalSigners: fct.externalSigners,
+        name: typedData.message.meta.name,
+    }));
     const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
         const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
@@ -160,7 +175,12 @@ async function importEncodedFCT(calldata) {
         }, {});
     };
     const decodedFCT = getFCT(decoded);
-    const FCTOptions = (0, helpers_1.parseSessionID)(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+    const FCTOptions = classes_1.SessionID.asOptions({
+        sessionId: decodedFCT.tr.sessionId,
+        builder: decodedFCT.tr.builder,
+        name: "",
+        externalSigners: decodedFCT.tr.externalSigners,
+    });
     this.setOptions(FCTOptions);
     for (const [index, call] of decodedFCT.tr.mcall.entries()) {
         try {
@@ -198,7 +218,7 @@ async function importEncodedFCT(calldata) {
                     return { ...acc, [param.name]: value };
                 }, {}),
             });
-            const { options } = (0, helpers_1.parseCallID)(call.callId);
+            const { options } = classes_1.CallID.parse(call.callId);
             const callInput = {
                 nodeId: `node${index + 1}`,
                 plugin,

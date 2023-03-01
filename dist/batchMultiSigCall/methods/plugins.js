@@ -49,21 +49,22 @@ async function getPluginClass(index) {
 }
 exports.getPluginClass = getPluginClass;
 async function getPluginData(index) {
-    const plugin = await this.getPlugin(index);
-    const call = this.getCall(index);
+    const plugin = await this.getPlugin(index); // get the plugin from the index
+    const call = this.getCall(index); // get the call from the index
+    const input = {
+        to: call.to,
+        value: call.value,
+        methodParams: call.params
+            ? call.params.reduce((acc, param) => {
+                return { ...acc, [param.name]: param.value };
+            }, {})
+            : {},
+    };
     return {
         protocol: plugin.protocol,
         type: plugin.type,
         method: plugin.method,
-        input: {
-            to: call.to,
-            value: call.value,
-            methodParams: call.params
-                ? call.params.reduce((acc, param) => {
-                    return { ...acc, [param.name]: param.value };
-                }, {})
-                : {},
-        },
+        input,
     };
 }
 exports.getPluginData = getPluginData;
