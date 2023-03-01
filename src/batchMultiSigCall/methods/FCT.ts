@@ -1,4 +1,4 @@
-import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
+import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
 
@@ -31,13 +31,18 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
       }
     }
   }
-  return this._calls.get();
+  return callsCreated;
 }
 
 export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
-  return new Plugin({
+  const plugin = new Plugin({
     chainId: this.chainId,
   });
+  if (plugin instanceof Plugin) {
+    return plugin;
+  } else {
+    throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
+  }
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
@@ -53,6 +58,13 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
   const typedData = fct.typedData;
+  const domain = typedData.domain;
+  const { meta } = typedData.message;
+  this.batchMultiSigSelector = meta.selector;
+  this.version = meta.version;
+  this.chainId = domain.chainId.toString() as ChainId;
+  this.domain = domain;
+  this.randomId = meta.random_id.slice(2);
   this.setOptions(
     SessionID.asOptions({
       sessionId: fct.sessionId,

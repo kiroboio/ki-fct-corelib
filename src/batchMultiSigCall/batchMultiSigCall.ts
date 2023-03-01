@@ -14,7 +14,6 @@ import {
   createPlugin,
   decodeParams,
   exportFCT,
-  getAllRequiredApprovals,
   getCall,
   getComputedVariable,
   getExternalVariable,
@@ -31,6 +30,7 @@ import {
   BatchMultiSigCallConstructor,
   ComputedVariable,
   DecodedCalls,
+  IBatchMultiSigCallFCT,
   ICallDefaults,
   IComputed,
   IFCTOptions,
@@ -111,10 +111,10 @@ export class BatchMultiSigCall {
     }));
   }
 
-  // Set methods
   public setOptions = (options: DeepPartial<IFCTOptions>): IFCTOptions => {
     return this._options.set(options);
   };
+
   public setCallDefaults = (callDefault: DeepPartial<ICallDefaults>) => {
     return this._calls.setCallDefaults(callDefault);
   };
@@ -125,6 +125,7 @@ export class BatchMultiSigCall {
   // Plugin functions
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
+  public getPluginData = getPluginData;
   public createPlugin = createPlugin;
 
   // FCT Functions
@@ -134,10 +135,6 @@ export class BatchMultiSigCall {
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
-
-  // Utility functions
-  public getPluginData = getPluginData;
-  public getAllRequiredApprovals = getAllRequiredApprovals;
 
   // Variables
   public getVariable = getVariable;
@@ -151,4 +148,10 @@ export class BatchMultiSigCall {
 
   // Static methods
   static utils = utils;
+
+  static from = (input: IBatchMultiSigCallFCT) => {
+    const batchMultiSigCall = new BatchMultiSigCall();
+    batchMultiSigCall.importFCT(input);
+    return batchMultiSigCall;
+  };
 }

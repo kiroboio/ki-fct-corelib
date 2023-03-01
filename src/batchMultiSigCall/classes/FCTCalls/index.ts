@@ -75,23 +75,26 @@ export class FCTCalls {
     } else if ("abi" in call) {
       return await this.createWithEncodedData(call);
     } else {
-      const data = { ...call, nodeId: call.nodeId || generateNodeId() } satisfies IMSCallInputWithNodeId;
+      const data = { ...call, nodeId: call.nodeId || generateNodeId() };
       return this.addCall(data);
     }
   }
-
   public async createWithPlugin(callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId> {
+    if (!callWithPlugin.plugin) {
+      throw new Error("Plugin is required to create a call with plugin.");
+    }
+
     const pluginCall = await callWithPlugin.plugin.create();
-    if (pluginCall === undefined) {
+    if (!pluginCall) {
       throw new Error("Error creating call with plugin. Make sure input values are valid");
     }
 
-    const data = {
+    const data: IMSCallInputWithNodeId = {
       ...pluginCall,
       from: callWithPlugin.from,
       options: { ...pluginCall.options, ...callWithPlugin.options },
       nodeId: callWithPlugin.nodeId || generateNodeId(),
-    } satisfies IMSCallInputWithNodeId;
+    };
     return this.addCall(data);
   }
 
@@ -99,27 +102,30 @@ export class FCTCalls {
     const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
     const iface = new Interface(abi);
 
-    const {
-      name,
-      args,
-      value: txValue,
-      functionFragment: { inputs },
-    } = iface.parseTransaction({
-      data: encodedData,
-      value: typeof value === "string" ? value : "0",
-    });
+    try {
+      const {
+        name,
+        args,
+        functionFragment: { inputs },
+      } = iface.parseTransaction({
+        data: encodedData,
+        value: typeof value === "string" ? value : "0",
+      });
 
-    const data = {
-      from: callWithEncodedData.from,
-      to: callWithEncodedData.to,
-      method: name,
-      params: helpers.getParamsFromInputs(inputs, args),
-      options,
-      value: txValue?.toString(),
-      nodeId: nodeId || generateNodeId(),
-    } satisfies IMSCallInputWithNodeId;
+      const data = {
+        from: callWithEncodedData.from,
+        to: callWithEncodedData.to,
+        method: name,
+        params: helpers.getParamsFromInputs(inputs, args),
+        options,
+        value: value?.toString(),
+        nodeId: nodeId || generateNodeId(),
+      };
 
-    return this.addCall(data);
+      return this.addCall(data);
+    } catch {
+      throw new Error("Failed to parse encoded data");
+    }
   }
 
   public setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults {
