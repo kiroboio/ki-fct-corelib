@@ -1,6 +1,7 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { getAuthenticatorSignature, getCalldataForActuator } from "batchMultiSigCall/utils";
+import { getAllRequiredApprovals } from "batchMultiSigCall/utils/getAllRequiredApprovals";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import _ from "lodash";
@@ -16,8 +17,12 @@ export class FCTUtils extends FCTBase {
     super(FCT);
   }
 
-  get FCTData() {
+  private get FCTData() {
     return this.FCT.exportFCT();
+  }
+
+  public async getAllRequiredApprovals() {
+    return getAllRequiredApprovals(this.FCT);
   }
 
   public getCalldataForActuator({

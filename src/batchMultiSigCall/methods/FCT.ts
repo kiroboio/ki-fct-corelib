@@ -3,7 +3,7 @@ import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
-import { Flow, flows } from "../../constants";
+import { CALL_TYPE_MSG_REV, Flow, flows } from "../../constants";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
@@ -144,6 +144,9 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
         jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
         jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
         flow: getFlow(),
+        callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
+        falseMeansFail: meta.returned_false_means_fail,
+        permissions: meta.permissions.toString(),
       },
     };
 

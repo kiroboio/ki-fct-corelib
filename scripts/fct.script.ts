@@ -177,7 +177,7 @@ async function main() {
     gas: 462109,
   });
 
-  const requireApprovals = batchMultiSigCall.getAllRequiredApprovals();
+  const requireApprovals = batchMultiSigCall.utils.getAllRequiredApprovals();
   console.log(requireApprovals);
 
   console.log(batchMultiSigCall._options);
