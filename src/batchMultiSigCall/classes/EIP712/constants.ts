@@ -1,4 +1,6 @@
-export const EIP712Domain = [
+import { MessageTypeProperty } from "@metamask/eth-sig-util";
+
+export const EIP712Domain: MessageTypeProperty[] = [
   { name: "name", type: "string" },
   { name: "version", type: "string" },
   { name: "chainId", type: "uint256" },
@@ -6,7 +8,7 @@ export const EIP712Domain = [
   { name: "salt", type: "bytes32" },
 ];
 
-export const Meta = [
+export const Meta: MessageTypeProperty[] = [
   { name: "name", type: "string" },
   { name: "builder", type: "address" },
   { name: "selector", type: "bytes4" },
@@ -16,7 +18,7 @@ export const Meta = [
   { name: "auth_enabled", type: "bool" },
 ];
 
-export const Limits = [
+export const Limits: MessageTypeProperty[] = [
   { name: "valid_from", type: "uint40" },
   { name: "expires_at", type: "uint40" },
   { name: "gas_price_limit", type: "uint64" },
@@ -24,7 +26,7 @@ export const Limits = [
   { name: "blockable", type: "bool" },
 ];
 
-export const Computed = [
+export const Computed: MessageTypeProperty[] = [
   { name: "index", type: "uint256" },
   { name: "value", type: "uint256" },
   { name: "add", type: "uint256" },
@@ -35,7 +37,7 @@ export const Computed = [
   { name: "mod", type: "uint256" },
 ];
 
-export const Call = [
+export const Call: MessageTypeProperty[] = [
   { name: "call_index", type: "uint16" },
   { name: "payer_index", type: "uint16" },
   { name: "call_type", type: "string" },
@@ -52,13 +54,13 @@ export const Call = [
   { name: "method_interface", type: "string" },
 ];
 
-export const Recurrency = [
+export const Recurrency: MessageTypeProperty[] = [
   { name: "max_repeats", type: "uint16" },
   { name: "chill_time", type: "uint32" },
   { name: "accumetable", type: "bool" },
 ];
 
-export const Multisig = [
+export const Multisig: MessageTypeProperty[] = [
   { name: "external_signers", type: "address[]" },
   { name: "minimum_approvals", type: "uint8" },
 ];

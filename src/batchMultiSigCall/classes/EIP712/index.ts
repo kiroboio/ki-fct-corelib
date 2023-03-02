@@ -29,23 +29,21 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   },
 };
 
-interface EIP712Types {
-  [key: string]: MessageTypeProperty[];
-}
+const types = {
+  domain: EIP712Domain,
+  meta: Meta,
+  limits: Limits,
+  computed: Computed,
+  call: Call,
+  recurrency: Recurrency,
+  multisig: Multisig,
+} as const;
 
 export class EIP712 extends FCTBase {
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
   }
-  static types: EIP712Types = {
-    domain: EIP712Domain,
-    meta: Meta,
-    limits: Limits,
-    computed: Computed,
-    call: Call,
-    recurrency: Recurrency,
-    multisig: Multisig,
-  };
+  static types = types;
 
   static getTypedDataDomain(chainId: ChainId) {
     return TYPED_DATA_DOMAIN[chainId];
@@ -156,8 +154,8 @@ export class EIP712 extends FCTBase {
       { name: "meta", type: "Meta" },
       { name: "limits", type: "Limits" },
       ...additionalTypes,
-      ...this.getComputedPrimaryType(),
       ...this.getCallsPrimaryType(),
+      ...this.getComputedPrimaryType(),
     ];
   }
 
@@ -231,7 +229,7 @@ export class EIP712 extends FCTBase {
             from: this.FCT._variables.getValue(call.from, "address"),
             to: this.FCT._variables.getValue(call.to, "address"),
             to_ens: call.toENS || "",
-            eth_value: this.FCT._variables.getValue(call.to, "uint256", "0"),
+            eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
             gas_limit: gasLimit,
             permissions: 0,
             flow_control: flow,
