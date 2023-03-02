@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FCTUtils = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const utils_1 = require("batchMultiSigCall/utils");
+const getAllRequiredApprovals_1 = require("batchMultiSigCall/utils/getAllRequiredApprovals");
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
 const lodash_1 = __importDefault(require("lodash"));
@@ -18,6 +19,9 @@ class FCTUtils extends FCTBase_1.FCTBase {
     }
     get FCTData() {
         return this.FCT.exportFCT();
+    }
+    async getAllRequiredApprovals() {
+        return (0, getAllRequiredApprovals_1.getAllRequiredApprovals)(this.FCT);
     }
     getCalldataForActuator({ signatures, purgedFCT, investor, activator, }) {
         return (0, utils_1.getCalldataForActuator)({

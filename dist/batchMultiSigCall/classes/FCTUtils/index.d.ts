@@ -3,7 +3,8 @@ import { BatchMultiSigCall } from "methods";
 import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
     constructor(FCT: BatchMultiSigCall);
-    get FCTData(): import("types").IBatchMultiSigCallFCT;
+    private get FCTData();
+    getAllRequiredApprovals(): Promise<import("types").IRequiredApproval[]>;
     getCalldataForActuator({ signatures, purgedFCT, investor, activator, }: {
         signatures: SignatureLike[];
         purgedFCT: string;

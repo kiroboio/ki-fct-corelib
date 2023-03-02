@@ -125,6 +125,9 @@ function importFCT(fct) {
                 jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
                 jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
                 flow: getFlow(),
+                callType: constants_1.CALL_TYPE_MSG_REV[meta.call_type],
+                falseMeansFail: meta.returned_false_means_fail,
+                permissions: meta.permissions.toString(),
             },
         };
         this.create(callInput);

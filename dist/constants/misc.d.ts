@@ -21,4 +21,9 @@ export declare const CALL_TYPE_MSG: {
     VIEW_ONLY: string;
     LIBRARY: string;
 };
+export declare const CALL_TYPE_MSG_REV: {
+    readonly action: "ACTION";
+    readonly "view only": "VIEW_ONLY";
+    readonly library: "LIBRARY";
+};
 export declare const FCT_VAULT_ADDRESS: "FCT_VAULT_ADDRESS";
