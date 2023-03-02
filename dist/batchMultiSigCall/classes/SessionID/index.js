@@ -88,9 +88,17 @@ class SessionID {
     }
     static asStringFromExportFCT(exportFCT) {
         return this.asString({
-            salt: exportFCT.salt,
-            version: exportFCT.version,
+            salt: exportFCT.FCT.randomId,
+            version: exportFCT.FCT.version,
             options: exportFCT.FCT.options,
+        });
+    }
+    static fromFCT(FCT) {
+        return this.asOptions({
+            sessionId: FCT.sessionId,
+            builder: FCT.builder,
+            name: FCT.typedData.message.meta.name,
+            externalSigners: FCT.externalSigners,
         });
     }
 }

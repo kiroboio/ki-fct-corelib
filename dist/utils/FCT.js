@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllFCTPaths = exports.getVariablesAsBytes32 = exports.validateFCT = exports.getFCTMessageHash = exports.recoverAddressFromEIP712 = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const classes_1 = require("batchMultiSigCall/classes");
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
-const helpers_1 = require("../batchMultiSigCall/helpers");
 function validateFCTKeys(keys) {
     const validKeys = [
         "typeHash",
@@ -66,7 +66,11 @@ const validateFCT = (FCT, softValidation = false) => {
     }
     return {
         getOptions: () => {
-            const parsedSessionID = (0, helpers_1.parseSessionID)(FCT.sessionId, fctData.builder);
+            const parsedSessionID = classes_1.SessionID.asOptions({
+                builder: FCT.builder,
+                sessionId: FCT.sessionId,
+                name: "",
+            });
             return {
                 valid_from: parsedSessionID.validFrom,
                 expires_at: parsedSessionID.expiresAt,
@@ -105,7 +109,7 @@ const getAllFCTPaths = (fct) => {
         g.setNode(index.toString());
     });
     for (let i = 0; i < fct.mcall.length - 1; i++) {
-        const callID = (0, helpers_1.parseCallID)(fct.mcall[i].callId, true);
+        const callID = classes_1.CallID.parseWithNumbers(fct.mcall[i].callId);
         const jumpOnSuccess = callID.options.jumpOnSuccess;
         const jumpOnFail = callID.options.jumpOnFail;
         if (jumpOnSuccess === jumpOnFail) {

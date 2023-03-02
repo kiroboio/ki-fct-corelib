@@ -30,7 +30,6 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
-const helpers_1 = require("../helpers");
 const classes_1 = require("./classes");
 const constants_1 = require("./constants");
 const methods_1 = require("./methods");
@@ -42,20 +41,30 @@ class BatchMultiSigCall {
         this.batchMultiSigSelector = "0xf6407ddd";
         this.version = "0x010101";
         this.randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-        this._computed = [];
+        // Utils
+        this.utils = new classes_1.FCTUtils(this);
         this._options = new classes_1.Options();
-        // Set methods
+        this._variables = new classes_1.Variables(this);
+        this._eip712 = new classes_1.EIP712(this);
+        this._calls = new classes_1.FCTCalls(this, {
+            value: "0",
+            options: constants_1.DEFAULT_CALL_OPTIONS,
+        });
+        // Setters
         this.setOptions = (options) => {
             return this._options.set(options);
         };
         this.setCallDefaults = (callDefault) => {
             return this._calls.setCallDefaults(callDefault);
         };
-        // Add Computed
-        this.addComputed = methods_1.addComputed;
+        // Variables
+        this.addComputed = (computed) => {
+            return this._variables.addComputed(computed);
+        };
         // Plugin functions
         this.getPlugin = methods_1.getPlugin;
         this.getPluginClass = methods_1.getPluginClass;
+        this.getPluginData = methods_1.getPluginData;
         this.createPlugin = methods_1.createPlugin;
         // FCT Functions
         this.create = methods_1.create;
@@ -64,17 +73,6 @@ class BatchMultiSigCall {
         this.importFCT = methods_1.importFCT;
         this.importEncodedFCT = methods_1.importEncodedFCT;
         this.getCall = methods_1.getCall;
-        // Utility functions
-        this.getPluginData = methods_1.getPluginData;
-        this.getAllRequiredApprovals = methods_1.getAllRequiredApprovals;
-        // Variables
-        this.getVariable = methods_1.getVariable;
-        this.getOutputVariable = methods_1.getOutputVariable;
-        this.getExternalVariable = methods_1.getExternalVariable;
-        this.getComputedVariable = methods_1.getComputedVariable;
-        // Internal helper functions
-        this.decodeParams = methods_1.decodeParams;
-        this.handleVariableValue = methods_1.handleVariableValue;
         if (input.chainId) {
             this.chainId = input.chainId;
         }
@@ -93,10 +91,6 @@ class BatchMultiSigCall {
             this.setOptions(input.options);
         if (input.defaults)
             this.setCallDefaults(input.defaults);
-        this._calls = new classes_1.FCTCalls(this, {
-            value: "0",
-            options: constants_1.DEFAULT_CALL_OPTIONS,
-        });
     }
     // Getters
     get options() {
@@ -109,27 +103,17 @@ class BatchMultiSigCall {
         return this._calls.getWithDecodedVariables();
     }
     get computed() {
-        return this._computed;
+        return this._variables.computed;
     }
-    get convertedComputed() {
-        const handleVariable = (value) => {
-            if ((0, helpers_1.instanceOfVariable)(value)) {
-                return this.getVariable(value, "uint256");
-            }
-            return value;
-        };
-        return this._computed.map((c, i) => ({
-            index: (i + 1).toString(),
-            value: handleVariable(c.value),
-            add: handleVariable(c.add),
-            sub: handleVariable(c.sub),
-            mul: handleVariable(c.mul),
-            pow: handleVariable(c.pow),
-            div: handleVariable(c.div),
-            mod: handleVariable(c.mod),
-        }));
+    get computedWithValues() {
+        return this._variables.computedWithValues;
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;
-// Static methods
+// Static functions
 BatchMultiSigCall.utils = utils;
+BatchMultiSigCall.from = (input) => {
+    const batchMultiSigCall = new BatchMultiSigCall();
+    batchMultiSigCall.importFCT(input);
+    return batchMultiSigCall;
+};
