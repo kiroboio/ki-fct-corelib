@@ -9,12 +9,15 @@ import { BatchMultiSigCall } from "methods";
 import { TypedDataTypes } from "types";
 
 import { CallID } from "../CallID";
+import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { SessionID } from "../SessionID";
 
 export class FCTUtils extends FCTBase {
+  private _eip712: EIP712;
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
+    this._eip712 = new EIP712(FCT);
   }
 
   private get FCTData() {
@@ -46,7 +49,7 @@ export class FCTUtils extends FCTBase {
   }
 
   public getAuthenticatorSignature(): SignatureLike {
-    return getAuthenticatorSignature(this.FCT._eip712.getTypedData());
+    return getAuthenticatorSignature(this._eip712.getTypedData());
   }
 
   public recoverAddress(signature: SignatureLike): string | null {
@@ -186,14 +189,10 @@ export class FCTUtils extends FCTBase {
 
       for (const id of successors as string[]) {
         if (!isVisited[id]) {
-          // store current node
-          // in path[]
           localPathList.push(id);
 
           printAllPathsUtil(g, id, end, isVisited, localPathList);
 
-          // remove current node
-          // in path[]
           localPathList.splice(localPathList.indexOf(id), 1);
         }
       }

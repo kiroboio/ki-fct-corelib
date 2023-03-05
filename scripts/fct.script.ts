@@ -5,9 +5,8 @@ import { ethers } from "ethers";
 import fs from "fs";
 import util from "util";
 
-// import util from "util"
-import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 // import util from "util";
+import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -53,7 +52,7 @@ async function main() {
   transfer.input.set({
     to: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     methodParams: {
-      amount: "1",
+      amount: "1" + "0".repeat(18),
       from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
       to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     },
@@ -82,51 +81,21 @@ async function main() {
     },
   });
 
+  batchMultiSigCall.setCallDefaults({
+    from: vault,
+  });
+
   await batchMultiSigCall.createMultiple([
-    { plugin: transfer, from: vault, nodeId: "3" },
+    { plugin: transfer, nodeId: "3" },
     {
       plugin: erc721TransferFrom,
-      from: vault,
       nodeId: "4",
       options: {
         jumpOnFail: "",
       },
     },
     {
-      from: vault,
-      method: "transfer",
-      to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-      params: [
-        {
-          name: "data",
-          type: "tuple",
-          customType: true,
-          value: [
-            {
-              name: "to",
-              type: "address",
-              value: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-            },
-            {
-              name: "value",
-              type: "uint256",
-              value: { type: "external", id: 1 },
-            },
-            {
-              name: "value2",
-              type: "tuple",
-              customType: true,
-              value: [
-                {
-                  name: "to",
-                  type: "address",
-                  value: { type: "external", id: 2 },
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      plugin: aaveDeposit,
       nodeId: "5",
     },
   ]);
@@ -179,15 +148,6 @@ async function main() {
 
   const requireApprovals = batchMultiSigCall.utils.getAllRequiredApprovals();
   console.log(requireApprovals);
-
-  console.log(batchMultiSigCall._options);
-
-  // const fees = utils.getPaymentPerPayer({
-  //   fct: signedFCT,
-  //   kiroPriceInETH: "34149170958632548614943",
-  // });
-
-  // console.log(fees);
 
   fs.writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
 }

@@ -1,7 +1,7 @@
 import { BatchMultiSigCall } from "methods";
 
 export class FCTBase {
-  public FCT: BatchMultiSigCall;
+  protected FCT: BatchMultiSigCall;
   constructor(FCT: BatchMultiSigCall) {
     this.FCT = FCT;
   }

@@ -1,6 +1,7 @@
-import { IBatchMultiSigCallFCT, RequiredFCTOptions } from "types";
+import { BatchMultiSigCall } from "methods";
+import { RequiredFCTOptions } from "types";
 
-import { ExportFCT } from "../ExportFCT";
+import { FCTBase } from "../FCTBase";
 
 const sessionIdFlag = {
   accumetable: 0x1,
@@ -25,7 +26,19 @@ const valueWithPadStart = (value: string | number, padStart: number) => {
 // 16 - Gas price limit
 // 2 - Flags
 
-export class SessionID {
+export class SessionID extends FCTBase {
+  constructor(FCT: BatchMultiSigCall) {
+    super(FCT);
+  }
+
+  public asString(): string {
+    return SessionID.asString({
+      salt: this.FCT.randomId,
+      version: this.FCT.version,
+      options: this.FCT.options,
+    });
+  }
+
   static asString({ salt, version, options }: { salt: string; version: string; options: RequiredFCTOptions }): string {
     const currentDate = new Date();
     const { recurrency, multisig } = options;
@@ -102,22 +115,5 @@ export class SessionID {
         externalSigners,
       },
     };
-  }
-
-  static asStringFromExportFCT(exportFCT: ExportFCT): string {
-    return this.asString({
-      salt: exportFCT.FCT.randomId,
-      version: exportFCT.FCT.version,
-      options: exportFCT.FCT.options,
-    });
-  }
-
-  static fromFCT(FCT: IBatchMultiSigCallFCT): RequiredFCTOptions {
-    return this.asOptions({
-      sessionId: FCT.sessionId,
-      builder: FCT.builder,
-      name: FCT.typedData.message.meta.name,
-      externalSigners: FCT.externalSigners,
-    });
   }
 }

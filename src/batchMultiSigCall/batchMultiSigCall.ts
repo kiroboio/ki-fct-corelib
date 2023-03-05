@@ -32,8 +32,9 @@ import {
 import * as utils from "./utils";
 
 export class BatchMultiSigCall {
-  public FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
-  public FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
+  protected FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
+  protected FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
+
   public batchMultiSigSelector = "0xf6407ddd";
   public version = "0x010101";
   public chainId: ChainId;
@@ -42,10 +43,9 @@ export class BatchMultiSigCall {
 
   // Utils
   public utils = new FCTUtils(this);
-  public _options = new Options();
-  public _variables = new Variables(this);
-  public _eip712 = new EIP712(this);
-  public _calls = new FCTCalls(this, {
+  protected _options = new Options();
+  protected _variables = new Variables(this);
+  protected _calls = new FCTCalls(this, {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
   });
@@ -54,7 +54,7 @@ export class BatchMultiSigCall {
     if (input.chainId) {
       this.chainId = input.chainId;
     } else {
-      this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
+      this.chainId = "5"; // @todo This should be changed to mainnet in the future. For now we use Goerli
     }
     if (input.domain) {
       this.domain = input.domain;
