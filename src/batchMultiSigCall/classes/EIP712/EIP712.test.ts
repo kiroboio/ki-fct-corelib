@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { BatchMultiSigCall } from "methods";
-import util from "util";
 
 import { EIP712 } from ".";
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -86,8 +85,6 @@ describe("BatchMultiSigCall EIP712", () => {
   });
 
   it("should generate the correct EIP712 typed data message", () => {
-    console.log(util.inspect(FCT.decodedCalls, false, null, true /* enable colors */));
-
     const { meta, limits, transaction_1, transaction_2, computed_1 } = eip712.getTypedDataMessage();
     expect(meta).to.deep.equal({
       name: "",
