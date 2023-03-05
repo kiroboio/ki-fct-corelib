@@ -6,7 +6,7 @@ import fs from "fs";
 import util from "util";
 
 // import util from "util";
-import { BatchMultiSigCall, TypedDataTypes, utils } from "../src";
+import { BatchMultiSigCall, TypedDataTypes } from "../src";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -139,8 +139,7 @@ async function main() {
 
   // console.log("gasEstimation", gasEstimation);
 
-  const kiroPayment = utils.getKIROPayment({
-    fct: signedFCT,
+  const kiroPayment = batchMultiSigCall.utils.getKIROPayment({
     kiroPriceInETH: "38270821632831754769812",
     gasPrice: 1580000096,
     gas: 462109,
