@@ -249,7 +249,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
         printAllPathsUtil(g, start, end, isVisited, pathList);
         return allPaths;
     }
-    async estimateFCTGasCost({ callData, batchMultiSigCallAddress, rpcUrl, }) {
+    async estimateFCTCost({ callData, batchMultiSigCallAddress, rpcUrl, }) {
         const fct = this.FCTData;
         const FCTOverhead = 135500;
         const callOverhead = 16370;

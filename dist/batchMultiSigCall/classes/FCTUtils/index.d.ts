@@ -36,7 +36,7 @@ export declare class FCTUtils extends FCTBase {
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
-    estimateFCTGasCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
+    estimateFCTCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
         callData: string;
         batchMultiSigCallAddress: string;
         rpcUrl: string;
