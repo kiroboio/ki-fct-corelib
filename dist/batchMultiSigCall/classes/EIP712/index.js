@@ -51,6 +51,15 @@ const TYPED_DATA_DOMAIN = {
         salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
     },
 };
+const types = {
+    domain: constants_3.EIP712Domain,
+    meta: constants_3.Meta,
+    limits: constants_3.Limits,
+    computed: constants_3.Computed,
+    call: constants_3.Call,
+    recurrency: constants_3.Recurrency,
+    multisig: constants_3.Multisig,
+};
 class EIP712 extends FCTBase_1.FCTBase {
     constructor(FCT) {
         super(FCT);
@@ -149,8 +158,8 @@ class EIP712 extends FCTBase_1.FCTBase {
             { name: "meta", type: "Meta" },
             { name: "limits", type: "Limits" },
             ...additionalTypes,
-            ...this.getComputedPrimaryType(),
             ...this.getCallsPrimaryType(),
+            ...this.getComputedPrimaryType(),
         ];
     }
     getCallsPrimaryType() {
@@ -167,10 +176,7 @@ class EIP712 extends FCTBase_1.FCTBase {
     }
     getTransactionTypedDataMessage() {
         return this.FCT.decodedCalls.reduce((acc, call, index) => {
-            let paramsData = {};
-            if (call.params) {
-                paramsData = helpers.getParams(call.params);
-            }
+            const paramsData = call.params ? helpers.getParams(call.params) : {};
             const options = call.options || {};
             const gasLimit = options.gasLimit ?? "0";
             const flow = options.flow ? constants_2.flows[options.flow].text : "continue on success, revert on fail";
@@ -206,7 +212,7 @@ class EIP712 extends FCTBase_1.FCTBase {
                         from: this.FCT._variables.getValue(call.from, "address"),
                         to: this.FCT._variables.getValue(call.to, "address"),
                         to_ens: call.toENS || "",
-                        eth_value: this.FCT._variables.getValue(call.to, "uint256", "0"),
+                        eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
                         gas_limit: gasLimit,
                         permissions: 0,
                         flow_control: flow,
@@ -222,12 +228,4 @@ class EIP712 extends FCTBase_1.FCTBase {
     }
 }
 exports.EIP712 = EIP712;
-EIP712.types = {
-    domain: constants_3.EIP712Domain,
-    meta: constants_3.Meta,
-    limits: constants_3.Limits,
-    computed: constants_3.Computed,
-    call: constants_3.Call,
-    recurrency: constants_3.Recurrency,
-    multisig: constants_3.Multisig,
-};
+EIP712.types = types;

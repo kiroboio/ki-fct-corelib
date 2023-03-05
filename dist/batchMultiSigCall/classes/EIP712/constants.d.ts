@@ -1,28 +1,8 @@
-export declare const EIP712Domain: {
-    name: string;
-    type: string;
-}[];
-export declare const Meta: {
-    name: string;
-    type: string;
-}[];
-export declare const Limits: {
-    name: string;
-    type: string;
-}[];
-export declare const Computed: {
-    name: string;
-    type: string;
-}[];
-export declare const Call: {
-    name: string;
-    type: string;
-}[];
-export declare const Recurrency: {
-    name: string;
-    type: string;
-}[];
-export declare const Multisig: {
-    name: string;
-    type: string;
-}[];
+import { MessageTypeProperty } from "@metamask/eth-sig-util";
+export declare const EIP712Domain: MessageTypeProperty[];
+export declare const Meta: MessageTypeProperty[];
+export declare const Limits: MessageTypeProperty[];
+export declare const Computed: MessageTypeProperty[];
+export declare const Call: MessageTypeProperty[];
+export declare const Recurrency: MessageTypeProperty[];
+export declare const Multisig: MessageTypeProperty[];

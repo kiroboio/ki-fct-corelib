@@ -43,9 +43,8 @@ class BatchMultiSigCall {
         this.randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
         // Utils
         this.utils = new classes_1.FCTUtils(this);
-        this._options = new classes_1.Options();
         this._variables = new classes_1.Variables(this);
-        this._eip712 = new classes_1.EIP712(this);
+        this._options = new classes_1.Options();
         this._calls = new classes_1.FCTCalls(this, {
             value: "0",
             options: constants_1.DEFAULT_CALL_OPTIONS,
@@ -77,7 +76,7 @@ class BatchMultiSigCall {
             this.chainId = input.chainId;
         }
         else {
-            this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
+            this.chainId = "5"; // @todo This should be changed to mainnet in the future. For now we use Goerli
         }
         if (input.domain) {
             this.domain = input.domain;

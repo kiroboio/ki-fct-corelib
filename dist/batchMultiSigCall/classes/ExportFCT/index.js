@@ -28,6 +28,7 @@ const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const utils_1 = require("ethers/lib/utils");
 const handlers_1 = require("../../helpers/handlers");
 const CallID_1 = require("../CallID");
+const EIP712_1 = require("../EIP712");
 const FCTBase_1 = require("../FCTBase");
 const Options_1 = require("../Options");
 const SessionID_1 = require("../SessionID");
@@ -36,19 +37,20 @@ class ExportFCT extends FCTBase_1.FCTBase {
     constructor(FCT) {
         super(FCT);
         this.calls = FCT.decodedCalls;
+        this._eip712 = new EIP712_1.EIP712(FCT);
         if (this.FCT.calls.length === 0) {
             throw new Error("FCT has no calls");
         }
         Options_1.Options.verify(this.FCT.options);
     }
     get typedData() {
-        return this.FCT._eip712.getTypedData();
+        return this._eip712.getTypedData();
     }
     get mcall() {
         return this.getCalls();
     }
     get sessionId() {
-        return SessionID_1.SessionID.asStringFromExportFCT(this);
+        return new SessionID_1.SessionID(this.FCT).asString();
     }
     get() {
         return {
