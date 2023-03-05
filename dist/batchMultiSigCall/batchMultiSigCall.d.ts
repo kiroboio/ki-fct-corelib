@@ -1,23 +1,22 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { ethers } from "ethers";
 import { DeepPartial } from "../types";
-import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
+import { FCTCalls, FCTUtils, Options, Variables } from "./classes";
 import { create, createMultiple, createPlugin, exportFCT, getCall, getPlugin, getPluginClass, getPluginData, importEncodedFCT, importFCT } from "./methods";
 import { BatchMultiSigCallConstructor, DecodedCalls, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
 import * as utils from "./utils";
 export declare class BatchMultiSigCall {
-    FCT_Controller: ethers.utils.Interface;
-    FCT_BatchMultiSigCall: ethers.utils.Interface;
+    protected FCT_Controller: ethers.utils.Interface;
+    protected FCT_BatchMultiSigCall: ethers.utils.Interface;
     batchMultiSigSelector: string;
     version: string;
     chainId: ChainId;
     domain: TypedDataDomain;
     randomId: string;
     utils: FCTUtils;
-    _options: Options;
     _variables: Variables;
-    _eip712: EIP712;
-    _calls: FCTCalls;
+    protected _options: Options;
+    protected _calls: FCTCalls;
     constructor(input?: BatchMultiSigCallConstructor);
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];

@@ -1,6 +1,9 @@
-import { IBatchMultiSigCallFCT, RequiredFCTOptions } from "types";
-import { ExportFCT } from "../ExportFCT";
-export declare class SessionID {
+import { BatchMultiSigCall } from "methods";
+import { RequiredFCTOptions } from "types";
+import { FCTBase } from "../FCTBase";
+export declare class SessionID extends FCTBase {
+    constructor(FCT: BatchMultiSigCall);
+    asString(): string;
     static asString({ salt, version, options }: {
         salt: string;
         version: string;
@@ -30,6 +33,4 @@ export declare class SessionID {
             externalSigners: string[];
         };
     };
-    static asStringFromExportFCT(exportFCT: ExportFCT): string;
-    static fromFCT(FCT: IBatchMultiSigCallFCT): RequiredFCTOptions;
 }

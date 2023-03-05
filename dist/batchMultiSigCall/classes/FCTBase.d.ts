@@ -1,5 +1,5 @@
 import { BatchMultiSigCall } from "methods";
 export declare class FCTBase {
-    FCT: BatchMultiSigCall;
+    protected FCT: BatchMultiSigCall;
     constructor(FCT: BatchMultiSigCall);
 }

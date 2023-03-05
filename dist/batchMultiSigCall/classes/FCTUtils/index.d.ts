@@ -2,6 +2,7 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { BatchMultiSigCall } from "methods";
 import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
+    private _eip712;
     constructor(FCT: BatchMultiSigCall);
     private get FCTData();
     getAllRequiredApprovals(): Promise<import("types").IRequiredApproval[]>;
@@ -35,5 +36,29 @@ export declare class FCTUtils extends FCTBase {
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
+    estimateFCTGasCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
+        callData: string;
+        batchMultiSigCallAddress: string;
+        rpcUrl: string;
+    }): Promise<string>;
+    getKIROPayment: ({ kiroPriceInETH, gasPrice, gas, }: {
+        kiroPriceInETH: string;
+        gasPrice: number;
+        gas: number;
+    }) => {
+        vault: string;
+        amountInKIRO: string;
+        amountInETH: string;
+    };
+    getPaymentPerPayer: ({ signatures, gasPrice, kiroPriceInETH, penalty, }: {
+        signatures: SignatureLike[];
+        gasPrice?: number | undefined;
+        kiroPriceInETH: string;
+        penalty?: number | undefined;
+    }) => {
+        payer: string;
+        amount: string;
+        amountInETH: string;
+    }[];
     private validateFCTKeys;
 }

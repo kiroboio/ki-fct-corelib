@@ -3,12 +3,17 @@ import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data
 import { BatchMultiSigCall } from "methods";
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "types";
 import { FCTBase } from "../FCTBase";
-interface EIP712Types {
-    [key: string]: MessageTypeProperty[];
-}
 export declare class EIP712 extends FCTBase {
     constructor(FCT: BatchMultiSigCall);
-    static types: EIP712Types;
+    static types: {
+        readonly domain: MessageTypeProperty[];
+        readonly meta: MessageTypeProperty[];
+        readonly limits: MessageTypeProperty[];
+        readonly computed: MessageTypeProperty[];
+        readonly call: MessageTypeProperty[];
+        readonly recurrency: MessageTypeProperty[];
+        readonly multisig: MessageTypeProperty[];
+    };
     static getTypedDataDomain(chainId: ChainId): TypedDataDomain;
     getTypedData(): BatchMultiSigCallTypedData;
     getTypedDataMessage(): TypedDataMessage;
@@ -20,4 +25,3 @@ export declare class EIP712 extends FCTBase {
     private getComputedPrimaryType;
     private getTransactionTypedDataMessage;
 }
-export {};
