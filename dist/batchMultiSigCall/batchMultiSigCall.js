@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,80 +30,59 @@ exports.BatchMultiSigCall = void 0;
 const ethers_1 = require("ethers");
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
 const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
-const helpers_1 = require("../helpers");
+const classes_1 = require("./classes");
 const constants_1 = require("./constants");
-const fct_1 = require("./helpers/fct");
 const methods_1 = require("./methods");
-const computed_1 = require("./methods/computed");
+const utils = __importStar(require("./utils"));
 class BatchMultiSigCall {
     constructor(input = {}) {
         this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
         this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.batchMultiSigSelector = "0xf6407ddd";
         this.version = "0x010101";
-        this._computed = [];
-        this._calls = [];
-        this._options = {
-            maxGasPrice: "30000000000",
-            validFrom: (0, helpers_1.getDate)(),
-            expiresAt: (0, helpers_1.getDate)(7),
-            purgeable: false,
-            blockable: true,
-            builder: "0x0000000000000000000000000000000000000000",
-            authEnabled: true,
-        };
-        this._callDefault = {
+        this.randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+        // Utils
+        this.utils = new classes_1.FCTUtils(this);
+        this._variables = new classes_1.Variables(this);
+        this._options = new classes_1.Options();
+        this._calls = new classes_1.FCTCalls(this, {
             value: "0",
             options: constants_1.DEFAULT_CALL_OPTIONS,
+        });
+        // Setters
+        this.setOptions = (options) => {
+            return this._options.set(options);
         };
-        // Set methods
-        this.setOptions = methods_1.setOptions;
-        this.setCallDefaults = methods_1.setCallDefaults;
-        // Add Computed
-        this.addComputed = computed_1.addComputed;
+        this.setCallDefaults = (callDefault) => {
+            return this._calls.setCallDefaults(callDefault);
+        };
+        // Variables
+        this.addComputed = (computed) => {
+            return this._variables.addComputed(computed);
+        };
         // Plugin functions
         this.getPlugin = methods_1.getPlugin;
         this.getPluginClass = methods_1.getPluginClass;
+        this.getPluginData = methods_1.getPluginData;
         this.createPlugin = methods_1.createPlugin;
         // FCT Functions
         this.create = methods_1.create;
-        this.createWithEncodedData = methods_1.createWithEncodedData;
-        this.createWithPlugin = methods_1.createWithPlugin;
         this.createMultiple = methods_1.createMultiple;
         this.exportFCT = methods_1.exportFCT;
         this.importFCT = methods_1.importFCT;
         this.importEncodedFCT = methods_1.importEncodedFCT;
         this.getCall = methods_1.getCall;
-        // Utility functions
-        this.getPluginData = methods_1.getPluginData;
-        this.getAllRequiredApprovals = methods_1.getAllRequiredApprovals;
-        // Variables
-        this.getVariable = methods_1.getVariable;
-        this.getOutputVariable = methods_1.getOutputVariable;
-        this.getExternalVariable = methods_1.getExternalVariable;
-        this.getComputedVariable = methods_1.getComputedVariable;
-        // Internal helper functions
-        this.createTypedData = methods_1.createTypedData;
-        this.getParamsFromCall = methods_1.getParamsFromCall;
-        this.handleTo = methods_1.handleTo;
-        this.handleValue = methods_1.handleValue;
-        this.decodeParams = methods_1.decodeParams;
-        // Validation functions
-        this.verifyCall = methods_1.verifyCall;
-        // Getter functions
-        this._getDecodedCalls = methods_1._getDecodedCalls;
-        this._getCalls = methods_1._getCalls;
         if (input.chainId) {
             this.chainId = input.chainId;
         }
         else {
-            this.chainId = "5"; // For now we default to Goerli. TODO: Change this to mainnet
+            this.chainId = "5"; // @todo This should be changed to mainnet in the future. For now we use Goerli
         }
         if (input.domain) {
             this.domain = input.domain;
         }
         else {
-            this.domain = fct_1.TYPED_DATA_DOMAIN[this.chainId];
+            this.domain = classes_1.EIP712.getTypedDataDomain(this.chainId);
         }
         if (input.version)
             this.version = input.version;
@@ -91,49 +93,26 @@ class BatchMultiSigCall {
     }
     // Getters
     get options() {
-        return {
-            ...this._options,
-            name: this._options.name || "",
-            recurrency: {
-                maxRepeats: this._options.recurrency?.maxRepeats || "1",
-                chillTime: this._options.recurrency?.chillTime || "0",
-                accumetable: this._options.recurrency?.accumetable || false,
-            },
-            multisig: {
-                externalSigners: this._options.multisig?.externalSigners || [],
-                minimumApprovals: this._options.multisig?.minimumApprovals || "1",
-            },
-        };
+        return this._options.get();
     }
     get calls() {
-        return this._getCalls();
+        return this._calls.get();
     }
     get decodedCalls() {
-        return this._getDecodedCalls();
-    }
-    get computedVariables() {
-        return [];
+        return this._calls.getWithDecodedVariables();
     }
     get computed() {
-        return this._computed;
+        return this._variables.computed;
     }
-    get convertedComputed() {
-        const handleVariable = (value) => {
-            if ((0, helpers_1.instanceOfVariable)(value)) {
-                return this.getVariable(value, "uint256");
-            }
-            return value;
-        };
-        return this._computed.map((c, i) => ({
-            index: (i + 1).toString(),
-            value: handleVariable(c.value),
-            add: handleVariable(c.add),
-            sub: handleVariable(c.sub),
-            mul: handleVariable(c.mul),
-            pow: handleVariable(c.pow),
-            div: handleVariable(c.div),
-            mod: handleVariable(c.mod),
-        }));
+    get computedWithValues() {
+        return this._variables.computedWithValues;
     }
 }
 exports.BatchMultiSigCall = BatchMultiSigCall;
+// Static functions
+BatchMultiSigCall.utils = utils;
+BatchMultiSigCall.from = (input) => {
+    const batchMultiSigCall = new BatchMultiSigCall();
+    batchMultiSigCall.importFCT(input);
+    return batchMultiSigCall;
+};

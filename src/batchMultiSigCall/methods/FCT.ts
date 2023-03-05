@@ -1,62 +1,22 @@
-import { AllPlugins, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
-import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
-import _ from "lodash";
 
 import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
-import { Flow, flows } from "../../constants";
-import { DeepPartial, Param, RequiredKeys } from "../../types";
+import { CALL_TYPE_MSG_REV, Flow, flows } from "../../constants";
+import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import {
-  getSessionId,
-  getUsedStructTypes,
-  handleData,
-  handleEnsHash,
-  handleFunctionSignature,
-  handleTypes,
-  manageCallId,
-  parseCallID,
-  parseSessionID,
-  verifyOptions,
-} from "../helpers";
-import { getParamsFromInputs } from "../helpers/fct";
+import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
 import {
   FCTCall,
   IBatchMultiSigCallFCT,
-  ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
-  IMSCallWithEncodedData,
-  IWithPlugin,
   TypedDataMessageTransaction,
 } from "../types";
-import { getAuthenticatorSignature } from "../utils";
 
-// Generate nodeId for a call
-export function generateNodeId(): string {
-  return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
-
-export async function create(this: BatchMultiSigCall, callInput: FCTCall): Promise<IMSCallInputWithNodeId> {
-  if ("plugin" in callInput) {
-    return await this.createWithPlugin(callInput);
-  } else if ("abi" in callInput) {
-    return await this.createWithEncodedData(callInput);
-  } else {
-    // Else we create a call with the inputs
-    const data = { ...callInput, nodeId: callInput.nodeId || generateNodeId() } satisfies RequiredKeys<
-      IMSCallInput,
-      "nodeId"
-    >;
-
-    // Before adding the call, we check if it is valid
-    this.verifyCall(data);
-
-    this._calls.push(data);
-
-    return data;
-  }
+export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
+  return this._calls.create(call);
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {
@@ -71,70 +31,18 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
       }
     }
   }
-  return this._calls;
-}
-
-export async function createWithPlugin(
-  this: BatchMultiSigCall,
-  callWithPlugin: IWithPlugin
-): Promise<IMSCallInputWithNodeId> {
-  const pluginCall = await callWithPlugin.plugin.create();
-  if (pluginCall === undefined) {
-    throw new Error("Error creating call with plugin. Make sure input values are valid");
-  }
-
-  const data = {
-    ...pluginCall,
-    from: callWithPlugin.from,
-    options: { ...pluginCall.options, ...callWithPlugin.options },
-    nodeId: callWithPlugin.nodeId || generateNodeId(),
-  } satisfies IMSCallInputWithNodeId;
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(data);
-  this._calls.push(data);
-
-  return data;
-}
-
-export async function createWithEncodedData(
-  this: BatchMultiSigCall,
-  callWithEncodedData: IMSCallWithEncodedData
-): Promise<IMSCallInputWithNodeId> {
-  const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-  const iface = new ethers.utils.Interface(abi);
-
-  const {
-    name,
-    args,
-    value: txValue,
-    functionFragment: { inputs },
-  } = iface.parseTransaction({
-    data: encodedData,
-    value: typeof value === "string" ? value : "0",
-  });
-
-  const data = {
-    from: callWithEncodedData.from,
-    to: callWithEncodedData.to,
-    method: name,
-    params: getParamsFromInputs(inputs, args),
-    options,
-    value: txValue?.toString(),
-    nodeId: nodeId || generateNodeId(),
-  } satisfies IMSCallInputWithNodeId;
-
-  // Before adding the call, we check if it is valid
-  this.verifyCall(data);
-  this._calls.push(data);
-
-  return data;
+  return callsCreated;
 }
 
 export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
-  return new Plugin({
+  const plugin = new Plugin({
     chainId: this.chainId,
   });
+  if (plugin instanceof Plugin) {
+    return plugin;
+  } else {
+    throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
+  }
 }
 
 export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
@@ -145,65 +53,26 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
 }
 
 export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  const calls = this.decodedCalls;
-
-  if (this.calls.length === 0) {
-    throw new Error("No calls added");
-  }
-
-  verifyOptions(this._options);
-
-  const salt: string = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-  const typedData = this.createTypedData(salt, this.version);
-
-  const sessionId: string = getSessionId(salt, this.version, this.options);
-
-  const mcall = calls.map((call, index) => {
-    const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
-
-    return {
-      typeHash: utils.hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: handleEnsHash(call),
-      functionSignature: handleFunctionSignature(call),
-      value: this.handleValue(call),
-      callId: manageCallId(calls, call, index),
-      from: typeof call.from === "string" ? call.from : this.getVariable(call.from, "address"),
-      to: this.handleTo(call),
-      data: handleData(call),
-      types: handleTypes(call),
-      typedHashes:
-        usedTypeStructs.length > 0
-          ? usedTypeStructs.map((hash) => utils.hexlify(TypedDataUtils.hashType(hash, typedData.types)))
-          : [],
-    };
-  });
-
-  const FCTData = {
-    typedData,
-    builder: this.options.builder || "0x0000000000000000000000000000000000000000",
-    typeHash: utils.hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
-    sessionId,
-    nameHash: utils.id(this.options.name || ""),
-    mcall,
-    variables: [],
-    externalSigners: [],
-    signatures: [getAuthenticatorSignature(typedData)],
-    computed: this.convertedComputed.map((c) => {
-      // Return everything except the index
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { index, ...rest } = c;
-      return rest;
-    }),
-  };
-
-  return FCTData;
+  return new ExportFCT(this).get();
 }
 
 export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
-  // Here we import FCT and add all the data inside BatchMultiSigCall
-  const options = parseSessionID(fct.sessionId, fct.builder, fct.externalSigners);
-  this.setOptions(options);
   const typedData = fct.typedData;
+  const domain = typedData.domain;
+  const { meta } = typedData.message;
+  this.batchMultiSigSelector = meta.selector;
+  this.version = meta.version;
+  this.chainId = domain.chainId.toString() as ChainId;
+  this.domain = domain;
+  this.randomId = meta.random_id.slice(2);
+  this.setOptions(
+    SessionID.asOptions({
+      sessionId: fct.sessionId,
+      builder: fct.builder,
+      externalSigners: fct.externalSigners,
+      name: typedData.message.meta.name,
+    })
+  );
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
@@ -249,7 +118,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
       const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
 
-      params = getParamsFromInputs(updatedInputs, decodedResult);
+      params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
     }
 
     const getFlow = () => {
@@ -275,6 +144,9 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
         jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
         jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
         flow: getFlow(),
+        callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
+        falseMeansFail: meta.returned_false_means_fail,
+        permissions: meta.permissions.toString(),
       },
     };
 
@@ -344,7 +216,12 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     activator: string;
   } = getFCT(decoded);
 
-  const FCTOptions = parseSessionID(decodedFCT.tr.sessionId, decodedFCT.tr.builder);
+  const FCTOptions = SessionID.asOptions({
+    sessionId: decodedFCT.tr.sessionId,
+    builder: decodedFCT.tr.builder,
+    name: "",
+    externalSigners: decodedFCT.tr.externalSigners,
+  });
   this.setOptions(FCTOptions);
 
   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
@@ -397,9 +274,9 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
         }, {}),
       });
 
-      const { options } = parseCallID(call.callId);
+      const { options } = CallID.parse(call.callId);
 
-      const callInput: any = {
+      const callInput = {
         nodeId: `node${index + 1}`,
         plugin,
         from: call.from,
@@ -416,9 +293,4 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
   }
 
   return this.calls;
-}
-
-export function setCallDefaults(this: BatchMultiSigCall, callDefault: DeepPartial<ICallDefaults>) {
-  this._callDefault = _.merge({}, this._callDefault, callDefault);
-  return this._callDefault;
 }

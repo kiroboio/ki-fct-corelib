@@ -29,4 +29,11 @@ export const CALL_TYPE_MSG = {
   LIBRARY: "library",
 };
 
+// Reverse Call Type MSG
+export const CALL_TYPE_MSG_REV = {
+  action: "ACTION",
+  "view only": "VIEW_ONLY",
+  library: "LIBRARY",
+} as const;
+
 export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;
