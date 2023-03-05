@@ -209,7 +209,7 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
-  public async estimateFCTGasCost({
+  public async estimateFCTCost({
     callData,
     batchMultiSigCallAddress,
     rpcUrl,
