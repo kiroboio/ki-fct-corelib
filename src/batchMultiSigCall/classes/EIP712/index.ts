@@ -9,7 +9,6 @@ import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDat
 import { CALL_TYPE_MSG, flows } from "../../../constants";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
-import { Variables } from "../Variables";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency } from "./constants";
 import * as helpers from "./helpers";
 
@@ -41,10 +40,8 @@ const types = {
 } as const;
 
 export class EIP712 extends FCTBase {
-  private variables: Variables;
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
-    this.variables = new Variables(FCT);
   }
   static types = types;
 
@@ -178,10 +175,7 @@ export class EIP712 extends FCTBase {
 
   private getTransactionTypedDataMessage() {
     return this.FCT.decodedCalls.reduce((acc: object, call, index: number) => {
-      let paramsData = {};
-      if (call.params) {
-        paramsData = helpers.getParams(call.params);
-      }
+      const paramsData = call.params ? helpers.getParams(call.params) : {};
 
       const options = call.options || {};
       const gasLimit = options.gasLimit ?? "0";
@@ -229,10 +223,10 @@ export class EIP712 extends FCTBase {
             call_index: index + 1,
             payer_index: index + 1,
             call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-            from: this.variables.getValue(call.from, "address"),
-            to: this.variables.getValue(call.to, "address"),
+            from: this.FCT._variables.getValue(call.from, "address"),
+            to: this.FCT._variables.getValue(call.to, "address"),
             to_ens: call.toENS || "",
-            eth_value: this.variables.getValue(call.value, "uint256", "0"),
+            eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
             gas_limit: gasLimit,
             permissions: 0,
             flow_control: flow,

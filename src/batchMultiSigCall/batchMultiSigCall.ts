@@ -43,8 +43,8 @@ export class BatchMultiSigCall {
 
   // Utils
   public utils = new FCTUtils(this);
+  public _variables = new Variables(this);
   protected _options = new Options();
-  protected _variables = new Variables(this);
   protected _calls = new FCTCalls(this, {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,

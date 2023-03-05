@@ -1,11 +1,13 @@
 import { expect } from "chai";
 import { BatchMultiSigCall } from "methods";
+import util from "util";
 
 import { EIP712 } from ".";
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
 describe("BatchMultiSigCall EIP712", () => {
   let FCT: BatchMultiSigCall;
+  let eip712: EIP712;
   before(async () => {
     FCT = new BatchMultiSigCall({
       chainId: "5",
@@ -54,20 +56,21 @@ describe("BatchMultiSigCall EIP712", () => {
         },
       ],
     });
+    eip712 = new EIP712(FCT);
   });
 
   it("should generate the correct EIP712 domain", () => {
-    const domain = FCT._eip712.getTypedDataDomain();
+    const domain = eip712.getTypedDataDomain();
     expect(domain).to.deep.equal(EIP712.getTypedDataDomain("5"));
   });
 
   it("should generate the correct EIP712 primary type", () => {
-    const primaryType = FCT._eip712.getPrimaryType();
+    const primaryType = eip712.getPrimaryType();
     expect(primaryType).to.deep.equal("BatchMultiSigCall");
   });
 
   it("should generate the correct EIP712 typed data types", () => {
-    const { EIP712Domain, Meta, Limits, BatchMultiSigCall, Call, Computed } = FCT._eip712.getTypedDataTypes();
+    const { EIP712Domain, Meta, Limits, BatchMultiSigCall, Call, Computed } = eip712.getTypedDataTypes();
     expect(EIP712Domain).to.deep.equal(EIP712.types.domain);
     expect(Meta).to.deep.equal(EIP712.types.meta);
     expect(Limits).to.deep.equal(EIP712.types.limits);
@@ -83,7 +86,9 @@ describe("BatchMultiSigCall EIP712", () => {
   });
 
   it("should generate the correct EIP712 typed data message", () => {
-    const { meta, limits, transaction_1, transaction_2, computed_1 } = FCT._eip712.getTypedDataMessage();
+    console.log(util.inspect(FCT.decodedCalls, false, null, true /* enable colors */));
+
+    const { meta, limits, transaction_1, transaction_2, computed_1 } = eip712.getTypedDataMessage();
     expect(meta).to.deep.equal({
       name: "",
       builder: FCT.options.builder,

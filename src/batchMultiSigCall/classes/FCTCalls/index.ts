@@ -20,7 +20,6 @@ import {
 import { CALL_TYPE } from "../../../constants";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
-import { Variables } from "../Variables";
 import * as helpers from "./helpers";
 
 function generateNodeId(): string {
@@ -29,7 +28,6 @@ function generateNodeId(): string {
 
 export class FCTCalls extends FCTBase {
   static helpers = helpers;
-  private _variables: Variables;
   private _calls: IMSCallInputWithNodeId[] = [];
   private _callDefault: ICallDefaults = {
     value: "0",
@@ -38,8 +36,6 @@ export class FCTCalls extends FCTBase {
 
   constructor(FCT: BatchMultiSigCall, callDefault?: DeepPartial<ICallDefaults>) {
     super(FCT);
-
-    this._variables = new Variables(FCT);
 
     if (callDefault) {
       this._callDefault = _.merge({}, this._callDefault, callDefault);
@@ -208,7 +204,7 @@ export class FCTCalls extends FCTBase {
         return [...acc, { ...param, value }];
       }
       if (instanceOfVariable(param.value)) {
-        const value = this._variables.getVariable(param.value, param.type);
+        const value = this.FCT._variables.getVariable(param.value, param.type);
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];
       }

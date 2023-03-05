@@ -10,18 +10,15 @@ import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { Options } from "../Options";
 import { SessionID } from "../SessionID";
-import { Variables } from "../Variables";
 import * as helpers from "./helpers";
 
 export class ExportFCT extends FCTBase {
   public calls: DecodedCalls[];
-  private _variables: Variables;
   private _eip712: EIP712;
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
     this.calls = FCT.decodedCalls;
-    this._variables = new Variables(FCT);
     this._eip712 = new EIP712(FCT);
 
     if (this.FCT.calls.length === 0) {
@@ -72,14 +69,14 @@ export class ExportFCT extends FCTBase {
         typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
         ensHash: id(call.toENS || ""),
         functionSignature: handleFunctionSignature(call),
-        value: this._variables.getValue(call.to, "uint256", "0"),
+        value: this.FCT._variables.getValue(call.to, "uint256", "0"),
         callId: CallID.asString({
           calls,
           call,
           index,
         }),
-        from: this._variables.getValue(call.from, "address"),
-        to: this._variables.getValue(call.to, "address"),
+        from: this.FCT._variables.getValue(call.from, "address"),
+        to: this.FCT._variables.getValue(call.to, "address"),
         data: handleData(call),
         types: handleTypes(call),
         typedHashes:

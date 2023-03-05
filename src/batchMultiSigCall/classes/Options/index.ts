@@ -31,13 +31,13 @@ export class Options {
       ...this._options,
       name: this._options.name || "",
       recurrency: {
-        maxRepeats: this._options.recurrency?.maxRepeats || "1",
+        maxRepeats: this._options.recurrency?.maxRepeats || "0",
         chillTime: this._options.recurrency?.chillTime || "0",
         accumetable: this._options.recurrency?.accumetable || false,
       },
       multisig: {
         externalSigners: this._options.multisig?.externalSigners || [],
-        minimumApprovals: this._options.multisig?.minimumApprovals || "1",
+        minimumApprovals: this._options.multisig?.minimumApprovals || "0",
       },
     };
   }
