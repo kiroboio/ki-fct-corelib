@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CallID = void 0;
-const constants_1 = require("batchMultiSigCall/constants");
-const constants_2 = require("../../../constants");
+const constants_1 = require("../../../constants");
+const constants_2 = require("../../constants");
 const valueWithPadStart = (value, padStart) => {
     return Number(value).toString(16).padStart(padStart, "0");
 };
@@ -19,12 +19,12 @@ const valueWithPadStart = (value, padStart) => {
 class CallID {
     static asString({ calls, call, index }) {
         const permissions = "0000";
-        const flow = valueWithPadStart(constants_2.flows[call.options.flow].value, 2);
+        const flow = valueWithPadStart(constants_1.flows[call.options.flow].value, 2);
         const payerIndex = valueWithPadStart(index + 1, 4);
         const callIndex = valueWithPadStart(index + 1, 4);
         const gasLimit = valueWithPadStart(call.options.gasLimit, 8);
         const flags = () => {
-            const callType = constants_2.CALL_TYPE[call.options.callType];
+            const callType = constants_1.CALL_TYPE[call.options.callType];
             const falseMeansFail = call.options.falseMeansFail ? 4 : 0;
             return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
         };
@@ -32,13 +32,13 @@ class CallID {
         let failJump = "0000";
         if (call.options) {
             const { jumpOnFail, jumpOnSuccess } = call.options;
-            if (jumpOnFail && jumpOnFail !== constants_1.NO_JUMP) {
+            if (jumpOnFail && jumpOnFail !== constants_2.NO_JUMP) {
                 const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
                 failJump = Number(nodeIndex - index - 1)
                     .toString(16)
                     .padStart(4, "0");
             }
-            if (jumpOnSuccess && jumpOnSuccess !== constants_1.NO_JUMP) {
+            if (jumpOnSuccess && jumpOnSuccess !== constants_2.NO_JUMP) {
                 const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
                 successJump = Number(nodeIndex - index - 1)
                     .toString(16)
@@ -58,12 +58,12 @@ class CallID {
         const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
         const flags = parseInt(callId.slice(64, 66), 16);
         const getFlow = () => {
-            const flow = Object.entries(constants_2.flows).find(([, value]) => {
+            const flow = Object.entries(constants_1.flows).find(([, value]) => {
                 return value.value === flowNumber.toString();
             });
             if (!flow)
                 throw new Error("Invalid flow");
-            return constants_2.Flow[flow[0]];
+            return constants_1.Flow[flow[0]];
         };
         const options = {
             gasLimit,
@@ -93,12 +93,12 @@ class CallID {
         const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
         const flags = parseInt(callId.slice(64, 66), 16);
         const getFlow = () => {
-            const flow = Object.entries(constants_2.flows).find(([, value]) => {
+            const flow = Object.entries(constants_1.flows).find(([, value]) => {
                 return value.value === flowNumber.toString();
             });
             if (!flow)
                 throw new Error("Invalid flow");
-            return constants_2.Flow[flow[0]];
+            return constants_1.Flow[flow[0]];
         };
         const options = {
             gasLimit,

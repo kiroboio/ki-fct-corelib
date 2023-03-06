@@ -18,4 +18,3 @@ __exportStar(require("./instanceOf"), exports);
 __exportStar(require("./method"), exports);
 __exportStar(require("./misc"), exports);
 __exportStar(require("./typeValues"), exports);
-// export * from "./validator";

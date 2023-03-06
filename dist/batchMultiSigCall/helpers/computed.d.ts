@@ -1,4 +1,4 @@
-import { ComputedVariable } from "types";
+import { ComputedVariable } from "../types";
 interface Computed {
     value: string;
     add: string;

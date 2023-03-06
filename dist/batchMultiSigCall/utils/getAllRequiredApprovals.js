@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllRequiredApprovals = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
-const helpers_1 = require("batchMultiSigCall/helpers");
-const helpers_2 = require("helpers");
 const constants_1 = require("../../constants");
+const helpers_1 = require("../../helpers");
+const helpers_2 = require("../helpers");
 function getAllRequiredApprovals(FCT) {
     let requiredApprovals = [];
     if (!FCT.chainId) {
@@ -16,7 +16,7 @@ function getAllRequiredApprovals(FCT) {
             continue;
         }
         const pluginData = (0, ki_eth_fct_provider_ts_1.getPlugin)({
-            signature: (0, helpers_1.handleFunctionSignature)(call),
+            signature: (0, helpers_2.handleFunctionSignature)(call),
             address: call.to,
             chainId,
         });
@@ -35,7 +35,7 @@ function getAllRequiredApprovals(FCT) {
             const approvals = initPlugin.getRequiredApprovals();
             if (approvals.length > 0 && typeof call.from === "string") {
                 const manageValue = (value) => {
-                    if ((0, helpers_2.instanceOfVariable)(value) || !value) {
+                    if ((0, helpers_1.instanceOfVariable)(value) || !value) {
                         return "";
                     }
                     if (value === constants_1.FCT_VAULT_ADDRESS && typeof call.from === "string") {

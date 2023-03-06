@@ -1,5 +1,5 @@
-import { CALL_TYPE, Flow } from "../constants/index";
-import { GlobalVariable } from "../variables/index";
+import { CALL_TYPE, Flow } from "../constants";
+import { GlobalVariable } from "../variables";
 export type Variable = {
     type: "output";
     id: {
