@@ -1,17 +1,17 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
-import { getAuthenticatorSignature, getCalldataForActuator } from "batchMultiSigCall/utils";
-import { getAllRequiredApprovals } from "batchMultiSigCall/utils/getAllRequiredApprovals";
 import BigNumber from "bignumber.js";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import _ from "lodash";
-import { BatchMultiSigCall } from "methods";
-import { TypedDataLimits, TypedDataTypes } from "types";
 
 import FCTActuatorABI from "../../../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../../../abi/FCT_BatchMultiSigCall.abi.json";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { TypedDataLimits, TypedDataTypes } from "../../types";
+import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
+import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";

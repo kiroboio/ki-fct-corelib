@@ -1,5 +1,5 @@
-import { IMSCallInput, Param } from "types";
-
+import { Param } from "../../../types";
+import { IMSCallInput } from "../../types";
 import * as helpers from "./helpers";
 
 type EIP712TypesObject = Record<string, { name: string; type: string }[]>;

@@ -20,6 +20,7 @@ import {
 } from "./methods";
 import {
   BatchMultiSigCallConstructor,
+  ComputedVariable,
   DecodedCalls,
   IBatchMultiSigCallFCT,
   ICallDefaults,
@@ -80,11 +81,11 @@ export class BatchMultiSigCall {
     return this._calls.getWithDecodedVariables();
   }
 
-  get computed() {
+  get computed(): IComputed[] {
     return this._variables.computed;
   }
 
-  get computedWithValues() {
+  get computedWithValues(): ComputedVariable[] {
     return this._variables.computedWithValues;
   }
 

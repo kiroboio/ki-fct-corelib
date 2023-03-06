@@ -1,4 +1,5 @@
-import { BatchMultiSigCallTypedData, FCTCallParam, Param } from "types";
+import { Param } from "../../../types";
+import { BatchMultiSigCallTypedData, FCTCallParam } from "../../types";
 
 export const getParams = (params: Param[]): Record<string, FCTCallParam> => {
   return {

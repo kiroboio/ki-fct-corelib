@@ -1,10 +1,9 @@
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
-import { DecodedCalls, IBatchMultiSigCallFCT } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { handleData, handleFunctionSignature, handleTypes } from "../../helpers/handlers";
-import { MSCall } from "../../types/general";
+import { handleData, handleFunctionSignature, handleTypes } from "../../helpers";
+import { DecodedCalls, IBatchMultiSigCallFCT, MSCall } from "../../types";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";

@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { getAddress } from "ethers/lib/utils";
-import { BatchMultiSigCall } from "methods";
 
 import FCTData from "../../../../FCTExample.json";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTUtils } from ".";
 
 // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";

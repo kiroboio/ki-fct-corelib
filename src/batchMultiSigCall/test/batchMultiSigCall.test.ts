@@ -1,11 +1,11 @@
 import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
-import { CallID, SessionID } from "batchMultiSigCall/classes";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import { getDate } from "helpers";
-import { Param } from "types";
 
 import { Flow } from "../../constants";
+import { getDate } from "../../helpers";
+import { Param } from "../../types";
+import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
 
 describe("BatchMultiSigCall", () => {

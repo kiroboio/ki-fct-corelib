@@ -1,8 +1,7 @@
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { utils } from "ethers";
 
-import { BatchMultiSigCallTypedData } from "../types";
-import { Param } from "../types";
+import { BatchMultiSigCallTypedData, Param } from "../types";
 
 const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;

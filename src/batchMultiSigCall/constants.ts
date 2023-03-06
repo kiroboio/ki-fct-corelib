@@ -1,6 +1,5 @@
-import { CallOptions, DeepRequired } from "types";
-
 import { Flow } from "../constants/flows";
+import { CallOptions, DeepRequired } from "../types";
 
 export const addresses = {
   1: {
