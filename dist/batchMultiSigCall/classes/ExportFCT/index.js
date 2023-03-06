@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExportFCT = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const utils_1 = require("ethers/lib/utils");
-const handlers_1 = require("../../helpers/handlers");
+const helpers_1 = require("../../helpers");
 const CallID_1 = require("../CallID");
 const EIP712_1 = require("../EIP712");
 const FCTBase_1 = require("../FCTBase");
@@ -78,7 +78,7 @@ class ExportFCT extends FCTBase_1.FCTBase {
             return {
                 typeHash: (0, utils_1.hexlify)(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: (0, utils_1.id)(call.toENS || ""),
-                functionSignature: (0, handlers_1.handleFunctionSignature)(call),
+                functionSignature: (0, helpers_1.handleFunctionSignature)(call),
                 value: this.FCT._variables.getValue(call.to, "uint256", "0"),
                 callId: CallID_1.CallID.asString({
                     calls,
@@ -87,8 +87,8 @@ class ExportFCT extends FCTBase_1.FCTBase {
                 }),
                 from: this.FCT._variables.getValue(call.from, "address"),
                 to: this.FCT._variables.getValue(call.to, "address"),
-                data: (0, handlers_1.handleData)(call),
-                types: (0, handlers_1.handleTypes)(call),
+                data: (0, helpers_1.handleData)(call),
+                types: (0, helpers_1.handleTypes)(call),
                 typedHashes: usedTypeStructs.length > 0
                     ? usedTypeStructs.map((hash) => (0, utils_1.hexlify)(eth_sig_util_1.TypedDataUtils.hashType(hash, typedData.types)))
                     : [],

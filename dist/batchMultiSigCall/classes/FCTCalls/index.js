@@ -27,11 +27,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FCTCalls = void 0;
-const constants_1 = require("batchMultiSigCall/constants");
 const utils_1 = require("ethers/lib/utils");
-const helpers_1 = require("helpers");
 const lodash_1 = __importDefault(require("lodash"));
-const constants_2 = require("../../../constants");
+const constants_1 = require("../../../constants");
+const helpers_1 = require("../../../helpers");
+const constants_2 = require("../../constants");
 const FCTBase_1 = require("../FCTBase");
 const helpers = __importStar(require("./helpers"));
 function generateNodeId() {
@@ -43,7 +43,7 @@ class FCTCalls extends FCTBase_1.FCTBase {
         this._calls = [];
         this._callDefault = {
             value: "0",
-            options: constants_1.DEFAULT_CALL_OPTIONS,
+            options: constants_2.DEFAULT_CALL_OPTIONS,
         };
         if (callDefault) {
             this._callDefault = lodash_1.default.merge({}, this._callDefault, callDefault);
@@ -163,7 +163,7 @@ class FCTCalls extends FCTBase_1.FCTBase {
                 helpers.isInteger(gasLimit, "Gas limit");
             }
             if (callType) {
-                const keysOfCALLTYPE = Object.keys(constants_2.CALL_TYPE);
+                const keysOfCALLTYPE = Object.keys(constants_1.CALL_TYPE);
                 if (!keysOfCALLTYPE.includes(callType)) {
                     throw new Error(`Call type ${callType} is not valid`);
                 }

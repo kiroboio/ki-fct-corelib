@@ -1,5 +1,5 @@
-import { BatchMultiSigCall } from "methods";
-import { RequiredFCTOptions } from "types";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { RequiredFCTOptions } from "../../types";
 import { FCTBase } from "../FCTBase";
 export declare class SessionID extends FCTBase {
     constructor(FCT: BatchMultiSigCall);

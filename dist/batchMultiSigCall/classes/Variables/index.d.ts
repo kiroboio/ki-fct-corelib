@@ -1,5 +1,6 @@
-import { IComputed, Variable } from "types";
+import { Variable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { IComputed } from "../../types";
 import { FCTBase } from "../FCTBase";
 export declare class Variables extends FCTBase {
     _computed: Required<IComputed>[];

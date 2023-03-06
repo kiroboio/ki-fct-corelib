@@ -1,4 +1,4 @@
-import { BatchMultiSigCall } from "methods";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
 
 export class FCTBase {
   protected FCT: BatchMultiSigCall;

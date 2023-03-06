@@ -1,4 +1,4 @@
-import { CallOptions, DeepRequired } from "types";
+import { CallOptions, DeepRequired } from "../types";
 export declare const addresses: {
     1: {
         FCT_Controller: string;

@@ -1,10 +1,11 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
-import { handleFunctionSignature } from "batchMultiSigCall/helpers";
-import { instanceOfVariable } from "helpers";
-import { BatchMultiSigCall } from "methods";
-import { IRequiredApproval, Param, Variable } from "types";
 
 import { FCT_VAULT_ADDRESS } from "../../constants";
+import { instanceOfVariable } from "../../helpers";
+import { Param, Variable } from "../../types";
+import { BatchMultiSigCall } from "../batchMultiSigCall";
+import { handleFunctionSignature } from "../helpers";
+import { IRequiredApproval } from "../types";
 
 export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];

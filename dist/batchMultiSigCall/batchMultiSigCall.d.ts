@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { DeepPartial } from "../types";
 import { FCTCalls, FCTUtils, Options, Variables } from "./classes";
 import { create, createMultiple, createPlugin, exportFCT, getCall, getPlugin, getPluginClass, getPluginData, importEncodedFCT, importFCT } from "./methods";
-import { BatchMultiSigCallConstructor, DecodedCalls, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
+import { BatchMultiSigCallConstructor, ComputedVariable, DecodedCalls, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, RequiredFCTOptions, StrictMSCallInput, TypedDataDomain } from "./types";
 import * as utils from "./utils";
 export declare class BatchMultiSigCall {
     protected FCT_Controller: ethers.utils.Interface;
@@ -21,17 +21,8 @@ export declare class BatchMultiSigCall {
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];
     get decodedCalls(): DecodedCalls[];
-    get computed(): Required<IComputed>[];
-    get computedWithValues(): {
-        index: string;
-        value: string;
-        add: string;
-        sub: string;
-        mul: string;
-        pow: string;
-        div: string;
-        mod: string;
-    }[];
+    get computed(): IComputed[];
+    get computedWithValues(): ComputedVariable[];
     setOptions: (options: DeepPartial<IFCTOptions>) => IFCTOptions;
     setCallDefaults: (callDefault: DeepPartial<ICallDefaults>) => ICallDefaults;
     addComputed: (computed: IComputed) => {

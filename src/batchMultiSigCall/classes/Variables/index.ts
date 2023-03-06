@@ -1,7 +1,3 @@
-import { instanceOfVariable } from "helpers";
-import { IComputed, Variable } from "types";
-import { globalVariables } from "variables";
-
 import {
   ComputedBase,
   ComputedBaseBytes,
@@ -12,7 +8,11 @@ import {
   FDBase,
   FDBaseBytes,
 } from "../../../constants";
+import { instanceOfVariable } from "../../../helpers";
+import { Variable } from "../../../types";
+import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { IComputed } from "../../types";
 import { FCTBase } from "../FCTBase";
 
 export class Variables extends FCTBase {

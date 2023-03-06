@@ -1,11 +1,11 @@
 import { SignatureLike } from "@ethersproject/bytes";
-import { BatchMultiSigCall } from "methods";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
     private _eip712;
     constructor(FCT: BatchMultiSigCall);
     private get FCTData();
-    getAllRequiredApprovals(): Promise<import("types").IRequiredApproval[]>;
+    getAllRequiredApprovals(): Promise<import("../../types").IRequiredApproval[]>;
     getCalldataForActuator({ signatures, purgedFCT, investor, activator, }: {
         signatures: SignatureLike[];
         purgedFCT: string;
@@ -36,7 +36,7 @@ export declare class FCTUtils extends FCTBase {
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
-    estimateFCTGasCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
+    estimateFCTCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
         callData: string;
         batchMultiSigCallAddress: string;
         rpcUrl: string;

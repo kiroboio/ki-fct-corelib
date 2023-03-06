@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Variables = void 0;
-const helpers_1 = require("helpers");
-const variables_1 = require("variables");
 const constants_1 = require("../../../constants");
+const helpers_1 = require("../../../helpers");
+const variables_1 = require("../../../variables");
 const FCTBase_1 = require("../FCTBase");
 class Variables extends FCTBase_1.FCTBase {
     constructor(FCT) {

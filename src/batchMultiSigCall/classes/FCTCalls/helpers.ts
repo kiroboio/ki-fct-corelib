@@ -1,5 +1,6 @@
 import { BigNumber, ethers, utils } from "ethers";
-import { Param } from "types";
+
+import { Param } from "../../../types";
 
 export const isInteger = (value: string, key: string) => {
   if (value.length === 0) {

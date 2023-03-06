@@ -1,24 +1,21 @@
-import { DEFAULT_CALL_OPTIONS } from "batchMultiSigCall/constants";
 import { Interface } from "ethers/lib/utils";
-import { instanceOfVariable } from "helpers";
 import _ from "lodash";
+
+import { CALL_TYPE } from "../../../constants";
+import { instanceOfVariable } from "../../../helpers";
+import { DeepPartial, Param, ParamWithoutVariable, RequiredKeys } from "../../../types";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { DEFAULT_CALL_OPTIONS } from "../../constants";
 import {
   DecodedCalls,
-  DeepPartial,
   FCTCall,
   ICallDefaults,
   IMSCallInput,
   IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
   IWithPlugin,
-  Param,
-  ParamWithoutVariable,
-  RequiredKeys,
   StrictMSCallInput,
-} from "types";
-
-import { CALL_TYPE } from "../../../constants";
-import { BatchMultiSigCall } from "../../batchMultiSigCall";
+} from "../../types";
 import { FCTBase } from "../FCTBase";
 import * as helpers from "./helpers";
 

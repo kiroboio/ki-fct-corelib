@@ -1,5 +1,6 @@
-import { DecodedCalls, DeepPartial, FCTCall, ICallDefaults, IMSCallInputWithNodeId, IMSCallWithEncodedData, IWithPlugin, Param, ParamWithoutVariable, StrictMSCallInput } from "types";
+import { DeepPartial, Param, ParamWithoutVariable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { DecodedCalls, FCTCall, ICallDefaults, IMSCallInputWithNodeId, IMSCallWithEncodedData, IWithPlugin, StrictMSCallInput } from "../../types";
 import { FCTBase } from "../FCTBase";
 import * as helpers from "./helpers";
 export declare class FCTCalls extends FCTBase {

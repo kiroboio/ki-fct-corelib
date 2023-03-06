@@ -1,4 +1,5 @@
-import { FCTCallParam, Param } from "types";
+import { Param } from "../../../types";
+import { FCTCallParam } from "../../types";
 
 export const getParams = (params: Param[]): Record<string, FCTCallParam> => {
   return {
