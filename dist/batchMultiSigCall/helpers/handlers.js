@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleTypedHashes = exports.handleTypes = exports.handleData = exports.handleEnsHash = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
+exports.handleTypes = exports.handleData = exports.handleFunctionSignature = exports.handleMethodInterface = void 0;
 const ethers_1 = require("ethers");
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
@@ -19,13 +19,12 @@ const handleFunctionSignature = (call) => {
     return constants_1.nullValue;
 };
 exports.handleFunctionSignature = handleFunctionSignature;
-const handleEnsHash = (call) => {
-    if (call.toENS) {
-        return ethers_1.utils.id(call.toENS);
-    }
-    return constants_1.nullValue;
-};
-exports.handleEnsHash = handleEnsHash;
+// export const handleEnsHash = (call: IMSCallInput) => {
+//   if (call.toENS) {
+//     return utils.id(call.toENS);
+//   }
+//   return nullValue;
+// };
 const handleData = (call) => {
     return (0, helpers_1.getEncodedMethodParams)(call);
 };
@@ -37,10 +36,3 @@ const handleTypes = (call) => {
     return [];
 };
 exports.handleTypes = handleTypes;
-const handleTypedHashes = (call, typedData) => {
-    if (call.params) {
-        return (0, helpers_1.getTypedHashes)(call.params, typedData);
-    }
-    return [];
-};
-exports.handleTypedHashes = handleTypedHashes;

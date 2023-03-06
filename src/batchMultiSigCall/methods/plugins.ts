@@ -6,7 +6,6 @@ import { handleFunctionSignature } from "../helpers";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
   const chainId = this.chainId;
-
   const call = this.getCall(index);
 
   if (instanceOfVariable(call.to)) {
@@ -63,21 +62,23 @@ export async function getPluginClass(
 }
 
 export async function getPluginData(this: BatchMultiSigCall, index: number) {
-  const plugin = await this.getPlugin(index);
-  const call = this.getCall(index);
+  const plugin = await this.getPlugin(index); // get the plugin from the index
+  const call = this.getCall(index); // get the call from the index
+
+  const input = {
+    to: call.to,
+    value: call.value,
+    methodParams: call.params
+      ? call.params.reduce((acc, param) => {
+          return { ...acc, [param.name]: param.value };
+        }, {})
+      : {},
+  };
 
   return {
     protocol: plugin.protocol,
     type: plugin.type,
     method: plugin.method,
-    input: {
-      to: call.to,
-      value: call.value,
-      methodParams: call.params
-        ? call.params.reduce((acc, param) => {
-            return { ...acc, [param.name]: param.value };
-          }, {})
-        : {},
-    },
+    input,
   };
 }

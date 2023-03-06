@@ -1,3 +1,4 @@
+import { ComputedVariable } from "../types";
 interface Computed {
     value: string;
     add: string;
@@ -831,4 +832,5 @@ export declare const comp: (value: string) => {
     };
     comp: Computed;
 };
+export declare const getComputedVariableMessage: (computedVariables: ComputedVariable[]) => Record<`computed_${number}`, ComputedVariable>;
 export {};

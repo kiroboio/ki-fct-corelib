@@ -26,9 +26,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.utils = exports.helpers = exports.BatchMultiSigCall = void 0;
+exports.utils = exports.BatchMultiSigCall = void 0;
 var batchMultiSigCall_1 = require("./batchMultiSigCall");
 Object.defineProperty(exports, "BatchMultiSigCall", { enumerable: true, get: function () { return batchMultiSigCall_1.BatchMultiSigCall; } });
 __exportStar(require("./constants"), exports);
-exports.helpers = __importStar(require("./helpers"));
 exports.utils = __importStar(require("./utils"));
