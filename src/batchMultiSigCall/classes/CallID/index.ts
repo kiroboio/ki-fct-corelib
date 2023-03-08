@@ -1,7 +1,6 @@
-import { IMSCallInput, StrictMSCallInput } from "types";
-
 import { CALL_TYPE, Flow, flows } from "../../../constants";
 import { NO_JUMP } from "../../constants";
+import { IMSCallInput, StrictMSCallInput } from "../../types";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");

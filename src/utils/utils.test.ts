@@ -443,10 +443,6 @@ describe("Utility functions", () => {
 
       expect(approvals[0].from).to.eq("0x62e3a53a947d34c4ddcd67b49fadc30b643e2586");
       expect(approvals[0].params.spender).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
-
-      // expect(approvals[0].from).to.eq("0xB252A554217d614Fb2968cf8f87b02e3D9DBd63C");
-      // expect(approvals[0].spender).to.eq("0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C");
-      // expect(approvals[0].token).to.eq("0xba232b47a7ddfccc221916cf08da03a4973d3a1d");
     });
   });
   describe("Gas functions", () => {
