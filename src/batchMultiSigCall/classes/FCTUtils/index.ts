@@ -4,12 +4,12 @@ import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessa
 import BigNumber from "bignumber.js";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
+import { BATCHMULTISIG_ADDRESS } from "ki-typesafe/dist/constants";
 import _ from "lodash";
 
 import FCTActuatorABI from "../../../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../../../abi/FCT_BatchMultiSigCall.abi.json";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { addresses } from "../../constants";
 import { TypedDataLimits, TypedDataTypes } from "../../types";
 import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
 import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
@@ -221,7 +221,7 @@ export class FCTUtils extends FCTBase {
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const batchMultiSigCallContract = new ethers.Contract(
-      addresses[chainId as keyof typeof addresses].FCT_BatchMultiSig,
+      BATCHMULTISIG_ADDRESS[chainId as keyof typeof BATCHMULTISIG_ADDRESS],
       BatchMultiSigCallABI,
       provider
     );

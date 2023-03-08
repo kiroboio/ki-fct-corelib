@@ -19,12 +19,6 @@ const handleFunctionSignature = (call) => {
     return constants_1.nullValue;
 };
 exports.handleFunctionSignature = handleFunctionSignature;
-// export const handleEnsHash = (call: IMSCallInput) => {
-//   if (call.toENS) {
-//     return utils.id(call.toENS);
-//   }
-//   return nullValue;
-// };
 const handleData = (call) => {
     return (0, helpers_1.getEncodedMethodParams)(call);
 };

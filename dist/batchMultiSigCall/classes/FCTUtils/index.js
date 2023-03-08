@@ -9,10 +9,10 @@ const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
+const constants_1 = require("ki-typesafe/dist/constants");
 const lodash_1 = __importDefault(require("lodash"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../../../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../../abi/FCT_BatchMultiSigCall.abi.json"));
-const constants_1 = require("../../constants");
 const utils_1 = require("../../utils");
 const getAllRequiredApprovals_1 = require("../../utils/getAllRequiredApprovals");
 const CallID_1 = require("../CallID");
@@ -259,7 +259,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
         const numOfCalls = fct.mcall.length;
         const actuator = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-        const batchMultiSigCallContract = new ethers_1.ethers.Contract(constants_1.addresses[chainId].FCT_BatchMultiSig, FCT_BatchMultiSigCall_abi_json_1.default, provider);
+        const batchMultiSigCallContract = new ethers_1.ethers.Contract(constants_1.BATCHMULTISIG_ADDRESS[chainId], FCT_BatchMultiSigCall_abi_json_1.default, provider);
         const calcMemory = (input) => {
             return input * 3 + (input * input) / 512;
         };

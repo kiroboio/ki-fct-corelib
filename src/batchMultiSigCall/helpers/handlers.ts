@@ -20,13 +20,6 @@ export const handleFunctionSignature = (call: IMSCallInput) => {
   return nullValue;
 };
 
-// export const handleEnsHash = (call: IMSCallInput) => {
-//   if (call.toENS) {
-//     return utils.id(call.toENS);
-//   }
-//   return nullValue;
-// };
-
 export const handleData = (call: IMSCallInput) => {
   return getEncodedMethodParams(call);
 };

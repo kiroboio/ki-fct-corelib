@@ -27,38 +27,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EIP712 = void 0;
+const constants_1 = require("ki-typesafe/dist/constants");
 const lodash_1 = __importDefault(require("lodash"));
-const constants_1 = require("../../../constants");
-const constants_2 = require("../../constants");
+const constants_2 = require("../../../constants");
+const constants_3 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const EIP712StructTypes_1 = require("../EIP712StructTypes");
 const FCTBase_1 = require("../FCTBase");
-const constants_3 = require("./constants");
+const constants_4 = require("./constants");
 const helpers = __importStar(require("./helpers"));
 const TYPED_DATA_DOMAIN = {
     "1": {
         name: "FCT Controller",
         version: "1",
         chainId: 5,
-        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+        verifyingContract: constants_1.CONTROLLER_ADDRESS[1],
         salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
     },
     "5": {
         name: "FCT Controller",
         version: "1",
         chainId: 5,
-        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+        verifyingContract: constants_1.CONTROLLER_ADDRESS[5],
         salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
     },
 };
 const types = {
-    domain: constants_3.EIP712Domain,
-    meta: constants_3.Meta,
-    limits: constants_3.Limits,
-    computed: constants_3.Computed,
-    call: constants_3.Call,
-    recurrency: constants_3.Recurrency,
-    multisig: constants_3.Multisig,
+    domain: constants_4.EIP712Domain,
+    meta: constants_4.Meta,
+    limits: constants_4.Limits,
+    computed: constants_4.Computed,
+    call: constants_4.Call,
+    recurrency: constants_4.Recurrency,
+    multisig: constants_4.Multisig,
 };
 class EIP712 extends FCTBase_1.FCTBase {
     constructor(FCT) {
@@ -179,10 +180,10 @@ class EIP712 extends FCTBase_1.FCTBase {
             const paramsData = call.params ? helpers.getParams(call.params) : {};
             const options = call.options || {};
             const gasLimit = options.gasLimit ?? "0";
-            const flow = options.flow ? constants_1.flows[options.flow].text : "continue on success, revert on fail";
+            const flow = options.flow ? constants_2.flows[options.flow].text : "continue on success, revert on fail";
             let jumpOnSuccess = 0;
             let jumpOnFail = 0;
-            if (options.jumpOnSuccess && options.jumpOnSuccess !== constants_2.NO_JUMP) {
+            if (options.jumpOnSuccess && options.jumpOnSuccess !== constants_3.NO_JUMP) {
                 const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
                 if (jumpOnSuccessIndex === -1) {
                     throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
@@ -192,7 +193,7 @@ class EIP712 extends FCTBase_1.FCTBase {
                 }
                 jumpOnSuccess = jumpOnSuccessIndex - index - 1;
             }
-            if (options.jumpOnFail && options.jumpOnFail !== constants_2.NO_JUMP) {
+            if (options.jumpOnFail && options.jumpOnFail !== constants_3.NO_JUMP) {
                 const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
                 if (jumpOnFailIndex === -1) {
                     throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
@@ -208,7 +209,7 @@ class EIP712 extends FCTBase_1.FCTBase {
                     call: {
                         call_index: index + 1,
                         payer_index: index + 1,
-                        call_type: call.options?.callType ? constants_1.CALL_TYPE_MSG[call.options.callType] : constants_1.CALL_TYPE_MSG.ACTION,
+                        call_type: call.options?.callType ? constants_2.CALL_TYPE_MSG[call.options.callType] : constants_2.CALL_TYPE_MSG.ACTION,
                         from: this.FCT._variables.getValue(call.from, "address"),
                         to: this.FCT._variables.getValue(call.to, "address"),
                         to_ens: call.toENS || "",

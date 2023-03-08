@@ -1,5 +1,6 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
+import { CONTROLLER_ADDRESS } from "ki-typesafe/dist/constants";
 import _ from "lodash";
 
 import { CALL_TYPE_MSG, flows } from "../../../constants";
@@ -17,14 +18,14 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
     name: "FCT Controller",
     version: "1",
     chainId: 5,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    verifyingContract: CONTROLLER_ADDRESS[1],
     salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
   },
   "5": {
     name: "FCT Controller",
     version: "1",
     chainId: 5,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    verifyingContract: CONTROLLER_ADDRESS[5],
     salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
   },
 };
