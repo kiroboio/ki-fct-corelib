@@ -287,6 +287,7 @@ export class FCTUtils extends FCTBase {
   // 38270821632831754769812 - kiro price
   // 1275004198 - max fee
   // 462109 - gas
+  // TODO: Make this function deprecated. Use getPaymentPerPayer instead
   public getKIROPayment = ({
     kiroPriceInETH,
     gasPrice,
