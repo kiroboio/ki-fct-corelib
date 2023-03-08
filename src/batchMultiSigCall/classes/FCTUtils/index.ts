@@ -9,6 +9,7 @@ import _ from "lodash";
 import FCTActuatorABI from "../../../abi/FCT_Actuator.abi.json";
 import BatchMultiSigCallABI from "../../../abi/FCT_BatchMultiSigCall.abi.json";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { addresses } from "../../constants";
 import { TypedDataLimits, TypedDataTypes } from "../../types";
 import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
 import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
@@ -209,24 +210,21 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
-  public async estimateFCTCost({
-    callData,
-    batchMultiSigCallAddress,
-    rpcUrl,
-  }: {
-    callData: string;
-    batchMultiSigCallAddress: string;
-    rpcUrl: string;
-  }) {
+  public async estimateFCTCost({ callData, rpcUrl }: { callData: string; rpcUrl: string }) {
     const fct = this.FCTData;
+    const chainId = Number(this.FCT.chainId);
+
     const FCTOverhead = 135500;
     const callOverhead = 16370;
     const numOfCalls = fct.mcall.length;
     const actuator = new ethers.utils.Interface(FCTActuatorABI);
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    const batchMultiSigCallContract = new ethers.Contract(batchMultiSigCallAddress, BatchMultiSigCallABI, provider);
-    const chainId = (await provider.getNetwork()).chainId;
+    const batchMultiSigCallContract = new ethers.Contract(
+      addresses[chainId as keyof typeof addresses].FCT_BatchMultiSig,
+      BatchMultiSigCallABI,
+      provider
+    );
 
     const calcMemory = (input: number) => {
       return input * 3 + (input * input) / 512;
@@ -289,6 +287,7 @@ export class FCTUtils extends FCTBase {
   // 38270821632831754769812 - kiro price
   // 1275004198 - max fee
   // 462109 - gas
+  // TODO: Make this function deprecated. Use getPaymentPerPayer instead
   public getKIROPayment = ({
     kiroPriceInETH,
     gasPrice,

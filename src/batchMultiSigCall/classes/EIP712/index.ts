@@ -1,12 +1,12 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
-import { NO_JUMP } from "batchMultiSigCall/constants";
-import { getComputedVariableMessage, handleMethodInterface } from "batchMultiSigCall/helpers";
 import _ from "lodash";
-import { BatchMultiSigCall } from "methods";
-import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "types";
 
 import { CALL_TYPE_MSG, flows } from "../../../constants";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { NO_JUMP } from "../../constants";
+import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
+import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency } from "./constants";

@@ -36,9 +36,8 @@ export declare class FCTUtils extends FCTBase {
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
-    estimateFCTCost({ callData, batchMultiSigCallAddress, rpcUrl, }: {
+    estimateFCTCost({ callData, rpcUrl }: {
         callData: string;
-        batchMultiSigCallAddress: string;
         rpcUrl: string;
     }): Promise<string>;
     getKIROPayment: ({ kiroPriceInETH, gasPrice, gas, }: {

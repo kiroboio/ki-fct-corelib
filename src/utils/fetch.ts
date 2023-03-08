@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from "ethers";
-import { IRequiredApproval } from "types";
 
 import { multicallContracts } from "../constants";
+import { IRequiredApproval } from "../types";
 
 const fetchApprovalsInterface = new ethers.utils.Interface([
   "function allowance(address owner, address spender) view returns (uint256)",
