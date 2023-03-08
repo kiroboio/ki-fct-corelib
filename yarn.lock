@@ -2174,12 +2174,7 @@
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.0.tgz#e0fab91a7d53e8cafb5326ae4ca18351116b0844"
   integrity sha512-BJiXrBGnN8mti7saW49MXwxDBRFiWemGetE58q8zgfnPPzQKq55ADltEILqOt6VFZ22kVeVKbF8gVd8aY3l7pA==
 
-"@uniswap/v2-core@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
-  integrity sha512-MtybtkUPSyysqLY2U210NBDeCHX+ltHt3oADGdjqoThZaFRDKwM6k1Nb3F0A3hk5hwuQvytFWhrWHOEq6nVJ8Q==
-
-"@uniswap/v2-core@https://github.com/kiroboio/uniswapv2-solc0.8.git":
+"@uniswap/v2-core@1.0.1", "@uniswap/v2-core@https://github.com/kiroboio/uniswapv2-solc0.8.git":
   version "1.0.1"
   resolved "https://github.com/kiroboio/uniswapv2-solc0.8.git#c286d2d12bf89d1a691552e72cb9b3339cd0db5f"
 
@@ -6494,10 +6489,6 @@ keyv@^4.0.0:
   integrity sha512-5MHbFaKn8cNSmVW7BYnijeAVlE4cYA/SVkifVgrh7yotnfhKmjuXpDKjrABLnT0SfHWV21P8ow07OGfRrNDg8g==
   dependencies:
     json-buffer "3.0.1"
-
-"ki-typesafe@https://github.com/kiroboio/ki-warehouse.git":
-  version "1.0.0"
-  resolved "https://github.com/kiroboio/ki-warehouse.git#ba23d62bc44e249341f2129bd5515949ca499164"
 
 kind-of@^6.0.2, kind-of@^6.0.3:
   version "6.0.3"
