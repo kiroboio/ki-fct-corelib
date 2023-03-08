@@ -1,5 +1,5 @@
-import { IMSCallInput, StrictMSCallInput } from "types";
 import { Flow } from "../../../constants";
+import { IMSCallInput, StrictMSCallInput } from "../../types";
 export declare class CallID {
     static asString({ calls, call, index }: {
         calls: IMSCallInput[];

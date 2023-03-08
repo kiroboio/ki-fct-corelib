@@ -1,7 +1,7 @@
 import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
-import { BatchMultiSigCall } from "methods";
-import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "types";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { FCTBase } from "../FCTBase";
 export declare class EIP712 extends FCTBase {
     constructor(FCT: BatchMultiSigCall);

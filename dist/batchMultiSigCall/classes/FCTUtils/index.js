@@ -12,6 +12,7 @@ const graphlib_1 = require("graphlib");
 const lodash_1 = __importDefault(require("lodash"));
 const FCT_Actuator_abi_json_1 = __importDefault(require("../../../abi/FCT_Actuator.abi.json"));
 const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../../abi/FCT_BatchMultiSigCall.abi.json"));
+const constants_1 = require("../../constants");
 const utils_1 = require("../../utils");
 const getAllRequiredApprovals_1 = require("../../utils/getAllRequiredApprovals");
 const CallID_1 = require("../CallID");
@@ -24,6 +25,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
         // 38270821632831754769812 - kiro price
         // 1275004198 - max fee
         // 462109 - gas
+        // TODO: Make this function deprecated. Use getPaymentPerPayer instead
         this.getKIROPayment = ({ kiroPriceInETH, gasPrice, gas, }) => {
             const fct = this.FCTData;
             const vault = fct.typedData.message["transaction_1"].call.from;
@@ -249,15 +251,15 @@ class FCTUtils extends FCTBase_1.FCTBase {
         printAllPathsUtil(g, start, end, isVisited, pathList);
         return allPaths;
     }
-    async estimateFCTCost({ callData, batchMultiSigCallAddress, rpcUrl, }) {
+    async estimateFCTCost({ callData, rpcUrl }) {
         const fct = this.FCTData;
+        const chainId = Number(this.FCT.chainId);
         const FCTOverhead = 135500;
         const callOverhead = 16370;
         const numOfCalls = fct.mcall.length;
         const actuator = new ethers_1.ethers.utils.Interface(FCT_Actuator_abi_json_1.default);
         const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-        const batchMultiSigCallContract = new ethers_1.ethers.Contract(batchMultiSigCallAddress, FCT_BatchMultiSigCall_abi_json_1.default, provider);
-        const chainId = (await provider.getNetwork()).chainId;
+        const batchMultiSigCallContract = new ethers_1.ethers.Contract(constants_1.addresses[chainId].FCT_BatchMultiSig, FCT_BatchMultiSigCall_abi_json_1.default, provider);
         const calcMemory = (input) => {
             return input * 3 + (input * input) / 512;
         };
