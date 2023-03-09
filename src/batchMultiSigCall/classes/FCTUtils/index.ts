@@ -6,8 +6,7 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import _ from "lodash";
 
-import FCTActuatorABI from "../../../abi/FCT_Actuator.abi.json";
-import BatchMultiSigCallABI from "../../../abi/FCT_BatchMultiSigCall.abi.json";
+import { Interface } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { addresses } from "../../constants";
 import { TypedDataLimits, TypedDataTypes } from "../../types";
@@ -217,12 +216,12 @@ export class FCTUtils extends FCTBase {
     const FCTOverhead = 135500;
     const callOverhead = 16370;
     const numOfCalls = fct.mcall.length;
-    const actuator = new ethers.utils.Interface(FCTActuatorABI);
+    const actuator = Interface.FCT_Actuator;
 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const batchMultiSigCallContract = new ethers.Contract(
       addresses[chainId as keyof typeof addresses].FCT_BatchMultiSig,
-      BatchMultiSigCallABI,
+      Interface.FCT_BatchMultiSigCall,
       provider
     );
 

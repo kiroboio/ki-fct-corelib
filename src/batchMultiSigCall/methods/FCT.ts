@@ -2,8 +2,8 @@ import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder, ParamType } from "ethers/lib/utils";
 
-import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
 import { CALL_TYPE_MSG_REV, Flow, flows } from "../../constants";
+import { Interface } from "../../helpers/Interfaces";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
@@ -157,11 +157,8 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 }
 
 export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
-  const ABI = FCTBatchMultiSigCallABI;
-  const iface = new utils.Interface(ABI);
-
+  const iface = Interface.FCT_BatchMultiSigCall;
   const chainId = this.chainId;
-
   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
 
   const arrayKeys = ["signatures", "mcall"];

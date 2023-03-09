@@ -1,14 +1,11 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.importEncodedFCT = exports.importFCT = exports.exportFCT = exports.getCall = exports.createPlugin = exports.createMultiple = exports.create = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const ethers_1 = require("ethers");
 const utils_1 = require("ethers/lib/utils");
-const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../../abi/FCT_BatchMultiSigCall.abi.json"));
 const constants_1 = require("../../constants");
+const Interfaces_1 = require("../../helpers/Interfaces");
 const classes_1 = require("../classes");
 async function create(call) {
     return this._calls.create(call);
@@ -136,8 +133,7 @@ function importFCT(fct) {
 }
 exports.importFCT = importFCT;
 async function importEncodedFCT(calldata) {
-    const ABI = FCT_BatchMultiSigCall_abi_json_1.default;
-    const iface = new ethers_1.utils.Interface(ABI);
+    const iface = Interfaces_1.Interface.FCT_BatchMultiSigCall;
     const chainId = this.chainId;
     const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
     const arrayKeys = ["signatures", "mcall"];

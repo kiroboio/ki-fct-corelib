@@ -22,22 +22,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BatchMultiSigCall = void 0;
-const ethers_1 = require("ethers");
-const FCT_BatchMultiSigCall_abi_json_1 = __importDefault(require("../abi/FCT_BatchMultiSigCall.abi.json"));
-const FCT_Controller_abi_json_1 = __importDefault(require("../abi/FCT_Controller.abi.json"));
 const classes_1 = require("./classes");
 const constants_1 = require("./constants");
 const methods_1 = require("./methods");
 const utils = __importStar(require("./utils"));
 class BatchMultiSigCall {
     constructor(input = {}) {
-        this.FCT_Controller = new ethers_1.ethers.utils.Interface(FCT_Controller_abi_json_1.default);
-        this.FCT_BatchMultiSigCall = new ethers_1.ethers.utils.Interface(FCT_BatchMultiSigCall_abi_json_1.default);
         this.batchMultiSigSelector = "0xf6407ddd";
         this.version = "0x010101";
         this.randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
