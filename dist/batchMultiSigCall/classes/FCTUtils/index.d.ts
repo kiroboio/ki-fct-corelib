@@ -50,7 +50,7 @@ export declare class FCTUtils extends FCTBase {
         amountInETH: string;
     };
     getPaymentPerPayer: ({ signatures, gasPrice, kiroPriceInETH, penalty, }: {
-        signatures: SignatureLike[];
+        signatures?: SignatureLike[] | undefined;
         gasPrice?: number | undefined;
         kiroPriceInETH: string;
         penalty?: number | undefined;

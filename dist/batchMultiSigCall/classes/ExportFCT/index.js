@@ -79,7 +79,7 @@ class ExportFCT extends FCTBase_1.FCTBase {
                 typeHash: (0, utils_1.hexlify)(eth_sig_util_1.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: (0, utils_1.id)(call.toENS || ""),
                 functionSignature: (0, helpers_1.handleFunctionSignature)(call),
-                value: this.FCT._variables.getValue(call.to, "uint256", "0"),
+                value: this.FCT._variables.getValue(call.value, "uint256", "0"),
                 callId: CallID_1.CallID.asString({
                     calls,
                     call,
