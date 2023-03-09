@@ -1,6 +1,4 @@
-import { utils } from "ethers";
-
-import FCTBatchMultiSigCallABI from "../../abi/FCT_BatchMultiSigCall.abi.json";
+import { Interface } from "../../helpers/Interfaces";
 import { IBatchMultiSigCallFCT } from "../../types";
 
 export function getCalldataForActuator({
@@ -16,8 +14,7 @@ export function getCalldataForActuator({
   activator: string;
   version: string;
 }): string {
-  const FCT_BatchMultiSigCall = new utils.Interface(FCTBatchMultiSigCallABI);
-  return FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+  return Interface.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
     `0x${version}`.padEnd(66, "0"),
     signedFCT,
     purgedFCT,
