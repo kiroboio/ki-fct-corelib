@@ -415,11 +415,13 @@ export class FCTUtils extends FCTBase {
           ? acc
           : path[payer as keyof typeof path] || "0";
       }, "0");
+
       return {
         payer,
         amount,
         amountInETH: BigNumber(amount)
-          .div(BigNumber(kiroPriceInETH).shiftedBy(18))
+          .shiftedBy(18)
+          .div(BigNumber(kiroPriceInETH))
           .multipliedBy(penalty || 1)
           .toString(),
       };
