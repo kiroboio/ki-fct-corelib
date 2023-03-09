@@ -334,7 +334,7 @@ export class FCTUtils extends FCTBase {
     kiroPriceInETH,
     penalty,
   }: {
-    signatures: SignatureLike[];
+    signatures?: SignatureLike[];
     gasPrice?: number;
     kiroPriceInETH: string;
     penalty?: number;
@@ -349,7 +349,7 @@ export class FCTUtils extends FCTBase {
       activator: "0x0000000000000000000000000000000000000000",
       investor: "0x0000000000000000000000000000000000000000",
       purgedFCT: "0x".padEnd(66, "0"),
-      signatures,
+      signatures: fct.signatures,
     });
 
     const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
