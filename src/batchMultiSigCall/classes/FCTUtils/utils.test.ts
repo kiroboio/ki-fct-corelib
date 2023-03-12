@@ -24,7 +24,7 @@ describe("BatchMultiSigCall EIP712", () => {
     expect(approvals[0]).to.deep.eq({
       token: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
       method: "approve",
-      from: "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586",
+      from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
       protocol: "ERC20",
       params: {
         spender: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
@@ -37,7 +37,7 @@ describe("BatchMultiSigCall EIP712", () => {
       from: "0xDF9c06D1A927D8945fA5b05840A3A385Eaa14D98",
       protocol: "ERC721",
       params: {
-        spender: "0x9650578EBd1b08f98Af81a84372ECE4B448d7526",
+        spender: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
         tokenId: "1",
       },
     });
