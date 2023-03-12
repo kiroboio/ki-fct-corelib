@@ -37,6 +37,17 @@ const transactionValidator = async (txVal, pureGas = false) => {
         if (err.reason === "processing response error") {
             throw err;
         }
+        if (txVal.errorIsValid) {
+            return {
+                isValid: true,
+                txData: { gas: 0, ...gasPrice, type: 2 },
+                prices: {
+                    gas: 1000000,
+                    gasPrice: gasPrice.maxFeePerGas,
+                },
+                error: null,
+            };
+        }
         return {
             isValid: false,
             txData: { gas: 0, ...gasPrice, type: 2 },

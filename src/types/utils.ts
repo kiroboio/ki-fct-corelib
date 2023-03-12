@@ -9,6 +9,7 @@ export interface ITxValidator {
   actuatorContractAddress: string;
   activateForFree: boolean;
   gasPrice: EIP1559GasPrice;
+  errorIsValid?: boolean;
 }
 
 // eip1559?: boolean;
