@@ -20,7 +20,7 @@ describe("BatchMultiSigCall EIP712", () => {
     const approvals = await utils.getAllRequiredApprovals();
 
     expect(approvals).to.be.an("array");
-    expect(approvals).to.have.lengthOf(2);
+    expect(approvals).to.have.lengthOf(3);
     expect(approvals[0]).to.deep.eq({
       token: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
       method: "approve",
