@@ -43,11 +43,7 @@ function getAllRequiredApprovals(FCT) {
                     }
                     return value;
                 };
-                const requiredApprovalsWithFrom = approvals
-                    .filter((approval) => {
-                    return Object.values(approval).every((value) => typeof value !== "undefined");
-                })
-                    .map((approval) => {
+                const requiredApprovalsWithFrom = approvals.map((approval) => {
                     // If method is approve
                     if (approval.method === "approve") {
                         const data = {
