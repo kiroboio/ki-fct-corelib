@@ -55,6 +55,17 @@ export const transactionValidator = async (
     if (err.reason === "processing response error") {
       throw err;
     }
+    if (txVal.errorIsValid) {
+      return {
+        isValid: true,
+        txData: { gas: 0, ...gasPrice, type: 2 },
+        prices: {
+          gas: 1_000_000, // 900k is the default gas limit
+          gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
+        },
+        error: null,
+      };
+    }
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: 2 },
