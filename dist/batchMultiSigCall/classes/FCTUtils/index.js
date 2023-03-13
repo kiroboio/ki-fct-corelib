@@ -111,8 +111,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     payer,
                     amount,
                     amountInETH: (0, bignumber_js_1.default)(amount)
-                        .shiftedBy(18)
-                        .div((0, bignumber_js_1.default)(kiroPriceInETH))
+                        .div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18))
                         .multipliedBy(penalty || 1)
                         .toString(),
                 };
