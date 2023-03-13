@@ -5,7 +5,8 @@ async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
   const data = FCT.utils.getPaymentPerPayer({
-    kiroPriceInETH: "13715073753874304248581",
+    // kiroPriceInETH: "1175658011775855131063", // From calculation
+    kiroPriceInETH: "2515671042171160012110", // From event
   });
 
   console.log(data);
