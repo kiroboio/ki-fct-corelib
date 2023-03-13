@@ -420,8 +420,7 @@ export class FCTUtils extends FCTBase {
         payer,
         amount,
         amountInETH: BigNumber(amount)
-          .shiftedBy(18)
-          .div(BigNumber(kiroPriceInETH))
+          .div(BigNumber(kiroPriceInETH).shiftedBy(18))
           .multipliedBy(penalty || 1)
           .toString(),
       };
