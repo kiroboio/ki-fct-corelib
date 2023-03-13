@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+import { utils } from "../src";
 import { Interface } from "../src/helpers/Interfaces";
 import scriptData from "./scriptData";
 const chainId = 5;
@@ -38,7 +39,6 @@ async function main() {
     KIRO_WETH_Pool,
     [
       "function getReserves() view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast)",
-      "function token0() view returns (address)",
       "function price0CumulativeLast() external view returns (uint)",
       "function price1CumulativeLast() external view returns (uint)",
     ],
@@ -92,10 +92,13 @@ async function main() {
   console.log("KIROPriceInETH", decode144(KIROPriceInETH).toString());
 
   console.log("//////////////////////////////");
-  const s_price0Average = await Actuator.s_price0Average();
-  const s_price1Average = await Actuator.s_price1Average();
-  console.log("s_price0Average", s_price0Average.toString());
-  console.log("s_price1Average", s_price1Average.toString());
+  console.log("By using getKIROPrice function");
+  const price = await utils.getKIROPrice({
+    chainId,
+    rpcUrl: scriptData[chainId].rpcUrl,
+    blockTimestamp,
+  });
+  console.log("KIROPriceInETH from getKIROPrice function", price.toString());
 }
 
 main()
