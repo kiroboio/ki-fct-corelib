@@ -419,6 +419,83 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getGasPerPayer = (fctInputData?: { signatures?: SignatureLike[] }) => {
+    const fct = this.FCTData;
+    const allPaths = this.getAllPaths();
+
+    fct.signatures = fctInputData?.signatures || [];
+
+    const callData = this.getCalldataForActuator({
+      activator: "0x0000000000000000000000000000000000000000",
+      investor: "0x0000000000000000000000000000000000000000",
+      purgedFCT: "0x".padEnd(66, "0"),
+      signatures: fct.signatures,
+    });
+
+    const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
+    const callOverhead = 16370;
+    const defaultCallGas = 50000;
+
+    const limits = fct.typedData.message.limits as TypedDataLimits;
+    const maxGasPrice = limits.gas_price_limit;
+
+    const FCTgasPrice = maxGasPrice;
+    const bigIntGasPrice = BigInt(FCTgasPrice);
+
+    const effectiveGasPrice = (
+      (bigIntGasPrice * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - bigIntGasPrice) * BigInt(5000)) / BigInt(10000) -
+      bigIntGasPrice
+    ).toString();
+
+    const data = allPaths.map((path) => {
+      const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
+
+      return path.reduce((acc, callIndex) => {
+        const call = fct.mcall[Number(callIndex)];
+        const callId = CallID.parse(call.callId);
+        const payerIndex = callId.payerIndex;
+        const payer = fct.mcall[payerIndex - 1].from;
+
+        // 21000 - base fee of the call on EVMs
+        const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
+        const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
+
+        const callCost = totalGasForCall * BigInt(FCTgasPrice);
+        const callFee = totalGasForCall * BigInt(effectiveGasPrice);
+        const totalCallCost = callCost + callFee;
+
+        return {
+          ...acc,
+          [payer]: (BigInt(acc[payer as keyof typeof acc] || 0) + totalCallCost).toString(),
+        };
+      }, {});
+    });
+
+    const allPayers = [
+      ...new Set(
+        fct.mcall.map((call) => {
+          const callId = CallID.parse(call.callId);
+          const payerIndex = callId.payerIndex;
+          const payer = fct.mcall[payerIndex - 1].from;
+          return payer;
+        })
+      ),
+    ];
+
+    return allPayers.map((payer) => {
+      const amount = data.reduce<string>((acc: string, path) => {
+        return BigInt(acc) > BigInt(path[payer as keyof typeof path] || "0")
+          ? acc
+          : path[payer as keyof typeof path] || "0";
+      }, "0");
+
+      return {
+        payer,
+        amount,
+      };
+    });
+  };
+
   private validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",

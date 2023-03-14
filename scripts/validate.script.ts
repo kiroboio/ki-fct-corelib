@@ -22,6 +22,10 @@ async function main() {
   });
 
   console.log(data);
+
+  const gasPerPayer = FCT.utils.getGasPerPayer();
+
+  console.log(gasPerPayer);
 }
 
 main()
