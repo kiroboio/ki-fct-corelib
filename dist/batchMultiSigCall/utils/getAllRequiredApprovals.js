@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllRequiredApprovals = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
+const utils_1 = require("ethers/lib/utils");
 const constants_1 = require("../../constants");
 const helpers_1 = require("../../helpers");
 const helpers_2 = require("../helpers");
@@ -43,8 +44,8 @@ function getAllRequiredApprovals(FCT) {
                     }
                     return value;
                 };
-                const requiredApprovalsWithFrom = approvals.map((approval) => {
-                    // If method is approve
+                const requiredApprovalsWithFrom = approvals
+                    .map((approval) => {
                     if (approval.method === "approve") {
                         const data = {
                             token: manageValue(approval.to),
@@ -82,10 +83,23 @@ function getAllRequiredApprovals(FCT) {
                                 spender: manageValue(approval.params[0]),
                                 approved: approval.params[1],
                             },
-                            from: manageValue(approval.from || call.from),
+                            from: manageValue(approval.from || call.from), // Who needs to approve
                         };
                     }
                     throw new Error("Unknown method for plugin");
+                })
+                    .filter((approval) => {
+                    // If from === call.from, we don't need to add it to the approvals
+                    if (typeof call.from !== "string") {
+                        return true;
+                    }
+                    const caller = (0, utils_1.getAddress)(call.from);
+                    const whoIsApproving = (0, utils_1.getAddress)(approval.from);
+                    const whoIsSpending = (0, utils_1.getAddress)(approval.params.spender);
+                    if (caller === whoIsSpending && caller === whoIsApproving) {
+                        return false;
+                    }
+                    return true;
                 });
                 requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
             }
