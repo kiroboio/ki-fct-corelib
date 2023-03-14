@@ -59,5 +59,11 @@ export declare class FCTUtils extends FCTBase {
         amount: string;
         amountInETH: string;
     }[];
+    getGasPerPayer: (fctInputData?: {
+        signatures?: SignatureLike[];
+    }) => {
+        payer: string;
+        amount: string;
+    }[];
     private validateFCTKeys;
 }
