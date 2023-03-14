@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 
 import { utils } from "../src";
+import { Interface } from "../src/helpers/Interfaces";
 import scriptData from "./scriptData";
 const chainId = 5;
 const KIRO_WETH_Pool = "0x0D415c2496099DfBE817fc5A0285bE3d86b9FD8d";
@@ -44,7 +45,7 @@ async function main() {
   //   provider
   // );
 
-  // const Actuator = new ethers.Contract("0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C", Interface.FCT_Actuator, provider);
+  const Actuator = new ethers.Contract("0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C", Interface.FCT_Actuator, provider);
 
   // const price0CumulativeLast = await UniswapV2Pair.price0CumulativeLast();
   // const price1CumulativeLast = await UniswapV2Pair.price1CumulativeLast();
@@ -98,6 +99,8 @@ async function main() {
     blockTimestamp,
   });
   console.log("KIROPriceInETH from getKIROPrice function", price.toString());
+  const amountOfKiro = await Actuator.getAmountOfKiroForGivenEth(ethers.utils.parseEther("1"));
+  console.log("amountOfKiro", amountOfKiro.toString());
 }
 
 main()
