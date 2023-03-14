@@ -46,6 +46,16 @@ export declare class FetchUtility {
         };
         token: string;
         from: string;
+    } | {
+        value: any;
+        protocol: "AAVE";
+        method: "approveDelegation";
+        params: {
+            delegatee: string;
+            amount: string;
+        };
+        token: string;
+        from: string;
     })[]>;
     getTokensTotalSupply(requiredApprovals: IRequiredApproval[]): Promise<Record<string, string>>;
 }

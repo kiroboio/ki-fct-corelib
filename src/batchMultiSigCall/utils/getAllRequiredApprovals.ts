@@ -100,10 +100,26 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
               };
             }
 
+            if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
+              return {
+                protocol: approval.protocol,
+                token: manageValue(approval.to),
+                method: approval.method,
+                params: {
+                  delegatee: manageValue(approval.params[0] as string), // Who is going to spend
+                  amount: approval.params[1] as string,
+                },
+                from: manageValue(approval.from || call.from), // Who needs to approve
+              };
+            }
+
             throw new Error("Unknown method for plugin");
           })
           .filter((approval) => {
             // If from === call.from, we don't need to add it to the approvals
+            if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
+              return false;
+            }
             if (typeof call.from !== "string") {
               return true;
             }
