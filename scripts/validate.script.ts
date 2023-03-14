@@ -8,7 +8,9 @@ async function main() {
   console.log(requiredApprovals);
 
   const data = FCT.utils.getPaymentPerPayer({
-    kiroPriceInETH: "232396827114661021886157", // From calculation
+    // kiroPriceInETH: "232396827114661021886157", // From calculation
+    kiroPriceInETH: "225924675135002911548683", // From calculation2
+
     // kiroPriceInETH: "2515671042171160012110", // From event
   });
 
