@@ -384,16 +384,11 @@ export class FCTUtils extends FCTBase {
         const callFee = totalGasForCall * BigInt(effectiveGasPrice);
         const totalCallCost = callCost + callFee;
 
-        const kiroCost = new BigNumber(totalCallCost.toString())
-          .multipliedBy(new BigNumber(kiroPriceInETH))
-          .shiftedBy(-18 - 18)
-          .toNumber();
+        const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / BigInt(1e18);
 
         return {
           ...acc,
-          [payer]: BigNumber(acc[payer as keyof typeof acc] || 0)
-            .plus(kiroCost)
-            .toString(),
+          [payer]: (BigInt(acc[payer as keyof typeof acc] || 0) + kiroCost).toString(),
         };
       }, {});
     });
@@ -411,7 +406,7 @@ export class FCTUtils extends FCTBase {
 
     return allPayers.map((payer) => {
       const amount = data.reduce<string>((acc: string, path) => {
-        return BigNumber(acc).isGreaterThan(path[payer as keyof typeof path] || "0")
+        return BigInt(acc) > BigInt(path[payer as keyof typeof path] || "0")
           ? acc
           : path[payer as keyof typeof path] || "0";
       }, "0");
@@ -419,11 +414,7 @@ export class FCTUtils extends FCTBase {
       return {
         payer,
         amount,
-        amountInETH: BigNumber(amount)
-          .shiftedBy(18)
-          .div(BigNumber(kiroPriceInETH))
-          .multipliedBy(penalty || 1)
-          .toString(),
+        amountInETH: (((BigInt(amount) * BigInt(1e18)) / BigInt(kiroPriceInETH)) * BigInt(penalty || 1)).toString(),
       };
     });
   };
