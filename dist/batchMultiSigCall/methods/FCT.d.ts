@@ -13,7 +13,7 @@ export declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins
             amountTokenMin: import("@kirobo/ki-eth-fct-provider-ts").FctValue;
             amountETHMin: import("@kirobo/ki-eth-fct-provider-ts").FctValue;
             to: import("@kirobo/ki-eth-fct-provider-ts").FctAddress;
-            deadline: import("@kirobo/ki-eth-fct-provider-ts").FctValue;
+            deadline: import("@kirobo/ki-eth-fct-provider-ts").FctTimestamp;
         };
     };
     output: {

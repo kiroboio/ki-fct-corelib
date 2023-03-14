@@ -441,8 +441,19 @@ describe("Utility functions", () => {
         ],
       });
 
-      expect(approvals[0].from).to.eq("0x62e3a53a947d34c4ddcd67b49fadc30b643e2586");
-      expect(approvals[0].params.spender).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
+      const approval = approvals[0] as {
+        protocol: "ERC20";
+        method: "approve";
+        params: {
+          spender: string;
+          amount: string;
+        };
+        from: string;
+        token: string;
+      };
+
+      expect(approval.from).to.eq("0x62e3a53a947d34c4ddcd67b49fadc30b643e2586");
+      expect(approval.params.spender).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
     });
   });
   describe("Gas functions", () => {
