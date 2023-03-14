@@ -162,6 +162,14 @@ export type IRequiredApproval = (
         approved: boolean;
       };
     }
+  | {
+      protocol: "AAVE";
+      method: "approveDelegation";
+      params: {
+        delegatee: string;
+        amount: string;
+      };
+    }
 ) & {
   token: string;
   from: string;
