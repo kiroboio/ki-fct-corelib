@@ -78,6 +78,18 @@ const getData = async ({
       target: actuatorAddress,
       callData: Actuator.encodeFunctionData("s_price1CumulativeLast"),
     },
+    {
+      target: actuatorAddress,
+      callData: Actuator.encodeFunctionData("s_timeBetweenKiroPriceUpdate"),
+    },
+    {
+      target: actuatorAddress,
+      callData: Actuator.encodeFunctionData("s_price0Average"),
+    },
+    {
+      target: actuatorAddress,
+      callData: Actuator.encodeFunctionData("s_price1Average"),
+    },
   ]);
 
   // Decode return data
@@ -88,6 +100,9 @@ const getData = async ({
     s_blockTimestampLast,
     s_price0CumulativeLast,
     s_price1CumulativeLast,
+    s_timeBetweenKiroPriceUpdate,
+    s_price0Average,
+    s_price1Average,
   ] = (returnData as any[]).map((data, i: number) => {
     if (i === 2) {
       return UniswapV2Pair.decodeFunctionResult("getReserves", data);
@@ -103,6 +118,9 @@ const getData = async ({
     s_blockTimestampLast,
     s_price0CumulativeLast,
     s_price1CumulativeLast,
+    s_timeBetweenKiroPriceUpdate,
+    s_price0Average,
+    s_price1Average,
   };
 };
 
@@ -173,6 +191,9 @@ export const getKIROPrice = async ({
     s_blockTimestampLast,
     s_price0CumulativeLast,
     s_price1CumulativeLast,
+    s_timeBetweenKiroPriceUpdate,
+    s_price0Average,
+    s_price1Average,
   } = await getData({ chainId, provider });
 
   const { price0Cumulative, price1Cumulative } = getCumulativePrices({
@@ -183,6 +204,13 @@ export const getKIROPrice = async ({
   });
 
   const timeElapsed = blockTimestamp - s_blockTimestampLast.toNumber();
+
+  // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
+  if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
+    const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
+
+    return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
+  }
   const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
   const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
 

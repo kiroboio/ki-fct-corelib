@@ -62,9 +62,21 @@ const getData = async ({ chainId, provider, }) => {
             target: actuatorAddress,
             callData: Actuator.encodeFunctionData("s_price1CumulativeLast"),
         },
+        {
+            target: actuatorAddress,
+            callData: Actuator.encodeFunctionData("s_timeBetweenKiroPriceUpdate"),
+        },
+        {
+            target: actuatorAddress,
+            callData: Actuator.encodeFunctionData("s_price0Average"),
+        },
+        {
+            target: actuatorAddress,
+            callData: Actuator.encodeFunctionData("s_price1Average"),
+        },
     ]);
     // Decode return data
-    const [price0CumulativeLast, price1CumulativeLast, getReserves, s_blockTimestampLast, s_price0CumulativeLast, s_price1CumulativeLast,] = returnData.map((data, i) => {
+    const [price0CumulativeLast, price1CumulativeLast, getReserves, s_blockTimestampLast, s_price0CumulativeLast, s_price1CumulativeLast, s_timeBetweenKiroPriceUpdate, s_price0Average, s_price1Average,] = returnData.map((data, i) => {
         if (i === 2) {
             return UniswapV2Pair.decodeFunctionResult("getReserves", data);
         }
@@ -78,6 +90,9 @@ const getData = async ({ chainId, provider, }) => {
         s_blockTimestampLast,
         s_price0CumulativeLast,
         s_price1CumulativeLast,
+        s_timeBetweenKiroPriceUpdate,
+        s_price0Average,
+        s_price1Average,
     };
 };
 const getCumulativePrices = ({ blockTimestamp, getReserves, price0CumulativeLast, price1CumulativeLast, }) => {
@@ -117,7 +132,7 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
     }
     blockTimestamp = (blockTimestamp || (await provider.getBlock("latest")).timestamp);
     const isToken0KIRO = data[chainId].isToken0KIRO;
-    const { price0CumulativeLast, price1CumulativeLast, getReserves, s_blockTimestampLast, s_price0CumulativeLast, s_price1CumulativeLast, } = await getData({ chainId, provider });
+    const { price0CumulativeLast, price1CumulativeLast, getReserves, s_blockTimestampLast, s_price0CumulativeLast, s_price1CumulativeLast, s_timeBetweenKiroPriceUpdate, s_price0Average, s_price1Average, } = await getData({ chainId, provider });
     const { price0Cumulative, price1Cumulative } = getCumulativePrices({
         blockTimestamp,
         getReserves: getReserves,
@@ -125,6 +140,11 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
         price1CumulativeLast: price1CumulativeLast,
     });
     const timeElapsed = blockTimestamp - s_blockTimestampLast.toNumber();
+    // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
+    if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
+        const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
+        return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
+    }
     const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
     const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
     const priceAverage = isToken0KIRO ? price0Average : price1Average;
