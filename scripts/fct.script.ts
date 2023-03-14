@@ -3,7 +3,6 @@ import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import fs from "fs";
-import util from "util";
 
 // import util from "util";
 import { BatchMultiSigCall, TypedDataTypes } from "../src";
@@ -53,6 +52,7 @@ async function main() {
     to: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     methodParams: {
       amount: "1" + "0".repeat(18),
+      // from: vault,
       from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
       to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     },
@@ -63,7 +63,8 @@ async function main() {
     initParams: {
       to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
       methodParams: {
-        from: "0xDF9c06D1A927D8945fA5b05840A3A385Eaa14D98",
+        // from: vault,
+        from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
         to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
         tokenId: "1",
       },
@@ -101,9 +102,9 @@ async function main() {
   ]);
 
   const FCT = batchMultiSigCall.exportFCT();
-  console.log(util.inspect(batchMultiSigCall.decodedCalls, false, null, true /* enable colors */));
+  // console.log(util.inspect(batchMultiSigCall.decodedCalls, false, null, true /* enable colors */));
 
-  console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -120,33 +121,8 @@ async function main() {
     externalSigners: [],
   };
 
-  // const version = "010101";
-
-  // const callData = batchMultiSigCall.getCalldataForActuator({
-  //   signedFCT,
-  //   activator: process.env.ACTIVATOR as string,
-  //   investor: ZERO_ADDRESS,
-  //   purgedFCT: "0x".padEnd(66, "0"),
-  //   version,
-  // });
-
-  // const gasEstimation = await utils.estimateFCTGasCost({
-  //   fct: signedFCT,
-  //   callData,
-  //   rpcUrl: data[chainId].rpcUrl,
-  //   batchMultiSigCallAddress: data[chainId].FCT_BatchMultiSig,
-  // });
-
-  // console.log("gasEstimation", gasEstimation);
-
-  const kiroPayment = batchMultiSigCall.utils.getKIROPayment({
-    kiroPriceInETH: "38270821632831754769812",
-    gasPrice: 1580000096,
-    gas: 462109,
-  });
-
-  const requireApprovals = batchMultiSigCall.utils.getAllRequiredApprovals();
-  console.log(requireApprovals);
+  const requireApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
+  console.log(requireApprovals, requireApprovals.length);
 
   fs.writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
 }
@@ -159,21 +135,3 @@ main()
     console.error(error);
     process.exitCode = 1;
   });
-
-// 0x
-// 00000000000000000000000000000000000000000000000000000000000f4240
-// 0000000000000000000000000000000000000000000000000000000000000060
-// 00000000000000000000000000000000000000000000000000000000000000a0
-// 0000000000000000000000000000000000000000000000000000000000000020
-// 73776170203c616d6f756e743e2045544820666f72203c583e20546f6b656e73
-// 0000000000000000000000000000000000000000000000000000000000000002
-// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
-// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984
-
-// 0x
-// 00000000000000000000000000000000000000000000000000000000000f4240 amount
-// 466cc669f6960e4421e91695071448f897ff8b24896d7be50c3dfd35763c11bc method bytes32
-// 0000000000000000000000000000000000000000000000000000000000000060 path position
-// 0000000000000000000000000000000000000000000000000000000000000002 path length
-// 000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6 path[0]
-// 0000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984 path[1]
