@@ -37,7 +37,7 @@ describe("BatchMultiSigCall EIP712", () => {
       from: "0xDF9c06D1A927D8945fA5b05840A3A385Eaa14D98",
       protocol: "ERC721",
       params: {
-        spender: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+        spender: "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
         tokenId: "1",
       },
     });
