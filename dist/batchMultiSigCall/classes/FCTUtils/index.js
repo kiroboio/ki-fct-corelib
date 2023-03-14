@@ -81,15 +81,10 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     const callCost = totalGasForCall * BigInt(FCTgasPrice);
                     const callFee = totalGasForCall * BigInt(effectiveGasPrice);
                     const totalCallCost = callCost + callFee;
-                    const kiroCost = new bignumber_js_1.default(totalCallCost.toString())
-                        .multipliedBy(new bignumber_js_1.default(kiroPriceInETH))
-                        .shiftedBy(-18 - 18)
-                        .toNumber();
+                    const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / BigInt(1e18);
                     return {
                         ...acc,
-                        [payer]: (0, bignumber_js_1.default)(acc[payer] || 0)
-                            .plus(kiroCost)
-                            .toString(),
+                        [payer]: (BigInt(acc[payer] || 0) + kiroCost).toString(),
                     };
                 }, {});
             });
@@ -103,17 +98,14 @@ class FCTUtils extends FCTBase_1.FCTBase {
             ];
             return allPayers.map((payer) => {
                 const amount = data.reduce((acc, path) => {
-                    return (0, bignumber_js_1.default)(acc).isGreaterThan(path[payer] || "0")
+                    return BigInt(acc) > BigInt(path[payer] || "0")
                         ? acc
                         : path[payer] || "0";
                 }, "0");
                 return {
                     payer,
                     amount,
-                    amountInETH: (0, bignumber_js_1.default)(amount)
-                        .div((0, bignumber_js_1.default)(kiroPriceInETH).shiftedBy(18))
-                        .multipliedBy(penalty || 1)
-                        .toString(),
+                    amountInETH: (((BigInt(amount) * BigInt(1e18)) / BigInt(kiroPriceInETH)) * BigInt(penalty || 1)).toString(),
                 };
             });
         };
