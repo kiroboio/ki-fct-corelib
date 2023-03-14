@@ -1,4 +1,5 @@
 import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { getAddress } from "ethers/lib/utils";
 
 import { FCT_VAULT_ADDRESS } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
@@ -55,52 +56,65 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
           return value;
         };
 
-        const requiredApprovalsWithFrom = approvals.map((approval): IRequiredApproval => {
-          // If method is approve
-          if (approval.method === "approve") {
-            const data = {
-              token: manageValue(approval.to),
-              method: approval.method,
-              from: manageValue(approval.from || call.from),
-            };
-            if (approval.protocol === "ERC20") {
-              return {
-                ...data,
-                protocol: approval.protocol,
-                params: {
-                  spender: manageValue(approval.params[0] as string),
-                  amount: approval.params[1] as string,
-                },
+        const requiredApprovalsWithFrom = approvals
+          .map((approval): IRequiredApproval => {
+            if (approval.method === "approve") {
+              const data = {
+                token: manageValue(approval.to),
+                method: approval.method,
+                from: manageValue(approval.from || call.from),
               };
-            } else if (approval.protocol === "ERC721") {
+              if (approval.protocol === "ERC20") {
+                return {
+                  ...data,
+                  protocol: approval.protocol,
+                  params: {
+                    spender: manageValue(approval.params[0] as string),
+                    amount: approval.params[1] as string,
+                  },
+                };
+              } else if (approval.protocol === "ERC721") {
+                return {
+                  ...data,
+                  protocol: approval.protocol,
+                  params: {
+                    spender: manageValue(approval.params[0] as string),
+                    tokenId: approval.params[1] as string,
+                  },
+                };
+              }
+            }
+            if (
+              approval.method === "setApprovalForAll" &&
+              (approval.protocol === "ERC721" || approval.protocol === "ERC1155")
+            ) {
               return {
-                ...data,
                 protocol: approval.protocol,
+                token: manageValue(approval.to),
+                method: approval.method,
                 params: {
-                  spender: manageValue(approval.params[0] as string),
-                  tokenId: approval.params[1] as string,
+                  spender: manageValue(approval.params[0] as string), // Who is going to spend
+                  approved: approval.params[1] as boolean,
                 },
+                from: manageValue(approval.from || call.from), // Who needs to approve
               };
             }
-          }
-          if (
-            approval.method === "setApprovalForAll" &&
-            (approval.protocol === "ERC721" || approval.protocol === "ERC1155")
-          ) {
-            return {
-              protocol: approval.protocol,
-              token: manageValue(approval.to),
-              method: approval.method,
-              params: {
-                spender: manageValue(approval.params[0] as string),
-                approved: approval.params[1] as boolean,
-              },
-              from: manageValue(approval.from || call.from),
-            };
-          }
 
-          throw new Error("Unknown method for plugin");
-        });
+            throw new Error("Unknown method for plugin");
+          })
+          .filter((approval) => {
+            // If from === call.from, we don't need to add it to the approvals
+            if (typeof call.from !== "string") {
+              return true;
+            }
+            const caller = getAddress(call.from);
+            const whoIsApproving = getAddress(approval.from);
+            const whoIsSpending = getAddress(approval.params.spender);
+            if (caller === whoIsSpending && caller === whoIsApproving) {
+              return false;
+            }
+            return true;
+          });
 
         requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
       }
