@@ -154,8 +154,8 @@ export class EIP712 extends FCTBase {
       { name: "meta", type: "Meta" },
       { name: "limits", type: "Limits" },
       ...additionalTypes,
-      ...this.getCallsPrimaryType(),
       ...this.getComputedPrimaryType(),
+      ...this.getCallsPrimaryType(),
     ];
   }
 
