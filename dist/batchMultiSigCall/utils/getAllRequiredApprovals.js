@@ -101,18 +101,19 @@ function getAllRequiredApprovals(FCT) {
                     throw new Error("Unknown method for plugin");
                 })
                     .filter((approval) => {
-                    // If from === call.from, we don't need to add it to the approvals
-                    if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
-                        return false;
-                    }
                     if (typeof call.from !== "string") {
                         return true;
                     }
                     const caller = (0, utils_1.getAddress)(call.from);
-                    const whoIsApproving = (0, utils_1.getAddress)(approval.from);
-                    const whoIsSpending = (0, utils_1.getAddress)(approval.params.spender);
-                    if (caller === whoIsSpending && caller === whoIsApproving) {
-                        return false;
+                    // If the protocol is AAVE, we check if the caller is the spender and the approver
+                    if (approval.protocol === "AAVE") {
+                        if (typeof call.from !== "string") {
+                            return true;
+                        }
+                        const whoIsApproving = (0, utils_1.getAddress)(approval.from);
+                        const whoIsSpending = (0, utils_1.getAddress)(approval.params.delegatee);
+                        // If the caller is the spender and the approver - no need to approve
+                        return !(caller === whoIsSpending && caller === whoIsApproving);
                     }
                     return true;
                 });

@@ -116,18 +116,20 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
             throw new Error("Unknown method for plugin");
           })
           .filter((approval) => {
-            // If from === call.from, we don't need to add it to the approvals
-            if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
-              return false;
-            }
             if (typeof call.from !== "string") {
               return true;
             }
             const caller = getAddress(call.from);
-            const whoIsApproving = getAddress(approval.from);
-            const whoIsSpending = getAddress(approval.params.spender);
-            if (caller === whoIsSpending && caller === whoIsApproving) {
-              return false;
+            // If the protocol is AAVE, we check if the caller is the spender and the approver
+            if (approval.protocol === "AAVE") {
+              if (typeof call.from !== "string") {
+                return true;
+              }
+              const whoIsApproving = getAddress(approval.from);
+              const whoIsSpending = getAddress(approval.params.delegatee);
+
+              // If the caller is the spender and the approver - no need to approve
+              return !(caller === whoIsSpending && caller === whoIsApproving);
             }
             return true;
           });
