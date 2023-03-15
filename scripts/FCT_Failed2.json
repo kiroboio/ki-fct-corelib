@@ -77,8 +77,8 @@
       ],
       "transaction1": [
         {
-          "name": "owner",
-          "type": "address"
+          "name": "call",
+          "type": "Call"
         }
       ],
       "BatchMultiSigCall": [
@@ -194,26 +194,25 @@
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "balanceOf(address)"
-        },
-        "owner": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30"
+          "method_interface": "balanceOf()"
+        }
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x43346eb04edf1ce093ce1875c642e05c839b8b1ed203d1f46a251ccb91551fa2",
+  "typeHash": "0x4e978db455cea4e6d457fc81b3dfdb3bffcece0e74544b242e335cc1ed9a9814",
   "sessionId": "0x6f55820001010100000000000000641b7a5f006411a7a90000000b6de180e80c",
   "nameHash": "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   "mcall": [
     {
-      "typeHash": "0x276d3800ab976c19d67a16b7054fee3b1c64560474a19cf900904a0b4291a1c8",
+      "typeHash": "0x059f3ab25880eb521ca0ee77909d61ec600ee2057b1588455cb8a9a469122816",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "functionSignature": "0x70a08231b98ef4ca268c9cc3f6b4590e4bfec28280db06bb5d45e689f2a360be",
+      "functionSignature": "0x722713f7196651d0fe4592d1dc3ef527a8f2d47259e18fa8ec48288f351a83eb",
       "value": "0",
       "callId": "0x00000000000000000000000000000000000006000000000001000100017e5c11",
       "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
       "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
-      "data": "0x000000000000000000000000e911180acde75bfbacfc8bbfd484768b6aa3bd30",
+      "data": "0x",
       "types": [],
       "typedHashes": []
     }
@@ -222,13 +221,13 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0x809e266ec548bf0a23986e88b49436667daf5a770864c190f8938c689961cda8",
-      "s": "0x24aa76af19e9b8f0e7530e376bb049755044242be70982af026f31625dc3afc2",
-      "_vs": "0xa4aa76af19e9b8f0e7530e376bb049755044242be70982af026f31625dc3afc2",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xa4aa76af19e9b8f0e7530e376bb049755044242be70982af026f31625dc3afc2",
-      "compact": "0x809e266ec548bf0a23986e88b49436667daf5a770864c190f8938c689961cda8a4aa76af19e9b8f0e7530e376bb049755044242be70982af026f31625dc3afc2"
+      "r": "0xdca82a1612612646f51b7ceca4e9f75d90a20808328c27cf9a4fb82ed8e661d0",
+      "s": "0x22e76bb3291e4b94c9cc4d1e182e8a797a7e5fe3b3e1ad55963413caa8913f00",
+      "_vs": "0x22e76bb3291e4b94c9cc4d1e182e8a797a7e5fe3b3e1ad55963413caa8913f00",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x22e76bb3291e4b94c9cc4d1e182e8a797a7e5fe3b3e1ad55963413caa8913f00",
+      "compact": "0xdca82a1612612646f51b7ceca4e9f75d90a20808328c27cf9a4fb82ed8e661d022e76bb3291e4b94c9cc4d1e182e8a797a7e5fe3b3e1ad55963413caa8913f00"
     }
   ],
   "computed": []
