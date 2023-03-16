@@ -4,14 +4,12 @@ exports.DEFAULT_CALL_OPTIONS = exports.NO_JUMP = exports.EIP712_MULTISIG = expor
 const flows_1 = require("../constants/flows");
 exports.addresses = {
     1: {
-        // NOTE: These addresses are not correct since no contracts have been deployed on mainnet
-        // TODO: Update these addresses once contracts have been deployed on mainnet
-        FCT_Controller: "0x087550a787B2720AAC06351065afC1F413D82572",
-        FCT_BatchMultiSig: "0x067D176d13651c8AfF7964a4bB9dF3107F893e88",
-        FCT_EnsManager: "0x7DA33a8606BF2F752D473238ff8681b53cf30976",
-        FCT_Tokenomics: "0xFE4fEC781Bd626751249ABb1b15375f3370B9c79",
-        Actuator: "0x6B271aEa169B4804D1d709B2687c17c3Cc8E2e56",
-        ActuatorCore: "0xC76b674d3e33cd908055F295c945F1cd575b7df2",
+        FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
+        FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
+        FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
+        FCT_Tokenomics: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
+        Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
+        ActuatorCore: "0x5E3189755Df3DBB0FD3FeCa3de168fEEDBA76a79",
     },
     5: {
         FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
