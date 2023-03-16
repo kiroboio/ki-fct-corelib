@@ -1,12 +1,10 @@
 import * as dotenv from "dotenv";
 
-import FCTExample from "../FCTExample.json";
-import { BatchMultiSigCall, utils } from "../src";
-import { FetchUtility } from "../src/utils";
+import { utils } from "../src";
 import scriptData from "./scriptData";
 dotenv.config();
 
-const chainId = "5";
+const chainId = "1";
 
 // Address
 const randomAddress = "0x" + "0".repeat(40);
@@ -17,23 +15,10 @@ const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
 async function main() {
   const gasPrices = await utils.getGasPrices({
     rpcUrl: scriptData[chainId].rpcUrl,
+    chainId: Number(chainId),
   });
 
-  const FCT = BatchMultiSigCall.from(FCTExample);
-
-  // Require approvals
-  const approvals = await FCT.utils.getAllRequiredApprovals();
-
-  console.log("Approvals required: ", approvals);
-
-  const fetchUtil = new FetchUtility({
-    chainId: "5",
-    rpcUrl: scriptData[chainId].rpcUrl,
-  });
-
-  const totalSupplies = await fetchUtil.getTokensTotalSupply(approvals);
-
-  console.log("Total supplies: ", totalSupplies);
+  console.log(gasPrices);
 }
 
 main().catch((error) => {
