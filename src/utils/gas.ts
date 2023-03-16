@@ -1,5 +1,4 @@
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
-import { hexlify } from "ethers/lib/utils";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { EIP1559GasPrice, ITxValidator } from "../types";
@@ -105,6 +104,8 @@ export const getGasPrices = async ({
       const baseFee = latestBlock.baseFeePerGas.toString();
       const blockNumber = latestBlock.number;
 
+      console.log(blockNumber);
+
       const res = await fetch(rpcUrl, {
         method: "POST",
         headers: {
@@ -113,8 +114,7 @@ export const getGasPrices = async ({
         body: JSON.stringify({
           jsonrpc: "2.0",
           method: "eth_feeHistory",
-          params: [historicalBlocks, hexlify(blockNumber), [2, 5, 10, 25]],
-          id: 1,
+          params: [`0x${historicalBlocks.toString(16)}`, `0x${blockNumber.toString(16)}`, [2, 5, 10, 25]],
         }),
       });
       const { result } = await res.json();
