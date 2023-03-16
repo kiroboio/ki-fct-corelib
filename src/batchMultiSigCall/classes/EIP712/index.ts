@@ -16,9 +16,9 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
     name: "FCT Controller",
     version: "1",
-    chainId: 5,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+    chainId: 1,
+    verifyingContract: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
+    salt: "0x0100c3ae8d91c3ffd32800000a0ea58e6504aa7bfff6f3d069bd175abab638ee",
   },
   "5": {
     name: "FCT Controller",
