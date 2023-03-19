@@ -121,6 +121,26 @@ function getAllRequiredApprovals(FCT) {
             }
         }
     }
+    // Reduce ERC20 approvals, so we don't have to approve the same approval multiple times
+    requiredApprovals = requiredApprovals.reduce((acc, approval) => {
+        if (approval.protocol !== "ERC20")
+            return [...acc, approval];
+        const existingApproval = acc.find((a) => a.method === approval.method &&
+            a.protocol === approval.protocol &&
+            a.token === approval.token &&
+            a.from === approval.from &&
+            a.params.spender === approval.params.spender);
+        if (existingApproval && existingApproval.protocol !== "ERC20") {
+            throw new Error("Should not happen");
+        }
+        if (existingApproval) {
+            existingApproval.params.amount = (BigInt(approval.params.amount) + BigInt(existingApproval.params.amount)).toString();
+        }
+        else {
+            acc.push(approval);
+        }
+        return acc;
+    }, []);
     return requiredApprovals;
 }
 exports.getAllRequiredApprovals = getAllRequiredApprovals;
