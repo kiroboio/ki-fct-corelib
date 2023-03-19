@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getGasPrices = exports.transactionValidator = void 0;
 const ethers_1 = require("ethers");
-const utils_1 = require("ethers/lib/utils");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
@@ -60,12 +59,13 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
+const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 10, tries = 40, }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+    const { chainId } = chainIdParam ? { chainId: chainIdParam } : await provider.getNetwork();
     let keepTrying = true;
     let returnValue;
     do {
@@ -76,19 +76,23 @@ const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
             }
             const baseFee = latestBlock.baseFeePerGas.toString();
             const blockNumber = latestBlock.number;
+            const generateBody = () => {
+                return JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "eth_feeHistory",
+                    params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 10, 25]],
+                    id: 1,
+                });
+            };
             const res = await fetch(rpcUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    jsonrpc: "2.0",
-                    method: "eth_feeHistory",
-                    params: [historicalBlocks, (0, utils_1.hexlify)(blockNumber), [2, 5, 10, 25]],
-                    id: 1,
-                }),
+                body: generateBody(),
             });
-            const { result } = await res.json();
+            const data = await res.json();
+            const result = data.result;
             if (!result) {
                 throw new Error("No result");
             }
