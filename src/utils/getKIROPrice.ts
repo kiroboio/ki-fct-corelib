@@ -4,9 +4,14 @@ import { addresses } from "../batchMultiSigCall";
 import { multicallContracts } from "../constants";
 import { Interface } from "../helpers/Interfaces";
 
+// FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {
   5: {
     V2_Pool: "0x0D415c2496099DfBE817fc5A0285bE3d86b9FD8d",
+    isToken0KIRO: true,
+  },
+  1: {
+    V2_Pool: "0x5CD136E8197Be513B06d39730dc674b1E0F6b7da",
     isToken0KIRO: true,
   },
 };
@@ -207,14 +212,14 @@ export const getKIROPrice = async ({
 
   // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
   if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
-    const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
+    const priceAverage = isToken0KIRO ? s_price1Average : s_price0Average;
 
     return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
   }
   const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
   const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
 
-  const priceAverage = isToken0KIRO ? price0Average : price1Average;
+  const priceAverage = isToken0KIRO ? price1Average : price0Average;
 
   return decode144(priceAverage * BigInt(1e18)).toString();
 };
