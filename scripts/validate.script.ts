@@ -7,25 +7,24 @@ const chainId = 5;
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  const kiroPriceInETH = await utils.getKIROPrice({
-    chainId,
-    rpcUrl: scriptData[chainId].rpcUrl,
+  // Recover address for every signature
+  for (const signature of FCTData.signatures) {
+    const recoveredAddress = FCT.utils.recoverAddress(signature);
+    console.log("Recovered address:", recoveredAddress);
+  }
+
+  const price = await utils.getKIROPrice({
+    chainId: 1,
+    rpcUrl: scriptData[1].rpcUrl,
   });
 
-  console.log("kiroPriceInETH", kiroPriceInETH);
+  console.log("KIRO price:", price);
 
-  const data = FCT.utils.getPaymentPerPayer({
-    kiroPriceInETH,
-    // kiroPriceInETH: "232396827114661021886157", // From calculation
-    // kiroPriceInETH: "225924675135002911548683", // From calculation2
-    // kiroPriceInETH: "2515671042171160012110", // From event
+  const perPayer = FCT.utils.getPaymentPerPayer({
+    kiroPriceInETH: price,
   });
 
-  console.log(data);
-
-  const gasPerPayer = FCT.utils.getGasPerPayer();
-
-  console.log(gasPerPayer);
+  console.log("Payment per payer:", perPayer);
 }
 
 main()
