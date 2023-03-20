@@ -496,6 +496,58 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getExecutedPath = async ({
+    //   chainId,
+    rpcUrl,
+    txHash,
+  }: {
+    //   chainId: string | number;
+    rpcUrl: string;
+    txHash: string;
+  }) => {
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
+    // Get the tx receipt
+    const txReceipt = await provider.getTransactionReceipt(txHash);
+    const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
+    const controllerInterface = Interface.FCT_Controller;
+
+    // Get FCTE_Activated event
+    const messageHash = txReceipt.logs.find((log) => {
+      try {
+        return controllerInterface.parseLog(log).name === "FCTE_Registered";
+      } catch (e) {
+        return false;
+      }
+    })?.topics[2];
+
+    const messageHashUtil = this.getMessageHash();
+
+    if (messageHash !== messageHashUtil) {
+      throw new Error("Message hash mismatch");
+    }
+
+    const logs = txReceipt.logs
+      .filter((log) => {
+        try {
+          return batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed";
+        } catch (e) {
+          return false;
+        }
+      })
+      .map((log) => {
+        const parsedLog = batchMultiSigInterface.parseLog(log);
+        // Return args
+        return {
+          id: parsedLog.args.id,
+          caller: parsedLog.args.caller,
+          callIndex: parsedLog.args.callIndex.toString(),
+        };
+      });
+
+    return logs;
+  };
+
   private validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",
