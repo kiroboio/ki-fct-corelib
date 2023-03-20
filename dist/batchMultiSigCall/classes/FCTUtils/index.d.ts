@@ -65,5 +65,13 @@ export declare class FCTUtils extends FCTBase {
         payer: string;
         amount: string;
     }[];
+    getExecutedPath: ({ rpcUrl, txHash, }: {
+        rpcUrl: string;
+        txHash: string;
+    }) => Promise<{
+        id: any;
+        caller: any;
+        callIndex: any;
+    }[]>;
     private validateFCTKeys;
 }

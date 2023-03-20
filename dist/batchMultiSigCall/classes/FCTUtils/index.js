@@ -167,6 +167,47 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 };
             });
         };
+        this.getExecutedPath = async ({ 
+        //   chainId,
+        rpcUrl, txHash, }) => {
+            const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
+            // Get the tx receipt
+            const txReceipt = await provider.getTransactionReceipt(txHash);
+            const batchMultiSigInterface = Interfaces_1.Interface.FCT_BatchMultiSigCall;
+            const controllerInterface = Interfaces_1.Interface.FCT_Controller;
+            // Get FCTE_Activated event
+            const messageHash = txReceipt.logs.find((log) => {
+                try {
+                    return controllerInterface.parseLog(log).name === "FCTE_Registered";
+                }
+                catch (e) {
+                    return false;
+                }
+            })?.topics[2];
+            const messageHashUtil = this.getMessageHash();
+            if (messageHash !== messageHashUtil) {
+                throw new Error("Message hash mismatch");
+            }
+            const logs = txReceipt.logs
+                .filter((log) => {
+                try {
+                    return batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed";
+                }
+                catch (e) {
+                    return false;
+                }
+            })
+                .map((log) => {
+                const parsedLog = batchMultiSigInterface.parseLog(log);
+                // Return args
+                return {
+                    id: parsedLog.args.id,
+                    caller: parsedLog.args.caller,
+                    callIndex: parsedLog.args.callIndex.toString(),
+                };
+            });
+            return logs;
+        };
         this._eip712 = new EIP712_1.EIP712(FCT);
     }
     get FCTData() {
