@@ -496,15 +496,7 @@ export class FCTUtils extends FCTBase {
     });
   };
 
-  public getExecutedPath = async ({
-    //   chainId,
-    rpcUrl,
-    txHash,
-  }: {
-    //   chainId: string | number;
-    rpcUrl: string;
-    txHash: string;
-  }) => {
+  public getExecutedPath = async ({ rpcUrl, txHash }: { rpcUrl: string; txHash: string }) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
     // Get the tx receipt
@@ -520,12 +512,20 @@ export class FCTUtils extends FCTBase {
         return false;
       }
     })?.topics[2];
-
     const messageHashUtil = this.getMessageHash();
 
     if (messageHash !== messageHashUtil) {
       throw new Error("Message hash mismatch");
     }
+
+    const mapLog = (log: ethers.providers.Log) => {
+      const parsedLog = batchMultiSigInterface.parseLog(log);
+      return {
+        id: parsedLog.args.id,
+        caller: parsedLog.args.caller,
+        callIndex: parsedLog.args.callIndex.toString(),
+      };
+    };
 
     const successCalls = txReceipt.logs
       .filter((log) => {
@@ -535,15 +535,7 @@ export class FCTUtils extends FCTBase {
           return false;
         }
       })
-      .map((log) => {
-        const parsedLog = batchMultiSigInterface.parseLog(log);
-        // Return args
-        return {
-          id: parsedLog.args.id,
-          caller: parsedLog.args.caller,
-          callIndex: parsedLog.args.callIndex.toString(),
-        };
-      });
+      .map(mapLog);
 
     const failedCalls = txReceipt.logs
       .filter((log) => {
@@ -553,42 +545,26 @@ export class FCTUtils extends FCTBase {
           return false;
         }
       })
-      .map((log) => {
-        const parsedLog = batchMultiSigInterface.parseLog(log);
-        // Return args
-        return {
-          id: parsedLog.args.id,
-          caller: parsedLog.args.caller,
-          callIndex: parsedLog.args.callIndex.toString(),
-        };
-      });
+      .map(mapLog);
 
     const callResultConstants = {
       success: "SUCCESS",
       failed: "FAILED",
       skipped: "SKIPPED",
+    } as const;
+
+    const manageResult = (index: string) => {
+      if (successCalls.find((successCall) => successCall.callIndex === index)) return callResultConstants.success;
+      if (failedCalls.find((failedCall) => failedCall.callIndex === index)) return callResultConstants.failed;
+      return callResultConstants.skipped;
     };
 
     return this.FCT.calls.map((call, index) => {
       const indexString = (index + 1).toString();
-      if (successCalls.find((successCall) => successCall.callIndex === indexString)) {
-        return {
-          index: indexString,
-          nodeId: call.nodeId,
-          result: callResultConstants.success,
-        };
-      }
-      if (failedCalls.find((failedCall) => failedCall.callIndex === indexString)) {
-        return {
-          index: indexString,
-          nodeId: call.nodeId,
-          result: callResultConstants.failed,
-        };
-      }
       return {
         index: indexString,
         nodeId: call.nodeId,
-        result: callResultConstants.skipped,
+        result: manageResult(indexString),
       };
     });
   };
