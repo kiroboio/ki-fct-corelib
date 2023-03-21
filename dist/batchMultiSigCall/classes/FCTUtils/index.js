@@ -226,11 +226,10 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     return callResultConstants.failed;
                 return callResultConstants.skipped;
             };
-            return this.FCT.calls.map((call, index) => {
+            return this.FCT.calls.map((_, index) => {
                 const indexString = (index + 1).toString();
                 return {
                     index: indexString,
-                    nodeId: call.nodeId,
                     result: manageResult(indexString),
                 };
             });

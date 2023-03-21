@@ -70,7 +70,6 @@ export declare class FCTUtils extends FCTBase {
         txHash: string;
     }) => Promise<{
         index: string;
-        nodeId: string;
         result: "SUCCESS" | "FAILED" | "SKIPPED";
     }[]>;
     private validateFCTKeys;
