@@ -527,7 +527,7 @@ export class FCTUtils extends FCTBase {
       throw new Error("Message hash mismatch");
     }
 
-    const logs = txReceipt.logs
+    const successCalls = txReceipt.logs
       .filter((log) => {
         try {
           return batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed";
@@ -545,7 +545,52 @@ export class FCTUtils extends FCTBase {
         };
       });
 
-    return logs;
+    const failedCalls = txReceipt.logs
+      .filter((log) => {
+        try {
+          return batchMultiSigInterface.parseLog(log).name === "FCTE_CallFailed";
+        } catch (e) {
+          return false;
+        }
+      })
+      .map((log) => {
+        const parsedLog = batchMultiSigInterface.parseLog(log);
+        // Return args
+        return {
+          id: parsedLog.args.id,
+          caller: parsedLog.args.caller,
+          callIndex: parsedLog.args.callIndex.toString(),
+        };
+      });
+
+    const callResultConstants = {
+      success: "SUCCESS",
+      failed: "FAILED",
+      skipped: "SKIPPED",
+    };
+
+    return this.FCT.calls.map((call, index) => {
+      const indexString = (index + 1).toString();
+      if (successCalls.find((successCall) => successCall.callIndex === indexString)) {
+        return {
+          index: indexString,
+          nodeId: call.nodeId,
+          result: callResultConstants.success,
+        };
+      }
+      if (failedCalls.find((failedCall) => failedCall.callIndex === indexString)) {
+        return {
+          index: indexString,
+          nodeId: call.nodeId,
+          result: callResultConstants.failed,
+        };
+      }
+      return {
+        index: indexString,
+        nodeId: call.nodeId,
+        result: callResultConstants.skipped,
+      };
+    });
   };
 
   private validateFCTKeys(keys: string[]) {
