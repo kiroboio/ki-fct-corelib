@@ -167,9 +167,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 };
             });
         };
-        this.getExecutedPath = async ({ 
-        //   chainId,
-        rpcUrl, txHash, }) => {
+        this.getExecutedPath = async ({ rpcUrl, txHash }) => {
             const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
             // Get the tx receipt
             const txReceipt = await provider.getTransactionReceipt(txHash);
@@ -188,7 +186,15 @@ class FCTUtils extends FCTBase_1.FCTBase {
             if (messageHash !== messageHashUtil) {
                 throw new Error("Message hash mismatch");
             }
-            const logs = txReceipt.logs
+            const mapLog = (log) => {
+                const parsedLog = batchMultiSigInterface.parseLog(log);
+                return {
+                    id: parsedLog.args.id,
+                    caller: parsedLog.args.caller,
+                    callIndex: parsedLog.args.callIndex.toString(),
+                };
+            };
+            const successCalls = txReceipt.logs
                 .filter((log) => {
                 try {
                     return batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed";
@@ -197,16 +203,37 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     return false;
                 }
             })
-                .map((log) => {
-                const parsedLog = batchMultiSigInterface.parseLog(log);
-                // Return args
+                .map(mapLog);
+            const failedCalls = txReceipt.logs
+                .filter((log) => {
+                try {
+                    return batchMultiSigInterface.parseLog(log).name === "FCTE_CallFailed";
+                }
+                catch (e) {
+                    return false;
+                }
+            })
+                .map(mapLog);
+            const callResultConstants = {
+                success: "SUCCESS",
+                failed: "FAILED",
+                skipped: "SKIPPED",
+            };
+            const manageResult = (index) => {
+                if (successCalls.find((successCall) => successCall.callIndex === index))
+                    return callResultConstants.success;
+                if (failedCalls.find((failedCall) => failedCall.callIndex === index))
+                    return callResultConstants.failed;
+                return callResultConstants.skipped;
+            };
+            return this.FCT.calls.map((call, index) => {
+                const indexString = (index + 1).toString();
                 return {
-                    id: parsedLog.args.id,
-                    caller: parsedLog.args.caller,
-                    callIndex: parsedLog.args.callIndex.toString(),
+                    index: indexString,
+                    nodeId: call.nodeId,
+                    result: manageResult(indexString),
                 };
             });
-            return logs;
         };
         this._eip712 = new EIP712_1.EIP712(FCT);
     }
