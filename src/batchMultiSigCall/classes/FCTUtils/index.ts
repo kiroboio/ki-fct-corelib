@@ -496,7 +496,7 @@ export class FCTUtils extends FCTBase {
     });
   };
 
-  public getExecutedPath = async ({
+  public getCallResults = async ({
     rpcUrl,
     provider,
     txHash,

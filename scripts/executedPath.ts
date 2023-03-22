@@ -8,7 +8,7 @@ async function main() {
 
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  const data = await FCT.utils.getExecutedPath({
+  const data = await FCT.utils.getCallResults({
     rpcUrl,
     txHash: "0x95f9f186cbff60cecdecef460c442b82d938973becca0015d1376596daa6b574",
   });
