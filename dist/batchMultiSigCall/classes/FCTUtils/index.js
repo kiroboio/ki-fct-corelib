@@ -174,7 +174,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
             if (!provider) {
                 provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
             }
-            // Get the tx receipt
             const txReceipt = await provider.getTransactionReceipt(txHash);
             const batchMultiSigInterface = Interfaces_1.Interface.FCT_BatchMultiSigCall;
             const controllerInterface = Interfaces_1.Interface.FCT_Controller;
