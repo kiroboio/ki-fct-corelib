@@ -17,4 +17,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./FCT"), exports);
 __exportStar(require("./fetch"), exports);
 __exportStar(require("./gas"), exports);
+__exportStar(require("./getExecutedPath"), exports);
 __exportStar(require("./getKIROPrice"), exports);
