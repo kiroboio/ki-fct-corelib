@@ -496,9 +496,21 @@ export class FCTUtils extends FCTBase {
     });
   };
 
-  public getExecutedPath = async ({ rpcUrl, txHash }: { rpcUrl: string; txHash: string }) => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-
+  public getExecutedPath = async ({
+    rpcUrl,
+    provider,
+    txHash,
+  }: {
+    rpcUrl?: string;
+    provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+    txHash: string;
+  }) => {
+    if (!provider && !rpcUrl) {
+      throw new Error("Either provider or rpcUrl is required");
+    }
+    if (!provider) {
+      provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
     // Get the tx receipt
     const txReceipt = await provider.getTransactionReceipt(txHash);
     const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
