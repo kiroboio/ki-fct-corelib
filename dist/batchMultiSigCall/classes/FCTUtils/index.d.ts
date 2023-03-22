@@ -1,4 +1,5 @@
 import { SignatureLike } from "@ethersproject/bytes";
+import { ethers } from "ethers";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
@@ -65,8 +66,9 @@ export declare class FCTUtils extends FCTBase {
         payer: string;
         amount: string;
     }[];
-    getExecutedPath: ({ rpcUrl, txHash }: {
-        rpcUrl: string;
+    getExecutedPath: ({ rpcUrl, provider, txHash, }: {
+        rpcUrl?: string | undefined;
+        provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider | undefined;
         txHash: string;
     }) => Promise<{
         index: string;
