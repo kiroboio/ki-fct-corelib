@@ -496,6 +496,89 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getCallResults = async ({
+    rpcUrl,
+    provider,
+    txHash,
+  }: {
+    rpcUrl?: string;
+    provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+    txHash: string;
+  }) => {
+    if (!provider && !rpcUrl) {
+      throw new Error("Either provider or rpcUrl is required");
+    }
+    if (!provider) {
+      provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
+    const txReceipt = await provider.getTransactionReceipt(txHash);
+    const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
+    const controllerInterface = Interface.FCT_Controller;
+
+    // Get FCTE_Activated event
+    const messageHash = txReceipt.logs.find((log) => {
+      try {
+        return controllerInterface.parseLog(log).name === "FCTE_Registered";
+      } catch (e) {
+        return false;
+      }
+    })?.topics[2];
+    const messageHashUtil = this.getMessageHash();
+
+    if (messageHash !== messageHashUtil) {
+      throw new Error("Message hash mismatch");
+    }
+
+    const mapLog = (log: ethers.providers.Log) => {
+      const parsedLog = batchMultiSigInterface.parseLog(log);
+      return {
+        id: parsedLog.args.id,
+        caller: parsedLog.args.caller,
+        callIndex: parsedLog.args.callIndex.toString(),
+      };
+    };
+
+    const successCalls = txReceipt.logs
+      .filter((log) => {
+        try {
+          return batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed";
+        } catch (e) {
+          return false;
+        }
+      })
+      .map(mapLog);
+
+    const failedCalls = txReceipt.logs
+      .filter((log) => {
+        try {
+          return batchMultiSigInterface.parseLog(log).name === "FCTE_CallFailed";
+        } catch (e) {
+          return false;
+        }
+      })
+      .map(mapLog);
+
+    const callResultConstants = {
+      success: "SUCCESS",
+      failed: "FAILED",
+      skipped: "SKIPPED",
+    } as const;
+
+    const manageResult = (index: string) => {
+      if (successCalls.find((successCall) => successCall.callIndex === index)) return callResultConstants.success;
+      if (failedCalls.find((failedCall) => failedCall.callIndex === index)) return callResultConstants.failed;
+      return callResultConstants.skipped;
+    };
+
+    return this.FCT.calls.map((_, index) => {
+      const indexString = (index + 1).toString();
+      return {
+        index: indexString,
+        result: manageResult(indexString),
+      };
+    });
+  };
+
   private validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",
