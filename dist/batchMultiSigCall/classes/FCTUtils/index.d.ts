@@ -66,7 +66,7 @@ export declare class FCTUtils extends FCTBase {
         payer: string;
         amount: string;
     }[];
-    getExecutedPath: ({ rpcUrl, provider, txHash, }: {
+    getCallResults: ({ rpcUrl, provider, txHash, }: {
         rpcUrl?: string | undefined;
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider | undefined;
         txHash: string;

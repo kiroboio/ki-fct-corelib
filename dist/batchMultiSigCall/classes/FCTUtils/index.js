@@ -167,7 +167,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 };
             });
         };
-        this.getExecutedPath = async ({ rpcUrl, provider, txHash, }) => {
+        this.getCallResults = async ({ rpcUrl, provider, txHash, }) => {
             if (!provider && !rpcUrl) {
                 throw new Error("Either provider or rpcUrl is required");
             }
