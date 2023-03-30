@@ -76,6 +76,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
+    // Slice the first element because it is the call type
     const dataTypes = [...typedData.types[`transaction${index + 1}`]].slice(1);
     const { call: meta, ...parameters } = typedData.message[`transaction_${index + 1}`] as TypedDataMessageTransaction;
 
