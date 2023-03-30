@@ -10,6 +10,8 @@ async function main() {
 
   const data = await FCT.utils.getCallResults({
     rpcUrl,
+    // Or provider can be passed
+    // provider: ...,
     txHash: "0x95f9f186cbff60cecdecef460c442b82d938973becca0015d1376596daa6b574",
   });
 

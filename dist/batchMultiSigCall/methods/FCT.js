@@ -67,7 +67,7 @@ function importFCT(fct) {
     }));
     const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
-        const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
+        const dataTypes = [...typedData.types[`transaction${index + 1}`]].slice(1);
         const { call: meta, ...parameters } = typedData.message[`transaction_${index + 1}`];
         let params = [];
         if (dataTypes.length > 0) {

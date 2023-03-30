@@ -76,7 +76,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
-    const dataTypes = typedData.types[`transaction${index + 1}`].slice(1);
+    const dataTypes = [...typedData.types[`transaction${index + 1}`]].slice(1);
     const { call: meta, ...parameters } = typedData.message[`transaction_${index + 1}`] as TypedDataMessageTransaction;
 
     let params: Param[] = [];
@@ -300,7 +300,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
             return value;
           };
 
-          const value = getValue(decodedParams[param.name]);
+          const value = getValue((decodedParams as ethers.utils.Result)[param.name]);
 
           return { ...acc, [param.name]: value };
         }, {}),
