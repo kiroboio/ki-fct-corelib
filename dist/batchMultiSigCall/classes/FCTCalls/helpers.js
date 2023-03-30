@@ -101,10 +101,10 @@ const getParamsFromInputs = (inputs, values) => {
 exports.getParamsFromInputs = getParamsFromInputs;
 const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, primaryType, }) => {
     const generateRealInputParams = (types, primaryType) => {
-        const type = types[primaryType];
+        let type = types[primaryType];
         // If the type[0] name is call and type is Call, then slice the first element
         if (type[0].name === "call" && type[0].type === "Call") {
-            type.shift();
+            type = type.slice(1);
         }
         const params = [];
         for (const { name, type: paramType } of type) {
