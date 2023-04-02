@@ -1,30 +1,33 @@
-import { BatchMultiSigCall, utils } from "../src";
-import FCTData from "./FCT_Failed.json";
-import scriptData from "./scriptData";
+import { BatchMultiSigCall } from "../src";
+import FCTData from "./Failing_FCT.json";
 
 const chainId = 5;
 
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  // Recover address for every signature
-  for (const signature of FCTData.signatures) {
-    const recoveredAddress = FCT.utils.recoverAddress(signature);
-    console.log("Recovered address:", recoveredAddress);
-  }
+  // Validate FCT
+  const isValid = FCT.utils.isValid();
+  console.log("FCT is valid:", isValid);
 
-  const price = await utils.getKIROPrice({
-    chainId: 1,
-    rpcUrl: scriptData[1].rpcUrl,
-  });
+  // // Recover address for every signature
+  // for (const signature of FCTData.signatures) {
+  //   const recoveredAddress = FCT.utils.recoverAddress(signature);
+  //   console.log("Recovered address:", recoveredAddress);
+  // }
 
-  console.log("KIRO price:", price);
+  // const price = await utils.getKIROPrice({
+  //   chainId: 1,
+  //   rpcUrl: scriptData[1].rpcUrl,
+  // });
 
-  const perPayer = FCT.utils.getPaymentPerPayer({
-    kiroPriceInETH: price,
-  });
+  // console.log("KIRO price:", price);
 
-  console.log("Payment per payer:", perPayer);
+  // const perPayer = FCT.utils.getPaymentPerPayer({
+  //   kiroPriceInETH: price,
+  // });
+
+  // console.log("Payment per payer:", perPayer);
 }
 
 main()

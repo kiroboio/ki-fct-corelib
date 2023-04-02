@@ -21,19 +21,15 @@ const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
-      chainId: 4,
+      chainId: 1,
       allowUnlimitedContractSize: true,
-      // forking: {
-      //   url: "https://eth-mainnet.g.alchemy.com/v2/woeVEuX9KS1k0ayHbSa-ZZ3LmRIrrWB_",
-      // },
-      accounts: {
-        mnemonic: "awesome grain neither pond excess garage tackle table piece assist venture escape",
-        count: 10,
+      forking: {
+        url: "https://eth-mainnet.g.alchemy.com/v2/W54EPJiR-OsMVHElUnQXMP70TV4Uum4A",
       },
     },
   },
   paths: {
-    sources: "./contracts",
+    tests: "./hardhat_test",
   },
 };
 

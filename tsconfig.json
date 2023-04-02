@@ -18,6 +18,6 @@
     "strictBindCallApply": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "hardhat.config.ts", "./test"],
+  "include": ["src/**/*", "hardhat.config.ts", "./hardhat_test", "./scripts"],
   "exclude": ["node_modules", "dist/**/*"]
 }
