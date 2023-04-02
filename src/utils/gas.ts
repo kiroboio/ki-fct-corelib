@@ -79,12 +79,10 @@ export const transactionValidator = async (
 
 export const getGasPrices = async ({
   rpcUrl,
-  chainId: chainIdParam,
   historicalBlocks = 10,
   tries = 40,
 }: {
   rpcUrl: string;
-  chainId?: number;
   historicalBlocks?: number;
   tries?: number;
 }): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
@@ -93,7 +91,6 @@ export const getGasPrices = async ({
     return Math.round(sum / arr.length);
   }
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const { chainId } = chainIdParam ? { chainId: chainIdParam } : await provider.getNetwork();
 
   let keepTrying = true;
   let returnValue: Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>;

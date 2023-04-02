@@ -25,9 +25,8 @@ interface TransactionValidatorError {
 }
 type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
 export declare const transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<TransactionValidatorResult>;
-export declare const getGasPrices: ({ rpcUrl, chainId: chainIdParam, historicalBlocks, tries, }: {
+export declare const getGasPrices: ({ rpcUrl, historicalBlocks, tries, }: {
     rpcUrl: string;
-    chainId?: number | undefined;
     historicalBlocks?: number | undefined;
     tries?: number | undefined;
 }) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;

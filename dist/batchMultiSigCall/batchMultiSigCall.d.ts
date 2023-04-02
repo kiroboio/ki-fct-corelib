@@ -22,6 +22,7 @@ export declare class BatchMultiSigCall {
     get computedWithValues(): ComputedVariable[];
     setOptions: (options: DeepPartial<IFCTOptions>) => IFCTOptions;
     setCallDefaults: (callDefault: DeepPartial<ICallDefaults>) => ICallDefaults;
+    changeChainId: (chainId: ChainId) => void;
     addComputed: (computed: IComputed) => {
         type: "computed";
         id: string;

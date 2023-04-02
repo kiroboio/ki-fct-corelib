@@ -74,5 +74,18 @@ export declare class FCTUtils extends FCTBase {
         index: string;
         result: "SUCCESS" | "FAILED" | "SKIPPED";
     }[]>;
+    deepValidateFCT: ({ rpcUrl, actuatorAddress, signatures, }: {
+        rpcUrl: string;
+        actuatorAddress: string;
+        signatures: SignatureLike[];
+    }) => Promise<{
+        success: boolean;
+        txReceipt: any;
+        message: string;
+    } | {
+        success: boolean;
+        txReceipt: null;
+        message: any;
+    }>;
     private validateFCTKeys;
 }

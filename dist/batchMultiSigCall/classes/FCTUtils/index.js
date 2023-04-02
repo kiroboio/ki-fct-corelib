@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,9 +29,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FCTUtils = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const hardhat_network_helpers_1 = require("@nomicfoundation/hardhat-network-helpers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
+const hre = __importStar(require("hardhat"));
 const lodash_1 = __importDefault(require("lodash"));
 const Interfaces_1 = require("../../../helpers/Interfaces");
 const constants_1 = require("../../constants");
@@ -237,6 +262,48 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     result: manageResult(indexString),
                 };
             });
+        };
+        this.deepValidateFCT = async ({ rpcUrl, actuatorAddress, signatures, }) => {
+            const chainId = Number(this.FCT.chainId);
+            hre.config.networks.hardhat.chainId = chainId;
+            if (hre.config.networks.hardhat.forking) {
+                hre.config.networks.hardhat.forking.url = rpcUrl;
+            }
+            else {
+                throw new Error("Something weird");
+            }
+            // @ts-ignore
+            const ethers = hre.ethers;
+            // Imperonate actuator
+            await (0, hardhat_network_helpers_1.impersonateAccount)(actuatorAddress);
+            const calldata = this.getCalldataForActuator({
+                signatures,
+                activator: actuatorAddress,
+                investor: ethers.constants.AddressZero,
+                purgedFCT: ethers.constants.HashZero,
+            });
+            // Get Actuator signer
+            const Actuator = await ethers.getSigner(actuatorAddress);
+            const actuatorContractInterface = Interfaces_1.Interface.FCT_Actuator;
+            const actuatorContractAddress = constants_1.addresses[chainId].Actuator;
+            const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
+            try {
+                await (0, hardhat_network_helpers_1.setNextBlockBaseFeePerGas)(ethers.utils.parseUnits("1", "gwei"));
+                const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address);
+                const txReceipt = await tx.wait();
+                return {
+                    success: true,
+                    txReceipt: txReceipt,
+                    message: "",
+                };
+            }
+            catch (err) {
+                return {
+                    success: false,
+                    txReceipt: null,
+                    message: err.reason,
+                };
+            }
         };
         this._eip712 = new EIP712_1.EIP712(FCT);
     }

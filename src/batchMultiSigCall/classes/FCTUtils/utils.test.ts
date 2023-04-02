@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import { getAddress } from "ethers/lib/utils";
 
-import FCTData from "../../../../FCTExample.json";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import FCTData from "../../test/FCTExample.json";
+import { buildTestFCT } from "../../test/helpers";
 import { FCTUtils } from ".";
 
 // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -115,5 +116,17 @@ describe("BatchMultiSigCall EIP712", () => {
     expect(paths).to.be.an("array");
     expect(paths).to.have.lengthOf(1);
     expect(paths).to.deep.eq([["0", "1", "2"]]);
+  });
+
+  it("Should deep validate FCT", async () => {
+    const { FCT, FCTJson } = buildTestFCT();
+
+    // Takes around 11.691s
+    const result = await FCT.utils.deepValidateFCT({
+      signatures: FCTJson.signatures,
+      actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
+      rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    });
+    console.log("Finish", result);
   });
 });

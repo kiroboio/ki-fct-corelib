@@ -59,13 +59,12 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 10, tries = 40, }) => {
+const getGasPrices = async ({ rpcUrl, historicalBlocks = 10, tries = 40, }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-    const { chainId } = chainIdParam ? { chainId: chainIdParam } : await provider.getNetwork();
     let keepTrying = true;
     let returnValue;
     do {

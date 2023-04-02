@@ -1,9 +1,11 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import { impersonateAccount, setNextBlockBaseFeePerGas } from "@nomicfoundation/hardhat-network-helpers";
 import BigNumber from "bignumber.js";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
+import * as hre from "hardhat";
 import _ from "lodash";
 
 import { Interface } from "../../../helpers/Interfaces";
@@ -577,6 +579,63 @@ export class FCTUtils extends FCTBase {
         result: manageResult(indexString),
       };
     });
+  };
+
+  public deepValidateFCT = async ({
+    rpcUrl,
+    actuatorAddress,
+    signatures,
+  }: {
+    rpcUrl: string;
+    actuatorAddress: string;
+    signatures: SignatureLike[];
+  }) => {
+    const chainId = Number(this.FCT.chainId);
+
+    hre.config.networks.hardhat.chainId = chainId;
+    if (hre.config.networks.hardhat.forking) {
+      hre.config.networks.hardhat.forking.url = rpcUrl;
+    } else {
+      throw new Error("Something weird");
+    }
+
+    // @ts-ignore
+    const ethers = hre.ethers;
+    // Imperonate actuator
+    await impersonateAccount(actuatorAddress);
+
+    const calldata = this.getCalldataForActuator({
+      signatures,
+      activator: actuatorAddress,
+      investor: ethers.constants.AddressZero,
+      purgedFCT: ethers.constants.HashZero,
+    });
+
+    // Get Actuator signer
+    const Actuator = await ethers.getSigner(actuatorAddress);
+
+    const actuatorContractInterface = Interface.FCT_Actuator;
+    const actuatorContractAddress = addresses[chainId as keyof typeof addresses].Actuator;
+
+    const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
+
+    try {
+      await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
+      const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address);
+
+      const txReceipt = await tx.wait();
+      return {
+        success: true,
+        txReceipt: txReceipt,
+        message: "",
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        txReceipt: null,
+        message: err.reason,
+      };
+    }
   };
 
   private validateFCTKeys(keys: string[]) {

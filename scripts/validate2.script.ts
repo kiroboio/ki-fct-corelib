@@ -1,6 +1,6 @@
 import { impersonateAccount, setNextBlockBaseFeePerGas } from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "ethers";
-import hre from "hardhat";
+import * as hre from "hardhat";
 import util from "util";
 
 import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
@@ -31,7 +31,6 @@ const txValidator = async ({
     throw new Error("Something weird");
   }
 
-  // @ts-ignore
   const ethers = hre.ethers;
   // Imperonate actuator
   await impersonateAccount(actuatorAddress);
