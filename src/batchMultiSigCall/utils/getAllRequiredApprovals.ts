@@ -136,8 +136,6 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
             ) {
               const whoIsSending = getAddress(approval.from);
               const whoIsSpending = getAddress(approval.params.spender);
-              console.log("whoIsSending", whoIsSending);
-              console.log("whoIsSpending", whoIsSpending);
 
               // If the caller and spender is the same, no need to approve
               return !(whoIsSending === whoIsSpending);

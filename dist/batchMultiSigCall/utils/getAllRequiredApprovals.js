@@ -117,8 +117,6 @@ function getAllRequiredApprovals(FCT) {
                         (call.method === "safeTransferFrom" || call.method === "transferFrom")) {
                         const whoIsSending = (0, utils_1.getAddress)(approval.from);
                         const whoIsSpending = (0, utils_1.getAddress)(approval.params.spender);
-                        console.log("whoIsSending", whoIsSending);
-                        console.log("whoIsSpending", whoIsSpending);
                         // If the caller and spender is the same, no need to approve
                         return !(whoIsSending === whoIsSpending);
                     }
