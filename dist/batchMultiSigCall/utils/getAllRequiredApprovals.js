@@ -107,13 +107,20 @@ function getAllRequiredApprovals(FCT) {
                     const caller = (0, utils_1.getAddress)(call.from);
                     // If the protocol is AAVE, we check if the caller is the spender and the approver
                     if (approval.protocol === "AAVE") {
-                        if (typeof call.from !== "string") {
-                            return true;
-                        }
                         const whoIsApproving = (0, utils_1.getAddress)(approval.from);
                         const whoIsSpending = (0, utils_1.getAddress)(approval.params.delegatee);
                         // If the caller is the spender and the approver - no need to approve
                         return !(caller === whoIsSpending && caller === whoIsApproving);
+                    }
+                    // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
+                    if (approval.protocol === "ERC721" &&
+                        (call.method === "safeTransferFrom" || call.method === "transferFrom")) {
+                        const whoIsSending = (0, utils_1.getAddress)(approval.from);
+                        const whoIsSpending = (0, utils_1.getAddress)(approval.params.spender);
+                        console.log("whoIsSending", whoIsSending);
+                        console.log("whoIsSpending", whoIsSpending);
+                        // If the caller and spender is the same, no need to approve
+                        return !(whoIsSending === whoIsSpending);
                     }
                     return true;
                 });
