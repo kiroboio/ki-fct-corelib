@@ -122,14 +122,25 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
             const caller = getAddress(call.from);
             // If the protocol is AAVE, we check if the caller is the spender and the approver
             if (approval.protocol === "AAVE") {
-              if (typeof call.from !== "string") {
-                return true;
-              }
               const whoIsApproving = getAddress(approval.from);
               const whoIsSpending = getAddress(approval.params.delegatee);
 
               // If the caller is the spender and the approver - no need to approve
               return !(caller === whoIsSpending && caller === whoIsApproving);
+            }
+
+            // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
+            if (
+              approval.protocol === "ERC721" &&
+              (call.method === "safeTransferFrom" || call.method === "transferFrom")
+            ) {
+              const whoIsSending = getAddress(approval.from);
+              const whoIsSpending = getAddress(approval.params.spender);
+              console.log("whoIsSending", whoIsSending);
+              console.log("whoIsSpending", whoIsSpending);
+
+              // If the caller and spender is the same, no need to approve
+              return !(whoIsSending === whoIsSpending);
             }
             return true;
           });
