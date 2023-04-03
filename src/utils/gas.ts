@@ -144,8 +144,13 @@ export const getGasPrices = async ({
 
       const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
       const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
-      const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
-      const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
+      // Add 5% to fast and fastest
+      const fast =
+        avg(blocks.map((b) => b.priorityFeePerGas[2])) +
+        Math.round(avg(blocks.map((b) => b.priorityFeePerGas[2])) * 0.05);
+      const fastest =
+        avg(blocks.map((b) => b.priorityFeePerGas[3])) +
+        Math.round(avg(blocks.map((b) => b.priorityFeePerGas[3])) * 0.05);
 
       const baseFeePerGas = Number(baseFee);
 
