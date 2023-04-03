@@ -1,5 +1,4 @@
-import { ChainId, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
-import { ethers } from "ethers";
+import { ChainId, ERC20, TokensMath } from "@kirobo/ki-eth-fct-provider-ts";
 
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import BaseTestFCT from "./FCT.json";
@@ -17,22 +16,70 @@ export const buildTestFCT = () => {
   return { FCT, FCTJson: TestFCT };
 };
 
-export const freshTestFCT = async ({ chainId }: { chainId: ChainId }) => {
+export const freshTestFCT = ({ chainId }: { chainId: ChainId }) => {
+  const vault = "0x03357338Ea477FF139170cf85C9A4063dFc03FC9";
   const FCT = new BatchMultiSigCall({
     chainId,
+    defaults: {
+      from: vault,
+    },
   });
 
-  // Create ERC20 Transfer
+  const defaultSettings = {
+    validFrom: "0",
+    expiresAt: "2680505792",
+  };
+
+  FCT.setOptions(defaultSettings);
+
+  const balanceOf = new ERC20.getters.BalanceOf({
+    chainId,
+    initParams: {
+      to: USDC[chainId],
+      methodParams: {
+        owner: vault,
+      },
+    },
+  });
+
+  const halfOfBalance = new TokensMath.getters.Divide({
+    chainId,
+    initParams: {
+      methodParams: {
+        amount1: balanceOf.output.params.balance.getOutputVariable("usdc_balanceOf"),
+        amount2: "2",
+        decimals1: "0",
+        decimals2: "0",
+        decimalsOut: "0",
+      },
+    },
+  });
+
   const transfer = new ERC20.actions.Transfer({
     chainId,
     initParams: {
       to: USDC[chainId],
       methodParams: {
-        amount: ethers.utils.parseUnits("1", 6).toString(),
+        amount: halfOfBalance.output.params.result.getOutputVariable("usdc_halfOfBalance"),
         recipient: "0x62e3A53A947D34C4DdCD67B49fAdc30b643e2586",
       },
     },
   });
 
-  return { FCT, FCTJson: TestFCT };
+  FCT.createMultiple([
+    {
+      plugin: balanceOf,
+      nodeId: "usdc_balanceOf",
+    },
+    {
+      plugin: halfOfBalance,
+      nodeId: "usdc_halfOfBalance",
+    },
+    {
+      plugin: transfer,
+      nodeId: "usdc_transfer",
+    },
+  ]);
+
+  return FCT;
 };

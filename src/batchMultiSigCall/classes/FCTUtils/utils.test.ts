@@ -9,7 +9,7 @@ import { FCTUtils } from ".";
 // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-describe("BatchMultiSigCall EIP712", () => {
+describe("BatchMultiSigCall FCTUtils", () => {
   let FCT: BatchMultiSigCall;
   let utils: FCTUtils;
   before(async () => {
@@ -122,11 +122,10 @@ describe("BatchMultiSigCall EIP712", () => {
     const { FCT, FCTJson } = buildTestFCT();
 
     // Takes around 11.691s
-    const result = await FCT.utils.deepValidateFCT({
+    await FCT.utils.deepValidateFCT({
       signatures: FCTJson.signatures,
       actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
       rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
     });
-    console.log("Finish", result);
   });
 });
