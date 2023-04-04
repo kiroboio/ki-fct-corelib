@@ -155,11 +155,20 @@ export type IRequiredApproval = (
       };
     }
   | {
-      protocol: "ERC1155" | "ERC721";
+      protocol: "ERC721";
       method: "setApprovalForAll";
       params: {
         spender: string;
         approved: boolean;
+      };
+    }
+  | {
+      protocol: "ERC1155";
+      method: "setApprovalForAll";
+      params: {
+        spender: string;
+        approved: boolean;
+        ids: string[];
       };
     }
   | {
