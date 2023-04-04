@@ -38,17 +38,7 @@ export declare class FetchUtility {
         from: string;
     } | {
         value: any;
-        protocol: "ERC721";
-        method: "setApprovalForAll";
-        params: {
-            spender: string;
-            approved: boolean;
-        };
-        token: string;
-        from: string;
-    } | {
-        value: any;
-        protocol: "ERC1155";
+        protocol: "ERC721" | "ERC1155";
         method: "setApprovalForAll";
         params: {
             spender: string;

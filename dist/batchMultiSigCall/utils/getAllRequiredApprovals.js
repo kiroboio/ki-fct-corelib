@@ -75,32 +75,17 @@ function getAllRequiredApprovals(FCT) {
                     }
                     if (approval.method === "setApprovalForAll" &&
                         (approval.protocol === "ERC721" || approval.protocol === "ERC1155")) {
-                        if (approval.protocol === "ERC721") {
-                            return {
-                                protocol: approval.protocol,
-                                token: manageValue(approval.to),
-                                method: approval.method,
-                                params: {
-                                    spender: manageValue(approval.params[0]),
-                                    approved: approval.params[1],
-                                },
-                                from: manageValue(approval.from || call.from), // Who needs to approve
-                            };
-                        }
-                        else if (approval.protocol === "ERC1155") {
-                            console.log(approval.params);
-                            return {
-                                protocol: approval.protocol,
-                                token: manageValue(approval.to),
-                                method: approval.method,
-                                params: {
-                                    spender: manageValue(approval.params[0]),
-                                    approved: approval.params[1],
-                                    ids: approval.params[2],
-                                },
-                                from: manageValue(approval.from || call.from), // Who needs to approve
-                            };
-                        }
+                        return {
+                            protocol: approval.protocol,
+                            token: manageValue(approval.to),
+                            method: approval.method,
+                            params: {
+                                spender: manageValue(approval.params[0]),
+                                approved: approval.params[1],
+                                ids: approval.params[2],
+                            },
+                            from: manageValue(approval.from || call.from), // Who needs to approve
+                        };
                     }
                     if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
                         return {
