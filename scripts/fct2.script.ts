@@ -1,4 +1,4 @@
-import { ERC721 } from "@kirobo/ki-eth-fct-provider-ts";
+import { ERC721, ERC1155 } from "@kirobo/ki-eth-fct-provider-ts";
 import * as dotenv from "dotenv";
 
 // import util from "util";
@@ -53,10 +53,29 @@ async function main() {
     },
   });
 
-  await FCT.create({
-    from: vault,
-    plugin: erc721TransferFrom,
+  const erc1155TransferFrom = new ERC1155.actions.SafeTransferFrom({
+    chainId,
+    initParams: {
+      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+      methodParams: {
+        from: vault,
+        to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+        amount: "1",
+        id: "1",
+      },
+    },
   });
+
+  await FCT.createMultiple([
+    {
+      from: vault,
+      plugin: erc721TransferFrom,
+    },
+    {
+      from: vault,
+      plugin: erc1155TransferFrom,
+    },
+  ]);
 
   const requiredApprovals = await FCT.utils.getAllRequiredApprovals();
 
