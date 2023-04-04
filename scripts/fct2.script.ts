@@ -66,6 +66,19 @@ async function main() {
     },
   });
 
+  const erc1155BatchTransferFrom = new ERC1155.actions.SafeBatchTransferFrom({
+    chainId,
+    initParams: {
+      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+      methodParams: {
+        from: vault,
+        to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
+        amounts: ["1", "2"],
+        ids: ["1", "2"],
+      },
+    },
+  });
+
   await FCT.createMultiple([
     {
       from: vault,
@@ -75,11 +88,15 @@ async function main() {
       from: vault,
       plugin: erc1155TransferFrom,
     },
+    {
+      from: vault,
+      plugin: erc1155BatchTransferFrom,
+    },
   ]);
 
   const requiredApprovals = await FCT.utils.getAllRequiredApprovals();
 
-  console.log("requiredApprovals", requiredApprovals);
+  console.log("requiredApprovals", JSON.stringify(requiredApprovals, null, 2));
 }
 
 main()
