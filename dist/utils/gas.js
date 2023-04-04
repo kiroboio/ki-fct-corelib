@@ -80,7 +80,7 @@ const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 
                 return JSON.stringify({
                     jsonrpc: "2.0",
                     method: "eth_feeHistory",
-                    params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 10, 25]],
+                    params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 15, 25]],
                     id: 1,
                 });
             };
