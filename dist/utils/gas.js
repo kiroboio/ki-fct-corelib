@@ -6,6 +6,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getGasPrices = exports.transactionValidator = void 0;
 const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
+const gasPriceCalculationsByChains = {
+    5: (maxFeePerGas) => {
+        // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
+        if (maxFeePerGas < 70000000000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
+        }
+        // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
+        if (maxFeePerGas < 100000000000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+        }
+        // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
+        if (maxFeePerGas > 200000000000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
+        }
+        return maxFeePerGas;
+    },
+    1: (maxFeePerGas) => maxFeePerGas,
+};
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
@@ -59,13 +77,12 @@ const transactionValidator = async (txVal, pureGas = false) => {
     }
 };
 exports.transactionValidator = transactionValidator;
-const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 10, tries = 40, }) => {
+const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40, }) => {
     function avg(arr) {
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
-    const { chainId } = chainIdParam ? { chainId: chainIdParam } : await provider.getNetwork();
     let keepTrying = true;
     let returnValue;
     do {
@@ -112,11 +129,11 @@ const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 
             const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
             const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
             // Add 5% to fast and fastest
-            const fast = avg(blocks.map((b) => b.priorityFeePerGas[2])) +
-                Math.round(avg(blocks.map((b) => b.priorityFeePerGas[2])) * 0.05);
-            const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3])) +
-                Math.round(avg(blocks.map((b) => b.priorityFeePerGas[3])) * 0.05);
+            const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+            const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
             const baseFeePerGas = Number(baseFee);
+            const gasPriceCalc = gasPriceCalculationsByChains[chainId] ||
+                gasPriceCalculationsByChains[1];
             returnValue = {
                 slow: {
                     maxFeePerGas: slow + baseFeePerGas,
@@ -127,11 +144,11 @@ const getGasPrices = async ({ rpcUrl, chainId: chainIdParam, historicalBlocks = 
                     maxPriorityFeePerGas: average,
                 },
                 fast: {
-                    maxFeePerGas: fast + baseFeePerGas,
+                    maxFeePerGas: gasPriceCalc(fast + baseFeePerGas),
                     maxPriorityFeePerGas: fast,
                 },
                 fastest: {
-                    maxFeePerGas: fastest + baseFeePerGas,
+                    maxFeePerGas: gasPriceCalc(fastest + baseFeePerGas),
                     maxPriorityFeePerGas: fastest,
                 },
             };
