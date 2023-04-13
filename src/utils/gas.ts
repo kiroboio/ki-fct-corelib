@@ -3,6 +3,25 @@ import { BigNumber as BigNumberEthers, ethers } from "ethers";
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 
+const gasPriceCalculationsByChains = {
+  5: (maxFeePerGas: number) => {
+    // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
+    if (maxFeePerGas < 70_000_000_000) {
+      return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
+    }
+    // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
+    if (maxFeePerGas < 100_000_000_000) {
+      return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+    }
+    // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
+    if (maxFeePerGas > 200_000_000_000) {
+      return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
+    }
+    return maxFeePerGas;
+  },
+  1: (maxFeePerGas: number) => maxFeePerGas,
+};
+
 interface TransactionValidatorSuccess {
   isValid: true;
   txData: { gas: number; type: 2 } & EIP1559GasPrice;
@@ -79,10 +98,12 @@ export const transactionValidator = async (
 
 export const getGasPrices = async ({
   rpcUrl,
+  chainId,
   historicalBlocks = 10,
   tries = 40,
 }: {
   rpcUrl: string;
+  chainId: number;
   historicalBlocks?: number;
   tries?: number;
 }): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
@@ -108,7 +129,7 @@ export const getGasPrices = async ({
         return JSON.stringify({
           jsonrpc: "2.0",
           method: "eth_feeHistory",
-          params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 10, 25]],
+          params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 15, 25]],
           id: 1,
         });
       };
@@ -145,14 +166,13 @@ export const getGasPrices = async ({
       const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
       const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
       // Add 5% to fast and fastest
-      const fast =
-        avg(blocks.map((b) => b.priorityFeePerGas[2])) +
-        Math.round(avg(blocks.map((b) => b.priorityFeePerGas[2])) * 0.05);
-      const fastest =
-        avg(blocks.map((b) => b.priorityFeePerGas[3])) +
-        Math.round(avg(blocks.map((b) => b.priorityFeePerGas[3])) * 0.05);
-
+      const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
+      const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
       const baseFeePerGas = Number(baseFee);
+
+      const gasPriceCalc =
+        gasPriceCalculationsByChains[chainId as keyof typeof gasPriceCalculationsByChains] ||
+        gasPriceCalculationsByChains[1];
 
       returnValue = {
         slow: {
@@ -164,11 +184,11 @@ export const getGasPrices = async ({
           maxPriorityFeePerGas: average,
         },
         fast: {
-          maxFeePerGas: fast + baseFeePerGas,
+          maxFeePerGas: gasPriceCalc(fast + baseFeePerGas),
           maxPriorityFeePerGas: fast,
         },
         fastest: {
-          maxFeePerGas: fastest + baseFeePerGas,
+          maxFeePerGas: gasPriceCalc(fastest + baseFeePerGas),
           maxPriorityFeePerGas: fastest,
         },
       };

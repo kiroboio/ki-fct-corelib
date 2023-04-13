@@ -43,6 +43,7 @@ export declare class FetchUtility {
         params: {
             spender: string;
             approved: boolean;
+            ids: string[];
         };
         token: string;
         from: string;

@@ -131,6 +131,7 @@ export type IRequiredApproval = ({
     params: {
         spender: string;
         approved: boolean;
+        ids: string[];
     };
 } | {
     protocol: "AAVE";

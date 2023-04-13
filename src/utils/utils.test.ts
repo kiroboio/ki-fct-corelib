@@ -460,6 +460,7 @@ describe("Utility functions", () => {
     it("Should get gas prices", async () => {
       const gasPrices = await utils.getGasPrices({
         rpcUrl: "https://eth-goerli.public.blastapi.io",
+        chainId: 5,
       });
 
       expect(gasPrices).to.be.a("object");
