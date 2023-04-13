@@ -6,28 +6,13 @@ const chainId = 5;
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  // Validate FCT
-  const isValid = FCT.utils.isValid();
-  console.log("FCT is valid:", isValid);
+  const tx = await FCT.utils.deepValidateFCT({
+    actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
+    rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    signatures: FCTData.signatures,
+  });
 
-  // // Recover address for every signature
-  // for (const signature of FCTData.signatures) {
-  //   const recoveredAddress = FCT.utils.recoverAddress(signature);
-  //   console.log("Recovered address:", recoveredAddress);
-  // }
-
-  // const price = await utils.getKIROPrice({
-  //   chainId: 1,
-  //   rpcUrl: scriptData[1].rpcUrl,
-  // });
-
-  // console.log("KIRO price:", price);
-
-  // const perPayer = FCT.utils.getPaymentPerPayer({
-  //   kiroPriceInETH: price,
-  // });
-
-  // console.log("Payment per payer:", perPayer);
+  console.log(tx);
 }
 
 main()

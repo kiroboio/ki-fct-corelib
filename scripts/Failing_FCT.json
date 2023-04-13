@@ -81,12 +81,16 @@
           "type": "Call"
         },
         {
-          "name": "recipient",
-          "type": "address"
-        },
-        {
           "name": "amount",
           "type": "uint256"
+        },
+        {
+          "name": "method",
+          "type": "string"
+        },
+        {
+          "name": "path",
+          "type": "address[]"
         }
       ],
       "BatchMultiSigCall": [
@@ -172,18 +176,18 @@
     },
     "message": {
       "meta": {
-        "name": "🔥Untitled",
+        "name": "1",
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0xf6407ddd",
         "version": "0x010101",
-        "random_id": "0xf4d9e0",
+        "random_id": "0xf8aa51",
         "eip712": true,
         "auth_enabled": false
       },
       "limits": {
-        "valid_from": "1680424128",
-        "expires_at": "1681073999",
-        "gas_price_limit": "30936333692",
+        "valid_from": "1681385004",
+        "expires_at": "1682024399",
+        "gas_price_limit": "134846759008",
         "purgeable": false,
         "blockable": true
       },
@@ -191,39 +195,44 @@
         "call": {
           "call_index": 1,
           "payer_index": 1,
-          "call_type": "action",
+          "call_type": "library",
           "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
-          "to": "0x75ab5ab1eef154c0352fc31d2428cef80c7f8b33",
-          "to_ens": "",
+          "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
+          "to_ens": "@lib:uniswap_v2",
           "eth_value": "0",
-          "gas_limit": "114824",
+          "gas_limit": "400000",
           "permissions": 0,
           "flow_control": "stop on success, revert on fail",
-          "returned_false_means_fail": true,
+          "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "transfer(address,uint256)"
+          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
         },
-        "recipient": "0xD4a0281cEeebA1CEeFB4eAbF63ca6A608E143Fdc",
-        "amount": "1000000000000000000"
+        "amount": "10000000000000000000",
+        "method": "swap <amount> Tokens for <X> Tokens",
+        "path": [
+          "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+          "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+        ]
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0x4788192ebf31e69ab2b0afa2484d5b285235311fd1feadf4d2714ef859ffc723",
-  "sessionId": "0xf4d9e000010101000000000000006433274f0064293cc00000000733f2fd7c0c",
-  "nameHash": "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
+  "typeHash": "0x4e120c19eac739a84d7cc1b3f5de9653cca2e21721ca805567e810bddca1a578",
+  "sessionId": "0xf8aa5100010101000000000000006441a7cf006437e62c0000001f657e40600c",
+  "nameHash": "0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6",
   "mcall": [
     {
-      "typeHash": "0xed53c5a7dcb3019f57626a3d1c881f32aea4a03a4f5be98685dd2f2f1cdd02c0",
-      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
+      "typeHash": "0xc0f2bc18d08aca5ca4de62820a15c580d94519cd311e4f78e8110f0165b3da8f",
+      "ensHash": "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
+      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
       "value": "0",
-      "callId": "0x0000000000000000000000000000000000000600000000000100010001c08804",
+      "callId": "0x00000000000000000000000000000000000006000000000001000100061a8022",
       "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
-      "to": "0x75ab5ab1eef154c0352fc31d2428cef80c7f8b33",
-      "data": "0x000000000000000000000000d4a0281ceeeba1ceefb4eabf63ca6a608e143fdc0000000000000000000000000000000000000000000000000de0b6b3a7640000",
-      "types": [],
+      "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
+      "data": "0x0000000000000000000000000000000000000000000000008ac7230489e8000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
+      "types": [1000, 1000, 4000, 1000],
       "typedHashes": []
     }
   ],
@@ -231,18 +240,18 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xbef3694fdadb23147feaabdf44a69a0ec28960e9d04e0a9e53b4aa214bb7bdc4",
-      "s": "0x5018f73c416932b06b6135b788ae54703f9ac1a300d3a7973f4d78645880195b",
-      "_vs": "0x5018f73c416932b06b6135b788ae54703f9ac1a300d3a7973f4d78645880195b",
+      "r": "0xb07161dd7e0028966609fd6981aa30a0cb9adce80aa6ff0e4085f564fb732b0b",
+      "s": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
+      "_vs": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
       "recoveryParam": 0,
       "v": 27,
-      "yParityAndS": "0x5018f73c416932b06b6135b788ae54703f9ac1a300d3a7973f4d78645880195b",
-      "compact": "0xbef3694fdadb23147feaabdf44a69a0ec28960e9d04e0a9e53b4aa214bb7bdc45018f73c416932b06b6135b788ae54703f9ac1a300d3a7973f4d78645880195b"
+      "yParityAndS": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
+      "compact": "0xb07161dd7e0028966609fd6981aa30a0cb9adce80aa6ff0e4085f564fb732b0b5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a"
     },
     {
-      "r": "0x73f8b190ccb1f15c0105582e23d3439600e4557c4c30f4684ccabc250a2d6827",
-      "s": "0x20fa7830df4d6e484c574d1fb7085d1d1ea6925c5d00123a21ca5511446ea9ac",
-      "v": 27
+      "r": "0x9b9552990ec0194212484c3b734f88dddb650da972a8dc765290fe824e8eb886",
+      "s": "0x7f23628ab8f9e37342f12b39887ea5d02404aae7a6b6c0f724ddc3b0d340318f",
+      "v": 28
     }
   ],
   "computed": []

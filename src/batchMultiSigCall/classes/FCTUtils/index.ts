@@ -601,6 +601,22 @@ export class FCTUtils extends FCTBase {
 
     // @ts-ignore
     const ethers = hre.ethers;
+
+    await impersonateAccount("0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D");
+
+    // Approve Uniswap V2 Router to spend KIRO token
+    // const User = await ethers.getSigner("0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D");
+    // const KIRO = new ethers.Contract(
+    //   "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+    //   ["function approve(address spender, uint256 amount) external returns (bool)"],
+    //   ethers.provider
+    // );
+    // const KIROContract = KIRO.connect(User);
+    // await KIROContract.approve(
+    //   "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+    //   ethers.utils.parseUnits("100000000", "ether")
+    // );
+
     // Imperonate actuator
     await impersonateAccount(actuatorAddress);
 
@@ -621,7 +637,9 @@ export class FCTUtils extends FCTBase {
 
     try {
       await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
-      const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address);
+      const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
+        gasLimit: 10_000_000,
+      });
 
       const txReceipt = await tx.wait();
       return {
@@ -633,7 +651,7 @@ export class FCTUtils extends FCTBase {
       return {
         success: false,
         txReceipt: null,
-        message: err.reason,
+        message: err.message,
       };
     }
   };
