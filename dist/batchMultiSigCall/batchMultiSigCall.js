@@ -84,6 +84,7 @@ class BatchMultiSigCall {
             const domain = classes_1.EIP712.getTypedDataDomain(this.chainId);
             if (!domain)
                 throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
+            this.domain = domain;
         }
         if (input.version)
             this.version = input.version;
