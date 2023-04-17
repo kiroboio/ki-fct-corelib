@@ -484,8 +484,6 @@ describe("Utility functions", () => {
         gas: 462109,
       });
 
-      console.log(fctCost);
-
       expect(fctCost.vault).to.eq("0x03357338Ea477FF139170cf85C9A4063dFc03FC9");
     });
   });
