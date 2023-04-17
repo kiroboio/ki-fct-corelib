@@ -607,8 +607,6 @@ export class FCTUtils extends FCTBase {
     // @ts-ignore
     const ethers = hre.ethers;
 
-    await impersonateAccount("0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D");
-
     // Imperonate actuator
     await impersonateAccount(actuatorAddress);
 

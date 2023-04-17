@@ -78,7 +78,6 @@ describe("BatchMultiSigCall FCTUtils", () => {
 
   it("Should get options", () => {
     const options = utils.getOptions();
-
     expect(options).to.be.an("object");
     expect(options).to.have.property("valid_from");
     expect(options).to.have.property("expires_at");

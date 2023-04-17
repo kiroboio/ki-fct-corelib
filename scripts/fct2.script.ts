@@ -1,8 +1,10 @@
-import { ERC721, ERC1155 } from "@kirobo/ki-eth-fct-provider-ts";
+import { Utility } from "@kirobo/ki-eth-fct-provider-ts";
+import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
+import { writeFileSync } from "fs";
 
 // import util from "util";
-import { BatchMultiSigCall } from "../src";
+import { BatchMultiSigCall, ethers, TypedDataTypes } from "../src";
 
 dotenv.config();
 // eslint-disable-next-line
@@ -41,62 +43,39 @@ async function main() {
     },
   });
 
-  const erc721TransferFrom = new ERC721.actions.SafeTransferFrom({
+  // Create an FCT where a ETH Transfer is made
+  const ethTransfer = new Utility.actions.SendETH({
     chainId,
     initParams: {
-      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-      methodParams: {
-        from: vault,
-        to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-        tokenId: "1",
-      },
+      to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+      value: "300",
     },
   });
 
-  const erc1155TransferFrom = new ERC1155.actions.SafeTransferFrom({
-    chainId,
-    initParams: {
-      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-      methodParams: {
-        from: vault,
-        to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-        amount: "1",
-        id: "1",
-      },
-    },
+  await FCT.create({
+    plugin: ethTransfer,
+    from: vault,
+    nodeId: "0",
   });
 
-  const erc1155BatchTransferFrom = new ERC1155.actions.SafeBatchTransferFrom({
-    chainId,
-    initParams: {
-      to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-      methodParams: {
-        from: vault,
-        to: "0x39Ec448b891c476e166b3C3242A90830DB556661",
-        amounts: ["1", "2"],
-        ids: ["1", "2"],
-      },
-    },
+  const FCTData = FCT.exportFCT();
+
+  const signature = signTypedData({
+    data: FCTData.typedData as unknown as TypedMessage<TypedDataTypes>,
+    privateKey: Buffer.from(key, "hex"),
+    version: SignTypedDataVersion.V4,
   });
 
-  await FCT.createMultiple([
-    {
-      from: vault,
-      plugin: erc721TransferFrom,
-    },
-    {
-      from: vault,
-      plugin: erc1155TransferFrom,
-    },
-    {
-      from: vault,
-      plugin: erc1155BatchTransferFrom,
-    },
-  ]);
+  const splitSignature = ethers.utils.splitSignature(signature);
 
-  const requiredApprovals = await FCT.utils.getAllRequiredApprovals();
+  const signedFCT = {
+    ...FCTData,
+    signatures: [FCTData.signatures[0], splitSignature],
+    variables: [],
+    externalSigners: [],
+  };
 
-  console.log("requiredApprovals", JSON.stringify(requiredApprovals, null, 2));
+  writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()
