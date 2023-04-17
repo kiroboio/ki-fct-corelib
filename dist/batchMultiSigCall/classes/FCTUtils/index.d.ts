@@ -28,8 +28,8 @@ export declare class FCTUtils extends FCTBase {
             maxRepeats: string;
         };
         multisig: {
-            minimumApprovals: string;
             externalSigners: string[];
+            minimumApprovals: string;
         };
         authEnabled: boolean;
     };

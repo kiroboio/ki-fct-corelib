@@ -121,9 +121,6 @@ async function main() {
     externalSigners: [],
   };
 
-  const requireApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
-  console.log(requireApprovals, requireApprovals.length);
-
   fs.writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
 }
 

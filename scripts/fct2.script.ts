@@ -1,8 +1,9 @@
 import { ERC721, ERC1155 } from "@kirobo/ki-eth-fct-provider-ts";
 import * as dotenv from "dotenv";
 
-// import util from "util";
 import { BatchMultiSigCall } from "../src";
+
+// import util from "util";
 
 dotenv.config();
 // eslint-disable-next-line

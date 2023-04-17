@@ -62,6 +62,18 @@ class SessionID extends FCTBase_1.FCTBase {
         return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
     }
     static asOptions({ sessionId, builder, name, externalSigners = [], }) {
+        const parsedSessionID = SessionID.parse(sessionId);
+        return {
+            ...parsedSessionID,
+            builder,
+            name,
+            multisig: {
+                ...parsedSessionID.multisig,
+                externalSigners,
+            },
+        };
+    }
+    static parse(sessionId) {
         const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
         const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
         const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
@@ -77,14 +89,12 @@ class SessionID extends FCTBase_1.FCTBase {
             authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
         };
         return {
-            name,
             validFrom,
             expiresAt,
             maxGasPrice,
             blockable: flags.blockable,
             purgeable: flags.purgeable,
             authEnabled: flags.authEnabled,
-            builder,
             recurrency: {
                 accumetable: flags.accumetable,
                 chillTime,
@@ -92,7 +102,6 @@ class SessionID extends FCTBase_1.FCTBase {
             },
             multisig: {
                 minimumApprovals,
-                externalSigners,
             },
         };
     }

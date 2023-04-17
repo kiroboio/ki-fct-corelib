@@ -1,4 +1,4 @@
-import { IBatchMultiSigCallFCT } from "../../types";
+import { IBatchMultiSigCallFCT } from "../types";
 export declare function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }: {
     signedFCT: IBatchMultiSigCallFCT;
     purgedFCT: string;
