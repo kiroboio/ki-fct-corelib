@@ -1,6 +1,8 @@
 import { BigNumber as BigNumberEthers, ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
+import { SessionID } from "../batchMultiSigCall/classes";
+import { Interface } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 
 const gasPriceCalculationsByChains = {
@@ -12,6 +14,7 @@ const gasPriceCalculationsByChains = {
     // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
     if (maxFeePerGas < 100_000_000_000) {
       return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+      3;
     }
     // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
     if (maxFeePerGas > 200_000_000_000) {
@@ -43,6 +46,24 @@ export const transactionValidator = async (
   pureGas = false
 ): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
+
+  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData(
+    "batchMultiSigCall",
+    Interface.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]
+  );
+  const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
+
+  if (BigInt(maxGasPrice) > BigInt(gasPrice.maxFeePerGas)) {
+    return {
+      isValid: false,
+      txData: { gas: 0, ...gasPrice, type: 2 },
+      prices: {
+        gas: 0,
+        gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
+      },
+      error: "Max gas price for FCT is too high",
+    };
+  }
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);
