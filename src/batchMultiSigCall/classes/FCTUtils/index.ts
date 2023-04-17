@@ -599,23 +599,15 @@ export class FCTUtils extends FCTBase {
       throw new Error("Something weird");
     }
 
+    /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
+     * This is the reason why we are disabling the eslint rule for this line
+     */
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const ethers = hre.ethers;
 
     await impersonateAccount("0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D");
-
-    // Approve Uniswap V2 Router to spend KIRO token
-    // const User = await ethers.getSigner("0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D");
-    // const KIRO = new ethers.Contract(
-    //   "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
-    //   ["function approve(address spender, uint256 amount) external returns (bool)"],
-    //   ethers.provider
-    // );
-    // const KIROContract = KIRO.connect(User);
-    // await KIROContract.approve(
-    //   "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-    //   ethers.utils.parseUnits("100000000", "ether")
-    // );
 
     // Imperonate actuator
     await impersonateAccount(actuatorAddress);
