@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getGasPrices = exports.transactionValidator = void 0;
 const ethers_1 = require("ethers");
 const FCT_Actuator_abi_json_1 = __importDefault(require("../abi/FCT_Actuator.abi.json"));
+const classes_1 = require("../batchMultiSigCall/classes");
+const Interfaces_1 = require("../helpers/Interfaces");
 const gasPriceCalculationsByChains = {
     5: (maxFeePerGas) => {
         // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
@@ -15,6 +17,7 @@ const gasPriceCalculationsByChains = {
         // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
         if (maxFeePerGas < 100000000000) {
             return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+            3;
         }
         // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
         if (maxFeePerGas > 200000000000) {
@@ -26,6 +29,19 @@ const gasPriceCalculationsByChains = {
 };
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
+    const decodedFCTCalldata = Interfaces_1.Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", Interfaces_1.Interface.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]);
+    const { maxGasPrice } = classes_1.SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
+    if (BigInt(maxGasPrice) > BigInt(gasPrice.maxFeePerGas)) {
+        return {
+            isValid: false,
+            txData: { gas: 0, ...gasPrice, type: 2 },
+            prices: {
+                gas: 0,
+                gasPrice: gasPrice.maxFeePerGas,
+            },
+            error: "Max gas price for FCT is too high",
+        };
+    }
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers_1.ethers.Wallet(actuatorPrivateKey, provider);
     const actuatorContract = new ethers_1.ethers.Contract(actuatorContractAddress, FCT_Actuator_abi_json_1.default, signer);
