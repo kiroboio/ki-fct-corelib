@@ -15,6 +15,10 @@ export declare const TestFCT: {
                 name: string;
                 type: string;
             }[];
+            Recurrency: {
+                name: string;
+                type: string;
+            }[];
             transaction1: {
                 name: string;
                 type: string;
@@ -53,6 +57,11 @@ export declare const TestFCT: {
                 purgeable: boolean;
                 blockable: boolean;
             };
+            recurrency: {
+                max_repeats: string;
+                chill_time: string;
+                accumetable: boolean;
+            };
             transaction_1: {
                 call: {
                     call_index: number;
@@ -70,8 +79,6 @@ export declare const TestFCT: {
                     jump_on_fail: number;
                     method_interface: string;
                 };
-                recipient: string;
-                amount: string;
             };
         };
     };
@@ -93,7 +100,7 @@ export declare const TestFCT: {
     }[];
     variables: never[];
     externalSigners: never[];
-    signatures: ({
+    signatures: {
         r: string;
         s: string;
         _vs: string;
@@ -101,15 +108,7 @@ export declare const TestFCT: {
         v: number;
         yParityAndS: string;
         compact: string;
-    } | {
-        r: string;
-        s: string;
-        v: number;
-        _vs?: undefined;
-        recoveryParam?: undefined;
-        yParityAndS?: undefined;
-        compact?: undefined;
-    })[];
+    }[];
     computed: never[];
 };
 export declare const buildTestFCT: () => {
@@ -129,6 +128,10 @@ export declare const buildTestFCT: () => {
                     name: string;
                     type: string;
                 }[];
+                Recurrency: {
+                    name: string;
+                    type: string;
+                }[];
                 transaction1: {
                     name: string;
                     type: string;
@@ -167,6 +170,11 @@ export declare const buildTestFCT: () => {
                     purgeable: boolean;
                     blockable: boolean;
                 };
+                recurrency: {
+                    max_repeats: string;
+                    chill_time: string;
+                    accumetable: boolean;
+                };
                 transaction_1: {
                     call: {
                         call_index: number;
@@ -184,8 +192,6 @@ export declare const buildTestFCT: () => {
                         jump_on_fail: number;
                         method_interface: string;
                     };
-                    recipient: string;
-                    amount: string;
                 };
             };
         };
@@ -207,7 +213,7 @@ export declare const buildTestFCT: () => {
         }[];
         variables: never[];
         externalSigners: never[];
-        signatures: ({
+        signatures: {
             r: string;
             s: string;
             _vs: string;
@@ -215,132 +221,10 @@ export declare const buildTestFCT: () => {
             v: number;
             yParityAndS: string;
             compact: string;
-        } | {
-            r: string;
-            s: string;
-            v: number;
-            _vs?: undefined;
-            recoveryParam?: undefined;
-            yParityAndS?: undefined;
-            compact?: undefined;
-        })[];
+        }[];
         computed: never[];
     };
 };
 export declare const freshTestFCT: ({ chainId }: {
     chainId: ChainId;
-}) => Promise<{
-    FCT: BatchMultiSigCall;
-    FCTJson: {
-        typedData: {
-            types: {
-                EIP712Domain: {
-                    name: string;
-                    type: string;
-                }[];
-                Meta: {
-                    name: string;
-                    type: string;
-                }[];
-                Limits: {
-                    name: string;
-                    type: string;
-                }[];
-                transaction1: {
-                    name: string;
-                    type: string;
-                }[];
-                BatchMultiSigCall: {
-                    name: string;
-                    type: string;
-                }[];
-                Call: {
-                    name: string;
-                    type: string;
-                }[];
-            };
-            primaryType: string;
-            domain: {
-                name: string;
-                version: string;
-                chainId: number;
-                verifyingContract: string;
-                salt: string;
-            };
-            message: {
-                meta: {
-                    name: string;
-                    builder: string;
-                    selector: string;
-                    version: string;
-                    random_id: string;
-                    eip712: boolean;
-                    auth_enabled: boolean;
-                };
-                limits: {
-                    valid_from: string;
-                    expires_at: string;
-                    gas_price_limit: string;
-                    purgeable: boolean;
-                    blockable: boolean;
-                };
-                transaction_1: {
-                    call: {
-                        call_index: number;
-                        payer_index: number;
-                        call_type: string;
-                        from: string;
-                        to: string;
-                        to_ens: string;
-                        eth_value: string;
-                        gas_limit: string;
-                        permissions: number;
-                        flow_control: string;
-                        returned_false_means_fail: boolean;
-                        jump_on_success: number;
-                        jump_on_fail: number;
-                        method_interface: string;
-                    };
-                    recipient: string;
-                    amount: string;
-                };
-            };
-        };
-        builder: string;
-        typeHash: string;
-        sessionId: string;
-        nameHash: string;
-        mcall: {
-            typeHash: string;
-            ensHash: string;
-            functionSignature: string;
-            value: string;
-            callId: string;
-            from: string;
-            to: string;
-            data: string;
-            types: never[];
-            typedHashes: never[];
-        }[];
-        variables: never[];
-        externalSigners: never[];
-        signatures: ({
-            r: string;
-            s: string;
-            _vs: string;
-            recoveryParam: number;
-            v: number;
-            yParityAndS: string;
-            compact: string;
-        } | {
-            r: string;
-            s: string;
-            v: number;
-            _vs?: undefined;
-            recoveryParam?: undefined;
-            yParityAndS?: undefined;
-            compact?: undefined;
-        })[];
-        computed: never[];
-    };
-}>;
+}) => BatchMultiSigCall;

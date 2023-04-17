@@ -272,6 +272,10 @@ class FCTUtils extends FCTBase_1.FCTBase {
             else {
                 throw new Error("Something weird");
             }
+            /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
+             * This is the reason why we are disabling the eslint rule for this line
+             */
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const ethers = hre.ethers;
             // Imperonate actuator
@@ -289,7 +293,9 @@ class FCTUtils extends FCTBase_1.FCTBase {
             const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
             try {
                 await (0, hardhat_network_helpers_1.setNextBlockBaseFeePerGas)(ethers.utils.parseUnits("1", "gwei"));
-                const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address);
+                const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
+                    gasLimit: 10000000,
+                });
                 const txReceipt = await tx.wait();
                 return {
                     success: true,
@@ -301,7 +307,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 return {
                     success: false,
                     txReceipt: null,
-                    message: err.reason,
+                    message: err.message,
                 };
             }
         };
