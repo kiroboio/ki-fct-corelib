@@ -1,7 +1,6 @@
 import { Utility } from "@kirobo/ki-eth-fct-provider-ts";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
-import { writeFileSync } from "fs";
 
 // import util from "util";
 import { BatchMultiSigCall, ethers, TypedDataTypes } from "../src";
@@ -33,8 +32,9 @@ async function main() {
   });
 
   FCT.setOptions({
-    maxGasPrice: "20000000000",
+    maxGasPrice: "150" + "0".repeat(9),
     expiresAt: getDate(1000000),
+    validFrom: "0",
     builder: wallet,
     recurrency: {
       accumetable: true,
@@ -75,7 +75,7 @@ async function main() {
     externalSigners: [],
   };
 
-  writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
+  // writeFileSync("FCT2.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()

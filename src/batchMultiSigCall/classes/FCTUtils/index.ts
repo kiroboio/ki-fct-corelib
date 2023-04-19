@@ -1,7 +1,7 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
-import { impersonateAccount, setNextBlockBaseFeePerGas } from "@nomicfoundation/hardhat-network-helpers";
+import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 import BigNumber from "bignumber.js";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
@@ -18,6 +18,7 @@ import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { SessionID } from "../SessionID";
+import { getTotalApprovalCalls } from "./getPaymentPerPayer";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -26,7 +27,7 @@ export class FCTUtils extends FCTBase {
     this._eip712 = new EIP712(FCT);
   }
 
-  private get FCTData() {
+  public get FCTData() {
     return this.FCT.exportFCT();
   }
 
@@ -330,19 +331,32 @@ export class FCTUtils extends FCTBase {
     };
   };
 
+  // TODO: Add error if gasPrice is higher than maxGasPrice
   public getPaymentPerPayer = ({
     signatures,
     gasPrice,
     kiroPriceInETH,
     penalty,
+    fees,
   }: {
     signatures?: SignatureLike[];
     gasPrice?: number;
     kiroPriceInETH: string;
     penalty?: number;
+    fees?: {
+      baseFeesBPS: number;
+      bonusFeesBPS: number;
+    };
   }) => {
-    const fct = this.FCTData;
+    const batchMultiSigCallOverhead = 151516n;
+
+    const baseFeeBPS = fees?.baseFeesBPS ? BigInt(fees.baseFeesBPS) : 1000n;
+    const bonusFeesBPS = fees?.bonusFeesBPS ? BigInt(fees.bonusFeesBPS) : 5000n;
+    const WHOLE_IN_BPS = 10000n;
+
     penalty = penalty || 1;
+
+    const fct = this.FCTData;
     const allPaths = this.getAllPaths();
 
     fct.signatures = signatures || [];
@@ -354,23 +368,27 @@ export class FCTUtils extends FCTBase {
       signatures: fct.signatures,
     });
 
-    const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
-    const callOverhead = 16370;
-    const defaultCallGas = 50000;
-
-    const limits = fct.typedData.message.limits as TypedDataLimits;
-    const maxGasPrice = limits.gas_price_limit;
-
-    const FCTgasPrice = gasPrice ? gasPrice.toString() : maxGasPrice;
-    const bigIntGasPrice = BigInt(FCTgasPrice);
-
-    const effectiveGasPrice = (
-      (bigIntGasPrice * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - bigIntGasPrice) * BigInt(5000)) / BigInt(10000) -
-      bigIntGasPrice
-    ).toString();
-
     const data = allPaths.map((path) => {
-      const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
+      const commonGas =
+        23100n +
+        4600n * BigInt(fct.mcall.length) +
+        (77600n * BigInt(callData.length)) / WHOLE_IN_BPS +
+        batchMultiSigCallOverhead;
+
+      // const callOverhead = 53070n; // Average call overhead in 'batchMultiSigCall' function
+      const defaultCallGas = 100_000n;
+
+      const limits = fct.typedData.message.limits as TypedDataLimits;
+
+      const maxGasPrice = BigInt(limits.gas_price_limit);
+      const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
+
+      const effectiveGasPrice =
+        (txGasPrice * (WHOLE_IN_BPS + baseFeeBPS) + (maxGasPrice - txGasPrice) * bonusFeesBPS) / WHOLE_IN_BPS;
+
+      getTotalApprovalCalls(path, fct.mcall);
+
+      const FCTOverheadPerPayer = commonGas / BigInt(path.length);
 
       return path.reduce((acc, callIndex) => {
         const call = fct.mcall[Number(callIndex)];
@@ -378,15 +396,17 @@ export class FCTUtils extends FCTBase {
         const payerIndex = callId.payerIndex;
         const payer = fct.mcall[payerIndex - 1].from;
 
-        // 21000 - base fee of the call on EVMs
-        const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
-        const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
+        const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - 21000n;
+        const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall;
 
-        const callCost = totalGasForCall * BigInt(FCTgasPrice);
-        const callFee = totalGasForCall * BigInt(effectiveGasPrice);
+        const callCost = totalGasForCall * txGasPrice;
+        const callFee = totalGasForCall * (effectiveGasPrice - txGasPrice);
         const totalCallCost = callCost + callFee;
 
-        const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / BigInt(1e18);
+        console.log("Base fee: ", (callCost * BigInt(kiroPriceInETH)) / 10n ** 18n);
+        console.log("Call fee: ", (callFee * BigInt(kiroPriceInETH)) / 10n ** 18n);
+
+        const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / 10n ** 18n;
 
         return {
           ...acc,
@@ -626,9 +646,10 @@ export class FCTUtils extends FCTBase {
     const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
 
     try {
-      await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
+      // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
       const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
-        gasLimit: 10_000_000,
+        gasLimit: 1_000_000,
+        gasPrice: this.FCT.options.maxGasPrice,
       });
 
       const txReceipt = await tx.wait();

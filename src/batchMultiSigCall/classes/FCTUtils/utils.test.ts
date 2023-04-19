@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { getAddress } from "ethers/lib/utils";
+import util from "util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import FCTData from "../../test/FCTExample.json";
@@ -120,11 +121,71 @@ describe("BatchMultiSigCall FCTUtils", () => {
   it("Should deep validate FCT", async () => {
     const { FCT, FCTJson } = buildTestFCT();
 
-    // Takes around 11.691s
-    await FCT.utils.deepValidateFCT({
+    // // Takes around 11.691s
+    const tx = await FCT.utils.deepValidateFCT({
       signatures: FCTJson.signatures,
       actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
       rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
     });
+
+    console.log(util.inspect(tx, false, null, true));
+
+    // // // Find in events "FCTE_Activated" and log it
+    // const activatedEvent = tx.txReceipt.events.find((e: any) => e.event === "FCTE_CallPayment");
+    // console.log("kiro paid", activatedEvent.args.totalKiroFees.toString());
+
+    // const gasPrice = tx.txReceipt.effectiveGasPrice.toString();
+    // // KIRO Paid 92_579140834272517888
+    // //            92.57914083427251
+
+    const gasPrice = 2000000000;
+
+    // const kiroPriceInETH = await getKIROPrice({
+    //   chainId: 5,
+    //   rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    // });
+    // console.log("kiroPriceInETH", kiroPriceInETH);
+    // const kiroPriceInETH = "34276716077137";
+    const kiroPriceInETH = "29174339261661309654809";
+
+    const payments = FCT.utils.getPaymentPerPayer({
+      signatures: FCTJson.signatures,
+      kiroPriceInETH,
+      gasPrice,
+    });
+
+    console.log(payments);
   });
 });
+
+// FCT_Tokenomics.sol - reduce only sequential calls
+
+// 1. totalCalls - how many times payment is requested
+// If payer == address(0) - activator pays
+
+// by: '0xC434b739d2DaC17279f8fA1B66C0C7381df4909b',
+// activator: '0xC434b739d2DaC17279f8fA1B66C0C7381df4909b',
+// id: '0xf6407ddd01010100000000000000000000000000000000000000000000000166',
+// builder: '0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30',
+// total: [
+//   BigNumber { value: "15209430279916199367" },
+//   BigNumber { value: "15209430279916199366" },
+//   BigNumber { value: "62160280274440119153" },
+//   BigNumber { value: "16531989434691521051" },
+//   BigNumber { value: "76047151399580996837" },
+//   BigNumber { value: "203950" },
+//   BigNumber { value: "79380" },
+//   BigNumber { value: "0" },
+//   BigNumber { value: "0" },
+//   kiroboPayment: BigNumber { value: "15209430279916199367" },
+//   builderPayment: BigNumber { value: "15209430279916199366" },
+//   activatorPayment: BigNumber { value: "62160280274440119153" },
+//   base: BigNumber { value: "16531989434691521051" },
+//   fees: BigNumber { value: "76047151399580996837" },
+//   commonGas: BigNumber { value: "203950" },
+//   userGas: BigNumber { value: "79380" },
+//   missingKiro: BigNumber { value: "0" },
+//   availableEth: BigNumber { value: "0" }
+// ],
+// gasPrice: BigNumber { value: "2000000000" },
+// timestamp: BigNumber { value: "1681817846" }

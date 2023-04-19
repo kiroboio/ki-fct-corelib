@@ -8,6 +8,7 @@
     "test": "mocha -r ts-node/register \"src/**/*.test.ts\" --timeout 100000",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/**/*.test.ts",
     "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
+    "test:FCTUtils": "mocha -r ts-node/register src/batchMultiSigCall/classes/FCTUtils/utils.test.ts --timeout 100000",
     "build": "rm -rf dist/ & tsc --project tsconfig.build.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct:struct": "ts-node scripts/fct_struct.script.ts",

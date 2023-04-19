@@ -34,7 +34,7 @@ async function main() {
   });
 
   batchMultiSigCall.setOptions({
-    maxGasPrice: "20000000000",
+    maxGasPrice: "150" + "0".repeat(9),
     expiresAt: getDate(1000000),
     builder: wallet,
     recurrency: {
