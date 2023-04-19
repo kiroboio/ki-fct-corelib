@@ -1,0 +1,19 @@
+name: 'dist push'
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build
+        run: export NODE_ENV=production&&yarn install --production=false && yarn run build
+      - name: Pushes dist folder to dist branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: dist
+          FOLDER: dist
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
