@@ -5,7 +5,7 @@ import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
     private _eip712;
     constructor(FCT: BatchMultiSigCall);
-    private get FCTData();
+    get FCTData(): import("../../types").IBatchMultiSigCallFCT;
     getAllRequiredApprovals(): Promise<import("../../types").IRequiredApproval[]>;
     getCalldataForActuator({ signatures, purgedFCT, investor, activator, }: {
         signatures: SignatureLike[];
@@ -50,11 +50,15 @@ export declare class FCTUtils extends FCTBase {
         amountInKIRO: string;
         amountInETH: string;
     };
-    getPaymentPerPayer: ({ signatures, gasPrice, kiroPriceInETH, penalty, }: {
+    getPaymentPerPayer: ({ signatures, gasPrice, kiroPriceInETH, penalty, fees, }: {
         signatures?: SignatureLike[] | undefined;
         gasPrice?: number | undefined;
         kiroPriceInETH: string;
         penalty?: number | undefined;
+        fees?: {
+            baseFeesBPS: number;
+            bonusFeesBPS: number;
+        } | undefined;
     }) => {
         payer: string;
         amount: string;
