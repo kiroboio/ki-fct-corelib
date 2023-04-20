@@ -16,6 +16,10 @@ async function main() {
   });
 
   console.log(payers);
+  // Real fee             116213905426644680000 (116.21390542664468)
+  // Fee from calculation 154508243943700685641 (154.50824394370068)
+
+  // Difference is because a big gas limit is for mcall[0] (pretty sure it uses a lot less)
 }
 
 main()
