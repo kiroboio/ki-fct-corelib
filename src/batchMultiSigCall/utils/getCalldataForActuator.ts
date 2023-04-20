@@ -1,5 +1,5 @@
 import { Interface } from "../../helpers/Interfaces";
-import { IBatchMultiSigCallFCT } from "../../types";
+import { IBatchMultiSigCallFCT } from "../types";
 
 export function getCalldataForActuator({
   signedFCT,

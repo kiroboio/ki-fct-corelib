@@ -322,12 +322,11 @@ export class FCTUtils extends FCTBase {
 
     const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
     const kiroCost = (totalCost * normalisedKiroPriceInETH) / BigInt(1e18);
-    const amountInETH = totalCost;
 
     return {
       vault,
       amountInKIRO: kiroCost.toString(),
-      amountInETH: amountInETH.toString(),
+      amountInETH: totalCost.toString(),
     };
   };
 

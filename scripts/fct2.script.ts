@@ -5,6 +5,8 @@ import * as dotenv from "dotenv";
 // import util from "util";
 import { BatchMultiSigCall, ethers, TypedDataTypes } from "../src";
 
+// import util from "util";
+
 dotenv.config();
 // eslint-disable-next-line
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

@@ -13,7 +13,7 @@
     "baseUrl": "./src",
     "allowJs": true,
     "moduleResolution": "node",
-    "lib": ["es2017", "DOM"],
+    "lib": ["ES2021", "DOM"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strictBindCallApply": true,

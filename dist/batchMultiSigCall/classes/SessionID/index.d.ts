@@ -15,14 +15,31 @@ export declare class SessionID extends FCTBase {
         name: string;
         externalSigners?: string[];
     }): {
+        builder: string;
         name: string;
+        multisig: {
+            externalSigners: string[];
+            minimumApprovals: string;
+        };
         validFrom: string;
         expiresAt: string;
         maxGasPrice: string;
         blockable: boolean;
         purgeable: boolean;
         authEnabled: boolean;
-        builder: string;
+        recurrency: {
+            accumetable: boolean;
+            chillTime: string;
+            maxRepeats: string;
+        };
+    };
+    static parse(sessionId: string): {
+        validFrom: string;
+        expiresAt: string;
+        maxGasPrice: string;
+        blockable: boolean;
+        purgeable: boolean;
+        authEnabled: boolean;
         recurrency: {
             accumetable: boolean;
             chillTime: string;
@@ -30,7 +47,6 @@ export declare class SessionID extends FCTBase {
         };
         multisig: {
             minimumApprovals: string;
-            externalSigners: string[];
         };
     };
 }

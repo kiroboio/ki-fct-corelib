@@ -67,11 +67,10 @@ class FCTUtils extends FCTBase_1.FCTBase {
             const totalCost = baseGasCost + feeGasCost;
             const normalisedKiroPriceInETH = BigInt(kiroPriceInETH);
             const kiroCost = (totalCost * normalisedKiroPriceInETH) / BigInt(1e18);
-            const amountInETH = totalCost;
             return {
                 vault,
                 amountInKIRO: kiroCost.toString(),
-                amountInETH: amountInETH.toString(),
+                amountInETH: totalCost.toString(),
             };
         };
         // TODO: Add error if gasPrice is higher than maxGasPrice
