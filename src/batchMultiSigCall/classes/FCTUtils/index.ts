@@ -330,7 +330,7 @@ export class FCTUtils extends FCTBase {
     };
   };
 
-  public getPaymentPerPayerV2 = ({
+  public getPaymentPerPayer = ({
     signatures,
     gasPrice,
     priceOfETHInKiro,
