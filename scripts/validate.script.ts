@@ -115,6 +115,8 @@ async function main() {
   const effectiveGasPrice = getEffectiveGasPrice({
     gasPrice,
     maxGasPrice,
+    baseFeeBPS: 1000n,
+    bonusFeeBPS: 5000n,
   });
 
   // const kiroPerETH = 29174339261661309654809n;

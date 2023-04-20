@@ -54,15 +54,10 @@
       "transaction1": [
         { "name": "call", "type": "Call" },
         {
-          "name": "amountOutMin",
-          "type": "uint256"
+          "name": "recipient",
+          "type": "address"
         },
-        { "name": "path", "type": "address[]" },
-        { "name": "to", "type": "address" },
-        {
-          "name": "deadline",
-          "type": "uint256"
-        }
+        { "name": "amount", "type": "uint256" }
       ],
       "BatchMultiSigCall": [
         { "name": "meta", "type": "Meta" },
@@ -132,18 +127,18 @@
     },
     "message": {
       "meta": {
-        "name": "aaaaaaa_uniswap",
+        "name": "🔥Untitled",
         "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0xf6407ddd",
         "version": "0x010101",
-        "random_id": "0xe336c9",
+        "random_id": "0xb047d6",
         "eip712": true,
         "auth_enabled": false
       },
       "limits": {
-        "valid_from": "1681818141",
-        "expires_at": "1682456399",
-        "gas_price_limit": "20000000000",
+        "valid_from": "1681979165",
+        "expires_at": "1682629199",
+        "gas_price_limit": "19113516698",
         "purgeable": false,
         "blockable": true
       },
@@ -152,40 +147,38 @@
           "call_index": 1,
           "payer_index": 1,
           "call_type": "action",
-          "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
-          "to": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
+          "from": "0x2dFf96721a29D532508863e168e8e9e8A3dE9ED2",
+          "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
           "to_ens": "",
-          "eth_value": "10000000000000000",
-          "gas_limit": "0",
+          "eth_value": "0",
+          "gas_limit": "114824",
           "permissions": 0,
           "flow_control": "stop on success, revert on fail",
-          "returned_false_means_fail": false,
+          "returned_false_means_fail": true,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "swapExactETHForTokens(uint256,address[],address,uint256)"
+          "method_interface": "transfer(address,uint256)"
         },
-        "amountOutMin": "0",
-        "path": ["0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"],
-        "to": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
-        "deadline": "0xFB0B000000000000000000000000000000000000"
+        "recipient": "0xD4a0281cEeebA1CEeFB4eAbF63ca6A608E143Fdc",
+        "amount": "2000000000000000000"
       }
     }
   },
   "builder": "0x0000000000000000000000000000000000000000",
-  "typeHash": "0xd51a02d6f087929612f160577b957c491e71ed8e217ba611af9fda4daea0e886",
-  "sessionId": "0xe336c9000101010000000000000064483f4f00643e821d0000001800eef8c80c",
-  "nameHash": "0x2501aed7c7ced682eea2a1898aafe03f74fd1fe9b34f34b8f8d179e942154a46",
+  "typeHash": "0x4788192ebf31e69ab2b0afa2484d5b285235311fd1feadf4d2714ef859ffc723",
+  "sessionId": "0xb047d60001010100000000000000644ae24f006440f71d0000000473411e9a0c",
+  "nameHash": "0xf41ad051fb56ed68686fda16fde3f9e4e51449a430e0b95f72636251d16683d7",
   "mcall": [
     {
-      "typeHash": "0x19e81f31300ec6c8f2cd7d617a9491cfa310abf1f27668252e5c18770f9d5660",
+      "typeHash": "0xed53c5a7dcb3019f57626a3d1c881f32aea4a03a4f5be98685dd2f2f1cdd02c0",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "functionSignature": "0x7ff36ab5759d6a6f3666c17e7dae0b66684a53581fd3cada68e6fd19d01f9b11",
-      "value": "10000000000000000",
-      "callId": "0x0000000000000000000000000000000000000600000000000100010000000000",
-      "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
-      "to": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
-      "data": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000014aeba4e0f1a9b6942f1d43f1cc5af17fe8253d000000000000000000000000fb0b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
-      "types": [1000, 4000, 1000, 1000, 1000],
+      "functionSignature": "0xa9059cbb2ab09eb219583f4a59a5d0623ade346d962bcd4e46b11da047c9049b",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000600000000000100010001c08804",
+      "from": "0x2dFf96721a29D532508863e168e8e9e8A3dE9ED2",
+      "to": "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      "data": "0x000000000000000000000000d4a0281ceeeba1ceefb4eabf63ca6a608e143fdc0000000000000000000000000000000000000000000000001bc16d674ec80000",
+      "types": [],
       "typedHashes": []
     }
   ],
@@ -193,13 +186,14 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xffad27752c7d63ba5dbabea76b883a462ac2ba70fffea5584790c470b801348e",
-      "s": "0x72be405ca020c22a674a2180f7b2f7c1bd46da1d35bacefab270a49f5d31c79e",
-      "_vs": "0xf2be405ca020c22a674a2180f7b2f7c1bd46da1d35bacefab270a49f5d31c79e",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xf2be405ca020c22a674a2180f7b2f7c1bd46da1d35bacefab270a49f5d31c79e",
-      "compact": "0xffad27752c7d63ba5dbabea76b883a462ac2ba70fffea5584790c470b801348ef2be405ca020c22a674a2180f7b2f7c1bd46da1d35bacefab270a49f5d31c79e"
+      "r": "0xd88d588f0f62b36361992c0abd2c7f4624d8497238c0446c02bb1a1f68d07840",
+      "s": "0x5a74bdc357804bd1df393ab6514e4f1b67cbfd06452c7b383718ef3ec7b0f155",
+      "v": 27
+    },
+    {
+      "r": "0xe9d1bf91a3f29e46dbfbec30514f3dec3fb1f7af42fcb81d4b23d617236f71df",
+      "s": "0x01fa647bd243a3c62acc9cb7fa0f91a796e9fe28c1b02d91564580b4f3056f32",
+      "v": 27
     }
   ],
   "computed": []

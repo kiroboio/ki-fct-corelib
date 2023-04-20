@@ -1,6 +1,8 @@
 import { MSCall } from "../../types";
 import { CallID } from "../CallID";
 
+const WHOLE_IN_BPS = 10000n as const;
+
 const fees = {
   beforeCallingBatchMultiSigCall: 5000n,
   FCTControllerOverhead: 43000n,
@@ -57,18 +59,6 @@ const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
   }, [] as string[]);
 };
 
-export function getTotalApprovalCalls(pathIndexes: string[], calls: any[]) {
-  // Payer index 0 = actuator pays for the call
-  let totalCalls: number;
-  const payerList = pathIndexes.map((index) => {
-    const call = calls[Number(index)];
-    const { payerIndex } = CallID.parse(call.callId);
-    return calls[payerIndex - 1].from;
-  });
-
-  console.log("payerList", payerList);
-}
-
 export function getPayersForRoute({
   calls,
   pathIndexes,
@@ -100,14 +90,12 @@ export function getPayersForRoute({
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
   const commonGasPerCall = commonGas / BigInt(payers.length);
 
-  console.log("commonGasPerCall", commonGasPerCall.toString());
-
   const gasForFCTCall = pathIndexes.reduce((acc, path, index) => {
     const call = calls[Number(path)];
     const { payerIndex, options } = CallID.parse(call.callId);
     const payer = calls[payerIndex - 1].from;
     const overhead = index === 0 ? fees.mcallOverheadFirstCall : fees.mcallOverheadOtherCalls;
-    const gas = BigInt(options.gasLimit) || 100_000n;
+    const gas = BigInt(options.gasLimit) || 50_000n;
     const amount = gas + overhead + commonGasPerCall;
     if (acc[payer]) {
       acc[payer] += amount;
@@ -137,12 +125,16 @@ export function getPayersForRoute({
 export function getEffectiveGasPrice({
   maxGasPrice,
   gasPrice,
+  baseFeeBPS,
+  bonusFeeBPS,
 }: {
   maxGasPrice: string | bigint;
   gasPrice: string | bigint;
+  baseFeeBPS: bigint;
+  bonusFeeBPS: bigint;
 }) {
   return (
-    (BigInt(gasPrice) * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * BigInt(5000)) /
-    BigInt(10000)
+    (BigInt(gasPrice) * WHOLE_IN_BPS + baseFeeBPS + (BigInt(maxGasPrice) - BigInt(gasPrice)) * bonusFeeBPS) /
+    WHOLE_IN_BPS
   ).toString();
 }
