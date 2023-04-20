@@ -1,0 +1,20 @@
+import { Variable } from "../types";
+export type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
+export declare const globalVariables: {
+    blockNumber: string;
+    blockTimestamp: string;
+    gasPrice: string;
+    minerAddress: string;
+    originAddress: string;
+    investorAddress: string;
+    activatorAddress: string;
+    engineAddress: string;
+};
+export declare const getBlockNumber: () => Variable;
+export declare const getBlockTimestamp: () => Variable;
+export declare const getGasPrice: () => Variable;
+export declare const getMinerAddress: () => Variable;
+export declare const getOriginAddress: () => Variable;
+export declare const getInvestorAddress: () => Variable;
+export declare const getActivatorAddress: () => Variable;
+export declare const getEngineAddress: () => Variable;
