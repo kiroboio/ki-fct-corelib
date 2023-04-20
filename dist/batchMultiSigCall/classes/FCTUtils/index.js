@@ -76,7 +76,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
         };
         // TODO: Add error if gasPrice is higher than maxGasPrice
         this.getPaymentPerPayer = ({ signatures, gasPrice, kiroPriceInETH, penalty, fees, }) => {
-            const batchMultiSigCallOverhead = 151516n;
+            const batchMultiSigCallOverhead = 151516n - 55000n;
             const baseFeeBPS = fees?.baseFeesBPS ? BigInt(fees.baseFeesBPS) : 1000n;
             const bonusFeesBPS = fees?.bonusFeesBPS ? BigInt(fees.bonusFeesBPS) : 5000n;
             const WHOLE_IN_BPS = 10000n;
@@ -95,8 +95,9 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     4600n * BigInt(fct.mcall.length) +
                     (77600n * BigInt(callData.length)) / WHOLE_IN_BPS +
                     batchMultiSigCallOverhead;
-                // const callOverhead = 53070n; // Average call overhead in 'batchMultiSigCall' function
-                const defaultCallGas = 100000n;
+                console.log("commonGas", commonGas);
+                const callOverhead = 39000n; // Average call overhead in 'batchMultiSigCall' function
+                const defaultCallGas = 150000n;
                 const limits = fct.typedData.message.limits;
                 const maxGasPrice = BigInt(limits.gas_price_limit);
                 const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
@@ -109,7 +110,7 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     const payerIndex = callId.payerIndex;
                     const payer = fct.mcall[payerIndex - 1].from;
                     const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - 21000n;
-                    const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall;
+                    const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall + callOverhead;
                     const callCost = totalGasForCall * txGasPrice;
                     const callFee = totalGasForCall * (effectiveGasPrice - txGasPrice);
                     const totalCallCost = callCost + callFee;
