@@ -75,24 +75,26 @@
           "type": "bool"
         }
       ],
-      "Recurrency": [
-        {
-          "name": "max_repeats",
-          "type": "uint16"
-        },
-        {
-          "name": "chill_time",
-          "type": "uint32"
-        },
-        {
-          "name": "accumetable",
-          "type": "bool"
-        }
-      ],
       "transaction1": [
         {
           "name": "call",
           "type": "Call"
+        },
+        {
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "onBehalfOf",
+          "type": "address"
+        },
+        {
+          "name": "referralCode",
+          "type": "uint16"
         }
       ],
       "BatchMultiSigCall": [
@@ -103,10 +105,6 @@
         {
           "name": "limits",
           "type": "Limits"
-        },
-        {
-          "name": "recurrency",
-          "type": "Recurrency"
         },
         {
           "name": "transaction_1",
@@ -182,60 +180,59 @@
     },
     "message": {
       "meta": {
-        "name": "",
-        "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
+        "name": "jk",
+        "builder": "0x0000000000000000000000000000000000000000",
         "selector": "0xf6407ddd",
         "version": "0x010101",
-        "random_id": "0x89f9e3",
+        "random_id": "0xb8e0b8",
         "eip712": true,
-        "auth_enabled": true
+        "auth_enabled": false
       },
       "limits": {
-        "valid_from": "0",
-        "expires_at": "88081827705",
-        "gas_price_limit": "150000000000",
+        "valid_from": "1681900764",
+        "expires_at": "1682542799",
+        "gas_price_limit": "98233305634",
         "purgeable": false,
         "blockable": true
-      },
-      "recurrency": {
-        "max_repeats": "500",
-        "chill_time": "0",
-        "accumetable": true
       },
       "transaction_1": {
         "call": {
           "call_index": 1,
           "payer_index": 1,
           "call_type": "action",
-          "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-          "to": "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+          "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
+          "to": "0x4bd5643ac6f66a5237E18bfA7d47cF22f1c9F210",
           "to_ens": "",
-          "eth_value": "300",
-          "gas_limit": "92002",
+          "eth_value": "0",
+          "gas_limit": "587642",
           "permissions": 0,
-          "flow_control": "continue on success, revert on fail",
+          "flow_control": "stop on success, revert on fail",
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": ""
-        }
+          "method_interface": "deposit(address,uint256,address,uint16)"
+        },
+        "asset": "0x65e2fe35c30ec218b46266f89847c63c2eda7dc7",
+        "amount": "2000000",
+        "onBehalfOf": "0xD4a0281cEeebA1CEeFB4eAbF63ca6A608E143Fdc",
+        "referralCode": "0"
       }
     }
   },
-  "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
-  "typeHash": "0x2508928a66caa892ee6854e2759714208009e642e52ed3ba1f007130918ec19e",
-  "sessionId": "0x89f9e30001010101f4000000001482160779000000000000000022ecb25c001d",
-  "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x6742f388126ef22c8dae0a705d77dc41b22f7022550e90b5e5cec9c20fd183d4",
+  "sessionId": "0xb8e0b80001010100000000000000644990cf00643fc4dc00000016df294a220c",
+  "nameHash": "0x01e950e07a153f96c273bfc4e21da3c346ddf376dddb94a2c77a0a5034585dd7",
   "mcall": [
     {
-      "typeHash": "0x059f3ab25880eb521ca0ee77909d61ec600ee2057b1588455cb8a9a469122816",
+      "typeHash": "0x4704f082d834455dca04fefd37fe98fe915c3ea2921c00461da486095cf503d2",
       "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "functionSignature": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "value": "300",
-      "callId": "0x0000000000000000000000000000000000000000000000000100010001676200",
-      "from": "0x03357338Ea477FF139170cf85C9A4063dFc03FC9",
-      "to": "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-      "data": "0x",
+      "functionSignature": "0xe8eda9df0b01eb22d994bafd527c9d2f8a22e59a6e596139cc3ae72ae47debec",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000600000000000100010008f77a00",
+      "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
+      "to": "0x4bd5643ac6f66a5237E18bfA7d47cF22f1c9F210",
+      "data": "0x00000000000000000000000065e2fe35c30ec218b46266f89847c63c2eda7dc700000000000000000000000000000000000000000000000000000000001e8480000000000000000000000000d4a0281ceeeba1ceefb4eabf63ca6a608e143fdc0000000000000000000000000000000000000000000000000000000000000000",
       "types": [],
       "typedHashes": []
     }
@@ -244,22 +241,18 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xf3342cbaee8e43f0e70d35d36a165abdc99d554c22a8703053411b15bc2ccc52",
-      "s": "0x173e0b3538818c5dbcf3019b36cfff81499a995f45be3237df76e9f848dc380f",
-      "_vs": "0x173e0b3538818c5dbcf3019b36cfff81499a995f45be3237df76e9f848dc380f",
+      "r": "0xd402e3dd3db1a3527e39eb2254d47bfeec4dd57e7bf2ed2569f12fbb127f58e8",
+      "s": "0x5d3f81e2e2d1b006547fee1e8db359d0bdb9d07c1dc9b8e8e098ec845044681a",
+      "_vs": "0x5d3f81e2e2d1b006547fee1e8db359d0bdb9d07c1dc9b8e8e098ec845044681a",
       "recoveryParam": 0,
       "v": 27,
-      "yParityAndS": "0x173e0b3538818c5dbcf3019b36cfff81499a995f45be3237df76e9f848dc380f",
-      "compact": "0xf3342cbaee8e43f0e70d35d36a165abdc99d554c22a8703053411b15bc2ccc52173e0b3538818c5dbcf3019b36cfff81499a995f45be3237df76e9f848dc380f"
+      "yParityAndS": "0x5d3f81e2e2d1b006547fee1e8db359d0bdb9d07c1dc9b8e8e098ec845044681a",
+      "compact": "0xd402e3dd3db1a3527e39eb2254d47bfeec4dd57e7bf2ed2569f12fbb127f58e85d3f81e2e2d1b006547fee1e8db359d0bdb9d07c1dc9b8e8e098ec845044681a"
     },
     {
-      "r": "0x2902221f383c23d6f16319fc128665922212a9b1cade7f988259702932556c82",
-      "s": "0x4ba0b1728b979535ab37149480c27ce66510a1b339c7c44fee068a26b4efaa48",
-      "_vs": "0x4ba0b1728b979535ab37149480c27ce66510a1b339c7c44fee068a26b4efaa48",
-      "recoveryParam": 0,
-      "v": 27,
-      "yParityAndS": "0x4ba0b1728b979535ab37149480c27ce66510a1b339c7c44fee068a26b4efaa48",
-      "compact": "0x2902221f383c23d6f16319fc128665922212a9b1cade7f988259702932556c824ba0b1728b979535ab37149480c27ce66510a1b339c7c44fee068a26b4efaa48"
+      "r": "0xa9cfd1102f53efa6c74df2ec9228cbf282e9fecee8f0f3a83a0facab48e731f6",
+      "s": "0x3cf344f44d7e99237116ccf182e0faba11e17261fcb4dc95a8667201f10dbe98",
+      "v": 27
     }
   ],
   "computed": []

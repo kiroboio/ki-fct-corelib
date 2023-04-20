@@ -348,7 +348,7 @@ export class FCTUtils extends FCTBase {
       bonusFeesBPS: number;
     };
   }) => {
-    const batchMultiSigCallOverhead = 151516n;
+    const batchMultiSigCallOverhead = 151516n - 55000n;
 
     const baseFeeBPS = fees?.baseFeesBPS ? BigInt(fees.baseFeesBPS) : 1000n;
     const bonusFeesBPS = fees?.bonusFeesBPS ? BigInt(fees.bonusFeesBPS) : 5000n;
@@ -375,8 +375,10 @@ export class FCTUtils extends FCTBase {
         (77600n * BigInt(callData.length)) / WHOLE_IN_BPS +
         batchMultiSigCallOverhead;
 
-      // const callOverhead = 53070n; // Average call overhead in 'batchMultiSigCall' function
-      const defaultCallGas = 100_000n;
+      console.log("commonGas", commonGas);
+
+      const callOverhead = 39_000n; // Average call overhead in 'batchMultiSigCall' function
+      const defaultCallGas = 150_000n;
 
       const limits = fct.typedData.message.limits as TypedDataLimits;
 
@@ -397,7 +399,7 @@ export class FCTUtils extends FCTBase {
         const payer = fct.mcall[payerIndex - 1].from;
 
         const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - 21000n;
-        const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall;
+        const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall + callOverhead;
 
         const callCost = totalGasForCall * txGasPrice;
         const callFee = totalGasForCall * (effectiveGasPrice - txGasPrice);
