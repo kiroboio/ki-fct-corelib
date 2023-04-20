@@ -17,3 +17,4 @@ jobs:
           BRANCH: dist
           FOLDER: dist
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_DIR: dist
