@@ -1,1 +1,0 @@
-export { BatchMultiSigCall } from "./batchMultiSigCall";
