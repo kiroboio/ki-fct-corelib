@@ -56,8 +56,8 @@ export declare class FCTUtils extends FCTBase {
         priceOfETHInKiro: string;
         penalty?: number | undefined;
         fees?: {
-            baseFeeBPS: number;
-            bonusFeeBPS: number;
+            baseFeeBPS?: number | undefined;
+            bonusFeeBPS?: number | undefined;
         } | undefined;
     }) => {
         payer: string;

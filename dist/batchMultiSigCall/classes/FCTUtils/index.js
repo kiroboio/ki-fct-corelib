@@ -99,7 +99,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     calldata,
                     calls: fct.mcall,
                     pathIndexes: path,
-                    signatureCount: fct.signatures.length,
                 });
                 return payers.reduce((acc, payer) => {
                     const base = payer.gas * txGasPrice;

@@ -34,11 +34,6 @@ const getExtraCommonGas = (payersCount, msgDataLength) => {
     return 23100n + 4600n * BigInt(payersCount) + (77600n * BigInt(msgDataLength)) / 10000n;
 };
 const getPayers = (calls, pathIndexes) => {
-    // return pathIndexes.map((index) => {
-    //   const call = calls[Number(index)];
-    //   const { payerIndex } = CallID.parse(call.callId);
-    //   return payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
-    // });
     return pathIndexes.reduce((acc, pathIndex, index) => {
         const call = calls[Number(index)];
         const { payerIndex } = CallID_1.CallID.parse(call.callId);
@@ -50,19 +45,20 @@ const getPayers = (calls, pathIndexes) => {
         return acc;
     }, []);
 };
-function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }) {
+function getPayersForRoute({ calls, pathIndexes, calldata, }) {
+    const payers = getPayers(calls, pathIndexes);
+    const uniquePayers = [...new Set(payers)];
     const batchMultiSigCallOverhead = fees.FCTControllerOverhead +
         fees.gasBeforeEncodedLoop +
         getEncodingMcallCost(calls.length) +
         fees.FCTControllerRegisterCall +
-        getSignatureRecoveryCost(signatureCount) +
+        getSignatureRecoveryCost(uniquePayers.length + 1) + // +1 because verification signature
         fees.miscGasBeforeMcallLoop;
     const overhead = fees.beforeCallingBatchMultiSigCall +
         batchMultiSigCallOverhead +
         getPaymentsOutCost(calls.length) +
         fees.totalCallsChecker +
         fees.estimateExtraCommmonGasCost;
-    const payers = getPayers(calls, pathIndexes);
     const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
     const commonGasPerCall = commonGas / BigInt(payers.length);
     const gasForFCTCall = pathIndexes.reduce((acc, path, index) => {
@@ -89,7 +85,7 @@ function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }) {
         }
         return acc;
     }, {});
-    return [...new Set(payers)].map((payer) => {
+    return uniquePayers.map((payer) => {
         return {
             payer,
             gas: gasForFCTCall[payer] + gasForPaymentApprovals[payer],

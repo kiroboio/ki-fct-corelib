@@ -1,9 +1,8 @@
 import { MSCall } from "../../types";
-export declare function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }: {
+export declare function getPayersForRoute({ calls, pathIndexes, calldata, }: {
     calls: MSCall[];
     pathIndexes: string[];
     calldata: string;
-    signatureCount: number;
 }): {
     payer: string;
     gas: bigint;
