@@ -146,11 +146,11 @@ describe("BatchMultiSigCall FCTUtils", () => {
     // });
     // console.log("kiroPriceInETH", kiroPriceInETH);
     // const kiroPriceInETH = "34276716077137";
-    const priceOfETHInKiro = "29174339261661309654809";
+    const ethPriceInKIRO = "29174339261661309654809";
 
     const payments = FCT.utils.getPaymentPerPayer({
       signatures: FCTJson.signatures,
-      priceOfETHInKiro,
+      ethPriceInKIRO,
       gasPrice,
     });
 

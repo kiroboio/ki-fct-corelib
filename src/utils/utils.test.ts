@@ -479,7 +479,7 @@ describe("Utility functions", () => {
 
     it("Should get KIRO cost of FCT", async () => {
       const fctCost = FCT.utils.getKIROPayment({
-        kiroPriceInETH: "38270821632831754769812",
+        priceOfETHInKiro: "38270821632831754769812",
         gasPrice: 1580000096,
         gas: 462109,
       });
