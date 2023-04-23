@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,9 +29,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FCTUtils = void 0;
 const ki_eth_fct_provider_ts_1 = require("@kirobo/ki-eth-fct-provider-ts");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
+const hardhat_network_helpers_1 = require("@nomicfoundation/hardhat-network-helpers");
 const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
+const hre = __importStar(require("hardhat"));
 const lodash_1 = __importDefault(require("lodash"));
 const Interfaces_1 = require("../../../helpers/Interfaces");
 const constants_1 = require("../../constants");
@@ -18,6 +43,7 @@ const CallID_1 = require("../CallID");
 const EIP712_1 = require("../EIP712");
 const FCTBase_1 = require("../FCTBase");
 const SessionID_1 = require("../SessionID");
+const getPaymentPerPayer_1 = require("./getPaymentPerPayer");
 class FCTUtils extends FCTBase_1.FCTBase {
     constructor(FCT) {
         super(FCT);
@@ -47,64 +73,67 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 amountInETH: totalCost.toString(),
             };
         };
-        this.getPaymentPerPayer = ({ signatures, gasPrice, kiroPriceInETH, penalty, }) => {
+        this.getPaymentPerPayer = ({ signatures, gasPrice, priceOfETHInKiro, penalty, fees, }) => {
+            const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
+            const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
             const fct = this.FCTData;
-            penalty = penalty || 1;
             const allPaths = this.getAllPaths();
+            const limits = fct.typedData.message.limits;
+            const maxGasPrice = BigInt(limits.gas_price_limit);
+            const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
+            const effectiveGasPrice = BigInt((0, getPaymentPerPayer_1.getEffectiveGasPrice)({
+                gasPrice: txGasPrice,
+                maxGasPrice,
+                baseFeeBPS,
+                bonusFeeBPS,
+            }));
             fct.signatures = signatures || [];
-            const callData = this.getCalldataForActuator({
+            const calldata = this.getCalldataForActuator({
                 activator: "0x0000000000000000000000000000000000000000",
                 investor: "0x0000000000000000000000000000000000000000",
                 purgedFCT: "0x".padEnd(66, "0"),
                 signatures: fct.signatures,
             });
-            const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
-            const callOverhead = 16370;
-            const defaultCallGas = 50000;
-            const limits = fct.typedData.message.limits;
-            const maxGasPrice = limits.gas_price_limit;
-            const FCTgasPrice = gasPrice ? gasPrice.toString() : maxGasPrice;
-            const bigIntGasPrice = BigInt(FCTgasPrice);
-            const effectiveGasPrice = ((bigIntGasPrice * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - bigIntGasPrice) * BigInt(5000)) / BigInt(10000) -
-                bigIntGasPrice).toString();
             const data = allPaths.map((path) => {
-                const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
-                return path.reduce((acc, callIndex) => {
-                    const call = fct.mcall[Number(callIndex)];
-                    const callId = CallID_1.CallID.parse(call.callId);
-                    const payerIndex = callId.payerIndex;
-                    const payer = fct.mcall[payerIndex - 1].from;
-                    // 21000 - base fee of the call on EVMs
-                    const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
-                    const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
-                    const callCost = totalGasForCall * BigInt(FCTgasPrice);
-                    const callFee = totalGasForCall * BigInt(effectiveGasPrice);
-                    const totalCallCost = callCost + callFee;
-                    const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / BigInt(1e18);
+                const payers = (0, getPaymentPerPayer_1.getPayersForRoute)({
+                    calldata,
+                    calls: fct.mcall,
+                    pathIndexes: path,
+                });
+                return payers.reduce((acc, payer) => {
+                    const base = payer.gas * txGasPrice;
+                    const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+                    const ethCost = base + fee;
+                    const kiroCost = (ethCost * BigInt(priceOfETHInKiro)) / 10n ** 18n;
                     return {
                         ...acc,
-                        [payer]: (BigInt(acc[payer] || 0) + kiroCost).toString(),
+                        [payer.payer]: {
+                            ...payer,
+                            ethCost: ethCost * BigInt(penalty || 1),
+                            kiroCost,
+                        },
                     };
                 }, {});
             });
             const allPayers = [
                 ...new Set(fct.mcall.map((call) => {
-                    const callId = CallID_1.CallID.parse(call.callId);
-                    const payerIndex = callId.payerIndex;
+                    const { payerIndex } = CallID_1.CallID.parse(call.callId);
+                    if (payerIndex === 0)
+                        return ethers_1.ethers.constants.AddressZero;
                     const payer = fct.mcall[payerIndex - 1].from;
                     return payer;
                 })),
             ];
             return allPayers.map((payer) => {
-                const amount = data.reduce((acc, path) => {
-                    return BigInt(acc) > BigInt(path[payer] || "0")
-                        ? acc
-                        : path[payer] || "0";
-                }, "0");
+                const bigestPayment = data.reduce((acc, pathData) => {
+                    const accValue = acc.kiroCost || 0n;
+                    const value = pathData[payer]?.kiroCost || 0n;
+                    return accValue > value ? acc : pathData[payer];
+                }, {});
                 return {
                     payer,
-                    amount,
-                    amountInETH: (((BigInt(amount) * BigInt(1e18)) / BigInt(kiroPriceInETH)) * BigInt(penalty || 1)).toString(),
+                    amount: bigestPayment.kiroCost.toString(),
+                    amountInETH: bigestPayment.ethCost.toString(),
                 };
             });
         };
@@ -236,6 +265,55 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     result: manageResult(indexString),
                 };
             });
+        };
+        this.deepValidateFCT = async ({ rpcUrl, actuatorAddress, signatures, }) => {
+            const chainId = Number(this.FCT.chainId);
+            hre.config.networks.hardhat.chainId = chainId;
+            if (hre.config.networks.hardhat.forking) {
+                hre.config.networks.hardhat.forking.url = rpcUrl;
+            }
+            else {
+                throw new Error("Something weird");
+            }
+            /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
+             * This is the reason why we are disabling the eslint rule for this line
+             */
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const ethers = hre.ethers;
+            // Imperonate actuator
+            await (0, hardhat_network_helpers_1.impersonateAccount)(actuatorAddress);
+            const calldata = this.getCalldataForActuator({
+                signatures,
+                activator: actuatorAddress,
+                investor: ethers.constants.AddressZero,
+                purgedFCT: ethers.constants.HashZero,
+            });
+            // Get Actuator signer
+            const Actuator = await ethers.getSigner(actuatorAddress);
+            const actuatorContractInterface = Interfaces_1.Interface.FCT_Actuator;
+            const actuatorContractAddress = constants_1.addresses[chainId].Actuator;
+            const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
+            try {
+                // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
+                const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
+                    gasLimit: 1000000,
+                    gasPrice: this.FCT.options.maxGasPrice,
+                });
+                const txReceipt = await tx.wait();
+                return {
+                    success: true,
+                    txReceipt: txReceipt,
+                    message: "",
+                };
+            }
+            catch (err) {
+                return {
+                    success: false,
+                    txReceipt: null,
+                    message: err.message,
+                };
+            }
         };
         this._eip712 = new EIP712_1.EIP712(FCT);
     }

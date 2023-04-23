@@ -5,7 +5,7 @@ import { FCTBase } from "../FCTBase";
 export declare class FCTUtils extends FCTBase {
     private _eip712;
     constructor(FCT: BatchMultiSigCall);
-    private get FCTData();
+    get FCTData(): import("../../types").IBatchMultiSigCallFCT;
     getAllRequiredApprovals(): Promise<import("../../types").IRequiredApproval[]>;
     getCalldataForActuator({ signatures, purgedFCT, investor, activator, }: {
         signatures: SignatureLike[];
@@ -50,11 +50,15 @@ export declare class FCTUtils extends FCTBase {
         amountInKIRO: string;
         amountInETH: string;
     };
-    getPaymentPerPayer: ({ signatures, gasPrice, kiroPriceInETH, penalty, }: {
+    getPaymentPerPayer: ({ signatures, gasPrice, priceOfETHInKiro, penalty, fees, }: {
         signatures?: SignatureLike[] | undefined;
         gasPrice?: number | undefined;
-        kiroPriceInETH: string;
+        priceOfETHInKiro: string;
         penalty?: number | undefined;
+        fees?: {
+            baseFeeBPS?: number | undefined;
+            bonusFeeBPS?: number | undefined;
+        } | undefined;
     }) => {
         payer: string;
         amount: string;
@@ -74,5 +78,18 @@ export declare class FCTUtils extends FCTBase {
         index: string;
         result: "SUCCESS" | "FAILED" | "SKIPPED";
     }[]>;
+    deepValidateFCT: ({ rpcUrl, actuatorAddress, signatures, }: {
+        rpcUrl: string;
+        actuatorAddress: string;
+        signatures: SignatureLike[];
+    }) => Promise<{
+        success: boolean;
+        txReceipt: any;
+        message: string;
+    } | {
+        success: boolean;
+        txReceipt: null;
+        message: any;
+    }>;
     private validateFCTKeys;
 }
