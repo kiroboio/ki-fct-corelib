@@ -342,8 +342,8 @@ export class FCTUtils extends FCTBase {
     priceOfETHInKiro: string;
     penalty?: number;
     fees?: {
-      baseFeeBPS: number;
-      bonusFeeBPS: number;
+      baseFeeBPS?: number;
+      bonusFeeBPS?: number;
     };
   }) => {
     const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
@@ -378,7 +378,6 @@ export class FCTUtils extends FCTBase {
         calldata,
         calls: fct.mcall,
         pathIndexes: path,
-        signatureCount: fct.signatures.length,
       });
 
       return payers.reduce(

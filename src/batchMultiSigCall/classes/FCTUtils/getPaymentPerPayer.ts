@@ -41,12 +41,6 @@ const getExtraCommonGas = (payersCount: number, msgDataLength: number) => {
 };
 
 const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
-  // return pathIndexes.map((index) => {
-  //   const call = calls[Number(index)];
-  //   const { payerIndex } = CallID.parse(call.callId);
-  //   return payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
-  // });
-
   return pathIndexes.reduce((acc, pathIndex, index) => {
     const call = calls[Number(index)];
     const { payerIndex } = CallID.parse(call.callId);
@@ -63,19 +57,19 @@ export function getPayersForRoute({
   calls,
   pathIndexes,
   calldata,
-  signatureCount,
 }: {
   calls: MSCall[];
   pathIndexes: string[];
   calldata: string;
-  signatureCount: number;
 }) {
+  const payers = getPayers(calls, pathIndexes);
+  const uniquePayers = [...new Set(payers)];
   const batchMultiSigCallOverhead =
     fees.FCTControllerOverhead +
     fees.gasBeforeEncodedLoop +
     getEncodingMcallCost(calls.length) +
     fees.FCTControllerRegisterCall +
-    getSignatureRecoveryCost(signatureCount) +
+    getSignatureRecoveryCost(uniquePayers.length + 1) + // +1 because verification signature
     fees.miscGasBeforeMcallLoop;
 
   const overhead =
@@ -84,8 +78,6 @@ export function getPayersForRoute({
     getPaymentsOutCost(calls.length) +
     fees.totalCallsChecker +
     fees.estimateExtraCommmonGasCost;
-
-  const payers = getPayers(calls, pathIndexes);
 
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
   const commonGasPerCall = commonGas / BigInt(payers.length);
@@ -114,7 +106,7 @@ export function getPayersForRoute({
     return acc;
   }, {} as Record<string, bigint>);
 
-  return [...new Set(payers)].map((payer) => {
+  return uniquePayers.map((payer) => {
     return {
       payer,
       gas: gasForFCTCall[payer] + gasForPaymentApprovals[payer],
