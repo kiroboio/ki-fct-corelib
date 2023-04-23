@@ -171,7 +171,12 @@ export const getGasPrices = async ({
 
       let blockNum = parseInt(result.oldestBlock, 16);
       let index = 0;
-      const blocks = [];
+      const blocks: {
+        number: number;
+        baseFeePerGas: number;
+        gasUsedRatio: number;
+        priorityFeePerGas: number[];
+      }[] = [];
 
       while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
         blocks.push({

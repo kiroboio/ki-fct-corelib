@@ -1,0 +1,258 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "Meta": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "builder",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "version",
+          "type": "bytes3"
+        },
+        {
+          "name": "random_id",
+          "type": "bytes3"
+        },
+        {
+          "name": "eip712",
+          "type": "bool"
+        },
+        {
+          "name": "auth_enabled",
+          "type": "bool"
+        }
+      ],
+      "Limits": [
+        {
+          "name": "valid_from",
+          "type": "uint40"
+        },
+        {
+          "name": "expires_at",
+          "type": "uint40"
+        },
+        {
+          "name": "gas_price_limit",
+          "type": "uint64"
+        },
+        {
+          "name": "purgeable",
+          "type": "bool"
+        },
+        {
+          "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "transaction1": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "method",
+          "type": "string"
+        },
+        {
+          "name": "path",
+          "type": "address[]"
+        }
+      ],
+      "BatchMultiSigCall": [
+        {
+          "name": "meta",
+          "type": "Meta"
+        },
+        {
+          "name": "limits",
+          "type": "Limits"
+        },
+        {
+          "name": "transaction_1",
+          "type": "transaction1"
+        }
+      ],
+      "Call": [
+        {
+          "name": "call_index",
+          "type": "uint16"
+        },
+        {
+          "name": "payer_index",
+          "type": "uint16"
+        },
+        {
+          "name": "call_type",
+          "type": "string"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "to_ens",
+          "type": "string"
+        },
+        {
+          "name": "eth_value",
+          "type": "uint256"
+        },
+        {
+          "name": "gas_limit",
+          "type": "uint32"
+        },
+        {
+          "name": "permissions",
+          "type": "uint16"
+        },
+        {
+          "name": "flow_control",
+          "type": "string"
+        },
+        {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
+          "name": "jump_on_success",
+          "type": "uint16"
+        },
+        {
+          "name": "jump_on_fail",
+          "type": "uint16"
+        },
+        {
+          "name": "method_interface",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+      "salt": "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7"
+    },
+    "message": {
+      "meta": {
+        "name": "1",
+        "builder": "0x0000000000000000000000000000000000000000",
+        "selector": "0xf6407ddd",
+        "version": "0x010101",
+        "random_id": "0xf8aa51",
+        "eip712": true,
+        "auth_enabled": false
+      },
+      "limits": {
+        "valid_from": "1681385004",
+        "expires_at": "1682024399",
+        "gas_price_limit": "134846759008",
+        "purgeable": false,
+        "blockable": true
+      },
+      "transaction_1": {
+        "call": {
+          "call_index": 1,
+          "payer_index": 1,
+          "call_type": "library",
+          "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
+          "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
+          "to_ens": "@lib:uniswap_v2",
+          "eth_value": "0",
+          "gas_limit": "400000",
+          "permissions": 0,
+          "flow_control": "stop on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+        },
+        "amount": "10000000000000000000",
+        "method": "swap <amount> Tokens for <X> Tokens",
+        "path": [
+          "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+          "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+        ]
+      }
+    }
+  },
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x4e120c19eac739a84d7cc1b3f5de9653cca2e21721ca805567e810bddca1a578",
+  "sessionId": "0xf8aa5100010101000000000000006441a7cf006437e62c0000001f657e40600c",
+  "nameHash": "0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6",
+  "mcall": [
+    {
+      "typeHash": "0xc0f2bc18d08aca5ca4de62820a15c580d94519cd311e4f78e8110f0165b3da8f",
+      "ensHash": "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
+      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "value": "0",
+      "callId": "0x00000000000000000000000000000000000006000000000001000100061a8022",
+      "from": "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D",
+      "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
+      "data": "0x0000000000000000000000000000000000000000000000008ac7230489e8000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000ba232b47a7ddfccc221916cf08da03a4973d3a1d000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f984",
+      "types": [1000, 1000, 4000, 1000],
+      "typedHashes": []
+    }
+  ],
+  "variables": [],
+  "externalSigners": [],
+  "signatures": [
+    {
+      "r": "0xb07161dd7e0028966609fd6981aa30a0cb9adce80aa6ff0e4085f564fb732b0b",
+      "s": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
+      "_vs": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a",
+      "compact": "0xb07161dd7e0028966609fd6981aa30a0cb9adce80aa6ff0e4085f564fb732b0b5e42a89e5aa64893f4c14f73540ec79c8e8ded4cfc97fdf5c8aac0e3f715ec9a"
+    },
+    {
+      "r": "0x9b9552990ec0194212484c3b734f88dddb650da972a8dc765290fe824e8eb886",
+      "s": "0x7f23628ab8f9e37342f12b39887ea5d02404aae7a6b6c0f724ddc3b0d340318f",
+      "v": 28
+    }
+  ],
+  "computed": []
+}

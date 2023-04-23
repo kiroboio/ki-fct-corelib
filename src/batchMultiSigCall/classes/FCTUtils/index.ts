@@ -1,9 +1,11 @@
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId, getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
+import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 import BigNumber from "bignumber.js";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
+import * as hre from "hardhat";
 import _ from "lodash";
 
 import { Interface } from "../../../helpers/Interfaces";
@@ -16,6 +18,7 @@ import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { SessionID } from "../SessionID";
+import { getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -24,7 +27,7 @@ export class FCTUtils extends FCTBase {
     this._eip712 = new EIP712(FCT);
   }
 
-  private get FCTData() {
+  public get FCTData() {
     return this.FCT.exportFCT();
   }
 
@@ -330,73 +333,86 @@ export class FCTUtils extends FCTBase {
   public getPaymentPerPayer = ({
     signatures,
     gasPrice,
-    kiroPriceInETH,
+    priceOfETHInKiro,
     penalty,
+    fees,
   }: {
     signatures?: SignatureLike[];
     gasPrice?: number;
-    kiroPriceInETH: string;
+    priceOfETHInKiro: string;
     penalty?: number;
+    fees?: {
+      baseFeeBPS?: number;
+      bonusFeeBPS?: number;
+    };
   }) => {
+    const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
+    const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
+
     const fct = this.FCTData;
-    penalty = penalty || 1;
     const allPaths = this.getAllPaths();
 
+    const limits = fct.typedData.message.limits as TypedDataLimits;
+
+    const maxGasPrice = BigInt(limits.gas_price_limit);
+    const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
+    const effectiveGasPrice = BigInt(
+      getEffectiveGasPrice({
+        gasPrice: txGasPrice,
+        maxGasPrice,
+        baseFeeBPS,
+        bonusFeeBPS,
+      })
+    );
     fct.signatures = signatures || [];
 
-    const callData = this.getCalldataForActuator({
+    const calldata = this.getCalldataForActuator({
       activator: "0x0000000000000000000000000000000000000000",
       investor: "0x0000000000000000000000000000000000000000",
       purgedFCT: "0x".padEnd(66, "0"),
       signatures: fct.signatures,
     });
 
-    const FCTOverhead = 35000 + 8500 * (fct.mcall.length + 1) + (79000 * callData.length) / 10000 + 135500;
-    const callOverhead = 16370;
-    const defaultCallGas = 50000;
-
-    const limits = fct.typedData.message.limits as TypedDataLimits;
-    const maxGasPrice = limits.gas_price_limit;
-
-    const FCTgasPrice = gasPrice ? gasPrice.toString() : maxGasPrice;
-    const bigIntGasPrice = BigInt(FCTgasPrice);
-
-    const effectiveGasPrice = (
-      (bigIntGasPrice * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - bigIntGasPrice) * BigInt(5000)) / BigInt(10000) -
-      bigIntGasPrice
-    ).toString();
-
     const data = allPaths.map((path) => {
-      const FCTOverheadPerPayer = (FCTOverhead / path.length).toFixed(0);
+      const payers = getPayersForRoute({
+        calldata,
+        calls: fct.mcall,
+        pathIndexes: path,
+      });
 
-      return path.reduce((acc, callIndex) => {
-        const call = fct.mcall[Number(callIndex)];
-        const callId = CallID.parse(call.callId);
-        const payerIndex = callId.payerIndex;
-        const payer = fct.mcall[payerIndex - 1].from;
+      return payers.reduce(
+        (acc, payer) => {
+          const base = payer.gas * txGasPrice;
+          const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+          const ethCost = base + fee;
 
-        // 21000 - base fee of the call on EVMs
-        const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - BigInt(21000);
-        const totalGasForCall = BigInt(FCTOverheadPerPayer) + BigInt(callOverhead) + gasForCall;
-
-        const callCost = totalGasForCall * BigInt(FCTgasPrice);
-        const callFee = totalGasForCall * BigInt(effectiveGasPrice);
-        const totalCallCost = callCost + callFee;
-
-        const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / BigInt(1e18);
-
-        return {
-          ...acc,
-          [payer]: (BigInt(acc[payer as keyof typeof acc] || 0) + kiroCost).toString(),
-        };
-      }, {});
+          const kiroCost = (ethCost * BigInt(priceOfETHInKiro)) / 10n ** 18n;
+          return {
+            ...acc,
+            [payer.payer]: {
+              ...payer,
+              ethCost: ethCost * BigInt(penalty || 1),
+              kiroCost,
+            },
+          };
+        },
+        {} as Record<
+          string,
+          {
+            payer: string;
+            gas: bigint;
+            ethCost: bigint;
+            kiroCost: bigint;
+          }
+        >
+      );
     });
 
     const allPayers = [
       ...new Set(
         fct.mcall.map((call) => {
-          const callId = CallID.parse(call.callId);
-          const payerIndex = callId.payerIndex;
+          const { payerIndex } = CallID.parse(call.callId);
+          if (payerIndex === 0) return ethers.constants.AddressZero;
           const payer = fct.mcall[payerIndex - 1].from;
           return payer;
         })
@@ -404,16 +420,24 @@ export class FCTUtils extends FCTBase {
     ];
 
     return allPayers.map((payer) => {
-      const amount = data.reduce<string>((acc: string, path) => {
-        return BigInt(acc) > BigInt(path[payer as keyof typeof path] || "0")
-          ? acc
-          : path[payer as keyof typeof path] || "0";
-      }, "0");
+      const bigestPayment = data.reduce(
+        (acc, pathData) => {
+          const accValue = acc.kiroCost || 0n;
+          const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
+          return accValue > value ? acc : pathData[payer as keyof typeof pathData];
+        },
+        {} as {
+          payer: string;
+          gas: bigint;
+          ethCost: bigint;
+          kiroCost: bigint;
+        }
+      );
 
       return {
         payer,
-        amount,
-        amountInETH: (((BigInt(amount) * BigInt(1e18)) / BigInt(kiroPriceInETH)) * BigInt(penalty || 1)).toString(),
+        amount: bigestPayment.kiroCost.toString(),
+        amountInETH: bigestPayment.ethCost.toString(),
       };
     });
   };
@@ -576,6 +600,72 @@ export class FCTUtils extends FCTBase {
         result: manageResult(indexString),
       };
     });
+  };
+
+  public deepValidateFCT = async ({
+    rpcUrl,
+    actuatorAddress,
+    signatures,
+  }: {
+    rpcUrl: string;
+    actuatorAddress: string;
+    signatures: SignatureLike[];
+  }) => {
+    const chainId = Number(this.FCT.chainId);
+
+    hre.config.networks.hardhat.chainId = chainId;
+    if (hre.config.networks.hardhat.forking) {
+      hre.config.networks.hardhat.forking.url = rpcUrl;
+    } else {
+      throw new Error("Something weird");
+    }
+
+    /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
+     * This is the reason why we are disabling the eslint rule for this line
+     */
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const ethers = hre.ethers;
+
+    // Imperonate actuator
+    await impersonateAccount(actuatorAddress);
+
+    const calldata = this.getCalldataForActuator({
+      signatures,
+      activator: actuatorAddress,
+      investor: ethers.constants.AddressZero,
+      purgedFCT: ethers.constants.HashZero,
+    });
+
+    // Get Actuator signer
+    const Actuator = await ethers.getSigner(actuatorAddress);
+
+    const actuatorContractInterface = Interface.FCT_Actuator;
+    const actuatorContractAddress = addresses[chainId as keyof typeof addresses].Actuator;
+
+    const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
+
+    try {
+      // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
+      const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
+        gasLimit: 1_000_000,
+        gasPrice: this.FCT.options.maxGasPrice,
+      });
+
+      const txReceipt = await tx.wait();
+      return {
+        success: true,
+        txReceipt: txReceipt,
+        message: "",
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        txReceipt: null,
+        message: err.message,
+      };
+    }
   };
 
   private validateFCTKeys(keys: string[]) {

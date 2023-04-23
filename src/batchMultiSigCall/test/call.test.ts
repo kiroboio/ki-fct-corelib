@@ -1,8 +1,8 @@
 import { assert } from "chai";
 import _ from "lodash";
 
-import { IMSCallInput } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
+import { IMSCallInput } from "../types";
 
 const FCT = new BatchMultiSigCall({
   chainId: "5",

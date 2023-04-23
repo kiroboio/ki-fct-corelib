@@ -48,6 +48,13 @@ class BatchMultiSigCall {
         this.setCallDefaults = (callDefault) => {
             return this._calls.setCallDefaults(callDefault);
         };
+        this.changeChainId = (chainId) => {
+            this.chainId = chainId;
+            const domain = classes_1.EIP712.getTypedDataDomain(this.chainId);
+            if (!domain)
+                throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
+            this.domain = domain;
+        };
         // Variables
         this.addComputed = (computed) => {
             return this._variables.addComputed(computed);
@@ -74,7 +81,10 @@ class BatchMultiSigCall {
             this.domain = input.domain;
         }
         else {
-            this.domain = classes_1.EIP712.getTypedDataDomain(this.chainId);
+            const domain = classes_1.EIP712.getTypedDataDomain(this.chainId);
+            if (!domain)
+                throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
+            this.domain = domain;
         }
         if (input.version)
             this.version = input.version;

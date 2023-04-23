@@ -107,3 +107,6 @@ typings/
 artifacts
 cache
 /contracts
+
+# Local files
+.idea
