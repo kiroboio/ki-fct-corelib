@@ -10,7 +10,7 @@ async function main() {
   const gasPrice = ethers.utils.parseUnits("9.69", "gwei").toNumber();
 
   const payers = FCT.utils.getPaymentPerPayer({
-    priceOfETHInKiro: kiroPerETH,
+    ethPriceInKIRO: kiroPerETH,
     signatures: FCTData.signatures,
     gasPrice,
   });
