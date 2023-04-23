@@ -34,10 +34,12 @@ const getExtraCommonGas = (payersCount, msgDataLength) => {
     return 23100n + 4600n * BigInt(payersCount) + (77600n * BigInt(msgDataLength)) / 10000n;
 };
 const getPayers = (calls, pathIndexes) => {
-    return pathIndexes.reduce((acc, pathIndex, index) => {
-        const call = calls[Number(index)];
+    return pathIndexes.reduce((acc, pathIndex) => {
+        const call = calls[Number(pathIndex)];
         const { payerIndex } = CallID_1.CallID.parse(call.callId);
+        console.log("call index and payer index", pathIndex, payerIndex);
         const payer = payerIndex === 0 ? undefined : calls[payerIndex - 1].from;
+        console.log("payer inside getPayers", payer);
         // If payer !== undefined AND payer !== lastPayer, add it to the array
         if (payer && payer !== acc[acc.length - 1]) {
             acc.push(payer);
@@ -47,6 +49,7 @@ const getPayers = (calls, pathIndexes) => {
 };
 function getPayersForRoute({ calls, pathIndexes, calldata, }) {
     const payers = getPayers(calls, pathIndexes);
+    console.log("payers inside getPayersForRoute", payers);
     const uniquePayers = [...new Set(payers)];
     const batchMultiSigCallOverhead = fees.FCTControllerOverhead +
         fees.gasBeforeEncodedLoop +
