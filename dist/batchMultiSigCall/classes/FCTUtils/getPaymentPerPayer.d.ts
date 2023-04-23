@@ -1,5 +1,4 @@
 import { MSCall } from "../../types";
-export declare function getTotalApprovalCalls(pathIndexes: string[], calls: any[]): void;
 export declare function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }: {
     calls: MSCall[];
     pathIndexes: string[];
@@ -9,7 +8,9 @@ export declare function getPayersForRoute({ calls, pathIndexes, calldata, signat
     payer: string;
     gas: bigint;
 }[];
-export declare function getEffectiveGasPrice({ maxGasPrice, gasPrice, }: {
+export declare function getEffectiveGasPrice({ maxGasPrice, gasPrice, baseFeeBPS, bonusFeeBPS, }: {
     maxGasPrice: string | bigint;
     gasPrice: string | bigint;
+    baseFeeBPS: bigint;
+    bonusFeeBPS: bigint;
 }): string;

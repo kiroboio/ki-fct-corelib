@@ -73,73 +73,68 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 amountInETH: totalCost.toString(),
             };
         };
-        // TODO: Add error if gasPrice is higher than maxGasPrice
-        this.getPaymentPerPayer = ({ signatures, gasPrice, kiroPriceInETH, penalty, fees, }) => {
-            const batchMultiSigCallOverhead = 151516n - 55000n;
-            const baseFeeBPS = fees?.baseFeesBPS ? BigInt(fees.baseFeesBPS) : 1000n;
-            const bonusFeesBPS = fees?.bonusFeesBPS ? BigInt(fees.bonusFeesBPS) : 5000n;
-            const WHOLE_IN_BPS = 10000n;
-            penalty = penalty || 1;
+        this.getPaymentPerPayer = ({ signatures, gasPrice, priceOfETHInKiro, penalty, fees, }) => {
+            const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
+            const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
             const fct = this.FCTData;
             const allPaths = this.getAllPaths();
+            const limits = fct.typedData.message.limits;
+            const maxGasPrice = BigInt(limits.gas_price_limit);
+            const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
+            const effectiveGasPrice = BigInt((0, getPaymentPerPayer_1.getEffectiveGasPrice)({
+                gasPrice: txGasPrice,
+                maxGasPrice,
+                baseFeeBPS,
+                bonusFeeBPS,
+            }));
             fct.signatures = signatures || [];
-            const callData = this.getCalldataForActuator({
+            const calldata = this.getCalldataForActuator({
                 activator: "0x0000000000000000000000000000000000000000",
                 investor: "0x0000000000000000000000000000000000000000",
                 purgedFCT: "0x".padEnd(66, "0"),
                 signatures: fct.signatures,
             });
             const data = allPaths.map((path) => {
-                const commonGas = 23100n +
-                    4600n * BigInt(fct.mcall.length) +
-                    (77600n * BigInt(callData.length)) / WHOLE_IN_BPS +
-                    batchMultiSigCallOverhead;
-                console.log("commonGas", commonGas);
-                const callOverhead = 39000n; // Average call overhead in 'batchMultiSigCall' function
-                const defaultCallGas = 150000n;
-                const limits = fct.typedData.message.limits;
-                const maxGasPrice = BigInt(limits.gas_price_limit);
-                const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
-                const effectiveGasPrice = (txGasPrice * (WHOLE_IN_BPS + baseFeeBPS) + (maxGasPrice - txGasPrice) * bonusFeesBPS) / WHOLE_IN_BPS;
-                (0, getPaymentPerPayer_1.getTotalApprovalCalls)(path, fct.mcall);
-                const FCTOverheadPerPayer = commonGas / BigInt(path.length);
-                return path.reduce((acc, callIndex) => {
-                    const call = fct.mcall[Number(callIndex)];
-                    const callId = CallID_1.CallID.parse(call.callId);
-                    const payerIndex = callId.payerIndex;
-                    const payer = fct.mcall[payerIndex - 1].from;
-                    const gasForCall = (BigInt(callId.options.gasLimit) || BigInt(defaultCallGas)) - 21000n;
-                    const totalGasForCall = BigInt(FCTOverheadPerPayer) + gasForCall + callOverhead;
-                    const callCost = totalGasForCall * txGasPrice;
-                    const callFee = totalGasForCall * (effectiveGasPrice - txGasPrice);
-                    const totalCallCost = callCost + callFee;
-                    console.log("Base fee: ", (callCost * BigInt(kiroPriceInETH)) / 10n ** 18n);
-                    console.log("Call fee: ", (callFee * BigInt(kiroPriceInETH)) / 10n ** 18n);
-                    const kiroCost = (totalCallCost * BigInt(kiroPriceInETH)) / 10n ** 18n;
+                const payers = (0, getPaymentPerPayer_1.getPayersForRoute)({
+                    calldata,
+                    calls: fct.mcall,
+                    pathIndexes: path,
+                    signatureCount: fct.signatures.length,
+                });
+                return payers.reduce((acc, payer) => {
+                    const base = payer.gas * txGasPrice;
+                    const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+                    const ethCost = base + fee;
+                    const kiroCost = (ethCost * BigInt(priceOfETHInKiro)) / 10n ** 18n;
                     return {
                         ...acc,
-                        [payer]: (BigInt(acc[payer] || 0) + kiroCost).toString(),
+                        [payer.payer]: {
+                            ...payer,
+                            ethCost: ethCost * BigInt(penalty || 1),
+                            kiroCost,
+                        },
                     };
                 }, {});
             });
             const allPayers = [
                 ...new Set(fct.mcall.map((call) => {
-                    const callId = CallID_1.CallID.parse(call.callId);
-                    const payerIndex = callId.payerIndex;
+                    const { payerIndex } = CallID_1.CallID.parse(call.callId);
+                    if (payerIndex === 0)
+                        return ethers_1.ethers.constants.AddressZero;
                     const payer = fct.mcall[payerIndex - 1].from;
                     return payer;
                 })),
             ];
             return allPayers.map((payer) => {
-                const amount = data.reduce((acc, path) => {
-                    return BigInt(acc) > BigInt(path[payer] || "0")
-                        ? acc
-                        : path[payer] || "0";
-                }, "0");
+                const bigestPayment = data.reduce((acc, pathData) => {
+                    const accValue = acc.kiroCost || 0n;
+                    const value = pathData[payer]?.kiroCost || 0n;
+                    return accValue > value ? acc : pathData[payer];
+                }, {});
                 return {
                     payer,
-                    amount,
-                    amountInETH: (((BigInt(amount) * BigInt(1e18)) / BigInt(kiroPriceInETH)) * BigInt(penalty || 1)).toString(),
+                    amount: bigestPayment.kiroCost.toString(),
+                    amountInETH: bigestPayment.ethCost.toString(),
                 };
             });
         };

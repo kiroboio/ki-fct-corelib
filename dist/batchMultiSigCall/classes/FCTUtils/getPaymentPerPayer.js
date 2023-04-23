@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEffectiveGasPrice = exports.getPayersForRoute = exports.getTotalApprovalCalls = void 0;
+exports.getEffectiveGasPrice = exports.getPayersForRoute = void 0;
 const CallID_1 = require("../CallID");
+const WHOLE_IN_BPS = 10000n;
 const fees = {
     beforeCallingBatchMultiSigCall: 5000n,
     FCTControllerOverhead: 43000n,
@@ -49,17 +50,6 @@ const getPayers = (calls, pathIndexes) => {
         return acc;
     }, []);
 };
-function getTotalApprovalCalls(pathIndexes, calls) {
-    // Payer index 0 = actuator pays for the call
-    let totalCalls;
-    const payerList = pathIndexes.map((index) => {
-        const call = calls[Number(index)];
-        const { payerIndex } = CallID_1.CallID.parse(call.callId);
-        return calls[payerIndex - 1].from;
-    });
-    console.log("payerList", payerList);
-}
-exports.getTotalApprovalCalls = getTotalApprovalCalls;
 function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }) {
     const batchMultiSigCallOverhead = fees.FCTControllerOverhead +
         fees.gasBeforeEncodedLoop +
@@ -75,13 +65,12 @@ function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }) {
     const payers = getPayers(calls, pathIndexes);
     const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
     const commonGasPerCall = commonGas / BigInt(payers.length);
-    console.log("commonGasPerCall", commonGasPerCall.toString());
     const gasForFCTCall = pathIndexes.reduce((acc, path, index) => {
         const call = calls[Number(path)];
         const { payerIndex, options } = CallID_1.CallID.parse(call.callId);
         const payer = calls[payerIndex - 1].from;
         const overhead = index === 0 ? fees.mcallOverheadFirstCall : fees.mcallOverheadOtherCalls;
-        const gas = BigInt(options.gasLimit) || 100000n;
+        const gas = BigInt(options.gasLimit) || 50000n;
         const amount = gas + overhead + commonGasPerCall;
         if (acc[payer]) {
             acc[payer] += amount;
@@ -108,8 +97,8 @@ function getPayersForRoute({ calls, pathIndexes, calldata, signatureCount, }) {
     });
 }
 exports.getPayersForRoute = getPayersForRoute;
-function getEffectiveGasPrice({ maxGasPrice, gasPrice, }) {
-    return ((BigInt(gasPrice) * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * BigInt(5000)) /
-        BigInt(10000)).toString();
+function getEffectiveGasPrice({ maxGasPrice, gasPrice, baseFeeBPS, bonusFeeBPS, }) {
+    return ((BigInt(gasPrice) * WHOLE_IN_BPS + baseFeeBPS + (BigInt(maxGasPrice) - BigInt(gasPrice)) * bonusFeeBPS) /
+        WHOLE_IN_BPS).toString();
 }
 exports.getEffectiveGasPrice = getEffectiveGasPrice;
