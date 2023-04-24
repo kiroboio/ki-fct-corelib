@@ -98,7 +98,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
             const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
             const fct = this.FCTData;
             const allPaths = this.getAllPaths();
-            console.log("all paths", allPaths);
             const limits = fct.typedData.message.limits;
             const maxGasPrice = BigInt(limits.gas_price_limit);
             const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
@@ -145,7 +144,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
                     return payer;
                 })),
             ];
-            console.log("allPayers", allPayers);
             return allPayers.map((payer) => {
                 const { largest, smallest } = data.reduce((acc, pathData) => {
                     const currentValues = acc;
@@ -387,7 +385,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
             g.setNode(index.toString());
         });
         for (let i = 0; i < FCT.mcall.length - 1; i++) {
-            //   const callID = parseCallID(fct.mcall[i].callId, true);
             const callID = CallID_1.CallID.parseWithNumbers(FCT.mcall[i].callId);
             const jumpOnSuccess = callID.options.jumpOnSuccess;
             const jumpOnFail = callID.options.jumpOnFail;
@@ -400,32 +397,29 @@ class FCTUtils extends FCTBase_1.FCTBase {
             }
         }
         const allPaths = [];
-        const isVisited = {};
+        // const isVisited: Record<string, boolean> = {};
         const pathList = [];
         const start = "0";
         const end = (FCT.mcall.length - 1).toString();
         pathList.push(start);
-        const printAllPathsUtil = (g, start, end, isVisited, localPathList) => {
+        const printAllPathsUtil = (g, start, end, localPathList) => {
             if (start === end) {
                 const path = localPathList.slice();
                 allPaths.push(path);
                 return;
             }
-            isVisited[start] = true;
             let successors = g.successors(start);
             if (successors === undefined) {
                 successors = [];
             }
             for (const id of successors) {
-                if (!isVisited[id]) {
-                    localPathList.push(id);
-                    printAllPathsUtil(g, id, end, isVisited, localPathList);
-                    localPathList.splice(localPathList.indexOf(id), 1);
-                }
+                localPathList.push(id);
+                printAllPathsUtil(g, id, end, localPathList);
+                localPathList.splice(localPathList.indexOf(id), 1);
             }
-            isVisited[start] = false;
         };
-        printAllPathsUtil(g, start, end, isVisited, pathList);
+        // printAllPathsUtil(g, start, end, isVisited, pathList);
+        printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
     validateFCTKeys(keys) {

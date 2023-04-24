@@ -37,9 +37,7 @@ const getPayers = (calls, pathIndexes) => {
     return pathIndexes.reduce((acc, pathIndex) => {
         const call = calls[Number(pathIndex)];
         const { payerIndex } = CallID_1.CallID.parse(call.callId);
-        console.log("call index and payer index", pathIndex, payerIndex);
         const payer = payerIndex === 0 ? undefined : calls[payerIndex - 1].from;
-        console.log("payer inside getPayers", payer);
         // If payer !== undefined AND payer !== lastPayer, add it to the array
         if (payer && payer !== acc[acc.length - 1]) {
             acc.push(payer);
@@ -47,15 +45,23 @@ const getPayers = (calls, pathIndexes) => {
         return acc;
     }, []);
 };
+const getAllSenders = (calls) => {
+    return calls.reduce((acc, call) => {
+        // If call.from is already in the array, don't add it
+        if (!acc.includes(call.from)) {
+            acc.push(call.from);
+        }
+        return acc;
+    }, []);
+};
 function getPayersForRoute({ calls, pathIndexes, calldata, }) {
     const payers = getPayers(calls, pathIndexes);
-    console.log("payers inside getPayersForRoute", payers);
-    const uniquePayers = [...new Set(payers)];
+    const allSenders = getAllSenders(calls);
     const batchMultiSigCallOverhead = fees.FCTControllerOverhead +
         fees.gasBeforeEncodedLoop +
         getEncodingMcallCost(calls.length) +
         fees.FCTControllerRegisterCall +
-        getSignatureRecoveryCost(uniquePayers.length + 1) + // +1 because verification signature
+        getSignatureRecoveryCost(allSenders.length + 1) + // +1 because verification signature
         fees.miscGasBeforeMcallLoop;
     const overhead = fees.beforeCallingBatchMultiSigCall +
         batchMultiSigCallOverhead +
@@ -88,10 +94,11 @@ function getPayersForRoute({ calls, pathIndexes, calldata, }) {
         }
         return acc;
     }, {});
-    return uniquePayers.map((payer) => {
+    return allSenders.map((payer) => {
+        const gas = gasForFCTCall[payer] + gasForPaymentApprovals[payer];
         return {
             payer,
-            gas: gasForFCTCall[payer] + gasForPaymentApprovals[payer],
+            gas: gas || 0n,
         };
     });
 }
