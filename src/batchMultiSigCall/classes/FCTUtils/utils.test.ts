@@ -1,10 +1,8 @@
 import { expect } from "chai";
 import { getAddress } from "ethers/lib/utils";
-import util from "util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import FCTData from "../../test/FCTExample.json";
-import { buildTestFCT } from "../../test/helpers";
 import { FCTUtils } from ".";
 
 // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -118,44 +116,44 @@ describe("BatchMultiSigCall FCTUtils", () => {
     expect(paths).to.deep.eq([["0", "1", "2"]]);
   });
 
-  it("Should deep validate FCT", async () => {
-    const { FCT, FCTJson } = buildTestFCT();
+  // it("Should deep validate FCT", async () => {
+  //   const { FCT, FCTJson } = buildTestFCT();
 
-    // // Takes around 11.691s
-    const tx = await FCT.utils.deepValidateFCT({
-      signatures: FCTJson.signatures,
-      actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
-      rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
-    });
+  //   // // Takes around 11.691s
+  //   const tx = await FCT.utils.deepValidateFCT({
+  //     signatures: FCTJson.signatures,
+  //     actuatorAddress: "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
+  //     rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+  //   });
 
-    console.log(util.inspect(tx, false, null, true));
+  //   console.log(util.inspect(tx, false, null, true));
 
-    // // // Find in events "FCTE_Activated" and log it
-    // const activatedEvent = tx.txReceipt.events.find((e: any) => e.event === "FCTE_CallPayment");
-    // console.log("kiro paid", activatedEvent.args.totalKiroFees.toString());
+  //   // // // Find in events "FCTE_Activated" and log it
+  //   // const activatedEvent = tx.txReceipt.events.find((e: any) => e.event === "FCTE_CallPayment");
+  //   // console.log("kiro paid", activatedEvent.args.totalKiroFees.toString());
 
-    // const gasPrice = tx.txReceipt.effectiveGasPrice.toString();
-    // // KIRO Paid 92_579140834272517888
-    // //            92.57914083427251
+  //   // const gasPrice = tx.txReceipt.effectiveGasPrice.toString();
+  //   // // KIRO Paid 92_579140834272517888
+  //   // //            92.57914083427251
 
-    const gasPrice = 2000000000;
+  //   const gasPrice = 2000000000;
 
-    // const kiroPriceInETH = await getKIROPrice({
-    //   chainId: 5,
-    //   rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
-    // });
-    // console.log("kiroPriceInETH", kiroPriceInETH);
-    // const kiroPriceInETH = "34276716077137";
-    const ethPriceInKIRO = "29174339261661309654809";
+  //   // const kiroPriceInETH = await getKIROPrice({
+  //   //   chainId: 5,
+  //   //   rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+  //   // });
+  //   // console.log("kiroPriceInETH", kiroPriceInETH);
+  //   // const kiroPriceInETH = "34276716077137";
+  //   const ethPriceInKIRO = "29174339261661309654809";
 
-    const payments = FCT.utils.getPaymentPerPayer({
-      signatures: FCTJson.signatures,
-      ethPriceInKIRO,
-      gasPrice,
-    });
+  //   const payments = FCT.utils.getPaymentPerPayer({
+  //     signatures: FCTJson.signatures,
+  //     ethPriceInKIRO,
+  //     gasPrice,
+  //   });
 
-    console.log(payments);
-  });
+  //   console.log(payments);
+  // });
 });
 
 // FCT_Tokenomics.sol - reduce only sequential calls
