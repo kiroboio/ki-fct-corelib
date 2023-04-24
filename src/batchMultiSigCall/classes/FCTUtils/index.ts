@@ -17,13 +17,7 @@ import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { SessionID } from "../SessionID";
 import { getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
-
-interface PayerPayment {
-  payer: string;
-  gas: bigint;
-  ethCost: bigint;
-  kiroCost: bigint;
-}
+import { PayerPayment } from "./types";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -155,7 +149,6 @@ export class FCTUtils extends FCTBase {
     });
 
     for (let i = 0; i < FCT.mcall.length - 1; i++) {
-      //   const callID = parseCallID(fct.mcall[i].callId, true);
       const callID = CallID.parseWithNumbers(FCT.mcall[i].callId);
       const jumpOnSuccess = callID.options.jumpOnSuccess;
       const jumpOnFail = callID.options.jumpOnFail;
@@ -170,49 +163,34 @@ export class FCTUtils extends FCTBase {
 
     const allPaths: string[][] = [];
 
-    const isVisited: Record<string, boolean> = {};
+    // const isVisited: Record<string, boolean> = {};
     const pathList: string[] = [];
     const start = "0";
     const end = (FCT.mcall.length - 1).toString();
 
     pathList.push(start);
 
-    const printAllPathsUtil = (
-      g: Graph,
-      start: string,
-      end: string,
-      isVisited: Record<string, boolean>,
-      localPathList: string[]
-    ) => {
+    const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
       if (start === end) {
         const path = localPathList.slice();
-
         allPaths.push(path);
         return;
       }
 
-      isVisited[start] = true;
-
       let successors = g.successors(start);
-
       if (successors === undefined) {
         successors = [];
       }
 
       for (const id of successors as string[]) {
-        if (!isVisited[id]) {
-          localPathList.push(id);
-
-          printAllPathsUtil(g, id, end, isVisited, localPathList);
-
-          localPathList.splice(localPathList.indexOf(id), 1);
-        }
+        localPathList.push(id);
+        printAllPathsUtil(g, id, end, localPathList);
+        localPathList.splice(localPathList.indexOf(id), 1);
       }
-
-      isVisited[start] = false;
     };
 
-    printAllPathsUtil(g, start, end, isVisited, pathList);
+    // printAllPathsUtil(g, start, end, isVisited, pathList);
+    printAllPathsUtil(g, start, end, pathList);
 
     return allPaths;
   }
@@ -329,8 +307,6 @@ export class FCTUtils extends FCTBase {
     const fct = this.FCTData;
     const allPaths = this.getAllPaths();
 
-    console.log("all paths", allPaths);
-
     const limits = fct.typedData.message.limits as TypedDataLimits;
 
     const maxGasPrice = BigInt(limits.gas_price_limit);
@@ -386,8 +362,6 @@ export class FCTUtils extends FCTBase {
         })
       ),
     ];
-
-    console.log("allPayers", allPayers);
 
     return allPayers.map((payer) => {
       const { largest, smallest } = data.reduce((acc, pathData) => {

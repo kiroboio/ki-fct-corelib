@@ -47,12 +47,12 @@ async function main() {
     },
     {
       nodeId: "2",
-      from: randomAddress1,
+      from: randomAddress2,
       plugin,
     },
     {
       nodeId: "3",
-      from: randomAddress2,
+      from: randomAddress1,
       plugin,
     },
   ]);
