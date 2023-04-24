@@ -1,6 +1,6 @@
 {
   "name": "ki-fct-corelib",
-  "version": "1.11.3",
+  "version": "1.11.4",
   "description": "Kirobo.io FCT Core library",
   "main": "index.js",
   "types": "index.d.ts",
