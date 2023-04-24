@@ -37,12 +37,8 @@ export declare class FCTUtils extends FCTBase {
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
-    estimateFCTCost({ callData, rpcUrl }: {
-        callData: string;
-        rpcUrl: string;
-    }): Promise<string>;
-    getKIROPayment: ({ kiroPriceInETH, gasPrice, gas, }: {
-        kiroPriceInETH: string;
+    getKIROPayment: ({ priceOfETHInKiro, gasPrice, gas, }: {
+        priceOfETHInKiro: string;
         gasPrice: number;
         gas: number;
     }) => {
@@ -50,10 +46,23 @@ export declare class FCTUtils extends FCTBase {
         amountInKIRO: string;
         amountInETH: string;
     };
-    getPaymentPerPayer: ({ signatures, gasPrice, priceOfETHInKiro, penalty, fees, }: {
+    kiroPerPayerGas: ({ gas, gasPrice, penalty, ethPriceInKIRO, fees, }: {
+        gas: string | bigint;
+        gasPrice: string | bigint;
+        penalty?: string | number | undefined;
+        ethPriceInKIRO: string | bigint;
+        fees?: {
+            baseFeeBPS?: number | undefined;
+            bonusFeeBPS?: number | undefined;
+        } | undefined;
+    }) => {
+        ethCost: string;
+        kiroCost: string;
+    };
+    getPaymentPerPayer: ({ signatures, gasPrice, ethPriceInKIRO, penalty, fees, }: {
         signatures?: SignatureLike[] | undefined;
         gasPrice?: number | undefined;
-        priceOfETHInKiro: string;
+        ethPriceInKIRO: string;
         penalty?: number | undefined;
         fees?: {
             baseFeeBPS?: number | undefined;
@@ -61,14 +70,16 @@ export declare class FCTUtils extends FCTBase {
         } | undefined;
     }) => {
         payer: string;
-        amount: string;
-        amountInETH: string;
-    }[];
-    getGasPerPayer: (fctInputData?: {
-        signatures?: SignatureLike[];
-    }) => {
-        payer: string;
-        amount: string;
+        largestPayment: {
+            gas: string;
+            amount: string;
+            amountInETH: string;
+        };
+        smallestPayment: {
+            gas: string;
+            amount: string;
+            amountInETH: string;
+        };
     }[];
     getCallResults: ({ rpcUrl, provider, txHash, }: {
         rpcUrl?: string | undefined;
