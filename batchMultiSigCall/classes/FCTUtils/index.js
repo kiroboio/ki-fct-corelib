@@ -1,40 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FCTUtils = void 0;
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
-const hardhat_network_helpers_1 = require("@nomicfoundation/hardhat-network-helpers");
 const ethers_1 = require("ethers");
 const graphlib_1 = require("graphlib");
-const hre = __importStar(require("hardhat"));
 const lodash_1 = __importDefault(require("lodash"));
 const Interfaces_1 = require("../../../helpers/Interfaces");
-const constants_1 = require("../../constants");
 const utils_1 = require("../../utils");
 const getAllRequiredApprovals_1 = require("../../utils/getAllRequiredApprovals");
 const CallID_1 = require("../CallID");
@@ -244,55 +218,6 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 };
             });
         };
-        this.deepValidateFCT = async ({ rpcUrl, actuatorAddress, signatures, }) => {
-            const chainId = Number(this.FCT.chainId);
-            hre.config.networks.hardhat.chainId = chainId;
-            if (hre.config.networks.hardhat.forking) {
-                hre.config.networks.hardhat.forking.url = rpcUrl;
-            }
-            else {
-                throw new Error("Something weird");
-            }
-            /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
-             * This is the reason why we are disabling the eslint rule for this line
-             */
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const ethers = hre.ethers;
-            // Imperonate actuator
-            await (0, hardhat_network_helpers_1.impersonateAccount)(actuatorAddress);
-            const calldata = this.getCalldataForActuator({
-                signatures,
-                activator: actuatorAddress,
-                investor: ethers.constants.AddressZero,
-                purgedFCT: ethers.constants.HashZero,
-            });
-            // Get Actuator signer
-            const Actuator = await ethers.getSigner(actuatorAddress);
-            const actuatorContractInterface = Interfaces_1.Interface.FCT_Actuator;
-            const actuatorContractAddress = constants_1.addresses[chainId].Actuator;
-            const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
-            try {
-                // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
-                const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
-                    gasLimit: 1000000,
-                    gasPrice: this.FCT.options.maxGasPrice,
-                });
-                const txReceipt = await tx.wait();
-                return {
-                    success: true,
-                    txReceipt: txReceipt,
-                    message: "",
-                };
-            }
-            catch (err) {
-                return {
-                    success: false,
-                    txReceipt: null,
-                    message: err.message,
-                };
-            }
-        };
         this._eip712 = new EIP712_1.EIP712(FCT);
     }
     get FCTData() {
@@ -422,6 +347,61 @@ class FCTUtils extends FCTBase_1.FCTBase {
         printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
+    // public deepValidateFCT = async ({
+    //   rpcUrl,
+    //   actuatorAddress,
+    //   signatures,
+    // }: {
+    //   rpcUrl: string;
+    //   actuatorAddress: string;
+    //   signatures: SignatureLike[];
+    // }) => {
+    //   const chainId = Number(this.FCT.chainId);
+    //   hre.config.networks.hardhat.chainId = chainId;
+    //   if (hre.config.networks.hardhat.forking) {
+    //     hre.config.networks.hardhat.forking.url = rpcUrl;
+    //   } else {
+    //     throw new Error("Something weird");
+    //   }
+    //   /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
+    //    * This is the reason why we are disabling the eslint rule for this line
+    //    */
+    //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //   // @ts-ignore
+    //   const ethers = hre.ethers;
+    //   // Imperonate actuator
+    //   await impersonateAccount(actuatorAddress);
+    //   const calldata = this.getCalldataForActuator({
+    //     signatures,
+    //     activator: actuatorAddress,
+    //     investor: ethers.constants.AddressZero,
+    //     purgedFCT: ethers.constants.HashZero,
+    //   });
+    //   // Get Actuator signer
+    //   const Actuator = await ethers.getSigner(actuatorAddress);
+    //   const actuatorContractInterface = Interface.FCT_Actuator;
+    //   const actuatorContractAddress = addresses[chainId as keyof typeof addresses].Actuator;
+    //   const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
+    //   try {
+    //     // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
+    //     const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
+    //       gasLimit: 1_000_000,
+    //       gasPrice: this.FCT.options.maxGasPrice,
+    //     });
+    //     const txReceipt = await tx.wait();
+    //     return {
+    //       success: true,
+    //       txReceipt: txReceipt,
+    //       message: "",
+    //     };
+    //   } catch (err: any) {
+    //     return {
+    //       success: false,
+    //       txReceipt: null,
+    //       message: err.message,
+    //     };
+    //   }
+    // };
     validateFCTKeys(keys) {
         const validKeys = [
             "typeHash",
