@@ -399,7 +399,7 @@ const FCTData = {
       v: 27,
       yParityAndS: "0x40633a9ac1364f9aee46a3adf7e4813e776a6dde844410b51c3cafb9a17d772f",
       compact:
-        "0xb6d0f5333029817d9d18cb258d764047ef9feffc8f019f0066eae9695182db2f40633a9ac1364f9aee46a3adf7e4813e776a6dde844410b51c3cafb9a17d772f",
+        "0xb6d0f5333029817d9d18cb258d764047ef9feffc8f019f006 6eae9695182db2f40633a9ac1364f9aee46a3adf7e4813e776a6dde844410b51c3cafb9a17d772f",
     },
   ],
   computed: [],
@@ -479,7 +479,7 @@ describe("Utility functions", () => {
 
     it("Should get KIRO cost of FCT", async () => {
       const fctCost = FCT.utils.getKIROPayment({
-        kiroPriceInETH: "38270821632831754769812",
+        priceOfETHInKiro: "38270821632831754769812",
         gasPrice: 1580000096,
         gas: 462109,
       });

@@ -41,13 +41,23 @@ const getExtraCommonGas = (payersCount: number, msgDataLength: number) => {
 };
 
 const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
-  return pathIndexes.reduce((acc, pathIndex, index) => {
-    const call = calls[Number(index)];
+  return pathIndexes.reduce((acc, pathIndex) => {
+    const call = calls[Number(pathIndex)];
     const { payerIndex } = CallID.parse(call.callId);
     const payer = payerIndex === 0 ? undefined : calls[payerIndex - 1].from;
     // If payer !== undefined AND payer !== lastPayer, add it to the array
     if (payer && payer !== acc[acc.length - 1]) {
       acc.push(payer);
+    }
+    return acc;
+  }, [] as string[]);
+};
+
+const getAllSenders = (calls: MSCall[]) => {
+  return calls.reduce((acc, call) => {
+    // If call.from is already in the array, don't add it
+    if (!acc.includes(call.from)) {
+      acc.push(call.from);
     }
     return acc;
   }, [] as string[]);
@@ -63,13 +73,13 @@ export function getPayersForRoute({
   calldata: string;
 }) {
   const payers = getPayers(calls, pathIndexes);
-  const uniquePayers = [...new Set(payers)];
+  const allSenders = getAllSenders(calls);
   const batchMultiSigCallOverhead =
     fees.FCTControllerOverhead +
     fees.gasBeforeEncodedLoop +
     getEncodingMcallCost(calls.length) +
     fees.FCTControllerRegisterCall +
-    getSignatureRecoveryCost(uniquePayers.length + 1) + // +1 because verification signature
+    getSignatureRecoveryCost(allSenders.length + 1) + // +1 because verification signature
     fees.miscGasBeforeMcallLoop;
 
   const overhead =
@@ -106,10 +116,11 @@ export function getPayersForRoute({
     return acc;
   }, {} as Record<string, bigint>);
 
-  return uniquePayers.map((payer) => {
+  return allSenders.map((payer) => {
+    const gas = gasForFCTCall[payer] + gasForPaymentApprovals[payer];
     return {
       payer,
-      gas: gasForFCTCall[payer] + gasForPaymentApprovals[payer],
+      gas: gas || 0n,
     };
   });
 }
