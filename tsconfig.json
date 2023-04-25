@@ -5,9 +5,9 @@
 
   "compilerOptions": {
     "strict": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "target": "ESNext",
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "strictPropertyInitialization": false,
     "allowJs": true,
     "moduleResolution": "node",
