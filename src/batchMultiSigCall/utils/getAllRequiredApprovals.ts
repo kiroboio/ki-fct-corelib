@@ -1,4 +1,4 @@
-import { getPlugin } from "@kirobo/ki-eth-fct-provider-ts";
+import { getPlugin } from "@kiroboio/fct-plugins";
 import { getAddress } from "ethers/lib/utils";
 
 import { FCT_VAULT_ADDRESS } from "../../constants";

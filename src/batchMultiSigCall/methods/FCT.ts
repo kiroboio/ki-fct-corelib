@@ -1,4 +1,4 @@
-import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kirobo/ki-eth-fct-provider-ts";
+import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 

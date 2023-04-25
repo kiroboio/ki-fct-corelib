@@ -1,14 +1,13 @@
-import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
-export * from '@kiroboio/fct-plugins';
-export { utils as pluginUtils } from '@kiroboio/fct-plugins';
-import { utils as utils$1, ethers, BigNumber as BigNumber$1 } from 'ethers';
-export { ethers } from 'ethers';
-import _ from 'lodash';
-import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface as Interface$1, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
-import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
-import BigNumber from 'bignumber.js';
-import { Graph } from 'graphlib';
-import util from 'util';
+'use strict';
+
+var fctPlugins = require('@kiroboio/fct-plugins');
+var ethers = require('ethers');
+var _ = require('lodash');
+var utils$1 = require('ethers/lib/utils');
+var ethSigUtil = require('@metamask/eth-sig-util');
+var BigNumber = require('bignumber.js');
+var graphlib = require('graphlib');
+var util = require('util');
 
 var Flow;
 (function (Flow) {
@@ -109,14 +108,14 @@ var index$3 = /*#__PURE__*/Object.freeze({
 
 const getVariablesAsBytes32 = (variables) => {
     return variables.map((v) => {
-        if (isNaN(Number(v)) || utils$1.isAddress(v)) {
+        if (isNaN(Number(v)) || ethers.utils.isAddress(v)) {
             return `0x${String(v).replace("0x", "").padStart(64, "0")}`;
         }
         return `0x${Number(v).toString(16).padStart(64, "0")}`;
     });
 };
 
-const fetchApprovalsInterface = new ethers.utils.Interface([
+const fetchApprovalsInterface = new ethers.ethers.utils.Interface([
     "function allowance(address owner, address spender) view returns (uint256)",
     "function getApproved(uint256 tokenId) view returns (address)",
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
@@ -150,13 +149,13 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
         if (!rpcUrl) {
             throw new Error("No provider or rpcUrl provided");
         }
-        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
     }
     const chainId = (await provider.getNetwork()).chainId.toString();
     if (!multicallContracts[Number(chainId)]) {
         throw new Error("Multicall contract not found for this chain");
     }
-    const multiCallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
+    const multiCallContract = new ethers.ethers.Contract(multicallContracts[Number(chainId)], [
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
     const calls = data.map((approval) => {
@@ -192,7 +191,7 @@ class FetchUtility {
             if (!rpcUrl) {
                 throw new Error("No provider or rpcUrl provided");
             }
-            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+            provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
         }
         if (typeof chainId === "string") {
             chainId = Number(chainId);
@@ -201,7 +200,7 @@ class FetchUtility {
         if (!multicallContracts[Number(chainId)]) {
             throw new Error("Multicall contract not found for this chain");
         }
-        this.mutlicallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
+        this.mutlicallContract = new ethers.ethers.Contract(multicallContracts[Number(chainId)], [
             "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
         ], provider);
     }
@@ -235,7 +234,7 @@ class FetchUtility {
     async getTokensTotalSupply(requiredApprovals) {
         // Filter all tokens that are not ERC20 and duplicate tokens
         const erc20Tokens = requiredApprovals.filter((approval) => approval.protocol === "ERC20");
-        const ERC20Interface = new ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
+        const ERC20Interface = new ethers.ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
         const calls = erc20Tokens.map(({ token: target }) => {
             return {
                 target,
@@ -1667,12 +1666,12 @@ const getEncodedMethodParams = (call, withFunction) => {
         const ABI = [
             `function ${call.method}(${call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""})`,
         ];
-        const iface = new utils$1.Interface(ABI);
+        const iface = new ethers.utils.Interface(ABI);
         return iface.encodeFunctionData(call.method, call.params
             ? call.params.map((item) => {
                 if (item.hashed) {
                     if (typeof item.value === "string") {
-                        return utils$1.keccak256(toUtf8Bytes(item.value));
+                        return ethers.utils.keccak256(utils$1.toUtf8Bytes(item.value));
                     }
                     throw new Error("Hashed value must be a string");
                 }
@@ -1714,7 +1713,7 @@ const getEncodedMethodParams = (call, withFunction) => {
         }
         if (param.hashed) {
             if (typeof param.value === "string") {
-                return utils$1.keccak256(toUtf8Bytes(param.value));
+                return ethers.utils.keccak256(utils$1.toUtf8Bytes(param.value));
             }
             throw new Error("Hashed value must be a string");
         }
@@ -1722,7 +1721,7 @@ const getEncodedMethodParams = (call, withFunction) => {
     };
     if (!call.params)
         return "0x";
-    return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+    return utils$1.defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
 };
 
 function getDate(days = 0) {
@@ -1788,7 +1787,7 @@ const handleMethodInterface = (call) => {
 const handleFunctionSignature = (call) => {
     if (call.method) {
         const value = getMethodInterface(call);
-        return utils$1.id(value);
+        return ethers.utils.id(value);
     }
     return nullValue;
 };
@@ -2192,7 +2191,7 @@ const validateInteger = (value, keys) => {
 };
 // Validate address values in options
 const validateAddress = (value, keys) => {
-    if (!isAddress$1(value)) {
+    if (!utils$1.isAddress(value)) {
         throw new Error(`Options: ${keys.join(".")} is not a valid address`);
     }
 };
@@ -2454,9 +2453,9 @@ class ExportFCT extends FCTBase {
         return {
             typedData: this.typedData,
             builder: this.FCT.options.builder,
-            typeHash: hexlify(TypedDataUtils.hashType(this.typedData.primaryType, this.typedData.types)),
+            typeHash: utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(this.typedData.primaryType, this.typedData.types)),
             sessionId: this.sessionId,
-            nameHash: id(this.FCT.options.name),
+            nameHash: utils$1.id(this.FCT.options.name),
             mcall: this.mcall,
             variables: [],
             externalSigners: [],
@@ -2474,8 +2473,8 @@ class ExportFCT extends FCTBase {
         return calls.map((call, index) => {
             const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
             return {
-                typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-                ensHash: id(call.toENS || ""),
+                typeHash: utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+                ensHash: utils$1.id(call.toENS || ""),
                 functionSignature: handleFunctionSignature(call),
                 value: this.FCT._variables.getValue(call.value, "uint256", "0"),
                 callId: CallID.asString({
@@ -2488,7 +2487,7 @@ class ExportFCT extends FCTBase {
                 data: handleData(call),
                 types: handleTypes(call),
                 typedHashes: usedTypeStructs.length > 0
-                    ? usedTypeStructs.map((hash) => hexlify(TypedDataUtils.hashType(hash, typedData.types)))
+                    ? usedTypeStructs.map((hash) => utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(hash, typedData.types)))
                     : [],
             };
         });
@@ -2511,7 +2510,7 @@ const isAddress = (value, key) => {
     if (value.length === 0) {
         throw new Error(`${key} address cannot be empty string`);
     }
-    if (!utils$1.isAddress(value)) {
+    if (!ethers.utils.isAddress(value)) {
         throw new Error(`${key} address is not a valid address`);
     }
 };
@@ -2539,7 +2538,7 @@ const verifyParam = (param) => {
     }
     // address
     if (param.type === "address") {
-        if (!utils$1.isAddress(param.value)) {
+        if (!ethers.utils.isAddress(param.value)) {
             throw new Error(`Param ${param.name} is not a valid address`);
         }
     }
@@ -2571,7 +2570,7 @@ const getParamsFromInputs = (inputs, values) => {
         let value = values[i];
         // Check if value isn't a variable
         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-        if (BigNumber$1.isBigNumber(value)) {
+        if (ethers.BigNumber.isBigNumber(value)) {
             const hexString = value.toHexString().toLowerCase();
             if (variables.some((v) => hexString.startsWith(v))) {
                 value = hexString;
@@ -2601,10 +2600,10 @@ const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, prim
             const typeWithoutArray = paramType.replace(/\[\]$/, "");
             if (types[typeWithoutArray]) {
                 const components = generateRealInputParams(types, typeWithoutArray);
-                params.push(ParamType.from({ name, type: typeWithoutArray, components }));
+                params.push(utils$1.ParamType.from({ name, type: typeWithoutArray, components }));
             }
             else {
-                params.push(ParamType.from({ name, type: paramType }));
+                params.push(utils$1.ParamType.from({ name, type: paramType }));
             }
         }
         return params;
@@ -2631,7 +2630,7 @@ const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, prim
             let value = parameters[realInput.name];
             // Check if value isn't a variable
             const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber$1.isBigNumber(value)) {
+            if (ethers.BigNumber.isBigNumber(value)) {
                 const hexString = value.toHexString().toLowerCase();
                 if (variables.some((v) => hexString.startsWith(v))) {
                     value = hexString;
@@ -2733,7 +2732,7 @@ class FCTCalls extends FCTBase {
     }
     async createWithEncodedData(callWithEncodedData) {
         const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-        const iface = new Interface$1(abi);
+        const iface = new utils$1.Interface(abi);
         try {
             const { name, args, functionFragment: { inputs }, } = iface.parseTransaction({
                 data: encodedData,
@@ -4449,9 +4448,9 @@ var FCTControllerABI = [
 ];
 
 class Interface {
-    static FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
-    static FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
-    static FCT_Actuator = new ethers.utils.Interface(FCTActuatorABI);
+    static FCT_Controller = new ethers.ethers.utils.Interface(FCTControllerABI);
+    static FCT_BatchMultiSigCall = new ethers.ethers.utils.Interface(FCTBatchMultiSigCallABI);
+    static FCT_Actuator = new ethers.ethers.utils.Interface(FCTActuatorABI);
 }
 
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
@@ -4467,12 +4466,12 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
 const AUTHENTICATOR_PRIVATE_KEY = "5c35caeef2837c989ca02120f70b439b1f3266b779db6eb38ccabba24a2522b3";
 const getAuthenticatorSignature = (typedData) => {
     try {
-        const signature = signTypedData({
+        const signature = ethSigUtil.signTypedData({
             data: typedData,
             privateKey: Buffer.from(AUTHENTICATOR_PRIVATE_KEY, "hex"),
-            version: SignTypedDataVersion.V4,
+            version: ethSigUtil.SignTypedDataVersion.V4,
         });
-        return splitSignature(signature);
+        return utils$1.splitSignature(signature);
     }
     catch {
         console.log(util.inspect(typedData, false, null, true /* enable colors */));
@@ -4496,7 +4495,7 @@ function getAllRequiredApprovals(FCT) {
         if (typeof call.to !== "string") {
             continue;
         }
-        const pluginData = getPlugin$1({
+        const pluginData = fctPlugins.getPlugin({
             signature: handleFunctionSignature(call),
             address: call.to,
             chainId,
@@ -4585,19 +4584,19 @@ function getAllRequiredApprovals(FCT) {
                     if (typeof call.from !== "string") {
                         return true;
                     }
-                    const caller = getAddress(call.from);
+                    const caller = utils$1.getAddress(call.from);
                     // If the protocol is AAVE, we check if the caller is the spender and the approver
                     if (approval.protocol === "AAVE") {
-                        const whoIsApproving = getAddress(approval.from);
-                        const whoIsSpending = getAddress(approval.params.delegatee);
+                        const whoIsApproving = utils$1.getAddress(approval.from);
+                        const whoIsSpending = utils$1.getAddress(approval.params.delegatee);
                         // If the caller is the spender and the approver - no need to approve
                         return !(caller === whoIsSpending && caller === whoIsApproving);
                     }
                     // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
                     if (approval.protocol === "ERC721" &&
                         (call.method === "safeTransferFrom" || call.method === "transferFrom")) {
-                        const whoIsSending = getAddress(approval.from);
-                        const whoIsSpending = getAddress(approval.params.spender);
+                        const whoIsSending = utils$1.getAddress(approval.from);
+                        const whoIsSpending = utils$1.getAddress(approval.params.spender);
                         // If the caller and spender is the same, no need to approve
                         return !(whoIsSending === whoIsSpending);
                     }
@@ -4741,10 +4740,10 @@ class FCTUtils extends FCTBase {
     }
     recoverAddress(signature) {
         try {
-            const signatureString = utils$1.joinSignature(signature);
-            return recoverTypedSignature({
+            const signatureString = ethers.utils.joinSignature(signature);
+            return ethSigUtil.recoverTypedSignature({
                 data: this.FCTData.typedData,
-                version: SignTypedDataVersion.V4,
+                version: ethSigUtil.SignTypedDataVersion.V4,
                 signature: signatureString,
             });
         }
@@ -4771,7 +4770,7 @@ class FCTUtils extends FCTBase {
         };
     }
     getMessageHash() {
-        return ethers.utils.hexlify(TypedDataUtils.eip712Hash(this.FCTData.typedData, SignTypedDataVersion.V4));
+        return ethers.ethers.utils.hexlify(ethSigUtil.TypedDataUtils.eip712Hash(this.FCTData.typedData, ethSigUtil.SignTypedDataVersion.V4));
     }
     isValid(softValidation = false) {
         const keys = Object.keys(this.FCTData);
@@ -4806,7 +4805,7 @@ class FCTUtils extends FCTBase {
     }
     getAllPaths() {
         const FCT = this.FCTData;
-        const g = new Graph({ directed: true });
+        const g = new graphlib.Graph({ directed: true });
         FCT.mcall.forEach((_, index) => {
             g.setNode(index.toString());
         });
@@ -4942,7 +4941,7 @@ class FCTUtils extends FCTBase {
             ...new Set(fct.mcall.map((call) => {
                 const { payerIndex } = CallID.parse(call.callId);
                 if (payerIndex === 0)
-                    return ethers.constants.AddressZero;
+                    return ethers.ethers.constants.AddressZero;
                 const payer = fct.mcall[payerIndex - 1].from;
                 return payer;
             })),
@@ -4981,7 +4980,7 @@ class FCTUtils extends FCTBase {
             throw new Error("Either provider or rpcUrl is required");
         }
         if (!provider) {
-            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+            provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
         }
         const txReceipt = await provider.getTransactionReceipt(txHash);
         const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
@@ -5326,9 +5325,9 @@ const transactionValidator = async (txVal, pureGas = false) => {
             error: "Max gas price for FCT is too high",
         };
     }
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-    const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+    const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
+    const signer = new ethers.ethers.Wallet(actuatorPrivateKey, provider);
+    const actuatorContract = new ethers.ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
     try {
         let gas;
         if (activateForFree) {
@@ -5381,7 +5380,7 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
         const sum = arr.reduce((a, v) => a + v);
         return Math.round(sum / arr.length);
     }
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
     let keepTrying = true;
     let returnValue;
     do {
@@ -5475,7 +5474,7 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
 const getExecutedPath = async ({ 
 //   chainId,
 rpcUrl, txHash, }) => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
     // Get the tx receipt
     const txReceipt = await provider.getTransactionReceipt(txHash);
     console.log("txReceipt", txReceipt);
@@ -5543,7 +5542,7 @@ function importFCT(fct) {
         if (dataTypes.length > 0) {
             const signature = meta.method_interface;
             const functionName = signature.split("(")[0];
-            const iface = new ethers.utils.Interface([`function ${signature}`]);
+            const iface = new ethers.ethers.utils.Interface([`function ${signature}`]);
             const ifaceFunction = iface.getFunction(functionName);
             const inputs = ifaceFunction.inputs;
             params = FCTCalls.helpers.getParamsFromTypedData({
@@ -5673,7 +5672,7 @@ async function importEncodedFCT(calldata) {
             }
             return {
                 ...acc,
-                [key]: BigNumber$1.isBigNumber(value) ? value.toHexString() : value,
+                [key]: ethers.BigNumber.isBigNumber(value) ? value.toHexString() : value,
             };
         }, {});
     };
@@ -5687,7 +5686,7 @@ async function importEncodedFCT(calldata) {
     this.setOptions(FCTOptions);
     for (const [index, call] of decodedFCT.tr.mcall.entries()) {
         try {
-            const pluginData = getPlugin$1({
+            const pluginData = fctPlugins.getPlugin({
                 address: call.to,
                 chainId,
                 signature: call.functionSignature,
@@ -5700,7 +5699,7 @@ async function importEncodedFCT(calldata) {
             });
             const params = plugin.methodParams;
             const decodedParams = params.length > 0
-                ? new AbiCoder().decode(params.map((type) => `${type.type} ${type.name}`), call.data)
+                ? new utils$1.AbiCoder().decode(params.map((type) => `${type.type} ${type.name}`), call.data)
                 : [];
             plugin.input.set({
                 to: call.to,
@@ -5708,7 +5707,7 @@ async function importEncodedFCT(calldata) {
                 methodParams: params.reduce((acc, param) => {
                     const getValue = (value) => {
                         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-                        if (BigNumber$1.isBigNumber(value)) {
+                        if (ethers.BigNumber.isBigNumber(value)) {
                             const hexString = value.toHexString();
                             if (variables.some((v) => hexString.startsWith(v))) {
                                 return hexString;
@@ -5746,7 +5745,7 @@ async function getPlugin(index) {
     if (instanceOfVariable(call.to)) {
         throw new Error("To value cannot be a variable");
     }
-    const pluginData = getPlugin$1({
+    const pluginData = fctPlugins.getPlugin({
         signature: handleFunctionSignature(call),
         address: call.to,
         chainId: chainId,
@@ -5775,7 +5774,7 @@ async function getPluginClass(index) {
     if (instanceOfVariable(call.to)) {
         throw new Error("To value cannot be a variable");
     }
-    const pluginData = getPlugin$1({
+    const pluginData = fctPlugins.getPlugin({
         signature: handleFunctionSignature(call),
         address: call.to,
         chainId: chainId.toString(),
@@ -5925,7 +5924,7 @@ const getMulticallContract = (chainId, provider) => {
     if (!multicallAddress) {
         throw new Error(`No multicall address found for chainId ${chainId}`);
     }
-    return new ethers.Contract(multicallAddress, [
+    return new ethers.ethers.Contract(multicallAddress, [
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
 };
@@ -5935,7 +5934,7 @@ const getData = async ({ chainId, provider, }) => {
     if (!poolAddress) {
         throw new Error(`No pool address found for chainId ${chainId}`);
     }
-    const UniswapV2Pair = new ethers.utils.Interface([
+    const UniswapV2Pair = new ethers.ethers.utils.Interface([
         "function getReserves() view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
         "function price0CumulativeLast() external view returns (uint)",
         "function price1CumulativeLast() external view returns (uint)",
@@ -5985,7 +5984,7 @@ const getData = async ({ chainId, provider, }) => {
         if (i === 2) {
             return UniswapV2Pair.decodeFunctionResult("getReserves", data);
         }
-        return ethers.BigNumber.from(data);
+        return ethers.ethers.BigNumber.from(data);
     });
     return {
         blockNumber,
@@ -6033,7 +6032,7 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
         if (!rpcUrl) {
             throw new Error("Must provide either a provider or an rpcUrl");
         }
-        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
     }
     blockTimestamp = (blockTimestamp || (await provider.getBlock("latest")).timestamp);
     const isToken0KIRO = data[chainId].isToken0KIRO;
@@ -6067,4 +6066,22 @@ var index = /*#__PURE__*/Object.freeze({
     transactionValidator: transactionValidator
 });
 
-export { BatchMultiSigCall, index$1 as FCTBatchMultiSigCall, index$3 as constants, index as utils, index$2 as variables };
+Object.defineProperty(exports, 'pluginUtils', {
+    enumerable: true,
+    get: function () { return fctPlugins.utils; }
+});
+Object.defineProperty(exports, 'ethers', {
+    enumerable: true,
+    get: function () { return ethers.ethers; }
+});
+exports.BatchMultiSigCall = BatchMultiSigCall;
+exports.FCTBatchMultiSigCall = index$1;
+exports.constants = index$3;
+exports.utils = index;
+exports.variables = index$2;
+Object.keys(fctPlugins).forEach(function (k) {
+    if (k !== 'default' && !exports.hasOwnProperty(k)) Object.defineProperty(exports, k, {
+        enumerable: true,
+        get: function () { return fctPlugins[k]; }
+    });
+});

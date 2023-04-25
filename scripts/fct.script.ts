@@ -1,4 +1,4 @@
-import { AaveV2, ERC20, ERC721 } from "@kirobo/ki-eth-fct-provider-ts";
+import { AaveV2, ERC20, ERC721 } from "@kiroboio/fct-plugins";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 import { ethers } from "ethers";

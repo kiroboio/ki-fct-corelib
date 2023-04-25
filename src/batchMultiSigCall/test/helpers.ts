@@ -1,4 +1,4 @@
-import { ChainId, ERC20, TokensMath } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId, ERC20, TokensMath } from "@kiroboio/fct-plugins";
 
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import BaseTestFCT from "./FCT.json";

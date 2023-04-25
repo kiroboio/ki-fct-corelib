@@ -1,4 +1,4 @@
-import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
 import _ from "lodash";
 
