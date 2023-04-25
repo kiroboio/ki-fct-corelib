@@ -1,5 +1,5 @@
 {
-  "name": "@kiroboio/@fct-corelib",
+  "name": "@kiroboio/fct-corelib",
   "version": "1.11.5",
   "description": "Kirobo.io FCT Core library",
   "main": "dist/cjs/index.cjs",
