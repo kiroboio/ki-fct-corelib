@@ -256,14 +256,15 @@ export class FCTUtils extends FCTBase {
     const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
 
     const gasBigInt = BigInt(gas);
-    const gasPriceBigInt = BigInt(gasPrice);
 
     const limits = this.FCTData.typedData.message.limits;
     const maxGasPrice = BigInt(limits.gas_price_limit);
 
+    const gasPriceBigInt = BigInt(gasPrice) > maxGasPrice ? maxGasPrice : BigInt(gasPrice);
+
     const effectiveGasPrice = BigInt(
       getEffectiveGasPrice({
-        gasPrice,
+        gasPrice: gasPriceBigInt,
         maxGasPrice,
         baseFeeBPS,
         bonusFeeBPS,
