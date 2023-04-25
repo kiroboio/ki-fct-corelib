@@ -10,8 +10,8 @@ jobs:
       - uses: actions/checkout@master
       - name: Install dependencies & build
         run: yarn install --production=false && yarn run build
-      # - name: Test
-      #   run: yarn run test
+      - name: Test
+        run: yarn run test
       - uses: oleksiyrudenko/gha-git-credentials@v2-latest
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"

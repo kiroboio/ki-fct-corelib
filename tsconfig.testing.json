@@ -1,8 +1,21 @@
 {
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+
   "compilerOptions": {
+    "strict": true,
     "module": "CommonJS",
-    "target": "es6",
-    "moduleResolution": "node"
+    "target": "ESNext",
+    "baseUrl": "./src",
+    "strictPropertyInitialization": false,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "lib": ["ES2021", "DOM"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strictBindCallApply": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"]
 }
