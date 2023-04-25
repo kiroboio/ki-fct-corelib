@@ -1,4 +1,4 @@
-import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
 
 import { instanceOfVariable } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";

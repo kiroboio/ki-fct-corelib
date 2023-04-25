@@ -1,5 +1,5 @@
-export * from "@kirobo/ki-eth-fct-provider-ts";
-export { utils as pluginUtils } from "@kirobo/ki-eth-fct-provider-ts";
+export * from "@kiroboio/fct-plugins";
+export { utils as pluginUtils } from "@kiroboio/fct-plugins";
 export { ethers } from "ethers";
 
 // Utils exports

@@ -1,6 +1,6 @@
 import { JsonFragment } from "@ethersproject/abi";
 import { SignatureLike } from "@ethersproject/bytes";
-import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId } from "@kiroboio/fct-plugins";
 import { Fragment } from "ethers/lib/utils";
 
 import {

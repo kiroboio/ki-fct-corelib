@@ -1,4 +1,4 @@
-import { ChainId } from "@kirobo/ki-eth-fct-provider-ts";
+import { ChainId } from "@kiroboio/fct-plugins";
 
 import { DeepPartial } from "../types";
 import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";

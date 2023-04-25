@@ -1,4 +1,4 @@
-import { Utility } from "@kirobo/ki-eth-fct-provider-ts";
+import { Utility } from "@kiroboio/fct-plugins";
 import { signTypedData, SignTypedDataVersion, TypedMessage } from "@metamask/eth-sig-util";
 import * as dotenv from "dotenv";
 

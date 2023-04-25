@@ -1,4 +1,4 @@
-import { AaveV2, ERC20 } from "@kirobo/ki-eth-fct-provider-ts";
+import { AaveV2, ERC20 } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 
