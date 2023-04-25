@@ -6,7 +6,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register \"src/**/*.test.ts\" --timeout 100000",
+    "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
     "test:fct": "mocha -r ts-node/register src/batchMultiSigCall/**/*.test.ts",
     "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",

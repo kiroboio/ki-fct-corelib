@@ -2062,9 +2062,9 @@
     "@jridgewell/sourcemap-codec" "1.4.14"
 
 "@kiroboio/fct-plugins@^1.1.151":
-  version "1.1.152"
-  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.152.tgz#d704d64a6216c0866c578ad4d08043eadc23255d"
-  integrity sha512-C80lR1bEPZJJGWlK3QXrOwKjCJjihsKOkB0iumjnDwsuMij5JogXIdlC552llAZ4BBTJi9iqTousBVTT1FvYgw==
+  version "1.1.153"
+  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.153.tgz#2302218f99d1619567f2d672392116674c69cec8"
+  integrity sha512-OnsCeG2DlfBVpAnKyRd/Nq5hnqgYM5Law7dnPnRABRKcVSZC7poM3/KAjURIQ0OQlzoFw4S2sc4qgdqZ9S3aWg==
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@chainlink/contracts" "^0.5.1"

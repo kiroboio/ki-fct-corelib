@@ -9,9 +9,9 @@ const transpile = {
     json(),
     commonjs(),
     typescript({
-      // tsconfig: "tsconfig.build.json",
       compilerOptions: {
         rootDir: "src",
+        target: "ESNext",
       },
     }),
   ],

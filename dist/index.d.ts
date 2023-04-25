@@ -1,7 +1,7 @@
-import * as _kirobo_ki_eth_fct_provider_ts from '@kirobo/ki-eth-fct-provider-ts';
-import { ChainId, AllPlugins, PluginInstance, getPlugin as getPlugin$1 } from '@kirobo/ki-eth-fct-provider-ts';
-export * from '@kirobo/ki-eth-fct-provider-ts';
-export { utils as pluginUtils } from '@kirobo/ki-eth-fct-provider-ts';
+import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
+import { ChainId, AllPlugins, PluginInstance, getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
+export * from '@kiroboio/fct-plugins';
+export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import * as ethers from 'ethers';
 import { ethers as ethers$1 } from 'ethers';
 export { ethers } from 'ethers';
@@ -783,23 +783,23 @@ declare class Variables extends FCTBase {
 
 declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
 declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
-declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kirobo_ki_eth_fct_provider_ts.NewPluginType<"UNISWAP", "ACTION", "addLiquidityETH", string, {
+declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kiroboio_fct_plugins.NewPluginType<"UNISWAP", "ACTION", "addLiquidityETH", string, {
     input: {
-        to: _kirobo_ki_eth_fct_provider_ts.FctAddress;
-        value: _kirobo_ki_eth_fct_provider_ts.FctValue;
+        to: _kiroboio_fct_plugins.FctAddress;
+        value: _kiroboio_fct_plugins.FctValue;
         methodParams: {
-            token: _kirobo_ki_eth_fct_provider_ts.FctAddress;
-            amountTokenDesired: _kirobo_ki_eth_fct_provider_ts.FctValue;
-            amountTokenMin: _kirobo_ki_eth_fct_provider_ts.FctValue;
-            amountETHMin: _kirobo_ki_eth_fct_provider_ts.FctValue;
-            to: _kirobo_ki_eth_fct_provider_ts.FctAddress;
-            deadline: _kirobo_ki_eth_fct_provider_ts.FctTimestamp;
+            token: _kiroboio_fct_plugins.FctAddress;
+            amountTokenDesired: _kiroboio_fct_plugins.FctValue;
+            amountTokenMin: _kiroboio_fct_plugins.FctValue;
+            amountETHMin: _kiroboio_fct_plugins.FctValue;
+            to: _kiroboio_fct_plugins.FctAddress;
+            deadline: _kiroboio_fct_plugins.FctTimestamp;
         };
     };
     output: {
-        amountA: _kirobo_ki_eth_fct_provider_ts.FctValue;
-        amountB: _kirobo_ki_eth_fct_provider_ts.FctValue;
-        liquidity: _kirobo_ki_eth_fct_provider_ts.FctValue;
+        amountA: _kiroboio_fct_plugins.FctValue;
+        amountB: _kiroboio_fct_plugins.FctValue;
+        liquidity: _kiroboio_fct_plugins.FctValue;
     };
 }, Partial<{
     to: string | ({
@@ -943,7 +943,7 @@ declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
     protocol: "ERC20" | "ERC721" | "ERC1155" | "AAVE" | "SUSHISWAP" | "UNISWAP" | "VALIDATOR" | "MATH" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE";
     type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE";
-    method: "" | "symbol" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "allowance" | "getApproved" | "isApprovedForAll" | "totalSupply" | "supportsInterface" | "name" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "balanceOf" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "mint" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "getReserves" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "latestRoundData" | "ownerOf" | "tokenURI" | "getEthBalance" | "uri" | "simulateSwap" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "positions" | "protocolFees" | "slot0" | "ticks";
+    method: "" | "symbol" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "allowance" | "getApproved" | "isApprovedForAll" | "totalSupply" | "supportsInterface" | "name" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "balanceOf" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "mint" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "getReserves" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "positions" | "protocolFees" | "slot0" | "ticks" | "getEthBalance";
     input: {
         to: string | Variable;
         value: string | Variable | undefined;
