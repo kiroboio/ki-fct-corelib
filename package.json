@@ -1,5 +1,5 @@
 {
-  "name": "ki-fct-corelib",
+  "name": "@kiroboio/@fct-corelib",
   "version": "1.11.5",
   "description": "Kirobo.io FCT Core library",
   "main": "dist/cjs/index.cjs",
@@ -24,8 +24,8 @@
     "url": "git+https://github.com/kiroboio/ki-fct-corelib.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "BK",
+  "license": "LGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
   },
