@@ -5,12 +5,10 @@
 
   "compilerOptions": {
     "strict": true,
-    "module": "commonjs",
-    "target": "ES2020",
-    "declaration": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "baseUrl": "src",
     "strictPropertyInitialization": false,
-    "outDir": "dist",
-    "baseUrl": "./src",
     "allowJs": true,
     "moduleResolution": "node",
     "lib": ["ES2021", "DOM"],
