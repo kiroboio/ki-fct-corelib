@@ -139,7 +139,6 @@ async function main() {
         ensHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
       },
     ],
-    signatureCount: 2,
   });
 
   // Calculate how much it will cost in ETH and KIRO
