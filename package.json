@@ -5,6 +5,9 @@
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
     "test:fct": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/*.test.ts",
