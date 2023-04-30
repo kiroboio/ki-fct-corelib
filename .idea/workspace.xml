@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
-      <change beforePath="$PROJECT_DIR$/scripts/fct.script.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fct.script.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/fct2.script.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/fct2.script.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTUtils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTUtils/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/SessionID/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/SessionID/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/utils/getCalldataForActuator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/utils/getCalldataForActuator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/gas.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/gas.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +33,7 @@
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "develop",
+    "git-widget-placeholder": "eth__fee__calc",
     "last_opened_file_path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
@@ -75,6 +69,8 @@
       <workItem from="1681730329965" duration="301000" />
       <workItem from="1681730639630" duration="401000" />
       <workItem from="1681731048311" duration="2097000" />
+      <workItem from="1682584477764" duration="3277000" />
+      <workItem from="1682842179730" duration="2906000" />
     </task>
     <task id="LOCAL-00001" summary="Merge">
       <created>1681729461030</created>
