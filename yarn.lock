@@ -3783,9 +3783,9 @@
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
   integrity sha512-MtybtkUPSyysqLY2U210NBDeCHX+ltHt3oADGdjqoThZaFRDKwM6k1Nb3F0A3hk5hwuQvytFWhrWHOEq6nVJ8Q==
 
-"@uniswap/v2-core@git+https://github.com/kiroboio/uniswapv2-solc0.8.git":
+"@uniswap/v2-core@https://github.com/kiroboio/uniswapv2-solc0.8.git":
   version "1.0.1"
-  resolved "git+https://github.com/kiroboio/uniswapv2-solc0.8.git#c286d2d12bf89d1a691552e72cb9b3339cd0db5f"
+  resolved "https://github.com/kiroboio/uniswapv2-solc0.8.git#c286d2d12bf89d1a691552e72cb9b3339cd0db5f"
 
 "@uniswap/v2-periphery@^1.1.0-beta.0":
   version "1.1.0-beta.0"
