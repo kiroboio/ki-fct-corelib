@@ -278,7 +278,7 @@ export class FCTUtils extends FCTBase {
     const kiroCost = (ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n;
 
     return {
-      ethCost: (ethCost * BigInt(penalty || 1)).toString(),
+      ethCost: ((ethCost * BigInt(penalty || 10_000)) / 10_000n).toString(),
       kiroCost: kiroCost.toString(),
     };
   };
@@ -343,7 +343,7 @@ export class FCTUtils extends FCTBase {
           ...acc,
           [payer.payer]: {
             ...payer,
-            ethCost: ethCost * BigInt(penalty || 1),
+            ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
             kiroCost,
           },
         };
