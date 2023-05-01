@@ -122,7 +122,7 @@
     "web3.storage": "^4.5.4"
   },
   "dependencies": {
-    "@kiroboio/fct-plugins": "^1.1.153",
+    "@kiroboio/fct-plugins": "latest",
     "@metamask/eth-sig-util": "^5.0.2",
     "bignumber.js": "^9.1.0",
     "ethers": "^5.7.2",
