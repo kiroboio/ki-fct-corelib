@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.11.8",
+  "version": "1.11.9",
   "description": "Kirobo.io FCT Core library",
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
@@ -71,8 +71,8 @@
   },
   "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
   "devDependencies": {
-    "@babel/eslint-parser": "^7.19.1",
     "@babel/core": "^7.21.4",
+    "@babel/eslint-parser": "^7.19.1",
     "@babel/plugin-transform-runtime": "^7.21.4",
     "@babel/preset-env": "^7.21.4",
     "@babel/preset-typescript": "^7.21.4",
