@@ -103,10 +103,5 @@ typings/
 # TernJS port file
 .tern-port
 
-# Hardhat files
-artifacts
-cache
-/contracts
-
 # Local files
 .idea
