@@ -4,8 +4,7 @@ import { BatchMultiSigCall, ethers } from "../src";
 const chainId = 5;
 
 const kiroPerETH = BigInt("0x62eb71d53b26def2939").toString();
-
-const gasPrice = ethers.utils.parseUnits("9.69", "gwei").toNumber();
+const gasPrice = ethers.utils.parseUnits("200", "gwei").toNumber();
 
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData); // Returns BatchMultiSigCall class
@@ -13,7 +12,7 @@ async function main() {
     ethPriceInKIRO: kiroPerETH,
     gas: "367463",
     gasPrice: gasPrice.toString(),
-    penalty: 1.2,
+    penalty: "40000",
     fees: {
       baseFeeBPS: 1000,
       bonusFeeBPS: 500,

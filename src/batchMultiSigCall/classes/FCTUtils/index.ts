@@ -291,12 +291,12 @@ export class FCTUtils extends FCTBase {
     fees,
   }: {
     signatures?: SignatureLike[];
-    gasPrice?: number;
-    ethPriceInKIRO: string;
-    penalty?: number;
+    gasPrice?: number | string | bigint;
+    ethPriceInKIRO: string | bigint;
+    penalty?: number | string;
     fees?: {
-      baseFeeBPS?: number;
-      bonusFeeBPS?: number;
+      baseFeeBPS?: number | string;
+      bonusFeeBPS?: number | string;
     };
   }) => {
     const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
@@ -475,72 +475,6 @@ export class FCTUtils extends FCTBase {
       };
     });
   };
-
-  // public deepValidateFCT = async ({
-  //   rpcUrl,
-  //   actuatorAddress,
-  //   signatures,
-  // }: {
-  //   rpcUrl: string;
-  //   actuatorAddress: string;
-  //   signatures: SignatureLike[];
-  // }) => {
-  //   const chainId = Number(this.FCT.chainId);
-
-  //   hre.config.networks.hardhat.chainId = chainId;
-  //   if (hre.config.networks.hardhat.forking) {
-  //     hre.config.networks.hardhat.forking.url = rpcUrl;
-  //   } else {
-  //     throw new Error("Something weird");
-  //   }
-
-  //   /* @notice - We need to use hardhat ethers instead of regular ethers because additional functions are in hre.ethers
-  //    * This is the reason why we are disabling the eslint rule for this line
-  //    */
-
-  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //   // @ts-ignore
-  //   const ethers = hre.ethers;
-
-  //   // Imperonate actuator
-  //   await impersonateAccount(actuatorAddress);
-
-  //   const calldata = this.getCalldataForActuator({
-  //     signatures,
-  //     activator: actuatorAddress,
-  //     investor: ethers.constants.AddressZero,
-  //     purgedFCT: ethers.constants.HashZero,
-  //   });
-
-  //   // Get Actuator signer
-  //   const Actuator = await ethers.getSigner(actuatorAddress);
-
-  //   const actuatorContractInterface = Interface.FCT_Actuator;
-  //   const actuatorContractAddress = addresses[chainId as keyof typeof addresses].Actuator;
-
-  //   const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);
-
-  //   try {
-  //     // await setNextBlockBaseFeePerGas(ethers.utils.parseUnits("1", "gwei"));
-  //     const tx = await ActuatorContract.connect(Actuator).activate(calldata, Actuator.address, {
-  //       gasLimit: 1_000_000,
-  //       gasPrice: this.FCT.options.maxGasPrice,
-  //     });
-
-  //     const txReceipt = await tx.wait();
-  //     return {
-  //       success: true,
-  //       txReceipt: txReceipt,
-  //       message: "",
-  //     };
-  //   } catch (err: any) {
-  //     return {
-  //       success: false,
-  //       txReceipt: null,
-  //       message: err.message,
-  //     };
-  //   }
-  // };
 
   private validateFCTKeys(keys: string[]) {
     const validKeys = [

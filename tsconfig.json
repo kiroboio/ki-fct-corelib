@@ -20,6 +20,6 @@
   "rules": {
     "@typescript-eslint/ban-ts-ignore": "off"
   },
-  "include": ["src/**/*", "hardhat.config.ts", "./hardhat_test", "./scripts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist/**/*"]
 }
