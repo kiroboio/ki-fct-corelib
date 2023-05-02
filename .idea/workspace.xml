@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTUtils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTUtils/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +32,7 @@
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "eth__fee__calc",
+    "git-widget-placeholder": "getPaymentPerPayer/update",
     "last_opened_file_path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
@@ -44,7 +43,7 @@
     "nodejs.mocha.mocha_node_package_dir": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/mocha",
     "nodejs_package_manager_path": "yarn",
     "prettierjs.PrettierConfiguration.Package": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/prettier",
-    "settings.editor.selected.configurable": "preferences.keymap",
+    "settings.editor.selected.configurable": "settings.javascript.prettier",
     "ts.external.directory.path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -71,6 +70,14 @@
       <workItem from="1681731048311" duration="2097000" />
       <workItem from="1682584477764" duration="3277000" />
       <workItem from="1682842179730" duration="2906000" />
+      <workItem from="1682862602763" duration="3401000" />
+      <workItem from="1682937520262" duration="327000" />
+      <workItem from="1682943622131" duration="215000" />
+      <workItem from="1682956687011" duration="490000" />
+      <workItem from="1683013534670" duration="1293000" />
+      <workItem from="1683024286549" duration="106000" />
+      <workItem from="1683035960339" duration="630000" />
+      <workItem from="1683037748504" duration="1631000" />
     </task>
     <task id="LOCAL-00001" summary="Merge">
       <created>1681729461030</created>

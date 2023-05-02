@@ -59,6 +59,8 @@ async function main() {
 
   const paymentPerPayer = FCT.utils.getPaymentPerPayer({
     ethPriceInKIRO,
+    gasPrice: "200" + "0".repeat(9),
+    penalty: "40000",
   });
 
   console.log(paymentPerPayer);
