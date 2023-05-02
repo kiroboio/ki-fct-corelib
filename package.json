@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.11.10",
+  "version": "1.11.12",
   "description": "Kirobo.io FCT Core library",
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
