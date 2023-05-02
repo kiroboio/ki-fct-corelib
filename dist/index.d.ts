@@ -697,12 +697,12 @@ declare class FCTUtils extends FCTBase {
     };
     getPaymentPerPayer: ({ signatures, gasPrice, ethPriceInKIRO, penalty, fees, }: {
         signatures?: SignatureLike[] | undefined;
-        gasPrice?: number | undefined;
-        ethPriceInKIRO: string;
-        penalty?: number | undefined;
+        gasPrice?: string | number | bigint | undefined;
+        ethPriceInKIRO: string | bigint;
+        penalty?: string | number | undefined;
         fees?: {
-            baseFeeBPS?: number | undefined;
-            bonusFeeBPS?: number | undefined;
+            baseFeeBPS?: string | number | undefined;
+            bonusFeeBPS?: string | number | undefined;
         } | undefined;
     }) => {
         payer: string;
