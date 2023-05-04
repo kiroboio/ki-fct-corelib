@@ -286,12 +286,14 @@ export class FCTUtils extends FCTBase {
   public getPaymentPerPayer = ({
     signatures,
     gasPrice,
+    maxGasPrice,
     ethPriceInKIRO,
     penalty,
     fees,
   }: {
     signatures?: SignatureLike[];
     gasPrice?: number | string | bigint;
+    maxGasPrice?: number | string | bigint;
     ethPriceInKIRO: string | bigint;
     penalty?: number | string;
     fees?: {
@@ -307,7 +309,7 @@ export class FCTUtils extends FCTBase {
 
     const limits = fct.typedData.message.limits as TypedDataLimits;
 
-    const maxGasPrice = BigInt(limits.gas_price_limit);
+    maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(limits.gas_price_limit);
     const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
     const effectiveGasPrice = BigInt(
       getEffectiveGasPrice({

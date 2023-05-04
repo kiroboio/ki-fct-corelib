@@ -8,15 +8,10 @@ const gasPrice = ethers.utils.parseUnits("200", "gwei").toNumber();
 
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData); // Returns BatchMultiSigCall class
-  const payerPayments = FCT.utils.kiroPerPayerGas({
+  const payerPayments = FCT.utils.getPaymentPerPayer({
     ethPriceInKIRO: kiroPerETH,
-    gas: "367463",
-    gasPrice: gasPrice.toString(),
-    penalty: "40000",
-    fees: {
-      baseFeeBPS: 1000,
-      bonusFeeBPS: 500,
-    },
+    // gas: "367463",
+    maxGasPrice: gasPrice.toString(),
   }); // Return { ethCost: '5292113328198587', kiroCost: '154508243943700685641' }
 
   // const payers = FCT.utils.getPaymentPerPayer({
