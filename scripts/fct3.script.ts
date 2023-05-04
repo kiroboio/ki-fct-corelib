@@ -20,7 +20,11 @@ function getRandomAddress() {
 }
 
 async function main() {
-  const FCT = new BatchMultiSigCall();
+  const FCT = new BatchMultiSigCall({
+    options: {
+      maxGasPrice: "100" + "0".repeat(9),
+    },
+  });
 
   const ethPriceInKIRO = BigInt("0x62eb71d53b26def2939").toString();
 
@@ -59,7 +63,8 @@ async function main() {
 
   const paymentPerPayer = FCT.utils.getPaymentPerPayer({
     ethPriceInKIRO,
-    gasPrice: "200" + "0".repeat(9),
+    maxGasPrice: "100" + "0".repeat(9),
+    // gasPrice: "30" + "0".repeat(9),
     penalty: "40000",
   });
 
