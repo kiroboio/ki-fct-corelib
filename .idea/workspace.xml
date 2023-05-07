@@ -5,17 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/executedPath.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/executedPath.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/batchMultiSigCall.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/batchMultiSigCall.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/CallID/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/CallID/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/EIP712/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/EIP712/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/ExportFCT/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/ExportFCT/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTCalls/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTCalls/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/methods/FCT.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/methods/FCT.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/constants/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/constants/misc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/misc.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/general.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/general.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
