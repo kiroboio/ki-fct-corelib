@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
-      <change beforePath="$PROJECT_DIR$/src/constants/misc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/misc.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
