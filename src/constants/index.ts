@@ -1,2 +1,2 @@
-export * from "./flows";
+export { Flow } from "./flows";
 export * from "./misc";

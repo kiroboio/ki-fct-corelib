@@ -1,4 +1,4 @@
-import FCTData from "../FCT_Mainnet.json";
+import FCTData from "../FCT.json";
 import { BatchMultiSigCall } from "../src";
 import scriptData from "./scriptData";
 
@@ -14,8 +14,6 @@ async function main() {
     // provider: ...,
     txHash: "0x95f9f186cbff60cecdecef460c442b82d938973becca0015d1376596daa6b574",
   });
-
-  console.log(data);
 }
 
 main()

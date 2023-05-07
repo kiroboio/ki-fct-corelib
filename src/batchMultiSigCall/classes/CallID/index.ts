@@ -1,4 +1,5 @@
-import { CALL_TYPE, Flow, flows } from "../../../constants";
+import { CALL_TYPE, Flow } from "../../../constants";
+import { flows } from "../../../constants/flows";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput, StrictMSCallInput } from "../../types";
 
