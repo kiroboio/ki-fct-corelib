@@ -68,14 +68,14 @@ export class ExportFCT extends FCTBase {
         typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
         ensHash: id(call.toENS || ""),
         functionSignature: handleFunctionSignature(call),
-        value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+        value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         callId: CallID.asString({
           calls,
           call,
           index,
         }),
-        from: this.FCT._variables.getValue(call.from, "address"),
-        to: this.FCT._variables.getValue(call.to, "address"),
+        from: this.FCT.variables.getValue(call.from, "address"),
+        to: this.FCT.variables.getValue(call.to, "address"),
         data: handleData(call),
         types: handleTypes(call),
         typedHashes:

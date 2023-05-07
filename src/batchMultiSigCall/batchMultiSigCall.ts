@@ -38,7 +38,7 @@ export class BatchMultiSigCall {
 
   // Utils
   public utils = new FCTUtils(this);
-  public _variables = new Variables(this);
+  public variables = new Variables(this);
   protected _options = new Options();
   protected _calls = new FCTCalls(this, {
     value: "0",
@@ -78,11 +78,11 @@ export class BatchMultiSigCall {
   }
 
   get computed(): IComputed[] {
-    return this._variables.computed;
+    return this.variables.computed;
   }
 
   get computedWithValues(): ComputedVariable[] {
-    return this._variables.computedWithValues;
+    return this.variables.computedWithValues;
   }
 
   // Setters
@@ -103,7 +103,7 @@ export class BatchMultiSigCall {
 
   // Variables
   public addComputed = (computed: IComputed) => {
-    return this._variables.addComputed(computed);
+    return this.variables.addComputed(computed);
   };
 
   // Plugin functions
