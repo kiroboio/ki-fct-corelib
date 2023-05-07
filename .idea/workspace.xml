@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge" />
+    <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/executedPath.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/executedPath.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/batchMultiSigCall.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/batchMultiSigCall.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/CallID/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/CallID/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/EIP712/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/EIP712/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/ExportFCT/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/ExportFCT/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTCalls/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/classes/FCTCalls/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/batchMultiSigCall/methods/FCT.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/batchMultiSigCall/methods/FCT.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/constants/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/constants/misc.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/constants/misc.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/general.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/general.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,27 +37,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;getPaymentPerPayer/update&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs.mocha.mocha_node_package_dir&quot;: &quot;/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/mocha&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/prettier&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;settings.javascript.prettier&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "constants/getFD",
+    "last_opened_file_path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.standard": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs.mocha.mocha_node_package_dir": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/mocha",
+    "nodejs_package_manager_path": "yarn",
+    "prettierjs.PrettierConfiguration.Package": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/prettier",
+    "settings.editor.selected.configurable": "settings.javascript.prettier",
+    "ts.external.directory.path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

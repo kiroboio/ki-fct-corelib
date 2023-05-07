@@ -201,7 +201,7 @@ export class FCTCalls extends FCTBase {
         return [...acc, { ...param, value }];
       }
       if (instanceOfVariable(param.value)) {
-        const value = this.FCT._variables.getVariable(param.value, param.type);
+        const value = this.FCT.variables.getVariable(param.value, param.type);
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];
       }

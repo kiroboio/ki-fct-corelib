@@ -2,7 +2,8 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
 import _ from "lodash";
 
-import { CALL_TYPE_MSG, flows } from "../../../constants";
+import { CALL_TYPE_MSG } from "../../../constants";
+import { flows } from "../../../constants/flows";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
@@ -223,10 +224,10 @@ export class EIP712 extends FCTBase {
             call_index: index + 1,
             payer_index: index + 1,
             call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-            from: this.FCT._variables.getValue(call.from, "address"),
-            to: this.FCT._variables.getValue(call.to, "address"),
+            from: this.FCT.variables.getValue(call.from, "address"),
+            to: this.FCT.variables.getValue(call.to, "address"),
             to_ens: call.toENS || "",
-            eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+            eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
             gas_limit: gasLimit,
             permissions: 0,
             flow_control: flow,

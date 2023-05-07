@@ -2,7 +2,8 @@ import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/f
 import { BigNumber, ethers, utils } from "ethers";
 import { AbiCoder } from "ethers/lib/utils";
 
-import { CALL_TYPE_MSG_REV, Flow, flows } from "../../constants";
+import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
+import { flows } from "../../constants/flows";
 import { Interface } from "../../helpers/Interfaces";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
