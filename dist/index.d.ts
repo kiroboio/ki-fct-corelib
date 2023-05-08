@@ -20,40 +20,6 @@ declare enum Flow {
     OK_STOP_FAIL_REVERT = "OK_STOP_FAIL_REVERT",
     OK_STOP_FAIL_STOP = "OK_STOP_FAIL_STOP"
 }
-declare const flows: {
-    OK_CONT_FAIL_REVERT: {
-        text: string;
-        value: string;
-    };
-    OK_CONT_FAIL_STOP: {
-        text: string;
-        value: string;
-    };
-    OK_CONT_FAIL_CONT: {
-        text: string;
-        value: string;
-    };
-    OK_REVERT_FAIL_CONT: {
-        text: string;
-        value: string;
-    };
-    OK_REVERT_FAIL_STOP: {
-        text: string;
-        value: string;
-    };
-    OK_STOP_FAIL_CONT: {
-        text: string;
-        value: string;
-    };
-    OK_STOP_FAIL_REVERT: {
-        text: string;
-        value: string;
-    };
-    OK_STOP_FAIL_STOP: {
-        text: string;
-        value: string;
-    };
-};
 
 declare const multicallContracts: {
     1: string;
@@ -84,6 +50,22 @@ declare const CALL_TYPE_MSG_REV: {
     readonly library: "LIBRARY";
 };
 declare const FCT_VAULT_ADDRESS: "FCT_VAULT_ADDRESS";
+declare const getFD: ({ callIndex, innerIndex }: {
+    callIndex: number;
+    innerIndex: number;
+}) => string;
+declare const getFDBytes: ({ callIndex, innerIndex }: {
+    callIndex: number;
+    innerIndex: number;
+}) => string;
+declare const getFDBack: ({ callIndex, innerIndex }: {
+    callIndex: number;
+    innerIndex: number;
+}) => string;
+declare const getFDBackBytes: ({ callIndex, innerIndex }: {
+    callIndex: number;
+    innerIndex: number;
+}) => string;
 
 declare const index$3_CALL_TYPE: typeof CALL_TYPE;
 declare const index$3_CALL_TYPE_MSG: typeof CALL_TYPE_MSG;
@@ -99,7 +81,10 @@ declare const index$3_FDBase: typeof FDBase;
 declare const index$3_FDBaseBytes: typeof FDBaseBytes;
 type index$3_Flow = Flow;
 declare const index$3_Flow: typeof Flow;
-declare const index$3_flows: typeof flows;
+declare const index$3_getFD: typeof getFD;
+declare const index$3_getFDBack: typeof getFDBack;
+declare const index$3_getFDBackBytes: typeof getFDBackBytes;
+declare const index$3_getFDBytes: typeof getFDBytes;
 declare const index$3_multicallContracts: typeof multicallContracts;
 declare const index$3_nullValue: typeof nullValue;
 declare namespace index$3 {
@@ -117,7 +102,10 @@ declare namespace index$3 {
     index$3_FDBase as FDBase,
     index$3_FDBaseBytes as FDBaseBytes,
     index$3_Flow as Flow,
-    index$3_flows as flows,
+    index$3_getFD as getFD,
+    index$3_getFDBack as getFDBack,
+    index$3_getFDBackBytes as getFDBackBytes,
+    index$3_getFDBytes as getFDBytes,
     index$3_multicallContracts as multicallContracts,
     index$3_nullValue as nullValue,
   };
@@ -695,9 +683,10 @@ declare class FCTUtils extends FCTBase {
         ethCost: string;
         kiroCost: string;
     };
-    getPaymentPerPayer: ({ signatures, gasPrice, ethPriceInKIRO, penalty, fees, }: {
+    getPaymentPerPayer: ({ signatures, gasPrice, maxGasPrice, ethPriceInKIRO, penalty, fees, }: {
         signatures?: SignatureLike[] | undefined;
         gasPrice?: string | number | bigint | undefined;
+        maxGasPrice?: string | number | bigint | undefined;
         ethPriceInKIRO: string | bigint;
         penalty?: string | number | undefined;
         fees?: {
@@ -981,7 +970,7 @@ declare class BatchMultiSigCall {
     domain: TypedDataDomain;
     randomId: string;
     utils: FCTUtils;
-    _variables: Variables;
+    variables: Variables;
     protected _options: Options;
     protected _calls: FCTCalls;
     constructor(input?: BatchMultiSigCallConstructor);

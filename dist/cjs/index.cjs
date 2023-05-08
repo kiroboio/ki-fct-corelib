@@ -85,6 +85,26 @@ const CALL_TYPE_MSG_REV = {
     library: "LIBRARY",
 };
 const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";
+const getFD = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
+};
+const getFDBytes = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
+};
+const getFDBack = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
+};
+const getFDBackBytes = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
+};
 
 var index$3 = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -101,7 +121,10 @@ var index$3 = /*#__PURE__*/Object.freeze({
     FDBase: FDBase,
     FDBaseBytes: FDBaseBytes,
     get Flow () { return Flow; },
-    flows: flows,
+    getFD: getFD,
+    getFDBack: getFDBack,
+    getFDBackBytes: getFDBackBytes,
+    getFDBytes: getFDBytes,
     multicallContracts: multicallContracts,
     nullValue: nullValue
 });
@@ -2155,10 +2178,10 @@ class EIP712 extends FCTBase {
                         call_index: index + 1,
                         payer_index: index + 1,
                         call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-                        from: this.FCT._variables.getValue(call.from, "address"),
-                        to: this.FCT._variables.getValue(call.to, "address"),
+                        from: this.FCT.variables.getValue(call.from, "address"),
+                        to: this.FCT.variables.getValue(call.to, "address"),
                         to_ens: call.toENS || "",
-                        eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+                        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
                         gas_limit: gasLimit,
                         permissions: 0,
                         flow_control: flow,
@@ -2476,14 +2499,14 @@ class ExportFCT extends FCTBase {
                 typeHash: utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: utils$1.id(call.toENS || ""),
                 functionSignature: handleFunctionSignature(call),
-                value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+                value: this.FCT.variables.getValue(call.value, "uint256", "0"),
                 callId: CallID.asString({
                     calls,
                     call,
                     index,
                 }),
-                from: this.FCT._variables.getValue(call.from, "address"),
-                to: this.FCT._variables.getValue(call.to, "address"),
+                from: this.FCT.variables.getValue(call.from, "address"),
+                to: this.FCT.variables.getValue(call.to, "address"),
                 data: handleData(call),
                 types: handleTypes(call),
                 typedHashes: usedTypeStructs.length > 0
@@ -2818,7 +2841,7 @@ class FCTCalls extends FCTBase {
                 return [...acc, { ...param, value }];
             }
             if (instanceOfVariable(param.value)) {
-                const value = this.FCT._variables.getVariable(param.value, param.type);
+                const value = this.FCT.variables.getVariable(param.value, param.type);
                 const updatedParam = { ...param, value };
                 return [...acc, updatedParam];
             }
@@ -4895,13 +4918,13 @@ class FCTUtils extends FCTBase {
             kiroCost: kiroCost.toString(),
         };
     };
-    getPaymentPerPayer = ({ signatures, gasPrice, ethPriceInKIRO, penalty, fees, }) => {
+    getPaymentPerPayer = ({ signatures, gasPrice, maxGasPrice, ethPriceInKIRO, penalty, fees, }) => {
         const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
         const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
         const fct = this.FCTData;
         const allPaths = this.getAllPaths();
         const limits = fct.typedData.message.limits;
-        const maxGasPrice = BigInt(limits.gas_price_limit);
+        maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(limits.gas_price_limit);
         const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
         const effectiveGasPrice = BigInt(getEffectiveGasPrice({
             gasPrice: txGasPrice,
@@ -5754,7 +5777,7 @@ class BatchMultiSigCall {
     randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     // Utils
     utils = new FCTUtils(this);
-    _variables = new Variables(this);
+    variables = new Variables(this);
     _options = new Options();
     _calls = new FCTCalls(this, {
         value: "0",
@@ -5794,10 +5817,10 @@ class BatchMultiSigCall {
         return this._calls.getWithDecodedVariables();
     }
     get computed() {
-        return this._variables.computed;
+        return this.variables.computed;
     }
     get computedWithValues() {
-        return this._variables.computedWithValues;
+        return this.variables.computedWithValues;
     }
     // Setters
     setOptions = (options) => {
@@ -5815,7 +5838,7 @@ class BatchMultiSigCall {
     };
     // Variables
     addComputed = (computed) => {
-        return this._variables.addComputed(computed);
+        return this.variables.addComputed(computed);
     };
     // Plugin functions
     getPlugin = getPlugin;
