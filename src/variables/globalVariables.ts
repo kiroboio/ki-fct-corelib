@@ -22,16 +22,6 @@ const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
 
-// const getBlockHash = (indexOfPreviousBlock: number = 1) => {
-//   if (indexOfPreviousBlock === 0) {
-//     throw new Error("Only previous blocks are supported");
-//   }
-//   if (indexOfPreviousBlock > 255) {
-//     throw new Error("Only previous blocks up to 255 are supported");
-//   }
-//   return (indexOfPreviousBlock - 1).toString(16).padStart(BLOCK_HASH.length, BLOCK_HASH);
-// };
-
 export const globalVariables = {
   blockNumber: BLOCK_NUMBER,
   blockTimestamp: BLOCK_TIMESTAMP,
