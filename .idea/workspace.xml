@@ -5,7 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="691efabc-2a69-4c70-bba2-301600b111a1" name="Changes" comment="Merge">
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+=======
+      <change afterPath="$PROJECT_DIR$/FCT_Fail.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/estimate.script.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/estimate.script.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/executedPath.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/fct2.script.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scriptData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scriptData.ts" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,7 +41,11 @@
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+<<<<<<< Updated upstream
     "git-widget-placeholder": "constants/getFD",
+=======
+    "git-widget-placeholder": "main",
+>>>>>>> Stashed changes
     "last_opened_file_path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
@@ -43,7 +56,11 @@
     "nodejs.mocha.mocha_node_package_dir": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/mocha",
     "nodejs_package_manager_path": "yarn",
     "prettierjs.PrettierConfiguration.Package": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/prettier",
+<<<<<<< Updated upstream
     "settings.editor.selected.configurable": "settings.javascript.prettier",
+=======
+    "settings.editor.selected.configurable": "project.scopes",
+>>>>>>> Stashed changes
     "ts.external.directory.path": "/Users/brendonskarelis/Documents/Kirobo/ki-fct-corelib/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }

@@ -31,6 +31,8 @@ const txValidator = async ({
     throw new Error("Something weird");
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const ethers = hre.ethers;
   // Imperonate actuator
   await impersonateAccount(actuatorAddress);
