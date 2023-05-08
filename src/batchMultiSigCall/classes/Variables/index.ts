@@ -101,7 +101,15 @@ export class Variables extends FCTBase {
     throw new Error("Variable type not found");
   }
 
-  public getOutputVariable({ index, innerIndex, type }: { index: number; innerIndex: number; type: string }) {
+  public getOutputVariable({
+    index,
+    innerIndex,
+    type = "uint256",
+  }: {
+    index: number;
+    innerIndex: number;
+    type?: string;
+  }) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
     let base: string;
     let innerIndexHex: string;
