@@ -1,5 +1,7 @@
-export * as plugins from "@kiroboio/fct-plugins";
 export { ethers } from "ethers";
+
+// Plugins exports
+export * as plugins from "./plugins";
 
 // Utils exports
 export * as constants from "./constants";

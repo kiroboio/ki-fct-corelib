@@ -1,4 +1,5 @@
-import { BatchMultiSigCall, ChainId, ERC20, ethers } from "../src";
+import { ChainId, ERC20 } from "../dist/plugins";
+import { BatchMultiSigCall, ethers } from "../src";
 import scriptData from "./scriptData";
 
 const getERC20Plugin = ({ chainId }: { chainId: number }) =>

@@ -1,14 +1,32 @@
-import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
-export * from '@kiroboio/fct-plugins';
-export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import { utils as utils$1, ethers, BigNumber as BigNumber$1 } from 'ethers';
 export { ethers } from 'ethers';
+import * as fctPlugins from '@kiroboio/fct-plugins';
+import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 import _ from 'lodash';
 import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface as Interface$1, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
 import BigNumber from 'bignumber.js';
 import { Graph } from 'graphlib';
 import util from 'util';
+
+function _mergeNamespaces(n, m) {
+    m.forEach(function (e) {
+        e && typeof e !== 'string' && !Array.isArray(e) && Object.keys(e).forEach(function (k) {
+            if (k !== 'default' && !(k in n)) {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    });
+    return Object.freeze(n);
+}
+
+var plugins = /*#__PURE__*/_mergeNamespaces({
+    __proto__: null
+}, [fctPlugins]);
 
 var Flow;
 (function (Flow) {
@@ -86,8 +104,28 @@ const CALL_TYPE_MSG_REV = {
     library: "LIBRARY",
 };
 const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";
+const getFD = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
+};
+const getFDBytes = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
+};
+const getFDBack = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
+};
+const getFDBackBytes = ({ callIndex, innerIndex }) => {
+    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
+    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
+};
 
-var index$3 = /*#__PURE__*/Object.freeze({
+var index$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     CALL_TYPE: CALL_TYPE,
     CALL_TYPE_MSG: CALL_TYPE_MSG,
@@ -102,7 +140,10 @@ var index$3 = /*#__PURE__*/Object.freeze({
     FDBase: FDBase,
     FDBaseBytes: FDBaseBytes,
     get Flow () { return Flow; },
-    flows: flows,
+    getFD: getFD,
+    getFDBack: getFDBack,
+    getFDBackBytes: getFDBackBytes,
+    getFDBytes: getFDBytes,
     multicallContracts: multicallContracts,
     nullValue: nullValue
 });
@@ -1490,15 +1531,6 @@ const addresses = {
         ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
     },
 };
-const EIP712_RECURRENCY = [
-    { name: "max_repeats", type: "uint16" },
-    { name: "chill_time", type: "uint32" },
-    { name: "accumetable", type: "bool" },
-];
-const EIP712_MULTISIG = [
-    { name: "external_signers", type: "address[]" },
-    { name: "minimum_approvals", type: "uint8" },
-];
 const NO_JUMP = "NO_JUMP";
 const DEFAULT_CALL_OPTIONS = {
     permissions: "0000",
@@ -2156,10 +2188,10 @@ class EIP712 extends FCTBase {
                         call_index: index + 1,
                         payer_index: index + 1,
                         call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-                        from: this.FCT._variables.getValue(call.from, "address"),
-                        to: this.FCT._variables.getValue(call.to, "address"),
+                        from: this.FCT.variables.getValue(call.from, "address"),
+                        to: this.FCT.variables.getValue(call.to, "address"),
                         to_ens: call.toENS || "",
-                        eth_value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+                        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
                         gas_limit: gasLimit,
                         permissions: 0,
                         flow_control: flow,
@@ -2477,14 +2509,14 @@ class ExportFCT extends FCTBase {
                 typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: id(call.toENS || ""),
                 functionSignature: handleFunctionSignature(call),
-                value: this.FCT._variables.getValue(call.value, "uint256", "0"),
+                value: this.FCT.variables.getValue(call.value, "uint256", "0"),
                 callId: CallID.asString({
                     calls,
                     call,
                     index,
                 }),
-                from: this.FCT._variables.getValue(call.from, "address"),
-                to: this.FCT._variables.getValue(call.to, "address"),
+                from: this.FCT.variables.getValue(call.from, "address"),
+                to: this.FCT.variables.getValue(call.to, "address"),
                 data: handleData(call),
                 types: handleTypes(call),
                 typedHashes: usedTypeStructs.length > 0
@@ -2819,7 +2851,7 @@ class FCTCalls extends FCTBase {
                 return [...acc, { ...param, value }];
             }
             if (instanceOfVariable(param.value)) {
-                const value = this.FCT._variables.getVariable(param.value, param.type);
+                const value = this.FCT.variables.getVariable(param.value, param.type);
                 const updatedParam = { ...param, value };
                 return [...acc, updatedParam];
             }
@@ -4896,13 +4928,13 @@ class FCTUtils extends FCTBase {
             kiroCost: kiroCost.toString(),
         };
     };
-    getPaymentPerPayer = ({ signatures, gasPrice, ethPriceInKIRO, penalty, fees, }) => {
+    getPaymentPerPayer = ({ signatures, gasPrice, maxGasPrice, ethPriceInKIRO, penalty, fees, }) => {
         const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
         const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
         const fct = this.FCTData;
         const allPaths = this.getAllPaths();
         const limits = fct.typedData.message.limits;
-        const maxGasPrice = BigInt(limits.gas_price_limit);
+        maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(limits.gas_price_limit);
         const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
         const effectiveGasPrice = BigInt(getEffectiveGasPrice({
             gasPrice: txGasPrice,
@@ -5105,7 +5137,7 @@ const getInvestorAddress = () => ({ type: "global", id: "investorAddress" });
 const getActivatorAddress = () => ({ type: "global", id: "activatorAddress" });
 const getEngineAddress = () => ({ type: "global", id: "engineAddress" });
 
-var index$2 = /*#__PURE__*/Object.freeze({
+var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     getActivatorAddress: getActivatorAddress,
     getBlockNumber: getBlockNumber,
@@ -5755,7 +5787,7 @@ class BatchMultiSigCall {
     randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
     // Utils
     utils = new FCTUtils(this);
-    _variables = new Variables(this);
+    variables = new Variables(this);
     _options = new Options();
     _calls = new FCTCalls(this, {
         value: "0",
@@ -5795,10 +5827,10 @@ class BatchMultiSigCall {
         return this._calls.getWithDecodedVariables();
     }
     get computed() {
-        return this._variables.computed;
+        return this.variables.computed;
     }
     get computedWithValues() {
-        return this._variables.computedWithValues;
+        return this.variables.computedWithValues;
     }
     // Setters
     setOptions = (options) => {
@@ -5816,7 +5848,7 @@ class BatchMultiSigCall {
     };
     // Variables
     addComputed = (computed) => {
-        return this._variables.addComputed(computed);
+        return this.variables.addComputed(computed);
     };
     // Plugin functions
     getPlugin = getPlugin;
@@ -5838,17 +5870,6 @@ class BatchMultiSigCall {
         return batchMultiSigCall;
     };
 }
-
-var index$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    BatchMultiSigCall: BatchMultiSigCall,
-    DEFAULT_CALL_OPTIONS: DEFAULT_CALL_OPTIONS,
-    EIP712_MULTISIG: EIP712_MULTISIG,
-    EIP712_RECURRENCY: EIP712_RECURRENCY,
-    NO_JUMP: NO_JUMP,
-    addresses: addresses,
-    utils: utils
-});
 
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {
@@ -6012,4 +6033,4 @@ var index = /*#__PURE__*/Object.freeze({
     transactionValidator: transactionValidator
 });
 
-export { BatchMultiSigCall, index$1 as FCTBatchMultiSigCall, index$3 as constants, index as utils, index$2 as variables };
+export { BatchMultiSigCall, index$2 as constants, plugins, index as utils, index$1 as variables };
