@@ -16,7 +16,7 @@ yarn:
 yarn add @kiroboio/fct-core
 ```
 
-pnmp:
+pnpm:
 ```bash
 pnpm add @kiroboio/fct-core
 ```
