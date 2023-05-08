@@ -1,6 +1,6 @@
 import FCTData from "../FCTExample.json";
 import { BatchMultiSigCall, ethers } from "../src";
-// import scriptData from "./scriptData";
+
 const chainId = 5;
 
 const kiroPerETH = BigInt("0x62eb71d53b26def2939").toString();
