@@ -1,5 +1,5 @@
 # @kirobo/fct-core
-[![npm (tag)](https://img.shields.io/npm/v/@kiroboio/fct-core)](https://www.npmjs.com/package/kiroboio/fct-core)
+[![npm (tag)](https://img.shields.io/npm/v/@kiroboio/fct-core)](https://www.npmjs.com/package/@kiroboio/fct-core)
 ![npm (downloads)](https://img.shields.io/npm/dm/@kiroboio/fct-core)
 
 Library for interacting, creating and developing Kirobo Future Conditional Transactions (FCT), written in TypeScript.
