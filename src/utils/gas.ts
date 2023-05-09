@@ -14,7 +14,6 @@ const gasPriceCalculationsByChains = {
     // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
     if (maxFeePerGas < 100_000_000_000) {
       return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
-      3;
     }
     // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
     if (maxFeePerGas > 200_000_000_000) {
