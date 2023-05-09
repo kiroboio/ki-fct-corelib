@@ -1,11 +1,10 @@
-import { utils as utils$1, ethers, BigNumber as BigNumber$1 } from 'ethers';
+import { utils as utils$1, ethers, BigNumber } from 'ethers';
 export { ethers } from 'ethers';
 import * as fctPlugins from '@kiroboio/fct-plugins';
 import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 import _ from 'lodash';
 import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
-import BigNumber from 'bignumber.js';
 import { Graph } from 'graphlib';
 import util from 'util';
 
@@ -3882,13 +3881,13 @@ class Options {
             }
             // Expires at validator
             if (objKey === "expiresAt") {
-                const expiresAt = Number(value[objKey]);
+                const expiresAt = BigInt(value[objKey]);
                 const now = Number(new Date().getTime() / 1000).toFixed();
                 const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                if (expiresAt <= BigInt(now)) {
                     throw new Error(`Options: expiresAt must be in the future`);
                 }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                if (validFrom && expiresAt <= BigInt(validFrom)) {
                     throw new Error(`Options: expiresAt must be greater than validFrom`);
                 }
             }
@@ -4190,7 +4189,7 @@ const getParamsFromInputs = (inputs, values) => {
         let value = values[i];
         // Check if value isn't a variable
         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-        if (BigNumber$1.isBigNumber(value)) {
+        if (BigNumber.isBigNumber(value)) {
             const hexString = value.toHexString().toLowerCase();
             if (variables.some((v) => hexString.startsWith(v))) {
                 value = hexString;
@@ -4250,7 +4249,7 @@ const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, prim
             let value = parameters[realInput.name];
             // Check if value isn't a variable
             const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber$1.isBigNumber(value)) {
+            if (BigNumber.isBigNumber(value)) {
                 const hexString = value.toHexString().toLowerCase();
                 if (variables.some((v) => hexString.startsWith(v))) {
                     value = hexString;
@@ -5596,7 +5595,7 @@ async function importEncodedFCT(calldata) {
             }
             return {
                 ...acc,
-                [key]: BigNumber$1.isBigNumber(value) ? value.toHexString() : value,
+                [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
             };
         }, {});
     };
@@ -5631,7 +5630,7 @@ async function importEncodedFCT(calldata) {
                 methodParams: params.reduce((acc, param) => {
                     const getValue = (value) => {
                         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-                        if (BigNumber$1.isBigNumber(value)) {
+                        if (BigNumber.isBigNumber(value)) {
                             const hexString = value.toHexString();
                             if (variables.some((v) => hexString.startsWith(v))) {
                                 return hexString;

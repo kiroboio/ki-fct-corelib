@@ -4,7 +4,7 @@ import * as hre from "hardhat";
 import util from "util";
 
 import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
-import { Interface } from "../src/helpers/Interfaces";
+import { Interfaces } from "../src/helpers/Interfaces";
 import FCTData from "./Failing_FCT.json";
 
 //  ChainId 5
@@ -40,7 +40,7 @@ const txValidator = async ({
   // Get ActivatorSigner
   const Actuator = await ethers.getSigner(actuatorAddress);
 
-  const actuatorContractInterface = Interface.FCT_Actuator;
+  const actuatorContractInterface = Interfaces.FCT_Actuator;
   const actuatorContractAddress = addresses[chainIdImport as keyof typeof addresses].Actuator;
 
   const ActuatorContract = new ethers.Contract(actuatorContractAddress, actuatorContractInterface, ethers.provider);

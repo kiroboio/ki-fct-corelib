@@ -5,7 +5,6 @@ var fctPlugins = require('@kiroboio/fct-plugins');
 var _ = require('lodash');
 var utils$1 = require('ethers/lib/utils');
 var ethSigUtil = require('@metamask/eth-sig-util');
-var BigNumber = require('bignumber.js');
 var graphlib = require('graphlib');
 var util = require('util');
 
@@ -3901,13 +3900,13 @@ class Options {
             }
             // Expires at validator
             if (objKey === "expiresAt") {
-                const expiresAt = Number(value[objKey]);
+                const expiresAt = BigInt(value[objKey]);
                 const now = Number(new Date().getTime() / 1000).toFixed();
                 const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                if (expiresAt <= BigInt(now)) {
                     throw new Error(`Options: expiresAt must be in the future`);
                 }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                if (validFrom && expiresAt <= BigInt(validFrom)) {
                     throw new Error(`Options: expiresAt must be greater than validFrom`);
                 }
             }

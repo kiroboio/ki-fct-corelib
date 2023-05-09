@@ -16,10 +16,18 @@ const getEsmAndCjs = ({ input, output }) => {
       },
     }),
   ];
+
+  const external = ["ethers", "@kirobo/fct-plugins", "lodash", "graphlib", "util"];
+
+  const defaultData = {
+    input,
+    plugins,
+    external,
+  };
+
   return [
     {
-      input,
-      plugins,
+      ...defaultData,
       output: {
         dir: output,
         format: "esm",
@@ -27,8 +35,7 @@ const getEsmAndCjs = ({ input, output }) => {
       },
     },
     {
-      input,
-      plugins,
+      ...defaultData,
       output: {
         dir: `${output}/cjs`,
         entryFileNames: "[name].cjs",
