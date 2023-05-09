@@ -1,7 +1,13 @@
+import { ethers } from "ethers";
+
 export const multicallContracts = {
   1: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
   5: "0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e",
 };
+
+export const multicallInterface = new ethers.utils.Interface([
+  "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
+]);
 
 export const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
@@ -37,31 +43,3 @@ export const CALL_TYPE_MSG_REV = {
 } as const;
 
 export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;
-
-export const getFD = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
-};
-
-export const getFDBytes = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
-};
-
-export const getFDBack = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
-};
-
-export const getFDBackBytes = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
-};
