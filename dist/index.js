@@ -3,7 +3,7 @@ export { ethers } from 'ethers';
 import * as fctPlugins from '@kiroboio/fct-plugins';
 import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 import _ from 'lodash';
-import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface as Interface$1, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
+import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
 import BigNumber from 'bignumber.js';
 import { Graph } from 'graphlib';
@@ -104,26 +104,6 @@ const CALL_TYPE_MSG_REV = {
     library: "LIBRARY",
 };
 const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";
-const getFD = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
-};
-const getFDBytes = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
-};
-const getFDBack = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
-};
-const getFDBackBytes = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
-};
 
 var index$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -140,10 +120,6 @@ var index$2 = /*#__PURE__*/Object.freeze({
     FDBase: FDBase,
     FDBaseBytes: FDBaseBytes,
     get Flow () { return Flow; },
-    getFD: getFD,
-    getFDBack: getFDBack,
-    getFDBackBytes: getFDBackBytes,
-    getFDBytes: getFDBytes,
     multicallContracts: multicallContracts,
     nullValue: nullValue
 });
@@ -156,141 +132,6 @@ const getVariablesAsBytes32 = (variables) => {
         return `0x${Number(v).toString(16).padStart(64, "0")}`;
     });
 };
-
-const fetchApprovalsInterface = new ethers.utils.Interface([
-    "function allowance(address owner, address spender) view returns (uint256)",
-    "function getApproved(uint256 tokenId) view returns (address)",
-    "function isApprovedForAll(address owner, address operator) view returns (bool)",
-]);
-const generateDataForCall = (data) => {
-    if (data.protocol === "ERC20") {
-        if (data.method === "approve") {
-            return {
-                functionName: "allowance",
-                encodedData: fetchApprovalsInterface.encodeFunctionData("allowance", [data.from, data.params.spender]),
-            };
-        }
-    }
-    if (data.protocol === "ERC721") {
-        if (data.method === "approve") {
-            return {
-                functionName: "getApproved",
-                encodedData: fetchApprovalsInterface.encodeFunctionData("getApproved", [data.params.tokenId]),
-            };
-        }
-    }
-    if (data.method === "setApprovalForAll") {
-        return {
-            functionName: "isApprovedForAll",
-            encodedData: fetchApprovalsInterface.encodeFunctionData("isApprovedForAll", [data.from, data.params.spender]),
-        };
-    }
-};
-const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
-    if (!provider) {
-        if (!rpcUrl) {
-            throw new Error("No provider or rpcUrl provided");
-        }
-        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    }
-    const chainId = (await provider.getNetwork()).chainId.toString();
-    if (!multicallContracts[Number(chainId)]) {
-        throw new Error("Multicall contract not found for this chain");
-    }
-    const multiCallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
-        "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-    ], provider);
-    const calls = data.map((approval) => {
-        const dataOfCall = generateDataForCall(approval);
-        if (!dataOfCall) {
-            throw new Error("Approval not found");
-        }
-        const { functionName, encodedData } = dataOfCall;
-        return {
-            functionName,
-            dataForMulticall: {
-                target: approval.token,
-                callData: encodedData,
-            },
-        };
-    });
-    const [, returnData] = await multiCallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
-    const approvals = returnData.map((res, index) => {
-        const functionName = calls[index].functionName;
-        const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
-        return {
-            ...data[index],
-            value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
-        };
-    });
-    return approvals;
-};
-class FetchUtility {
-    chainId;
-    mutlicallContract;
-    constructor({ rpcUrl, chainId, provider }) {
-        if (!provider) {
-            if (!rpcUrl) {
-                throw new Error("No provider or rpcUrl provided");
-            }
-            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-        }
-        if (typeof chainId === "string") {
-            chainId = Number(chainId);
-        }
-        this.chainId = chainId;
-        if (!multicallContracts[Number(chainId)]) {
-            throw new Error("Multicall contract not found for this chain");
-        }
-        this.mutlicallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
-            "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-        ], provider);
-    }
-    async fetchCurrentApprovals(data) {
-        const multiCallContract = this.mutlicallContract;
-        const calls = data.map((approval) => {
-            const dataOfCall = generateDataForCall(approval);
-            if (!dataOfCall) {
-                throw new Error("Approval not found");
-            }
-            const { functionName, encodedData } = dataOfCall;
-            return {
-                functionName,
-                dataForMulticall: {
-                    target: approval.token,
-                    callData: encodedData,
-                },
-            };
-        });
-        const [, returnData] = await multiCallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
-        const approvals = returnData.map((res, index) => {
-            const functionName = calls[index].functionName;
-            const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
-            return {
-                ...data[index],
-                value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
-            };
-        });
-        return approvals;
-    }
-    async getTokensTotalSupply(requiredApprovals) {
-        // Filter all tokens that are not ERC20 and duplicate tokens
-        const erc20Tokens = requiredApprovals.filter((approval) => approval.protocol === "ERC20");
-        const ERC20Interface = new ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
-        const calls = erc20Tokens.map(({ token: target }) => {
-            return {
-                target,
-                callData: ERC20Interface.encodeFunctionData("totalSupply"),
-            };
-        });
-        const [, returnData] = await this.mutlicallContract.callStatic.aggregate(calls);
-        return returnData.reduce((acc, res, index) => {
-            const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
-            acc[calls[index].target] = decoded[0].toString();
-            return acc;
-        }, {});
-    }
-}
 
 var FCTActuatorABI = [
 	{
@@ -1512,1353 +1353,6 @@ var FCTActuatorABI = [
 		type: "receive"
 	}
 ];
-
-const addresses = {
-    1: {
-        FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
-        FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
-        FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
-        FCT_Tokenomics: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
-        Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
-        ActuatorCore: "0x5E3189755Df3DBB0FD3FeCa3de168fEEDBA76a79",
-    },
-    5: {
-        FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-        FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
-        FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
-        FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
-        Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
-        ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
-    },
-};
-const NO_JUMP = "NO_JUMP";
-const DEFAULT_CALL_OPTIONS = {
-    permissions: "0000",
-    gasLimit: "0",
-    flow: Flow.OK_CONT_FAIL_REVERT,
-    jumpOnSuccess: NO_JUMP,
-    jumpOnFail: NO_JUMP,
-    falseMeansFail: false,
-    callType: "ACTION",
-};
-
-const valueWithPadStart$1 = (value, padStart) => {
-    return Number(value).toString(16).padStart(padStart, "0");
-};
-// This is the structure of callId string
-// 4 - Permissions
-// 2 - Flow
-// 4 - Fail Jump
-// 4 - Ok Jump
-// 4 - Payer index
-// 4 - Call index
-// 8 - Gas limit
-// 2 - Flags
-// 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
-class CallID {
-    static asString({ calls, call, index }) {
-        const permissions = "0000";
-        const flow = valueWithPadStart$1(flows[call.options.flow].value, 2);
-        const payerIndex = valueWithPadStart$1(index + 1, 4);
-        const callIndex = valueWithPadStart$1(index + 1, 4);
-        const gasLimit = valueWithPadStart$1(call.options.gasLimit, 8);
-        const flags = () => {
-            const callType = CALL_TYPE[call.options.callType];
-            const falseMeansFail = call.options.falseMeansFail ? 4 : 0;
-            return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
-        };
-        let successJump = "0000";
-        let failJump = "0000";
-        if (call.options) {
-            const { jumpOnFail, jumpOnSuccess } = call.options;
-            if (jumpOnFail && jumpOnFail !== NO_JUMP) {
-                const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
-                failJump = Number(nodeIndex - index - 1)
-                    .toString(16)
-                    .padStart(4, "0");
-            }
-            if (jumpOnSuccess && jumpOnSuccess !== NO_JUMP) {
-                const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
-                successJump = Number(nodeIndex - index - 1)
-                    .toString(16)
-                    .padStart(4, "0");
-            }
-        }
-        return ("0x" +
-            `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
-    }
-    static parse(callId) {
-        const permissions = callId.slice(36, 38);
-        const flowNumber = parseInt(callId.slice(38, 40), 16);
-        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-        const payerIndex = parseInt(callId.slice(48, 52), 16);
-        const callIndex = parseInt(callId.slice(52, 56), 16);
-        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-        const flags = parseInt(callId.slice(64, 66), 16);
-        const getFlow = () => {
-            const flow = Object.entries(flows).find(([, value]) => {
-                return value.value === flowNumber.toString();
-            });
-            if (!flow)
-                throw new Error("Invalid flow");
-            return Flow[flow[0]];
-        };
-        const options = {
-            gasLimit,
-            flow: getFlow(),
-            jumpOnFail: "",
-            jumpOnSuccess: "",
-        };
-        if (jumpOnFail)
-            options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
-        if (jumpOnSuccess)
-            options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
-        return {
-            options,
-            viewOnly: flags === 1,
-            permissions,
-            payerIndex,
-            callIndex,
-        };
-    }
-    static parseWithNumbers(callId) {
-        const permissions = callId.slice(36, 38);
-        const flowNumber = parseInt(callId.slice(38, 40), 16);
-        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-        const payerIndex = parseInt(callId.slice(48, 52), 16);
-        const callIndex = parseInt(callId.slice(52, 56), 16);
-        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-        const flags = parseInt(callId.slice(64, 66), 16);
-        const getFlow = () => {
-            const flow = Object.entries(flows).find(([, value]) => {
-                return value.value === flowNumber.toString();
-            });
-            if (!flow)
-                throw new Error("Invalid flow");
-            return Flow[flow[0]];
-        };
-        const options = {
-            gasLimit,
-            flow: getFlow(),
-            jumpOnFail,
-            jumpOnSuccess,
-        };
-        return {
-            options,
-            viewOnly: flags === 1,
-            permissions,
-            payerIndex,
-            callIndex,
-        };
-    }
-}
-
-const getComputedVariableMessage = (computedVariables) => {
-    return computedVariables.reduce((acc, item, i) => {
-        return {
-            ...acc,
-            [`computed_${i + 1}`]: item,
-        };
-    }, {});
-};
-
-const instanceOfVariable = (object) => {
-    return typeof object === "object" && "type" in object && "id" in object;
-};
-function instanceOfParams(objectOrArray) {
-    if (Array.isArray(objectOrArray)) {
-        return instanceOfParams(objectOrArray[0]);
-    }
-    return typeof objectOrArray === "object" && "type" in objectOrArray && "name" in objectOrArray;
-}
-
-// From method and params create tuple
-const getMethodInterface = (call) => {
-    const getParamsType = (param) => {
-        if (instanceOfParams(param.value)) {
-            if (Array.isArray(param.value[0])) {
-                const value = param.value[0];
-                return `(${value.map(getParamsType).join(",")})[]`;
-            }
-            else {
-                const value = param.value;
-                return `(${value.map(getParamsType).join(",")})`;
-            }
-        }
-        return param.hashed ? "bytes32" : param.type;
-    };
-    const params = call.params ? call.params.map(getParamsType) : "";
-    return `${call.method}(${params})`;
-};
-const getEncodedMethodParams = (call, withFunction) => {
-    if (!call.method)
-        return "0x";
-    if (withFunction) {
-        const ABI = [
-            `function ${call.method}(${call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""})`,
-        ];
-        const iface = new utils$1.Interface(ABI);
-        return iface.encodeFunctionData(call.method, call.params
-            ? call.params.map((item) => {
-                if (item.hashed) {
-                    if (typeof item.value === "string") {
-                        return utils$1.keccak256(toUtf8Bytes(item.value));
-                    }
-                    throw new Error("Hashed value must be a string");
-                }
-                return item.value;
-            })
-            : []);
-    }
-    const getType = (param) => {
-        if (param.customType || param.type.includes("tuple")) {
-            let value;
-            let isArray = false;
-            if (param.type.lastIndexOf("[") > 0) {
-                isArray = true;
-                value = param.value[0];
-            }
-            else {
-                value = param.value;
-            }
-            return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
-        }
-        return param.hashed ? "bytes32" : param.type;
-    };
-    const getValues = (param) => {
-        if (!param.value) {
-            throw new Error("Param value is required");
-        }
-        if (param.customType || param.type.includes("tuple")) {
-            let value;
-            if (param.type.lastIndexOf("[") > 0) {
-                value = param.value;
-                return value.reduce((acc, val) => {
-                    return [...acc, val.map(getValues)];
-                }, []);
-            }
-            else {
-                value = param.value;
-                return value.map(getValues);
-            }
-        }
-        if (param.hashed) {
-            if (typeof param.value === "string") {
-                return utils$1.keccak256(toUtf8Bytes(param.value));
-            }
-            throw new Error("Hashed value must be a string");
-        }
-        return param.value;
-    };
-    if (!call.params)
-        return "0x";
-    return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
-};
-
-function getDate(days = 0) {
-    const result = new Date();
-    result.setDate(result.getDate() + days);
-    return Number(result.getTime() / 1000).toFixed();
-}
-
-const TYPE_NATIVE = 1000;
-const TYPE_STRING = 2000;
-const TYPE_BYTES = 3000;
-const TYPE_ARRAY = 4000;
-const TYPE_ARRAY_WITH_LENGTH = 5000;
-const typeValue = (param) => {
-    // If type is an array
-    if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
-        if (param.customType || param.type.includes("tuple")) {
-            const value = param.value;
-            return [TYPE_ARRAY, value.length, ...getTypesArray(param.value[0])];
-        }
-        const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
-        const insideType = typeValue(parameter);
-        const type = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
-        return [type, ...insideType];
-    }
-    // If type is a string
-    if (param.type === "string" && !param.hashed) {
-        return [TYPE_STRING];
-    }
-    // If type is bytes
-    if (param.type === "bytes" && !param.hashed) {
-        return [TYPE_BYTES];
-    }
-    // If param is custom struct
-    if (param.customType || param.type.includes("tuple")) {
-        const values = param.value;
-        const types = values.reduce((acc, item) => {
-            return [...acc, ...typeValue(item)];
-        }, []);
-        return [values.length, ...types];
-    }
-    // If all statements above are false, then type is a native type
-    return [TYPE_NATIVE];
-};
-// Get Types array
-const getTypesArray = (params) => {
-    const types = params.reduce((acc, item) => {
-        const data = typeValue(item);
-        return [...acc, ...data];
-    }, []);
-    if (!types.some((item) => item !== TYPE_NATIVE)) {
-        return [];
-    }
-    return types;
-};
-
-const handleMethodInterface = (call) => {
-    if (call.method) {
-        return getMethodInterface(call);
-    }
-    return "";
-};
-const handleFunctionSignature = (call) => {
-    if (call.method) {
-        const value = getMethodInterface(call);
-        return utils$1.id(value);
-    }
-    return nullValue;
-};
-// export const handleEnsHash = (call: IMSCallInput) => {
-//   if (call.toENS) {
-//     return utils.id(call.toENS);
-//   }
-//   return nullValue;
-// };
-const handleData = (call) => {
-    return getEncodedMethodParams(call);
-};
-const handleTypes = (call) => {
-    if (call.params) {
-        return getTypesArray(call.params);
-    }
-    return [];
-};
-
-// Create a function that checks if the param type last index of [ is greater than 0. If true - value is Param[][] else - value is Param[]
-const isInstanceOfTupleArray = (value, param) => {
-    return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
-};
-const isInstanceOfTuple = (value, param) => {
-    return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
-};
-
-var helpers$3 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    isInstanceOfTuple: isInstanceOfTuple,
-    isInstanceOfTupleArray: isInstanceOfTupleArray
-});
-
-class EIP712StructTypes {
-    transactionTypes = {};
-    structTypes = {};
-    static helpers = helpers$3;
-    constructor(calls) {
-        calls.forEach((call, index) => {
-            const values = call.params
-                ? call.params.map((param) => {
-                    if (param.customType || param.type === "tuple") {
-                        const type = this.getStructType(param, index);
-                        return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
-                    }
-                    return {
-                        name: param.name,
-                        type: param.type,
-                    };
-                })
-                : [];
-            this.transactionTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
-        });
-    }
-    getTypeCount = () => Object.values(this.structTypes).length + 1;
-    getStructType = (param, index) => {
-        const typeName = `Struct${this.getTypeCount()}`;
-        let paramValue;
-        if (isInstanceOfTupleArray(param.value, param)) {
-            paramValue = param.value[0];
-        }
-        else if (isInstanceOfTuple(param.value, param)) {
-            paramValue = param.value;
-        }
-        else {
-            throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
-        }
-        let customCount = 0;
-        const eip712Type = paramValue.map((item) => {
-            if (item.customType || item.type.includes("tuple")) {
-                ++customCount;
-                const innerTypeName = `Struct${this.getTypeCount() + customCount}`;
-                return {
-                    name: item.name,
-                    type: innerTypeName,
-                };
-            }
-            return {
-                name: item.name,
-                type: item.type,
-            };
-        });
-        this.structTypes[typeName] = eip712Type;
-        if (param.type.lastIndexOf("[") > 0) {
-            for (const parameter of param.value[0]) {
-                if (parameter.customType || parameter.type.includes("tuple")) {
-                    this.getStructType(parameter, index);
-                }
-            }
-        }
-        else {
-            for (const parameter of param.value) {
-                if (parameter.customType || parameter.type.includes("tuple")) {
-                    this.getStructType(parameter, index);
-                }
-            }
-        }
-        return typeName;
-    };
-}
-
-class FCTBase {
-    FCT;
-    constructor(FCT) {
-        this.FCT = FCT;
-    }
-}
-
-const EIP712Domain = [
-    { name: "name", type: "string" },
-    { name: "version", type: "string" },
-    { name: "chainId", type: "uint256" },
-    { name: "verifyingContract", type: "address" },
-    { name: "salt", type: "bytes32" },
-];
-const Meta = [
-    { name: "name", type: "string" },
-    { name: "builder", type: "address" },
-    { name: "selector", type: "bytes4" },
-    { name: "version", type: "bytes3" },
-    { name: "random_id", type: "bytes3" },
-    { name: "eip712", type: "bool" },
-    { name: "auth_enabled", type: "bool" },
-];
-const Limits = [
-    { name: "valid_from", type: "uint40" },
-    { name: "expires_at", type: "uint40" },
-    { name: "gas_price_limit", type: "uint64" },
-    { name: "purgeable", type: "bool" },
-    { name: "blockable", type: "bool" },
-];
-const Computed = [
-    { name: "index", type: "uint256" },
-    { name: "value", type: "uint256" },
-    { name: "add", type: "uint256" },
-    { name: "sub", type: "uint256" },
-    { name: "pow", type: "uint256" },
-    { name: "mul", type: "uint256" },
-    { name: "div", type: "uint256" },
-    { name: "mod", type: "uint256" },
-];
-const Call = [
-    { name: "call_index", type: "uint16" },
-    { name: "payer_index", type: "uint16" },
-    { name: "call_type", type: "string" },
-    { name: "from", type: "address" },
-    { name: "to", type: "address" },
-    { name: "to_ens", type: "string" },
-    { name: "eth_value", type: "uint256" },
-    { name: "gas_limit", type: "uint32" },
-    { name: "permissions", type: "uint16" },
-    { name: "flow_control", type: "string" },
-    { name: "returned_false_means_fail", type: "bool" },
-    { name: "jump_on_success", type: "uint16" },
-    { name: "jump_on_fail", type: "uint16" },
-    { name: "method_interface", type: "string" },
-];
-const Recurrency = [
-    { name: "max_repeats", type: "uint16" },
-    { name: "chill_time", type: "uint32" },
-    { name: "accumetable", type: "bool" },
-];
-const Multisig = [
-    { name: "external_signers", type: "address[]" },
-    { name: "minimum_approvals", type: "uint8" },
-];
-
-const getParams$1 = (params) => {
-    return {
-        ...params.reduce((acc, param) => {
-            let value;
-            if (param.customType || param.type.includes("tuple")) {
-                if (param.type.lastIndexOf("[") > 0) {
-                    const valueArray = param.value;
-                    value = valueArray.map((item) => getParams$1(item));
-                }
-                else {
-                    const valueArray = param.value;
-                    value = getParams$1(valueArray);
-                }
-            }
-            else {
-                value = param.value;
-            }
-            return {
-                ...acc,
-                [param.name]: value,
-            };
-        }, {}),
-    };
-};
-
-const TYPED_DATA_DOMAIN = {
-    "1": {
-        name: "FCT Controller",
-        version: "1",
-        chainId: 1,
-        verifyingContract: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
-        salt: "0x0100c3ae8d91c3ffd32800000a0ea58e6504aa7bfff6f3d069bd175abab638ee",
-    },
-    "5": {
-        name: "FCT Controller",
-        version: "1",
-        chainId: 5,
-        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-        salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
-    },
-};
-const types = {
-    domain: EIP712Domain,
-    meta: Meta,
-    limits: Limits,
-    computed: Computed,
-    call: Call,
-    recurrency: Recurrency,
-    multisig: Multisig,
-};
-class EIP712 extends FCTBase {
-    constructor(FCT) {
-        super(FCT);
-    }
-    static types = types;
-    static getTypedDataDomain(chainId) {
-        return TYPED_DATA_DOMAIN[chainId];
-    }
-    getTypedData() {
-        return {
-            types: this.getTypedDataTypes(),
-            primaryType: this.getPrimaryType(),
-            domain: this.getTypedDataDomain(),
-            message: this.getTypedDataMessage(),
-        };
-    }
-    getTypedDataMessage() {
-        const transactionTypedData = this.getTransactionTypedDataMessage();
-        const FCTOptions = this.FCT.options;
-        const { recurrency, multisig } = FCTOptions;
-        let optionalMessage = {};
-        if (Number(recurrency.maxRepeats) > 1) {
-            optionalMessage = _.merge(optionalMessage, {
-                recurrency: {
-                    max_repeats: recurrency.maxRepeats,
-                    chill_time: recurrency.chillTime,
-                    accumetable: recurrency.accumetable,
-                },
-            });
-        }
-        if (multisig.externalSigners.length > 0) {
-            optionalMessage = _.merge(optionalMessage, {
-                multisig: {
-                    external_signers: multisig.externalSigners,
-                    minimum_approvals: multisig.minimumApprovals || "2",
-                },
-            });
-        }
-        return {
-            meta: {
-                name: FCTOptions.name || "",
-                builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
-                selector: this.FCT.batchMultiSigSelector,
-                version: this.FCT.version,
-                random_id: `0x${this.FCT.randomId}`,
-                eip712: true,
-                auth_enabled: FCTOptions.authEnabled,
-            },
-            limits: {
-                valid_from: FCTOptions.validFrom,
-                expires_at: FCTOptions.expiresAt,
-                gas_price_limit: FCTOptions.maxGasPrice,
-                purgeable: FCTOptions.purgeable,
-                blockable: FCTOptions.blockable,
-            },
-            ...optionalMessage,
-            ...getComputedVariableMessage(this.FCT.computedWithValues),
-            ...transactionTypedData,
-        };
-    }
-    getTypedDataTypes() {
-        const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.calls);
-        const FCTOptions = this.FCT.options;
-        const { recurrency, multisig } = FCTOptions;
-        let optionalTypes = {};
-        const additionalTypesInPrimary = [];
-        if (Number(recurrency.maxRepeats) > 1) {
-            optionalTypes = _.merge(optionalTypes, { Recurrency: EIP712.types.recurrency });
-            additionalTypesInPrimary.push({ name: "recurrency", type: "Recurrency" });
-        }
-        if (multisig.externalSigners.length > 0) {
-            optionalTypes = _.merge(optionalTypes, { Multisig: EIP712.types.multisig });
-            additionalTypesInPrimary.push({ name: "multisig", type: "Multisig" });
-        }
-        if (this.FCT.computed.length > 0) {
-            optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
-        }
-        return {
-            EIP712Domain: EIP712.types.domain,
-            Meta: EIP712.types.meta,
-            Limits: EIP712.types.limits,
-            ...optionalTypes,
-            ...transactionTypes,
-            ...structTypes,
-            BatchMultiSigCall: this.getPrimaryTypeTypes(additionalTypesInPrimary),
-            Call: EIP712.types.call,
-        };
-    }
-    getTypedDataDomain() {
-        return this.FCT.domain;
-    }
-    getPrimaryType() {
-        return "BatchMultiSigCall";
-    }
-    getPrimaryTypeTypes(additionalTypes) {
-        return [
-            { name: "meta", type: "Meta" },
-            { name: "limits", type: "Limits" },
-            ...additionalTypes,
-            ...this.getComputedPrimaryType(),
-            ...this.getCallsPrimaryType(),
-        ];
-    }
-    getCallsPrimaryType() {
-        return this.FCT.calls.map((_, index) => ({
-            name: `transaction_${index + 1}`,
-            type: `transaction${index + 1}`,
-        }));
-    }
-    getComputedPrimaryType() {
-        return this.FCT.computed.map((_, index) => ({
-            name: `computed_${index + 1}`,
-            type: `Computed`,
-        }));
-    }
-    getTransactionTypedDataMessage() {
-        return this.FCT.decodedCalls.reduce((acc, call, index) => {
-            const paramsData = call.params ? getParams$1(call.params) : {};
-            const options = call.options || {};
-            const gasLimit = options.gasLimit ?? "0";
-            const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-            let jumpOnSuccess = 0;
-            let jumpOnFail = 0;
-            if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-                const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-                if (jumpOnSuccessIndex === -1) {
-                    throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-                }
-                if (jumpOnSuccessIndex <= index) {
-                    throw new Error(`Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`);
-                }
-                jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-            }
-            if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-                const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-                if (jumpOnFailIndex === -1) {
-                    throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-                }
-                if (jumpOnFailIndex <= index) {
-                    throw new Error(`Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`);
-                }
-                jumpOnFail = jumpOnFailIndex - index - 1;
-            }
-            return {
-                ...acc,
-                [`transaction_${index + 1}`]: {
-                    call: {
-                        call_index: index + 1,
-                        payer_index: index + 1,
-                        call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-                        from: this.FCT.variables.getValue(call.from, "address"),
-                        to: this.FCT.variables.getValue(call.to, "address"),
-                        to_ens: call.toENS || "",
-                        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-                        gas_limit: gasLimit,
-                        permissions: 0,
-                        flow_control: flow,
-                        returned_false_means_fail: options.falseMeansFail || false,
-                        jump_on_success: jumpOnSuccess,
-                        jump_on_fail: jumpOnFail,
-                        method_interface: handleMethodInterface(call),
-                    },
-                    ...paramsData,
-                },
-            };
-        }, {});
-    }
-}
-
-const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
-const mustBeAddress = ["builder"];
-// Validate Integer values in options
-const validateInteger = (value, keys) => {
-    const currentKey = keys[keys.length - 1];
-    if (value.includes(".")) {
-        throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
-    }
-    if (value.startsWith("-")) {
-        throw new Error(`Options: ${keys.join(".")} cannot be negative`);
-    }
-    if (currentKey === "maxRepeats" && Number(value) < 0) {
-        throw new Error(`Options: ${keys.join(".")} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`);
-    }
-};
-// Validate address values in options
-const validateAddress = (value, keys) => {
-    if (!isAddress$1(value)) {
-        throw new Error(`Options: ${keys.join(".")} is not a valid address`);
-    }
-};
-
-var helpers$2 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    mustBeAddress: mustBeAddress,
-    mustBeInteger: mustBeInteger,
-    validateAddress: validateAddress,
-    validateInteger: validateInteger
-});
-
-const initOptions = {
-    maxGasPrice: "30000000000",
-    validFrom: getDate(),
-    expiresAt: getDate(7),
-    purgeable: false,
-    blockable: true,
-    builder: "0x0000000000000000000000000000000000000000",
-    authEnabled: true,
-};
-class Options {
-    static helpers = helpers$2;
-    _options = initOptions;
-    set(options) {
-        const mergedOptions = _.merge({}, this._options, options);
-        Options.verify(mergedOptions);
-        this._options = mergedOptions;
-        return this._options;
-    }
-    get() {
-        return {
-            ...this._options,
-            name: this._options.name || "",
-            recurrency: {
-                maxRepeats: this._options.recurrency?.maxRepeats || "0",
-                chillTime: this._options.recurrency?.chillTime || "0",
-                accumetable: this._options.recurrency?.accumetable || false,
-            },
-            multisig: {
-                externalSigners: this._options.multisig?.externalSigners || [],
-                minimumApprovals: this._options.multisig?.minimumApprovals || "0",
-            },
-        };
-    }
-    reset() {
-        this._options = initOptions;
-    }
-    static verify(options) {
-        this.validateOptionsValues(options);
-    }
-    static validateOptionsValues = (value, parentKeys = []) => {
-        if (!value) {
-            return;
-        }
-        Object.keys(value).forEach((key) => {
-            const objKey = key;
-            if (typeof value[objKey] === "object") {
-                this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
-            }
-            // Integer validator
-            if (mustBeInteger.includes(objKey)) {
-                validateInteger(value[objKey], [...parentKeys, objKey]);
-            }
-            // Address validator
-            if (mustBeAddress.includes(objKey)) {
-                validateAddress(value[objKey], [...parentKeys, objKey]);
-            }
-            // Expires at validator
-            if (objKey === "expiresAt") {
-                const expiresAt = Number(value[objKey]);
-                const now = Number(new Date().getTime() / 1000).toFixed();
-                const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
-                    throw new Error(`Options: expiresAt must be in the future`);
-                }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
-                    throw new Error(`Options: expiresAt must be greater than validFrom`);
-                }
-            }
-        });
-    };
-    static fromObject(options) {
-        const instance = new Options();
-        instance.set(options);
-        return instance;
-    }
-}
-
-const sessionIdFlag = {
-    accumetable: 0x1,
-    purgeable: 0x2,
-    blockable: 0x4,
-    eip712: 0x8,
-    authEnabled: 0x10,
-};
-const valueWithPadStart = (value, padStart) => {
-    return Number(value).toString(16).padStart(padStart, "0");
-};
-// Deconstructed sessionID
-// 6 - Salt
-// 2 - External signers
-// 6 - Version
-// 4 - Max Repeats
-// 8 - Chill time
-// 10 - After timestamp
-// 10 - Before timestamp
-// 16 - Gas price limit
-// 2 - Flags
-class SessionID extends FCTBase {
-    constructor(FCT) {
-        super(FCT);
-    }
-    asString() {
-        return SessionID.asString({
-            salt: this.FCT.randomId,
-            version: this.FCT.version,
-            options: this.FCT.options,
-        });
-    }
-    static asString({ salt, version, options }) {
-        const currentDate = new Date();
-        const { recurrency, multisig } = options;
-        if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
-            throw new Error("Expires at date cannot be in the past");
-        }
-        const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
-        const v = version.slice(2);
-        const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
-        const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
-            .toString(16)
-            .padStart(8, "0");
-        const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
-        const afterTimestamp = valueWithPadStart(options.validFrom || 0, 10);
-        const maxGasPrice = valueWithPadStart(options.maxGasPrice || 0, 16);
-        let flagValue = 0;
-        flagValue += sessionIdFlag.eip712; // EIP712 true by default
-        if (options.recurrency?.accumetable)
-            flagValue += sessionIdFlag.accumetable;
-        if (options.purgeable)
-            flagValue += sessionIdFlag.purgeable;
-        if (options.blockable)
-            flagValue += sessionIdFlag.blockable;
-        if (options.authEnabled)
-            flagValue += sessionIdFlag.authEnabled;
-        const flags = flagValue.toString(16).padStart(2, "0");
-        return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
-    }
-    static asOptions({ sessionId, builder, name, externalSigners = [], }) {
-        const parsedSessionID = SessionID.parse(sessionId);
-        return {
-            ...parsedSessionID,
-            builder,
-            name,
-            multisig: {
-                ...parsedSessionID.multisig,
-                externalSigners,
-            },
-        };
-    }
-    static parse(sessionId) {
-        const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
-        const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
-        const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
-        const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
-        const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
-        const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
-        const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
-        const flags = {
-            eip712: (flagsNumber & sessionIdFlag.eip712) !== 0,
-            accumetable: (flagsNumber & sessionIdFlag.accumetable) !== 0,
-            purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
-            blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
-            authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
-        };
-        return {
-            validFrom,
-            expiresAt,
-            maxGasPrice,
-            blockable: flags.blockable,
-            purgeable: flags.purgeable,
-            authEnabled: flags.authEnabled,
-            recurrency: {
-                accumetable: flags.accumetable,
-                chillTime,
-                maxRepeats,
-            },
-            multisig: {
-                minimumApprovals,
-            },
-        };
-    }
-}
-
-const getParams = (params) => {
-    return {
-        ...params.reduce((acc, param) => {
-            let value;
-            if (param.customType || param.type.includes("tuple")) {
-                if (param.type.lastIndexOf("[") > 0) {
-                    const valueArray = param.value;
-                    value = valueArray.map((item) => getParams(item));
-                }
-                else {
-                    const valueArray = param.value;
-                    value = getParams(valueArray);
-                }
-            }
-            else {
-                value = param.value;
-            }
-            return {
-                ...acc,
-                [param.name]: value,
-            };
-        }, {}),
-    };
-};
-const getUsedStructTypes = (typedData, typeName) => {
-    const mainType = typedData.types[typeName.replace("[]", "")];
-    const usedStructTypes = mainType.reduce((acc, item) => {
-        if (item.type.includes("Struct")) {
-            const type = item.type.replace("[]", "");
-            return [...acc, type, ...getUsedStructTypes(typedData, type)];
-        }
-        return acc;
-    }, []);
-    return usedStructTypes;
-};
-
-var helpers$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    getParams: getParams,
-    getUsedStructTypes: getUsedStructTypes
-});
-
-class ExportFCT extends FCTBase {
-    calls;
-    _eip712;
-    constructor(FCT) {
-        super(FCT);
-        this.calls = FCT.decodedCalls;
-        this._eip712 = new EIP712(FCT);
-        if (this.FCT.calls.length === 0) {
-            throw new Error("FCT has no calls");
-        }
-        Options.verify(this.FCT.options);
-    }
-    get typedData() {
-        return this._eip712.getTypedData();
-    }
-    get mcall() {
-        return this.getCalls();
-    }
-    get sessionId() {
-        return new SessionID(this.FCT).asString();
-    }
-    get() {
-        return {
-            typedData: this.typedData,
-            builder: this.FCT.options.builder,
-            typeHash: hexlify(TypedDataUtils.hashType(this.typedData.primaryType, this.typedData.types)),
-            sessionId: this.sessionId,
-            nameHash: id(this.FCT.options.name),
-            mcall: this.mcall,
-            variables: [],
-            externalSigners: [],
-            signatures: [this.FCT.utils.getAuthenticatorSignature()],
-            computed: this.FCT.computedWithValues.map((c) => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { index, ...rest } = c;
-                return rest;
-            }),
-        };
-    }
-    getCalls() {
-        const typedData = this.typedData;
-        const calls = this.calls;
-        return calls.map((call, index) => {
-            const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
-            return {
-                typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-                ensHash: id(call.toENS || ""),
-                functionSignature: handleFunctionSignature(call),
-                value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-                callId: CallID.asString({
-                    calls,
-                    call,
-                    index,
-                }),
-                from: this.FCT.variables.getValue(call.from, "address"),
-                to: this.FCT.variables.getValue(call.to, "address"),
-                data: handleData(call),
-                types: handleTypes(call),
-                typedHashes: usedTypeStructs.length > 0
-                    ? usedTypeStructs.map((hash) => hexlify(TypedDataUtils.hashType(hash, typedData.types)))
-                    : [],
-            };
-        });
-    }
-    static helpers = helpers$1;
-}
-
-const isInteger = (value, key) => {
-    if (value.length === 0) {
-        throw new Error(`${key} cannot be empty string`);
-    }
-    if (value.startsWith("-")) {
-        throw new Error(`${key} cannot be negative`);
-    }
-    if (value.includes(".")) {
-        throw new Error(`${key} cannot be a decimal`);
-    }
-};
-const isAddress = (value, key) => {
-    if (value.length === 0) {
-        throw new Error(`${key} address cannot be empty string`);
-    }
-    if (!utils$1.isAddress(value)) {
-        throw new Error(`${key} address is not a valid address`);
-    }
-};
-const verifyParam = (param) => {
-    if (!param.value) {
-        throw new Error(`Param ${param.name} is missing a value`);
-    }
-    if (typeof param.value !== "string") {
-        return;
-    }
-    // uint value
-    if (param.type.startsWith("uint")) {
-        if (param.value.includes(".")) {
-            throw new Error(`Param ${param.name} cannot be a decimal`);
-        }
-        if (param.value.startsWith("-")) {
-            throw new Error(`Param ${param.name} cannot be negative`);
-        }
-    }
-    // int value
-    if (param.type.startsWith("int")) {
-        if (param.value.includes(".")) {
-            throw new Error(`Param ${param.name} cannot be a decimal`);
-        }
-    }
-    // address
-    if (param.type === "address") {
-        if (!utils$1.isAddress(param.value)) {
-            throw new Error(`Param ${param.name} is not a valid address`);
-        }
-    }
-    // bytes
-    if (param.type.startsWith("bytes")) {
-        if (!param.value.startsWith("0x")) {
-            throw new Error(`Param ${param.name} is not a valid bytes value`);
-        }
-    }
-};
-const getParamsFromInputs = (inputs, values) => {
-    return inputs.map((input, i) => {
-        if (input.type === "tuple") {
-            return {
-                name: input.name,
-                type: input.type,
-                customType: true,
-                value: getParamsFromInputs(input.components, values[i]),
-            };
-        }
-        if (input.type === "tuple[]") {
-            return {
-                name: input.name,
-                type: input.type,
-                customType: true,
-                value: values[i].map((tuple) => getParamsFromInputs(input.components, tuple)),
-            };
-        }
-        let value = values[i];
-        // Check if value isn't a variable
-        const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-        if (BigNumber$1.isBigNumber(value)) {
-            const hexString = value.toHexString().toLowerCase();
-            if (variables.some((v) => hexString.startsWith(v))) {
-                value = hexString;
-            }
-            value = value.toString();
-        }
-        if (typeof value === "number") {
-            value = value.toString();
-        }
-        return {
-            name: input.name,
-            type: input.type,
-            value,
-        };
-    });
-};
-const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, primaryType, }) => {
-    const generateRealInputParams = (types, primaryType) => {
-        let type = types[primaryType];
-        // If the type[0] name is call and type is Call, then slice the first element
-        if (type[0].name === "call" && type[0].type === "Call") {
-            type = type.slice(1);
-        }
-        const params = [];
-        for (const { name, type: paramType } of type) {
-            // Remove [] from the end of the type
-            const typeWithoutArray = paramType.replace(/\[\]$/, "");
-            if (types[typeWithoutArray]) {
-                const components = generateRealInputParams(types, typeWithoutArray);
-                params.push(ParamType.from({ name, type: typeWithoutArray, components }));
-            }
-            else {
-                params.push(ParamType.from({ name, type: paramType }));
-            }
-        }
-        return params;
-    };
-    const getParams = (realInputParams, eip712InputTypes, parameters) => {
-        return eip712InputTypes.map((input, i) => {
-            const realInput = realInputParams[i];
-            if (input.type === "tuple") {
-                return {
-                    name: realInput.name,
-                    type: input.type,
-                    customType: true,
-                    value: getParams(realInput.components, input.components, parameters[realInput.name]),
-                };
-            }
-            if (input.type === "tuple[]") {
-                return {
-                    name: realInput.name,
-                    type: input.type,
-                    customType: true,
-                    value: parameters[realInput.name].map((tuple) => getParams(realInput.components, input.components, tuple)),
-                };
-            }
-            let value = parameters[realInput.name];
-            // Check if value isn't a variable
-            const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber$1.isBigNumber(value)) {
-                const hexString = value.toHexString().toLowerCase();
-                if (variables.some((v) => hexString.startsWith(v))) {
-                    value = hexString;
-                }
-                value = value.toString();
-            }
-            if (typeof value === "number") {
-                value = value.toString();
-            }
-            return {
-                name: realInput.name,
-                type: realInput.type,
-                customType: false,
-                // If realInputType.type is a string and eip712InputType.type is bytes32, value is hashed
-                hashed: input.type === "bytes32" && realInput.type === "string",
-                value,
-            };
-        });
-    };
-    const realInputParams = generateRealInputParams(types, primaryType);
-    return getParams(realInputParams, methodInterfaceParams, parameters);
-};
-
-var helpers = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    getParamsFromInputs: getParamsFromInputs,
-    getParamsFromTypedData: getParamsFromTypedData,
-    isAddress: isAddress,
-    isInteger: isInteger,
-    verifyParam: verifyParam
-});
-
-function generateNodeId() {
-    return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
-class FCTCalls extends FCTBase {
-    static helpers = helpers;
-    _calls = [];
-    _callDefault = {
-        value: "0",
-        options: DEFAULT_CALL_OPTIONS,
-    };
-    constructor(FCT, callDefault) {
-        super(FCT);
-        if (callDefault) {
-            this._callDefault = _.merge({}, this._callDefault, callDefault);
-        }
-    }
-    get() {
-        return this._calls.map((call) => {
-            const fullCall = _.merge({}, this._callDefault, call);
-            if (typeof fullCall.from === "undefined") {
-                throw new Error("From address is required");
-            }
-            const from = fullCall.from;
-            return { ...fullCall, from };
-        });
-    }
-    getWithDecodedVariables() {
-        return this.get().map((call) => {
-            const params = call.params;
-            if (params && params.length > 0) {
-                const parameters = this.decodeParams(params);
-                return { ...call, params: parameters };
-            }
-            return {
-                ...call,
-                params: [],
-            };
-        });
-    }
-    async create(call) {
-        if ("plugin" in call) {
-            return await this.createWithPlugin(call);
-        }
-        else if ("abi" in call) {
-            return await this.createWithEncodedData(call);
-        }
-        else {
-            const data = { ...call, nodeId: call.nodeId || generateNodeId() };
-            return this.addCall(data);
-        }
-    }
-    async createWithPlugin(callWithPlugin) {
-        if (!callWithPlugin.plugin) {
-            throw new Error("Plugin is required to create a call with plugin.");
-        }
-        const pluginCall = await callWithPlugin.plugin.create();
-        if (!pluginCall) {
-            throw new Error("Error creating call with plugin. Make sure input values are valid");
-        }
-        const data = {
-            ...pluginCall,
-            from: callWithPlugin.from,
-            options: { ...pluginCall.options, ...callWithPlugin.options },
-            nodeId: callWithPlugin.nodeId || generateNodeId(),
-        };
-        return this.addCall(data);
-    }
-    async createWithEncodedData(callWithEncodedData) {
-        const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-        const iface = new Interface$1(abi);
-        try {
-            const { name, args, functionFragment: { inputs }, } = iface.parseTransaction({
-                data: encodedData,
-                value: typeof value === "string" ? value : "0",
-            });
-            const data = {
-                from: callWithEncodedData.from,
-                to: callWithEncodedData.to,
-                method: name,
-                params: getParamsFromInputs(inputs, args),
-                options,
-                value: value?.toString(),
-                nodeId: nodeId || generateNodeId(),
-            };
-            return this.addCall(data);
-        }
-        catch {
-            throw new Error("Failed to parse encoded data");
-        }
-    }
-    setCallDefaults(callDefault) {
-        this._callDefault = _.merge({}, this._callDefault, callDefault);
-        return this._callDefault;
-    }
-    addCall(call) {
-        // Before adding the call, we check if it is valid
-        this.verifyCall(call);
-        this._calls.push(call);
-        return call;
-    }
-    verifyCall(call) {
-        // To address validator
-        if (!call.to) {
-            throw new Error("To address is required");
-        }
-        else if (typeof call.to === "string") {
-            isAddress(call.to, "To");
-        }
-        // Value validator
-        if (call.value && typeof call.value === "string") {
-            isInteger(call.value, "Value");
-        }
-        // Method validator
-        if (call.method && call.method.length === 0) {
-            throw new Error("Method cannot be empty string");
-        }
-        // Node ID validator
-        if (call.nodeId) {
-            const index = this.get().findIndex((item) => item.nodeId === call.nodeId);
-            if (index > -1) {
-                throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
-            }
-        }
-        // Options validator
-        if (call.options) {
-            const { gasLimit, callType } = call.options;
-            if (gasLimit && typeof gasLimit === "string") {
-                isInteger(gasLimit, "Gas limit");
-            }
-            if (callType) {
-                const keysOfCALLTYPE = Object.keys(CALL_TYPE);
-                if (!keysOfCALLTYPE.includes(callType)) {
-                    throw new Error(`Call type ${callType} is not valid`);
-                }
-            }
-        }
-        if (call.params && call.params.length) {
-            if (!call.method) {
-                throw new Error("Method is required when params are present");
-            }
-            call.params.map(verifyParam);
-        }
-    }
-    decodeParams(params) {
-        return params.reduce((acc, param) => {
-            if (param.type === "tuple" || param.customType) {
-                if (param.type.lastIndexOf("[") > 0) {
-                    const value = param.value;
-                    const decodedValue = value.map((tuple) => this.decodeParams(tuple));
-                    return [...acc, { ...param, value: decodedValue }];
-                }
-                const value = this.decodeParams(param.value);
-                return [...acc, { ...param, value }];
-            }
-            if (instanceOfVariable(param.value)) {
-                const value = this.FCT.variables.getVariable(param.value, param.type);
-                const updatedParam = { ...param, value };
-                return [...acc, updatedParam];
-            }
-            return [...acc, param];
-        }, []);
-    }
-}
 
 var FCTBatchMultiSigCallABI = [
 	{
@@ -4480,14 +2974,1481 @@ var FCTControllerABI = [
 	}
 ];
 
-class Interface {
+const MulticallABI = [
+    "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
+];
+class Interfaces {
     static FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
     static FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     static FCT_Actuator = new ethers.utils.Interface(FCTActuatorABI);
+    static MultiCall = new ethers.utils.Interface(MulticallABI);
+}
+
+const fetchApprovalsInterface = new ethers.utils.Interface([
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function getApproved(uint256 tokenId) view returns (address)",
+    "function isApprovedForAll(address owner, address operator) view returns (bool)",
+]);
+const generateDataForCall = (data) => {
+    if (data.protocol === "ERC20") {
+        if (data.method === "approve") {
+            return {
+                functionName: "allowance",
+                encodedData: fetchApprovalsInterface.encodeFunctionData("allowance", [data.from, data.params.spender]),
+            };
+        }
+    }
+    if (data.protocol === "ERC721") {
+        if (data.method === "approve") {
+            return {
+                functionName: "getApproved",
+                encodedData: fetchApprovalsInterface.encodeFunctionData("getApproved", [data.params.tokenId]),
+            };
+        }
+    }
+    if (data.method === "setApprovalForAll") {
+        return {
+            functionName: "isApprovedForAll",
+            encodedData: fetchApprovalsInterface.encodeFunctionData("isApprovedForAll", [data.from, data.params.spender]),
+        };
+    }
+};
+const fetchCurrentApprovals = async ({ data, multicallContractAddress, multicallContract, rpcUrl, provider, chainId, }) => {
+    if (!provider) {
+        if (!rpcUrl) {
+            throw new Error("No provider or rpcUrl provided");
+        }
+        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
+    chainId = chainId ?? (await provider.getNetwork()).chainId.toString();
+    if (!multicallContract) {
+        multicallContractAddress =
+            multicallContractAddress ?? multicallContracts[Number(chainId)];
+        if (!multicallContractAddress) {
+            throw new Error("Multicall contract not found for this chain");
+        }
+        multicallContract = new ethers.Contract(multicallContractAddress, Interfaces.MultiCall, provider);
+    }
+    const calls = data.map((approval) => {
+        const dataOfCall = generateDataForCall(approval);
+        if (!dataOfCall) {
+            throw new Error("Approval not found");
+        }
+        const { functionName, encodedData } = dataOfCall;
+        return {
+            functionName,
+            dataForMulticall: {
+                target: approval.token,
+                callData: encodedData,
+            },
+        };
+    });
+    const [, returnData] = await multicallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
+    const approvals = returnData.map((res, index) => {
+        const functionName = calls[index].functionName;
+        const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
+        return {
+            ...data[index],
+            value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
+        };
+    });
+    return approvals;
+};
+
+class FetchUtility {
+    chainId;
+    multicallContract;
+    constructor({ rpcUrl, chainId, provider }) {
+        if (!provider) {
+            if (!rpcUrl) {
+                throw new Error("No provider or rpcUrl provided");
+            }
+            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        }
+        if (typeof chainId === "string") {
+            chainId = Number(chainId);
+        }
+        this.chainId = chainId;
+        if (!multicallContracts[Number(chainId)]) {
+            throw new Error("Multicall contract not found for this chain");
+        }
+        this.multicallContract = new ethers.Contract(multicallContracts[Number(chainId)], Interfaces.MultiCall, provider);
+    }
+    async fetchCurrentApprovals(data) {
+        return await fetchCurrentApprovals({
+            provider: this.multicallContract.provider,
+            data,
+            multicallContract: this.multicallContract,
+            chainId: this.chainId,
+        });
+    }
+    async getTokensTotalSupply(requiredApprovals) {
+        const erc20Tokens = requiredApprovals.filter((approval) => approval.protocol === "ERC20");
+        const ERC20Interface = new ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
+        const calls = erc20Tokens.map(({ token: target }) => {
+            return {
+                target,
+                callData: ERC20Interface.encodeFunctionData("totalSupply"),
+            };
+        });
+        const [, returnData] = await this.multicallContract.callStatic.aggregate(calls);
+        return returnData.reduce((acc, res, index) => {
+            const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
+            acc[calls[index].target] = decoded[0].toString();
+            return acc;
+        }, {});
+    }
+}
+
+const addresses = {
+    1: {
+        FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
+        FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
+        FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
+        FCT_Tokenomics: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
+        Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
+        ActuatorCore: "0x5E3189755Df3DBB0FD3FeCa3de168fEEDBA76a79",
+    },
+    5: {
+        FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+        FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
+        FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
+        FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
+        Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
+        ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
+    },
+};
+const NO_JUMP = "NO_JUMP";
+const DEFAULT_CALL_OPTIONS = {
+    permissions: "0000",
+    gasLimit: "0",
+    flow: Flow.OK_CONT_FAIL_REVERT,
+    jumpOnSuccess: NO_JUMP,
+    jumpOnFail: NO_JUMP,
+    falseMeansFail: false,
+    callType: "ACTION",
+};
+
+const valueWithPadStart$1 = (value, padStart) => {
+    return Number(value).toString(16).padStart(padStart, "0");
+};
+// This is the structure of callId string
+// 4 - Permissions
+// 2 - Flow
+// 4 - Fail Jump
+// 4 - Ok Jump
+// 4 - Payer index
+// 4 - Call index
+// 8 - Gas limit
+// 2 - Flags
+// 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
+class CallID {
+    static asString({ calls, call, index }) {
+        const permissions = "0000";
+        const flow = valueWithPadStart$1(flows[call.options.flow].value, 2);
+        const payerIndex = valueWithPadStart$1(index + 1, 4);
+        const callIndex = valueWithPadStart$1(index + 1, 4);
+        const gasLimit = valueWithPadStart$1(call.options.gasLimit, 8);
+        const flags = () => {
+            const callType = CALL_TYPE[call.options.callType];
+            const falseMeansFail = call.options.falseMeansFail ? 4 : 0;
+            return callType + (parseInt(callType, 16) + falseMeansFail).toString(16);
+        };
+        let successJump = "0000";
+        let failJump = "0000";
+        if (call.options) {
+            const { jumpOnFail, jumpOnSuccess } = call.options;
+            if (jumpOnFail && jumpOnFail !== NO_JUMP) {
+                const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnFail);
+                failJump = Number(nodeIndex - index - 1)
+                    .toString(16)
+                    .padStart(4, "0");
+            }
+            if (jumpOnSuccess && jumpOnSuccess !== NO_JUMP) {
+                const nodeIndex = calls.findIndex((c) => c.nodeId === call?.options?.jumpOnSuccess);
+                successJump = Number(nodeIndex - index - 1)
+                    .toString(16)
+                    .padStart(4, "0");
+            }
+        }
+        return ("0x" +
+            `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
+    }
+    static parse(callId) {
+        const permissions = callId.slice(36, 38);
+        const flowNumber = parseInt(callId.slice(38, 40), 16);
+        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
+        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
+        const payerIndex = parseInt(callId.slice(48, 52), 16);
+        const callIndex = parseInt(callId.slice(52, 56), 16);
+        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
+        const flags = parseInt(callId.slice(64, 66), 16);
+        const getFlow = () => {
+            const flow = Object.entries(flows).find(([, value]) => {
+                return value.value === flowNumber.toString();
+            });
+            if (!flow)
+                throw new Error("Invalid flow");
+            return Flow[flow[0]];
+        };
+        const options = {
+            gasLimit,
+            flow: getFlow(),
+            jumpOnFail: "",
+            jumpOnSuccess: "",
+        };
+        if (jumpOnFail)
+            options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
+        if (jumpOnSuccess)
+            options["jumpOnSuccess"] = `node${callIndex + jumpOnFail}`;
+        return {
+            options,
+            viewOnly: flags === 1,
+            permissions,
+            payerIndex,
+            callIndex,
+        };
+    }
+    static parseWithNumbers(callId) {
+        const permissions = callId.slice(36, 38);
+        const flowNumber = parseInt(callId.slice(38, 40), 16);
+        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
+        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
+        const payerIndex = parseInt(callId.slice(48, 52), 16);
+        const callIndex = parseInt(callId.slice(52, 56), 16);
+        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
+        const flags = parseInt(callId.slice(64, 66), 16);
+        const getFlow = () => {
+            const flow = Object.entries(flows).find(([, value]) => {
+                return value.value === flowNumber.toString();
+            });
+            if (!flow)
+                throw new Error("Invalid flow");
+            return Flow[flow[0]];
+        };
+        const options = {
+            gasLimit,
+            flow: getFlow(),
+            jumpOnFail,
+            jumpOnSuccess,
+        };
+        return {
+            options,
+            viewOnly: flags === 1,
+            permissions,
+            payerIndex,
+            callIndex,
+        };
+    }
+}
+
+const getComputedVariableMessage = (computedVariables) => {
+    return computedVariables.reduce((acc, item, i) => {
+        return {
+            ...acc,
+            [`computed_${i + 1}`]: item,
+        };
+    }, {});
+};
+
+const instanceOfVariable = (object) => {
+    return typeof object === "object" && "type" in object && "id" in object;
+};
+function instanceOfParams(objectOrArray) {
+    if (Array.isArray(objectOrArray)) {
+        return instanceOfParams(objectOrArray[0]);
+    }
+    return typeof objectOrArray === "object" && "type" in objectOrArray && "name" in objectOrArray;
+}
+
+// From method and params create tuple
+const getMethodInterface = (call) => {
+    const getParamsType = (param) => {
+        if (instanceOfParams(param.value)) {
+            if (Array.isArray(param.value[0])) {
+                const value = param.value[0];
+                return `(${value.map(getParamsType).join(",")})[]`;
+            }
+            else {
+                const value = param.value;
+                return `(${value.map(getParamsType).join(",")})`;
+            }
+        }
+        return param.hashed ? "bytes32" : param.type;
+    };
+    const params = call.params ? call.params.map(getParamsType) : "";
+    return `${call.method}(${params})`;
+};
+const getEncodedMethodParams = (call, withFunction) => {
+    if (!call.method)
+        return "0x";
+    if (withFunction) {
+        const ABI = [
+            `function ${call.method}(${call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""})`,
+        ];
+        const iface = new utils$1.Interface(ABI);
+        return iface.encodeFunctionData(call.method, call.params
+            ? call.params.map((item) => {
+                if (item.hashed) {
+                    if (typeof item.value === "string") {
+                        return utils$1.keccak256(toUtf8Bytes(item.value));
+                    }
+                    throw new Error("Hashed value must be a string");
+                }
+                return item.value;
+            })
+            : []);
+    }
+    const getType = (param) => {
+        if (param.customType || param.type.includes("tuple")) {
+            let value;
+            let isArray = false;
+            if (param.type.lastIndexOf("[") > 0) {
+                isArray = true;
+                value = param.value[0];
+            }
+            else {
+                value = param.value;
+            }
+            return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
+        }
+        return param.hashed ? "bytes32" : param.type;
+    };
+    const getValues = (param) => {
+        if (!param.value) {
+            throw new Error("Param value is required");
+        }
+        if (param.customType || param.type.includes("tuple")) {
+            let value;
+            if (param.type.lastIndexOf("[") > 0) {
+                value = param.value;
+                return value.reduce((acc, val) => {
+                    return [...acc, val.map(getValues)];
+                }, []);
+            }
+            else {
+                value = param.value;
+                return value.map(getValues);
+            }
+        }
+        if (param.hashed) {
+            if (typeof param.value === "string") {
+                return utils$1.keccak256(toUtf8Bytes(param.value));
+            }
+            throw new Error("Hashed value must be a string");
+        }
+        return param.value;
+    };
+    if (!call.params)
+        return "0x";
+    return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+};
+
+function getDate(days = 0) {
+    const result = new Date();
+    result.setDate(result.getDate() + days);
+    return Number(result.getTime() / 1000).toFixed();
+}
+
+const TYPE_NATIVE = 1000;
+const TYPE_STRING = 2000;
+const TYPE_BYTES = 3000;
+const TYPE_ARRAY = 4000;
+const TYPE_ARRAY_WITH_LENGTH = 5000;
+const typeValue = (param) => {
+    // If type is an array
+    if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
+        if (param.customType || param.type.includes("tuple")) {
+            const value = param.value;
+            return [TYPE_ARRAY, value.length, ...getTypesArray(param.value[0])];
+        }
+        const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
+        const insideType = typeValue(parameter);
+        const type = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
+        return [type, ...insideType];
+    }
+    // If type is a string
+    if (param.type === "string" && !param.hashed) {
+        return [TYPE_STRING];
+    }
+    // If type is bytes
+    if (param.type === "bytes" && !param.hashed) {
+        return [TYPE_BYTES];
+    }
+    // If param is custom struct
+    if (param.customType || param.type.includes("tuple")) {
+        const values = param.value;
+        const types = values.reduce((acc, item) => {
+            return [...acc, ...typeValue(item)];
+        }, []);
+        return [values.length, ...types];
+    }
+    // If all statements above are false, then type is a native type
+    return [TYPE_NATIVE];
+};
+// Get Types array
+const getTypesArray = (params) => {
+    const types = params.reduce((acc, item) => {
+        const data = typeValue(item);
+        return [...acc, ...data];
+    }, []);
+    if (!types.some((item) => item !== TYPE_NATIVE)) {
+        return [];
+    }
+    return types;
+};
+
+const handleMethodInterface = (call) => {
+    if (call.method) {
+        return getMethodInterface(call);
+    }
+    return "";
+};
+const handleFunctionSignature = (call) => {
+    if (call.method) {
+        const value = getMethodInterface(call);
+        return utils$1.id(value);
+    }
+    return nullValue;
+};
+// export const handleEnsHash = (call: IMSCallInput) => {
+//   if (call.toENS) {
+//     return utils.id(call.toENS);
+//   }
+//   return nullValue;
+// };
+const handleData = (call) => {
+    return getEncodedMethodParams(call);
+};
+const handleTypes = (call) => {
+    if (call.params) {
+        return getTypesArray(call.params);
+    }
+    return [];
+};
+
+// Create a function that checks if the param type last index of [ is greater than 0. If true - value is Param[][] else - value is Param[]
+const isInstanceOfTupleArray = (value, param) => {
+    return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
+};
+const isInstanceOfTuple = (value, param) => {
+    return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
+};
+
+var helpers$3 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    isInstanceOfTuple: isInstanceOfTuple,
+    isInstanceOfTupleArray: isInstanceOfTupleArray
+});
+
+class EIP712StructTypes {
+    transactionTypes = {};
+    structTypes = {};
+    static helpers = helpers$3;
+    constructor(calls) {
+        calls.forEach((call, index) => {
+            const values = call.params
+                ? call.params.map((param) => {
+                    if (param.customType || param.type === "tuple") {
+                        const type = this.getStructType(param, index);
+                        return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
+                    }
+                    return {
+                        name: param.name,
+                        type: param.type,
+                    };
+                })
+                : [];
+            this.transactionTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+        });
+    }
+    getTypeCount = () => Object.values(this.structTypes).length + 1;
+    getStructType = (param, index) => {
+        const typeName = `Struct${this.getTypeCount()}`;
+        let paramValue;
+        if (isInstanceOfTupleArray(param.value, param)) {
+            paramValue = param.value[0];
+        }
+        else if (isInstanceOfTuple(param.value, param)) {
+            paramValue = param.value;
+        }
+        else {
+            throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
+        }
+        let customCount = 0;
+        const eip712Type = paramValue.map((item) => {
+            if (item.customType || item.type.includes("tuple")) {
+                ++customCount;
+                const innerTypeName = `Struct${this.getTypeCount() + customCount}`;
+                return {
+                    name: item.name,
+                    type: innerTypeName,
+                };
+            }
+            return {
+                name: item.name,
+                type: item.type,
+            };
+        });
+        this.structTypes[typeName] = eip712Type;
+        if (param.type.lastIndexOf("[") > 0) {
+            for (const parameter of param.value[0]) {
+                if (parameter.customType || parameter.type.includes("tuple")) {
+                    this.getStructType(parameter, index);
+                }
+            }
+        }
+        else {
+            for (const parameter of param.value) {
+                if (parameter.customType || parameter.type.includes("tuple")) {
+                    this.getStructType(parameter, index);
+                }
+            }
+        }
+        return typeName;
+    };
+}
+
+class FCTBase {
+    FCT;
+    constructor(FCT) {
+        this.FCT = FCT;
+    }
+}
+
+const EIP712Domain = [
+    { name: "name", type: "string" },
+    { name: "version", type: "string" },
+    { name: "chainId", type: "uint256" },
+    { name: "verifyingContract", type: "address" },
+    { name: "salt", type: "bytes32" },
+];
+const Meta = [
+    { name: "name", type: "string" },
+    { name: "builder", type: "address" },
+    { name: "selector", type: "bytes4" },
+    { name: "version", type: "bytes3" },
+    { name: "random_id", type: "bytes3" },
+    { name: "eip712", type: "bool" },
+    { name: "auth_enabled", type: "bool" },
+];
+const Limits = [
+    { name: "valid_from", type: "uint40" },
+    { name: "expires_at", type: "uint40" },
+    { name: "gas_price_limit", type: "uint64" },
+    { name: "purgeable", type: "bool" },
+    { name: "blockable", type: "bool" },
+];
+const Computed = [
+    { name: "index", type: "uint256" },
+    { name: "value", type: "uint256" },
+    { name: "add", type: "uint256" },
+    { name: "sub", type: "uint256" },
+    { name: "pow", type: "uint256" },
+    { name: "mul", type: "uint256" },
+    { name: "div", type: "uint256" },
+    { name: "mod", type: "uint256" },
+];
+const Call = [
+    { name: "call_index", type: "uint16" },
+    { name: "payer_index", type: "uint16" },
+    { name: "call_type", type: "string" },
+    { name: "from", type: "address" },
+    { name: "to", type: "address" },
+    { name: "to_ens", type: "string" },
+    { name: "eth_value", type: "uint256" },
+    { name: "gas_limit", type: "uint32" },
+    { name: "permissions", type: "uint16" },
+    { name: "flow_control", type: "string" },
+    { name: "returned_false_means_fail", type: "bool" },
+    { name: "jump_on_success", type: "uint16" },
+    { name: "jump_on_fail", type: "uint16" },
+    { name: "method_interface", type: "string" },
+];
+const Recurrency = [
+    { name: "max_repeats", type: "uint16" },
+    { name: "chill_time", type: "uint32" },
+    { name: "accumetable", type: "bool" },
+];
+const Multisig = [
+    { name: "external_signers", type: "address[]" },
+    { name: "minimum_approvals", type: "uint8" },
+];
+
+const getParams$1 = (params) => {
+    return {
+        ...params.reduce((acc, param) => {
+            let value;
+            if (param.customType || param.type.includes("tuple")) {
+                if (param.type.lastIndexOf("[") > 0) {
+                    const valueArray = param.value;
+                    value = valueArray.map((item) => getParams$1(item));
+                }
+                else {
+                    const valueArray = param.value;
+                    value = getParams$1(valueArray);
+                }
+            }
+            else {
+                value = param.value;
+            }
+            return {
+                ...acc,
+                [param.name]: value,
+            };
+        }, {}),
+    };
+};
+
+const TYPED_DATA_DOMAIN = {
+    "1": {
+        name: "FCT Controller",
+        version: "1",
+        chainId: 1,
+        verifyingContract: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
+        salt: "0x0100c3ae8d91c3ffd32800000a0ea58e6504aa7bfff6f3d069bd175abab638ee",
+    },
+    "5": {
+        name: "FCT Controller",
+        version: "1",
+        chainId: 5,
+        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+        salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+    },
+};
+const types = {
+    domain: EIP712Domain,
+    meta: Meta,
+    limits: Limits,
+    computed: Computed,
+    call: Call,
+    recurrency: Recurrency,
+    multisig: Multisig,
+};
+class EIP712 extends FCTBase {
+    constructor(FCT) {
+        super(FCT);
+    }
+    static types = types;
+    static getTypedDataDomain(chainId) {
+        return TYPED_DATA_DOMAIN[chainId];
+    }
+    getTypedData() {
+        return {
+            types: this.getTypedDataTypes(),
+            primaryType: this.getPrimaryType(),
+            domain: this.getTypedDataDomain(),
+            message: this.getTypedDataMessage(),
+        };
+    }
+    getTypedDataMessage() {
+        const transactionTypedData = this.getTransactionTypedDataMessage();
+        const FCTOptions = this.FCT.options;
+        const { recurrency, multisig } = FCTOptions;
+        let optionalMessage = {};
+        if (Number(recurrency.maxRepeats) > 1) {
+            optionalMessage = _.merge(optionalMessage, {
+                recurrency: {
+                    max_repeats: recurrency.maxRepeats,
+                    chill_time: recurrency.chillTime,
+                    accumetable: recurrency.accumetable,
+                },
+            });
+        }
+        if (multisig.externalSigners.length > 0) {
+            optionalMessage = _.merge(optionalMessage, {
+                multisig: {
+                    external_signers: multisig.externalSigners,
+                    minimum_approvals: multisig.minimumApprovals || "2",
+                },
+            });
+        }
+        return {
+            meta: {
+                name: FCTOptions.name || "",
+                builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
+                selector: this.FCT.batchMultiSigSelector,
+                version: this.FCT.version,
+                random_id: `0x${this.FCT.randomId}`,
+                eip712: true,
+                auth_enabled: FCTOptions.authEnabled,
+            },
+            limits: {
+                valid_from: FCTOptions.validFrom,
+                expires_at: FCTOptions.expiresAt,
+                gas_price_limit: FCTOptions.maxGasPrice,
+                purgeable: FCTOptions.purgeable,
+                blockable: FCTOptions.blockable,
+            },
+            ...optionalMessage,
+            ...getComputedVariableMessage(this.FCT.computedWithValues),
+            ...transactionTypedData,
+        };
+    }
+    getTypedDataTypes() {
+        const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.calls);
+        const FCTOptions = this.FCT.options;
+        const { recurrency, multisig } = FCTOptions;
+        let optionalTypes = {};
+        const additionalTypesInPrimary = [];
+        if (Number(recurrency.maxRepeats) > 1) {
+            optionalTypes = _.merge(optionalTypes, { Recurrency: EIP712.types.recurrency });
+            additionalTypesInPrimary.push({ name: "recurrency", type: "Recurrency" });
+        }
+        if (multisig.externalSigners.length > 0) {
+            optionalTypes = _.merge(optionalTypes, { Multisig: EIP712.types.multisig });
+            additionalTypesInPrimary.push({ name: "multisig", type: "Multisig" });
+        }
+        if (this.FCT.computed.length > 0) {
+            optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
+        }
+        return {
+            EIP712Domain: EIP712.types.domain,
+            Meta: EIP712.types.meta,
+            Limits: EIP712.types.limits,
+            ...optionalTypes,
+            ...transactionTypes,
+            ...structTypes,
+            BatchMultiSigCall: this.getPrimaryTypeTypes(additionalTypesInPrimary),
+            Call: EIP712.types.call,
+        };
+    }
+    getTypedDataDomain() {
+        return this.FCT.domain;
+    }
+    getPrimaryType() {
+        return "BatchMultiSigCall";
+    }
+    getPrimaryTypeTypes(additionalTypes) {
+        return [
+            { name: "meta", type: "Meta" },
+            { name: "limits", type: "Limits" },
+            ...additionalTypes,
+            ...this.getComputedPrimaryType(),
+            ...this.getCallsPrimaryType(),
+        ];
+    }
+    getCallsPrimaryType() {
+        return this.FCT.calls.map((_, index) => ({
+            name: `transaction_${index + 1}`,
+            type: `transaction${index + 1}`,
+        }));
+    }
+    getComputedPrimaryType() {
+        return this.FCT.computed.map((_, index) => ({
+            name: `computed_${index + 1}`,
+            type: `Computed`,
+        }));
+    }
+    getTransactionTypedDataMessage() {
+        return this.FCT.decodedCalls.reduce((acc, call, index) => {
+            const paramsData = call.params ? getParams$1(call.params) : {};
+            const options = call.options || {};
+            const gasLimit = options.gasLimit ?? "0";
+            const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
+            let jumpOnSuccess = 0;
+            let jumpOnFail = 0;
+            if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
+                const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
+                if (jumpOnSuccessIndex === -1) {
+                    throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
+                }
+                if (jumpOnSuccessIndex <= index) {
+                    throw new Error(`Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`);
+                }
+                jumpOnSuccess = jumpOnSuccessIndex - index - 1;
+            }
+            if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
+                const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
+                if (jumpOnFailIndex === -1) {
+                    throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
+                }
+                if (jumpOnFailIndex <= index) {
+                    throw new Error(`Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`);
+                }
+                jumpOnFail = jumpOnFailIndex - index - 1;
+            }
+            return {
+                ...acc,
+                [`transaction_${index + 1}`]: {
+                    call: {
+                        call_index: index + 1,
+                        payer_index: index + 1,
+                        call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
+                        from: this.FCT.variables.getValue(call.from, "address"),
+                        to: this.FCT.variables.getValue(call.to, "address"),
+                        to_ens: call.toENS || "",
+                        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+                        gas_limit: gasLimit,
+                        permissions: 0,
+                        flow_control: flow,
+                        returned_false_means_fail: options.falseMeansFail || false,
+                        jump_on_success: jumpOnSuccess,
+                        jump_on_fail: jumpOnFail,
+                        method_interface: handleMethodInterface(call),
+                    },
+                    ...paramsData,
+                },
+            };
+        }, {});
+    }
+}
+
+const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
+const mustBeAddress = ["builder"];
+// Validate Integer values in options
+const validateInteger = (value, keys) => {
+    const currentKey = keys[keys.length - 1];
+    if (value.includes(".")) {
+        throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
+    }
+    if (value.startsWith("-")) {
+        throw new Error(`Options: ${keys.join(".")} cannot be negative`);
+    }
+    if (currentKey === "maxRepeats" && Number(value) < 0) {
+        throw new Error(`Options: ${keys.join(".")} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`);
+    }
+};
+// Validate address values in options
+const validateAddress = (value, keys) => {
+    if (!isAddress$1(value)) {
+        throw new Error(`Options: ${keys.join(".")} is not a valid address`);
+    }
+};
+
+var helpers$2 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    mustBeAddress: mustBeAddress,
+    mustBeInteger: mustBeInteger,
+    validateAddress: validateAddress,
+    validateInteger: validateInteger
+});
+
+const initOptions = {
+    maxGasPrice: "30000000000",
+    validFrom: getDate(),
+    expiresAt: getDate(7),
+    purgeable: false,
+    blockable: true,
+    builder: "0x0000000000000000000000000000000000000000",
+    authEnabled: true,
+};
+class Options {
+    static helpers = helpers$2;
+    _options = initOptions;
+    set(options) {
+        const mergedOptions = _.merge({}, this._options, options);
+        Options.verify(mergedOptions);
+        this._options = mergedOptions;
+        return this._options;
+    }
+    get() {
+        return {
+            ...this._options,
+            name: this._options.name || "",
+            recurrency: {
+                maxRepeats: this._options.recurrency?.maxRepeats || "0",
+                chillTime: this._options.recurrency?.chillTime || "0",
+                accumetable: this._options.recurrency?.accumetable || false,
+            },
+            multisig: {
+                externalSigners: this._options.multisig?.externalSigners || [],
+                minimumApprovals: this._options.multisig?.minimumApprovals || "0",
+            },
+        };
+    }
+    reset() {
+        this._options = initOptions;
+    }
+    static verify(options) {
+        this.validateOptionsValues(options);
+    }
+    static validateOptionsValues = (value, parentKeys = []) => {
+        if (!value) {
+            return;
+        }
+        Object.keys(value).forEach((key) => {
+            const objKey = key;
+            if (typeof value[objKey] === "object") {
+                this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+            }
+            // Integer validator
+            if (mustBeInteger.includes(objKey)) {
+                validateInteger(value[objKey], [...parentKeys, objKey]);
+            }
+            // Address validator
+            if (mustBeAddress.includes(objKey)) {
+                validateAddress(value[objKey], [...parentKeys, objKey]);
+            }
+            // Expires at validator
+            if (objKey === "expiresAt") {
+                const expiresAt = Number(value[objKey]);
+                const now = Number(new Date().getTime() / 1000).toFixed();
+                const validFrom = value.validFrom;
+                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                    throw new Error(`Options: expiresAt must be in the future`);
+                }
+                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                    throw new Error(`Options: expiresAt must be greater than validFrom`);
+                }
+            }
+        });
+    };
+    static fromObject(options) {
+        const instance = new Options();
+        instance.set(options);
+        return instance;
+    }
+}
+
+const sessionIdFlag = {
+    accumetable: 0x1,
+    purgeable: 0x2,
+    blockable: 0x4,
+    eip712: 0x8,
+    authEnabled: 0x10,
+};
+const valueWithPadStart = (value, padStart) => {
+    return Number(value).toString(16).padStart(padStart, "0");
+};
+// Deconstructed sessionID
+// 6 - Salt
+// 2 - External signers
+// 6 - Version
+// 4 - Max Repeats
+// 8 - Chill time
+// 10 - After timestamp
+// 10 - Before timestamp
+// 16 - Gas price limit
+// 2 - Flags
+class SessionID extends FCTBase {
+    constructor(FCT) {
+        super(FCT);
+    }
+    asString() {
+        return SessionID.asString({
+            salt: this.FCT.randomId,
+            version: this.FCT.version,
+            options: this.FCT.options,
+        });
+    }
+    static asString({ salt, version, options }) {
+        const currentDate = new Date();
+        const { recurrency, multisig } = options;
+        if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
+            throw new Error("Expires at date cannot be in the past");
+        }
+        const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
+        const v = version.slice(2);
+        const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
+        const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
+            .toString(16)
+            .padStart(8, "0");
+        const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
+        const afterTimestamp = valueWithPadStart(options.validFrom || 0, 10);
+        const maxGasPrice = valueWithPadStart(options.maxGasPrice || 0, 16);
+        let flagValue = 0;
+        flagValue += sessionIdFlag.eip712; // EIP712 true by default
+        if (options.recurrency?.accumetable)
+            flagValue += sessionIdFlag.accumetable;
+        if (options.purgeable)
+            flagValue += sessionIdFlag.purgeable;
+        if (options.blockable)
+            flagValue += sessionIdFlag.blockable;
+        if (options.authEnabled)
+            flagValue += sessionIdFlag.authEnabled;
+        const flags = flagValue.toString(16).padStart(2, "0");
+        return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
+    }
+    static asOptions({ sessionId, builder, name, externalSigners = [], }) {
+        const parsedSessionID = SessionID.parse(sessionId);
+        return {
+            ...parsedSessionID,
+            builder,
+            name,
+            multisig: {
+                ...parsedSessionID.multisig,
+                externalSigners,
+            },
+        };
+    }
+    static parse(sessionId) {
+        const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
+        const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
+        const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
+        const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
+        const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
+        const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
+        const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
+        const flags = {
+            eip712: (flagsNumber & sessionIdFlag.eip712) !== 0,
+            accumetable: (flagsNumber & sessionIdFlag.accumetable) !== 0,
+            purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
+            blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
+            authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
+        };
+        return {
+            validFrom,
+            expiresAt,
+            maxGasPrice,
+            blockable: flags.blockable,
+            purgeable: flags.purgeable,
+            authEnabled: flags.authEnabled,
+            recurrency: {
+                accumetable: flags.accumetable,
+                chillTime,
+                maxRepeats,
+            },
+            multisig: {
+                minimumApprovals,
+            },
+        };
+    }
+}
+
+const getParams = (params) => {
+    return {
+        ...params.reduce((acc, param) => {
+            let value;
+            if (param.customType || param.type.includes("tuple")) {
+                if (param.type.lastIndexOf("[") > 0) {
+                    const valueArray = param.value;
+                    value = valueArray.map((item) => getParams(item));
+                }
+                else {
+                    const valueArray = param.value;
+                    value = getParams(valueArray);
+                }
+            }
+            else {
+                value = param.value;
+            }
+            return {
+                ...acc,
+                [param.name]: value,
+            };
+        }, {}),
+    };
+};
+const getUsedStructTypes = (typedData, typeName) => {
+    const mainType = typedData.types[typeName.replace("[]", "")];
+    const usedStructTypes = mainType.reduce((acc, item) => {
+        if (item.type.includes("Struct")) {
+            const type = item.type.replace("[]", "");
+            return [...acc, type, ...getUsedStructTypes(typedData, type)];
+        }
+        return acc;
+    }, []);
+    return usedStructTypes;
+};
+
+var helpers$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    getParams: getParams,
+    getUsedStructTypes: getUsedStructTypes
+});
+
+class ExportFCT extends FCTBase {
+    calls;
+    _eip712;
+    constructor(FCT) {
+        super(FCT);
+        this.calls = FCT.decodedCalls;
+        this._eip712 = new EIP712(FCT);
+        if (this.FCT.calls.length === 0) {
+            throw new Error("FCT has no calls");
+        }
+        Options.verify(this.FCT.options);
+    }
+    get typedData() {
+        return this._eip712.getTypedData();
+    }
+    get mcall() {
+        return this.getCalls();
+    }
+    get sessionId() {
+        return new SessionID(this.FCT).asString();
+    }
+    get() {
+        return {
+            typedData: this.typedData,
+            builder: this.FCT.options.builder,
+            typeHash: hexlify(TypedDataUtils.hashType(this.typedData.primaryType, this.typedData.types)),
+            sessionId: this.sessionId,
+            nameHash: id(this.FCT.options.name),
+            mcall: this.mcall,
+            variables: [],
+            externalSigners: [],
+            signatures: [this.FCT.utils.getAuthenticatorSignature()],
+            computed: this.FCT.computedWithValues.map((c) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { index, ...rest } = c;
+                return rest;
+            }),
+        };
+    }
+    getCalls() {
+        const typedData = this.typedData;
+        const calls = this.calls;
+        return calls.map((call, index) => {
+            const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
+            return {
+                typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+                ensHash: id(call.toENS || ""),
+                functionSignature: handleFunctionSignature(call),
+                value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+                callId: CallID.asString({
+                    calls,
+                    call,
+                    index,
+                }),
+                from: this.FCT.variables.getValue(call.from, "address"),
+                to: this.FCT.variables.getValue(call.to, "address"),
+                data: handleData(call),
+                types: handleTypes(call),
+                typedHashes: usedTypeStructs.length > 0
+                    ? usedTypeStructs.map((hash) => hexlify(TypedDataUtils.hashType(hash, typedData.types)))
+                    : [],
+            };
+        });
+    }
+    static helpers = helpers$1;
+}
+
+const isInteger = (value, key) => {
+    if (value.length === 0) {
+        throw new Error(`${key} cannot be empty string`);
+    }
+    if (value.startsWith("-")) {
+        throw new Error(`${key} cannot be negative`);
+    }
+    if (value.includes(".")) {
+        throw new Error(`${key} cannot be a decimal`);
+    }
+};
+const isAddress = (value, key) => {
+    if (value.length === 0) {
+        throw new Error(`${key} address cannot be empty string`);
+    }
+    if (!utils$1.isAddress(value)) {
+        throw new Error(`${key} address is not a valid address`);
+    }
+};
+const verifyParam = (param) => {
+    if (!param.value) {
+        throw new Error(`Param ${param.name} is missing a value`);
+    }
+    if (typeof param.value !== "string") {
+        return;
+    }
+    // uint value
+    if (param.type.startsWith("uint")) {
+        if (param.value.includes(".")) {
+            throw new Error(`Param ${param.name} cannot be a decimal`);
+        }
+        if (param.value.startsWith("-")) {
+            throw new Error(`Param ${param.name} cannot be negative`);
+        }
+    }
+    // int value
+    if (param.type.startsWith("int")) {
+        if (param.value.includes(".")) {
+            throw new Error(`Param ${param.name} cannot be a decimal`);
+        }
+    }
+    // address
+    if (param.type === "address") {
+        if (!utils$1.isAddress(param.value)) {
+            throw new Error(`Param ${param.name} is not a valid address`);
+        }
+    }
+    // bytes
+    if (param.type.startsWith("bytes")) {
+        if (!param.value.startsWith("0x")) {
+            throw new Error(`Param ${param.name} is not a valid bytes value`);
+        }
+    }
+};
+const getParamsFromInputs = (inputs, values) => {
+    return inputs.map((input, i) => {
+        if (input.type === "tuple") {
+            return {
+                name: input.name,
+                type: input.type,
+                customType: true,
+                value: getParamsFromInputs(input.components, values[i]),
+            };
+        }
+        if (input.type === "tuple[]") {
+            return {
+                name: input.name,
+                type: input.type,
+                customType: true,
+                value: values[i].map((tuple) => getParamsFromInputs(input.components, tuple)),
+            };
+        }
+        let value = values[i];
+        // Check if value isn't a variable
+        const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+        if (BigNumber$1.isBigNumber(value)) {
+            const hexString = value.toHexString().toLowerCase();
+            if (variables.some((v) => hexString.startsWith(v))) {
+                value = hexString;
+            }
+            value = value.toString();
+        }
+        if (typeof value === "number") {
+            value = value.toString();
+        }
+        return {
+            name: input.name,
+            type: input.type,
+            value,
+        };
+    });
+};
+const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, primaryType, }) => {
+    const generateRealInputParams = (types, primaryType) => {
+        let type = types[primaryType];
+        // If the type[0] name is call and type is Call, then slice the first element
+        if (type[0].name === "call" && type[0].type === "Call") {
+            type = type.slice(1);
+        }
+        const params = [];
+        for (const { name, type: paramType } of type) {
+            // Remove [] from the end of the type
+            const typeWithoutArray = paramType.replace(/\[\]$/, "");
+            if (types[typeWithoutArray]) {
+                const components = generateRealInputParams(types, typeWithoutArray);
+                params.push(ParamType.from({ name, type: typeWithoutArray, components }));
+            }
+            else {
+                params.push(ParamType.from({ name, type: paramType }));
+            }
+        }
+        return params;
+    };
+    const getParams = (realInputParams, eip712InputTypes, parameters) => {
+        return eip712InputTypes.map((input, i) => {
+            const realInput = realInputParams[i];
+            if (input.type === "tuple") {
+                return {
+                    name: realInput.name,
+                    type: input.type,
+                    customType: true,
+                    value: getParams(realInput.components, input.components, parameters[realInput.name]),
+                };
+            }
+            if (input.type === "tuple[]") {
+                return {
+                    name: realInput.name,
+                    type: input.type,
+                    customType: true,
+                    value: parameters[realInput.name].map((tuple) => getParams(realInput.components, input.components, tuple)),
+                };
+            }
+            let value = parameters[realInput.name];
+            // Check if value isn't a variable
+            const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+            if (BigNumber$1.isBigNumber(value)) {
+                const hexString = value.toHexString().toLowerCase();
+                if (variables.some((v) => hexString.startsWith(v))) {
+                    value = hexString;
+                }
+                value = value.toString();
+            }
+            if (typeof value === "number") {
+                value = value.toString();
+            }
+            return {
+                name: realInput.name,
+                type: realInput.type,
+                customType: false,
+                // If realInputType.type is a string and eip712InputType.type is bytes32, value is hashed
+                hashed: input.type === "bytes32" && realInput.type === "string",
+                value,
+            };
+        });
+    };
+    const realInputParams = generateRealInputParams(types, primaryType);
+    return getParams(realInputParams, methodInterfaceParams, parameters);
+};
+
+var helpers = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    getParamsFromInputs: getParamsFromInputs,
+    getParamsFromTypedData: getParamsFromTypedData,
+    isAddress: isAddress,
+    isInteger: isInteger,
+    verifyParam: verifyParam
+});
+
+function generateNodeId() {
+    return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+}
+class FCTCalls extends FCTBase {
+    static helpers = helpers;
+    _calls = [];
+    _callDefault = {
+        value: "0",
+        options: DEFAULT_CALL_OPTIONS,
+    };
+    constructor(FCT, callDefault) {
+        super(FCT);
+        if (callDefault) {
+            this._callDefault = _.merge({}, this._callDefault, callDefault);
+        }
+    }
+    get() {
+        return this._calls.map((call) => {
+            const fullCall = _.merge({}, this._callDefault, call);
+            if (typeof fullCall.from === "undefined") {
+                throw new Error("From address is required");
+            }
+            const from = fullCall.from;
+            return { ...fullCall, from };
+        });
+    }
+    getWithDecodedVariables() {
+        return this.get().map((call) => {
+            const params = call.params;
+            if (params && params.length > 0) {
+                const parameters = this.decodeParams(params);
+                return { ...call, params: parameters };
+            }
+            return {
+                ...call,
+                params: [],
+            };
+        });
+    }
+    async create(call) {
+        if ("plugin" in call) {
+            return await this.createWithPlugin(call);
+        }
+        else if ("abi" in call) {
+            return await this.createWithEncodedData(call);
+        }
+        else {
+            const data = { ...call, nodeId: call.nodeId || generateNodeId() };
+            return this.addCall(data);
+        }
+    }
+    async createWithPlugin(callWithPlugin) {
+        if (!callWithPlugin.plugin) {
+            throw new Error("Plugin is required to create a call with plugin.");
+        }
+        const pluginCall = await callWithPlugin.plugin.create();
+        if (!pluginCall) {
+            throw new Error("Error creating call with plugin. Make sure input values are valid");
+        }
+        const data = {
+            ...pluginCall,
+            from: callWithPlugin.from,
+            options: { ...pluginCall.options, ...callWithPlugin.options },
+            nodeId: callWithPlugin.nodeId || generateNodeId(),
+        };
+        return this.addCall(data);
+    }
+    async createWithEncodedData(callWithEncodedData) {
+        const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
+        const iface = new Interface(abi);
+        try {
+            const { name, args, functionFragment: { inputs }, } = iface.parseTransaction({
+                data: encodedData,
+                value: typeof value === "string" ? value : "0",
+            });
+            const data = {
+                from: callWithEncodedData.from,
+                to: callWithEncodedData.to,
+                method: name,
+                params: getParamsFromInputs(inputs, args),
+                options,
+                value: value?.toString(),
+                nodeId: nodeId || generateNodeId(),
+            };
+            return this.addCall(data);
+        }
+        catch {
+            throw new Error("Failed to parse encoded data");
+        }
+    }
+    setCallDefaults(callDefault) {
+        this._callDefault = _.merge({}, this._callDefault, callDefault);
+        return this._callDefault;
+    }
+    addCall(call) {
+        // Before adding the call, we check if it is valid
+        this.verifyCall(call);
+        this._calls.push(call);
+        return call;
+    }
+    verifyCall(call) {
+        // To address validator
+        if (!call.to) {
+            throw new Error("To address is required");
+        }
+        else if (typeof call.to === "string") {
+            isAddress(call.to, "To");
+        }
+        // Value validator
+        if (call.value && typeof call.value === "string") {
+            isInteger(call.value, "Value");
+        }
+        // Method validator
+        if (call.method && call.method.length === 0) {
+            throw new Error("Method cannot be empty string");
+        }
+        // Node ID validator
+        if (call.nodeId) {
+            const index = this.get().findIndex((item) => item.nodeId === call.nodeId);
+            if (index > -1) {
+                throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
+            }
+        }
+        // Options validator
+        if (call.options) {
+            const { gasLimit, callType } = call.options;
+            if (gasLimit && typeof gasLimit === "string") {
+                isInteger(gasLimit, "Gas limit");
+            }
+            if (callType) {
+                const keysOfCALLTYPE = Object.keys(CALL_TYPE);
+                if (!keysOfCALLTYPE.includes(callType)) {
+                    throw new Error(`Call type ${callType} is not valid`);
+                }
+            }
+        }
+        if (call.params && call.params.length) {
+            if (!call.method) {
+                throw new Error("Method is required when params are present");
+            }
+            call.params.map(verifyParam);
+        }
+    }
+    decodeParams(params) {
+        return params.reduce((acc, param) => {
+            if (param.type === "tuple" || param.customType) {
+                if (param.type.lastIndexOf("[") > 0) {
+                    const value = param.value;
+                    const decodedValue = value.map((tuple) => this.decodeParams(tuple));
+                    return [...acc, { ...param, value: decodedValue }];
+                }
+                const value = this.decodeParams(param.value);
+                return [...acc, { ...param, value }];
+            }
+            if (instanceOfVariable(param.value)) {
+                const value = this.FCT.variables.getVariable(param.value, param.type);
+                const updatedParam = { ...param, value };
+                return [...acc, updatedParam];
+            }
+            return [...acc, param];
+        }, []);
+    }
 }
 
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
-    return Interface.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+    return Interfaces.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
         signedFCT,
         purgedFCT,
@@ -5016,8 +4977,8 @@ class FCTUtils extends FCTBase {
             provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         }
         const txReceipt = await provider.getTransactionReceipt(txHash);
-        const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
-        const controllerInterface = Interface.FCT_Controller;
+        const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+        const controllerInterface = Interfaces.FCT_Controller;
         // Get FCTE_Activated event
         const messageHash = txReceipt.logs.find((log) => {
             try {
@@ -5109,15 +5070,6 @@ const INVESTOR_ADDRESS = "0xFA0C000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0xFA0D000000000000000000000000000000000000";
 const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
-// const getBlockHash = (indexOfPreviousBlock: number = 1) => {
-//   if (indexOfPreviousBlock === 0) {
-//     throw new Error("Only previous blocks are supported");
-//   }
-//   if (indexOfPreviousBlock > 255) {
-//     throw new Error("Only previous blocks up to 255 are supported");
-//   }
-//   return (indexOfPreviousBlock - 1).toString(16).padStart(BLOCK_HASH.length, BLOCK_HASH);
-// };
 const globalVariables = {
     blockNumber: BLOCK_NUMBER,
     blockTimestamp: BLOCK_TIMESTAMP,
@@ -5201,8 +5153,12 @@ class Variables extends FCTBase {
         }
         if (variable.type === "output") {
             const id = variable.id;
-            const indexForNode = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
-            return this.getOutputVariable(indexForNode, id.innerIndex, type);
+            const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
+            return this.getOutputVariable({
+                index,
+                innerIndex: id.innerIndex,
+                type,
+            });
         }
         if (variable.type === "global") {
             const globalVariable = globalVariables[variable.id];
@@ -5220,7 +5176,7 @@ class Variables extends FCTBase {
         }
         throw new Error("Variable type not found");
     }
-    getOutputVariable(index, innerIndex, type) {
+    getOutputVariable({ index, innerIndex, type = "uint256", }) {
         const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
         let base;
         let innerIndexHex;
@@ -5290,7 +5246,7 @@ const gasPriceCalculationsByChains = {
 };
 const transactionValidator = async (txVal, pureGas = false) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
-    const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", Interface.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]);
+    const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", Interfaces.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]);
     const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
     if (BigInt(maxGasPrice) > BigInt(gasPrice.maxFeePerGas)) {
         return {
@@ -5448,16 +5404,6 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
 // 1275004198 - max fee
 // 462109 - gas
 
-// 0x95f9f186cbff60cecdecef460c442b82d938973becca0015d1376596daa6b574
-const getExecutedPath = async ({ 
-//   chainId,
-rpcUrl, txHash, }) => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    // Get the tx receipt
-    const txReceipt = await provider.getTransactionReceipt(txHash);
-    console.log("txReceipt", txReceipt);
-};
-
 async function create(call) {
     return this._calls.create(call);
 }
@@ -5614,7 +5560,7 @@ function importFCT(fct) {
     return this.calls;
 }
 async function importEncodedFCT(calldata) {
-    const iface = Interface.FCT_BatchMultiSigCall;
+    const iface = Interfaces.FCT_BatchMultiSigCall;
     const chainId = this.chainId;
     const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
     const arrayKeys = ["signatures", "mcall"];
@@ -5891,9 +5837,7 @@ const getMulticallContract = (chainId, provider) => {
     if (!multicallAddress) {
         throw new Error(`No multicall address found for chainId ${chainId}`);
     }
-    return new ethers.Contract(multicallAddress, [
-        "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-    ], provider);
+    return new ethers.Contract(multicallAddress, Interfaces.MultiCall, provider);
 };
 const getData = async ({ chainId, provider, }) => {
     const poolAddress = data[chainId].V2_Pool;
@@ -5906,7 +5850,7 @@ const getData = async ({ chainId, provider, }) => {
         "function price0CumulativeLast() external view returns (uint)",
         "function price1CumulativeLast() external view returns (uint)",
     ]);
-    const Actuator = Interface.FCT_Actuator;
+    const Actuator = Interfaces.FCT_Actuator;
     const multicallContract = getMulticallContract(chainId, provider);
     const [blockNumber, returnData] = await multicallContract.callStatic.aggregate([
         {
@@ -6013,12 +5957,12 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
     const timeElapsed = blockTimestamp - s_blockTimestampLast.toNumber();
     // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
     if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
-        const priceAverage = isToken0KIRO ? s_price1Average : s_price0Average;
+        const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
         return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
     }
     const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
     const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
-    const priceAverage = isToken0KIRO ? price1Average : price0Average;
+    const priceAverage = isToken0KIRO ? price0Average : price1Average;
     return decode144(priceAverage * BigInt(1e18)).toString();
 };
 
@@ -6026,7 +5970,6 @@ var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     FetchUtility: FetchUtility,
     fetchCurrentApprovals: fetchCurrentApprovals,
-    getExecutedPath: getExecutedPath,
     getGasPrices: getGasPrices,
     getKIROPrice: getKIROPrice,
     getVariablesAsBytes32: getVariablesAsBytes32,

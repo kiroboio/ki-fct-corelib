@@ -1,8 +1,8 @@
-import { BigNumber as BigNumberEthers, ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { SessionID } from "../batchMultiSigCall/classes";
-import { Interface } from "../helpers/Interfaces";
+import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 
 const gasPriceCalculationsByChains = {
@@ -46,9 +46,9 @@ export const transactionValidator = async (
 ): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
 
-  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData(
+  const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData(
     "batchMultiSigCall",
-    Interface.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]
+    Interfaces.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]
   );
   const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
 
@@ -69,7 +69,7 @@ export const transactionValidator = async (
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
   try {
-    let gas: BigNumberEthers;
+    let gas: BigNumber;
     if (activateForFree) {
       gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
         ...gasPrice,

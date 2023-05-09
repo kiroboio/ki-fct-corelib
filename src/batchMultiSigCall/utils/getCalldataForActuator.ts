@@ -1,4 +1,4 @@
-import { Interface } from "../../helpers/Interfaces";
+import { Interfaces } from "../../helpers/Interfaces";
 import { IBatchMultiSigCallFCT } from "../types";
 
 export function getCalldataForActuator({
@@ -14,7 +14,7 @@ export function getCalldataForActuator({
   activator: string;
   version: string;
 }): string {
-  return Interface.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+  return Interfaces.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
     `0x${version}`.padEnd(66, "0"),
     signedFCT,
     purgedFCT,

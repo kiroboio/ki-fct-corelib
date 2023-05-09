@@ -4,7 +4,7 @@ import { AbiCoder } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
-import { Interface } from "../../helpers/Interfaces";
+import { Interfaces } from "../../helpers/Interfaces";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
@@ -194,7 +194,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 }
 
 export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
-  const iface = Interface.FCT_BatchMultiSigCall;
+  const iface = Interfaces.FCT_BatchMultiSigCall;
   const chainId = this.chainId;
   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
 

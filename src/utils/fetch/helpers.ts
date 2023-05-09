@@ -1,7 +1,8 @@
 import { BigNumber, ethers } from "ethers";
 
 import { IRequiredApproval } from "../../batchMultiSigCall/types";
-import { multicallContracts, multicallInterface } from "../../constants";
+import { multicallContracts } from "../../constants";
+import { Interfaces } from "../../helpers/Interfaces";
 
 export const fetchApprovalsInterface = new ethers.utils.Interface([
   "function allowance(address owner, address spender) view returns (uint256)",
@@ -67,7 +68,7 @@ export const fetchCurrentApprovals = async ({
       throw new Error("Multicall contract not found for this chain");
     }
 
-    multicallContract = new ethers.Contract(multicallContractAddress, multicallInterface, provider);
+    multicallContract = new ethers.Contract(multicallContractAddress, Interfaces.MultiCall, provider);
   }
 
   const calls = data.map((approval) => {
