@@ -1,31 +1,14 @@
+import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
+import { ChainId, AllPlugins, PluginInstance, getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
+export * from '@kiroboio/fct-plugins';
+export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import * as ethers from 'ethers';
 import { ethers as ethers$1 } from 'ethers';
 export { ethers } from 'ethers';
-import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
-import { ChainId, AllPlugins, PluginInstance, getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 import { JsonFragment } from '@ethersproject/abi';
 import { SignatureLike } from '@ethersproject/bytes';
 import { Fragment } from 'ethers/lib/utils';
 import { MessageTypeProperty } from '@metamask/eth-sig-util';
-
-function _mergeNamespaces(n, m) {
-  m.forEach(function (e) {
-    e && typeof e !== 'string' && !Array.isArray(e) && Object.keys(e).forEach(function (k) {
-      if (k !== 'default' && !(k in n)) {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () { return e[k]; }
-        });
-      }
-    });
-  });
-  return Object.freeze(n);
-}
-
-var plugins = /*#__PURE__*/_mergeNamespaces({
-  __proto__: null
-}, [_kiroboio_fct_plugins]);
 
 declare enum Flow {
     OK_CONT_FAIL_REVERT = "OK_CONT_FAIL_REVERT",
@@ -84,47 +67,47 @@ declare const getFDBackBytes: ({ callIndex, innerIndex }: {
     innerIndex: number;
 }) => string;
 
-declare const index$2_CALL_TYPE: typeof CALL_TYPE;
-declare const index$2_CALL_TYPE_MSG: typeof CALL_TYPE_MSG;
-declare const index$2_CALL_TYPE_MSG_REV: typeof CALL_TYPE_MSG_REV;
-declare const index$2_ComputedBase: typeof ComputedBase;
-declare const index$2_ComputedBaseBytes: typeof ComputedBaseBytes;
-declare const index$2_FCBase: typeof FCBase;
-declare const index$2_FCBaseBytes: typeof FCBaseBytes;
-declare const index$2_FCT_VAULT_ADDRESS: typeof FCT_VAULT_ADDRESS;
-declare const index$2_FDBackBase: typeof FDBackBase;
-declare const index$2_FDBackBaseBytes: typeof FDBackBaseBytes;
-declare const index$2_FDBase: typeof FDBase;
-declare const index$2_FDBaseBytes: typeof FDBaseBytes;
-type index$2_Flow = Flow;
-declare const index$2_Flow: typeof Flow;
-declare const index$2_getFD: typeof getFD;
-declare const index$2_getFDBack: typeof getFDBack;
-declare const index$2_getFDBackBytes: typeof getFDBackBytes;
-declare const index$2_getFDBytes: typeof getFDBytes;
-declare const index$2_multicallContracts: typeof multicallContracts;
-declare const index$2_nullValue: typeof nullValue;
-declare namespace index$2 {
+declare const index$3_CALL_TYPE: typeof CALL_TYPE;
+declare const index$3_CALL_TYPE_MSG: typeof CALL_TYPE_MSG;
+declare const index$3_CALL_TYPE_MSG_REV: typeof CALL_TYPE_MSG_REV;
+declare const index$3_ComputedBase: typeof ComputedBase;
+declare const index$3_ComputedBaseBytes: typeof ComputedBaseBytes;
+declare const index$3_FCBase: typeof FCBase;
+declare const index$3_FCBaseBytes: typeof FCBaseBytes;
+declare const index$3_FCT_VAULT_ADDRESS: typeof FCT_VAULT_ADDRESS;
+declare const index$3_FDBackBase: typeof FDBackBase;
+declare const index$3_FDBackBaseBytes: typeof FDBackBaseBytes;
+declare const index$3_FDBase: typeof FDBase;
+declare const index$3_FDBaseBytes: typeof FDBaseBytes;
+type index$3_Flow = Flow;
+declare const index$3_Flow: typeof Flow;
+declare const index$3_getFD: typeof getFD;
+declare const index$3_getFDBack: typeof getFDBack;
+declare const index$3_getFDBackBytes: typeof getFDBackBytes;
+declare const index$3_getFDBytes: typeof getFDBytes;
+declare const index$3_multicallContracts: typeof multicallContracts;
+declare const index$3_nullValue: typeof nullValue;
+declare namespace index$3 {
   export {
-    index$2_CALL_TYPE as CALL_TYPE,
-    index$2_CALL_TYPE_MSG as CALL_TYPE_MSG,
-    index$2_CALL_TYPE_MSG_REV as CALL_TYPE_MSG_REV,
-    index$2_ComputedBase as ComputedBase,
-    index$2_ComputedBaseBytes as ComputedBaseBytes,
-    index$2_FCBase as FCBase,
-    index$2_FCBaseBytes as FCBaseBytes,
-    index$2_FCT_VAULT_ADDRESS as FCT_VAULT_ADDRESS,
-    index$2_FDBackBase as FDBackBase,
-    index$2_FDBackBaseBytes as FDBackBaseBytes,
-    index$2_FDBase as FDBase,
-    index$2_FDBaseBytes as FDBaseBytes,
-    index$2_Flow as Flow,
-    index$2_getFD as getFD,
-    index$2_getFDBack as getFDBack,
-    index$2_getFDBackBytes as getFDBackBytes,
-    index$2_getFDBytes as getFDBytes,
-    index$2_multicallContracts as multicallContracts,
-    index$2_nullValue as nullValue,
+    index$3_CALL_TYPE as CALL_TYPE,
+    index$3_CALL_TYPE_MSG as CALL_TYPE_MSG,
+    index$3_CALL_TYPE_MSG_REV as CALL_TYPE_MSG_REV,
+    index$3_ComputedBase as ComputedBase,
+    index$3_ComputedBaseBytes as ComputedBaseBytes,
+    index$3_FCBase as FCBase,
+    index$3_FCBaseBytes as FCBaseBytes,
+    index$3_FCT_VAULT_ADDRESS as FCT_VAULT_ADDRESS,
+    index$3_FDBackBase as FDBackBase,
+    index$3_FDBackBaseBytes as FDBackBaseBytes,
+    index$3_FDBase as FDBase,
+    index$3_FDBaseBytes as FDBaseBytes,
+    index$3_Flow as Flow,
+    index$3_getFD as getFD,
+    index$3_getFDBack as getFDBack,
+    index$3_getFDBackBytes as getFDBackBytes,
+    index$3_getFDBytes as getFDBytes,
+    index$3_multicallContracts as multicallContracts,
+    index$3_nullValue as nullValue,
   };
 }
 
@@ -374,28 +357,28 @@ declare const getInvestorAddress: () => Variable;
 declare const getActivatorAddress: () => Variable;
 declare const getEngineAddress: () => Variable;
 
-type index$1_GlobalVariable = GlobalVariable;
-declare const index$1_getActivatorAddress: typeof getActivatorAddress;
-declare const index$1_getBlockNumber: typeof getBlockNumber;
-declare const index$1_getBlockTimestamp: typeof getBlockTimestamp;
-declare const index$1_getEngineAddress: typeof getEngineAddress;
-declare const index$1_getGasPrice: typeof getGasPrice;
-declare const index$1_getInvestorAddress: typeof getInvestorAddress;
-declare const index$1_getMinerAddress: typeof getMinerAddress;
-declare const index$1_getOriginAddress: typeof getOriginAddress;
-declare const index$1_globalVariables: typeof globalVariables;
-declare namespace index$1 {
+type index$2_GlobalVariable = GlobalVariable;
+declare const index$2_getActivatorAddress: typeof getActivatorAddress;
+declare const index$2_getBlockNumber: typeof getBlockNumber;
+declare const index$2_getBlockTimestamp: typeof getBlockTimestamp;
+declare const index$2_getEngineAddress: typeof getEngineAddress;
+declare const index$2_getGasPrice: typeof getGasPrice;
+declare const index$2_getInvestorAddress: typeof getInvestorAddress;
+declare const index$2_getMinerAddress: typeof getMinerAddress;
+declare const index$2_getOriginAddress: typeof getOriginAddress;
+declare const index$2_globalVariables: typeof globalVariables;
+declare namespace index$2 {
   export {
-    index$1_GlobalVariable as GlobalVariable,
-    index$1_getActivatorAddress as getActivatorAddress,
-    index$1_getBlockNumber as getBlockNumber,
-    index$1_getBlockTimestamp as getBlockTimestamp,
-    index$1_getEngineAddress as getEngineAddress,
-    index$1_getGasPrice as getGasPrice,
-    index$1_getInvestorAddress as getInvestorAddress,
-    index$1_getMinerAddress as getMinerAddress,
-    index$1_getOriginAddress as getOriginAddress,
-    index$1_globalVariables as globalVariables,
+    index$2_GlobalVariable as GlobalVariable,
+    index$2_getActivatorAddress as getActivatorAddress,
+    index$2_getBlockNumber as getBlockNumber,
+    index$2_getBlockTimestamp as getBlockTimestamp,
+    index$2_getEngineAddress as getEngineAddress,
+    index$2_getGasPrice as getGasPrice,
+    index$2_getInvestorAddress as getInvestorAddress,
+    index$2_getMinerAddress as getMinerAddress,
+    index$2_getOriginAddress as getOriginAddress,
+    index$2_globalVariables as globalVariables,
   };
 }
 
@@ -576,23 +559,23 @@ declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
     blockTimestamp?: number | undefined;
 }) => Promise<string>;
 
-type index_FetchUtility = FetchUtility;
-declare const index_FetchUtility: typeof FetchUtility;
-declare const index_fetchCurrentApprovals: typeof fetchCurrentApprovals;
-declare const index_getExecutedPath: typeof getExecutedPath;
-declare const index_getGasPrices: typeof getGasPrices;
-declare const index_getKIROPrice: typeof getKIROPrice;
-declare const index_getVariablesAsBytes32: typeof getVariablesAsBytes32;
-declare const index_transactionValidator: typeof transactionValidator;
-declare namespace index {
+type index$1_FetchUtility = FetchUtility;
+declare const index$1_FetchUtility: typeof FetchUtility;
+declare const index$1_fetchCurrentApprovals: typeof fetchCurrentApprovals;
+declare const index$1_getExecutedPath: typeof getExecutedPath;
+declare const index$1_getGasPrices: typeof getGasPrices;
+declare const index$1_getKIROPrice: typeof getKIROPrice;
+declare const index$1_getVariablesAsBytes32: typeof getVariablesAsBytes32;
+declare const index$1_transactionValidator: typeof transactionValidator;
+declare namespace index$1 {
   export {
-    index_FetchUtility as FetchUtility,
-    index_fetchCurrentApprovals as fetchCurrentApprovals,
-    index_getExecutedPath as getExecutedPath,
-    index_getGasPrices as getGasPrices,
-    index_getKIROPrice as getKIROPrice,
-    index_getVariablesAsBytes32 as getVariablesAsBytes32,
-    index_transactionValidator as transactionValidator,
+    index$1_FetchUtility as FetchUtility,
+    index$1_fetchCurrentApprovals as fetchCurrentApprovals,
+    index$1_getExecutedPath as getExecutedPath,
+    index$1_getGasPrices as getGasPrices,
+    index$1_getKIROPrice as getKIROPrice,
+    index$1_getVariablesAsBytes32 as getVariablesAsBytes32,
+    index$1_transactionValidator as transactionValidator,
   };
 }
 
@@ -1019,4 +1002,53 @@ declare class BatchMultiSigCall {
     static from: (input: IBatchMultiSigCallFCT) => BatchMultiSigCall;
 }
 
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, plugins, index as utils, index$1 as variables };
+declare const addresses: {
+    1: {
+        FCT_Controller: string;
+        FCT_BatchMultiSig: string;
+        FCT_EnsManager: string;
+        FCT_Tokenomics: string;
+        Actuator: string;
+        ActuatorCore: string;
+    };
+    5: {
+        FCT_Controller: string;
+        FCT_BatchMultiSig: string;
+        FCT_EnsManager: string;
+        FCT_Tokenomics: string;
+        Actuator: string;
+        ActuatorCore: string;
+    };
+};
+declare const EIP712_RECURRENCY: {
+    name: string;
+    type: string;
+}[];
+declare const EIP712_MULTISIG: {
+    name: string;
+    type: string;
+}[];
+declare const NO_JUMP = "NO_JUMP";
+declare const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions>;
+
+type index_BatchMultiSigCall = BatchMultiSigCall;
+declare const index_BatchMultiSigCall: typeof BatchMultiSigCall;
+declare const index_DEFAULT_CALL_OPTIONS: typeof DEFAULT_CALL_OPTIONS;
+declare const index_EIP712_MULTISIG: typeof EIP712_MULTISIG;
+declare const index_EIP712_RECURRENCY: typeof EIP712_RECURRENCY;
+declare const index_NO_JUMP: typeof NO_JUMP;
+declare const index_addresses: typeof addresses;
+declare const index_utils: typeof utils;
+declare namespace index {
+  export {
+    index_BatchMultiSigCall as BatchMultiSigCall,
+    index_DEFAULT_CALL_OPTIONS as DEFAULT_CALL_OPTIONS,
+    index_EIP712_MULTISIG as EIP712_MULTISIG,
+    index_EIP712_RECURRENCY as EIP712_RECURRENCY,
+    index_NO_JUMP as NO_JUMP,
+    index_addresses as addresses,
+    index_utils as utils,
+  };
+}
+
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, index as FCTBatchMultiSigCall, FCTCall, FCTCallParam, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$3 as constants, index$1 as utils, index$2 as variables };

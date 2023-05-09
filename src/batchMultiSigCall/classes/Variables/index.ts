@@ -72,9 +72,13 @@ export class Variables extends FCTBase {
     }
     if (variable.type === "output") {
       const id = variable.id as { nodeId: string; innerIndex: number };
-      const indexForNode = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
+      const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
 
-      return this.getOutputVariable(indexForNode, id.innerIndex, type);
+      return this.getOutputVariable({
+        index,
+        innerIndex: id.innerIndex,
+        type,
+      });
     }
     if (variable.type === "global") {
       const globalVariable = globalVariables[variable.id];
@@ -97,7 +101,15 @@ export class Variables extends FCTBase {
     throw new Error("Variable type not found");
   }
 
-  public getOutputVariable(index: number, innerIndex: number, type: string) {
+  public getOutputVariable({
+    index,
+    innerIndex,
+    type = "uint256",
+  }: {
+    index: number;
+    innerIndex: number;
+    type?: string;
+  }) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
     let base: string;
     let innerIndexHex: string;
