@@ -44,6 +44,17 @@ async function main() {
     },
   });
 
+  const approve = new ERC20.actions.Approve({
+    chainId,
+    initParams: {
+      to: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      methodParams: {
+        amount: "1" + "0".repeat(18),
+        spender: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
+      },
+    },
+  });
+
   const transfer = new ERC20.actions.TransferFrom({
     chainId,
   });
@@ -52,8 +63,8 @@ async function main() {
     to: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
     methodParams: {
       amount: "1" + "0".repeat(18),
-      // from: vault,
-      from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
+      from: vault,
+      // from: "0x62e3a53a947d34c4ddcd67b49fadc30b643e2586",
       to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     },
   });
@@ -87,6 +98,7 @@ async function main() {
   });
 
   await batchMultiSigCall.createMultiple([
+    { plugin: approve, nodeId: "1" },
     { plugin: transfer, nodeId: "3" },
     {
       plugin: erc721TransferFrom,
@@ -102,9 +114,10 @@ async function main() {
   ]);
 
   const FCT = batchMultiSigCall.exportFCT();
-  // console.log(util.inspect(batchMultiSigCall.decodedCalls, false, null, true /* enable colors */));
 
-  // console.log(util.inspect(FCT, false, null, true /* enable colors */));
+  const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
+
+  console.log("requiredApprovals", requiredApprovals);
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
@@ -121,7 +134,7 @@ async function main() {
     externalSigners: [],
   };
 
-  fs.writeFileSync("FCT.json", JSON.stringify(signedFCT, null, 2));
+  fs.writeFileSync("./scripts/FCT.json", JSON.stringify(signedFCT, null, 2));
 }
 
 main()
