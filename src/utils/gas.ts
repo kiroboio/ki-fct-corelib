@@ -5,6 +5,22 @@ import { SessionID } from "../batchMultiSigCall/classes";
 import { Interface } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 
+interface TransactionValidatorSuccess {
+  isValid: true;
+  txData: { gas: number; type: 2 } & EIP1559GasPrice;
+  prices: { gas: number; gasPrice: number };
+  error: null;
+}
+
+interface TransactionValidatorError {
+  isValid: false;
+  txData: { gas: number; type: 2 } & EIP1559GasPrice;
+  prices: { gas: number; gasPrice: number };
+  error: string;
+}
+
+type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
+
 const gasPriceCalculationsByChains = {
   5: (maxFeePerGas: number) => {
     // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
@@ -24,22 +40,6 @@ const gasPriceCalculationsByChains = {
   },
   1: (maxFeePerGas: number) => maxFeePerGas,
 };
-
-interface TransactionValidatorSuccess {
-  isValid: true;
-  txData: { gas: number; type: 2 } & EIP1559GasPrice;
-  prices: { gas: number; gasPrice: number };
-  error: null;
-}
-
-interface TransactionValidatorError {
-  isValid: false;
-  txData: { gas: number; type: 2 } & EIP1559GasPrice;
-  prices: { gas: number; gasPrice: number };
-  error: string;
-}
-
-type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
 
 export const transactionValidator = async (
   txVal: ITxValidator,
@@ -223,8 +223,6 @@ export const getGasPrices = async ({
 
       return returnValue;
     } catch (err) {
-      console.log("Error getting gas prices, retrying", err);
-
       if (tries > 0) {
         // Wait 3 seconds before retrying
         await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -235,7 +233,3 @@ export const getGasPrices = async ({
   } while (keepTrying && tries-- > 0);
   throw new Error("Could not get gas prices, issue might be related to node provider");
 };
-
-// 38270821632831754769812 - kiro price
-// 1275004198 - max fee
-// 462109 - gas
