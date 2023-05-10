@@ -1,11 +1,11 @@
 import { impersonateAccount, setNextBlockBaseFeePerGas } from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "ethers";
+import { writeFileSync } from "fs";
 import * as hre from "hardhat";
-import util from "util";
 
 import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { Interface } from "../src/helpers/Interfaces";
-import FCTData from "./Failing_FCT.json";
+import FCTData from "./Failing2.json";
 
 //  ChainId 5
 const actuatorAddress = "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b";
@@ -53,10 +53,16 @@ const txValidator = async ({
 
     // Wait for tx to be mined
     const txReceipt = await tx.wait();
-    // console.log(txReceipt);
-    console.log(util.inspect(txReceipt, false, null, true /* enable colors */));
+    // console.log(util.inspect(txReceipt, false, null, true /* enable colors */));
+    console.log("Success");
+
+    // Save the result
+    writeFileSync("./scripts/txReceipt.json", JSON.stringify(txReceipt, null, 2));
   } catch (err: any) {
     console.log(err);
+
+    // Save the error
+    writeFileSync("./scripts/txReceipt_error.json", JSON.stringify(err, null, 2));
   }
   console.timeEnd("txValidator");
 };

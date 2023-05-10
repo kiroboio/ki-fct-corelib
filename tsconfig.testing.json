@@ -1,12 +1,8 @@
 {
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  },
-
   "compilerOptions": {
     "strict": true,
     "module": "commonjs",
-    "target": "ESNext",
+    "target": "ES2020",
     "baseUrl": "./src",
     "strictPropertyInitialization": false,
     "allowJs": true,
@@ -17,5 +13,5 @@
     "strictBindCallApply": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "hardhat.config.ts"],
 }

@@ -74,26 +74,12 @@ export class CallID {
     payerIndex: number;
     callIndex: number;
   } {
-    const permissions = callId.slice(36, 38);
-    const flowNumber = parseInt(callId.slice(38, 40), 16);
-    const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-    const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-    const payerIndex = parseInt(callId.slice(48, 52), 16);
-    const callIndex = parseInt(callId.slice(52, 56), 16);
-    const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-    const flags = parseInt(callId.slice(64, 66), 16);
-
-    const getFlow = () => {
-      const flow = Object.entries(flows).find(([, value]) => {
-        return value.value === flowNumber.toString();
-      });
-      if (!flow) throw new Error("Invalid flow");
-      return Flow[flow[0] as keyof typeof Flow];
-    };
+    const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
+      CallID.destructCallId(callId);
 
     const options = {
       gasLimit,
-      flow: getFlow(),
+      flow: CallID.getFlow(flowNumber),
       jumpOnFail: "",
       jumpOnSuccess: "",
     };
@@ -122,26 +108,12 @@ export class CallID {
     payerIndex: number;
     callIndex: number;
   } {
-    const permissions = callId.slice(36, 38);
-    const flowNumber = parseInt(callId.slice(38, 40), 16);
-    const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-    const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-    const payerIndex = parseInt(callId.slice(48, 52), 16);
-    const callIndex = parseInt(callId.slice(52, 56), 16);
-    const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-    const flags = parseInt(callId.slice(64, 66), 16);
-
-    const getFlow = () => {
-      const flow = Object.entries(flows).find(([, value]) => {
-        return value.value === flowNumber.toString();
-      });
-      if (!flow) throw new Error("Invalid flow");
-      return Flow[flow[0] as keyof typeof Flow];
-    };
+    const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
+      CallID.destructCallId(callId);
 
     const options = {
       gasLimit,
-      flow: getFlow(),
+      flow: CallID.getFlow(flowNumber),
       jumpOnFail,
       jumpOnSuccess,
     };
@@ -154,4 +126,34 @@ export class CallID {
       callIndex,
     };
   }
+
+  private static destructCallId = (callId: string) => {
+    const permissions = callId.slice(36, 38);
+    const flowNumber = parseInt(callId.slice(38, 40), 16);
+    const jumpOnFail = parseInt(callId.slice(40, 44), 16);
+    const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
+    const payerIndex = parseInt(callId.slice(48, 52), 16);
+    const callIndex = parseInt(callId.slice(52, 56), 16);
+    const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
+    const flags = parseInt(callId.slice(64, 66), 16);
+
+    return {
+      permissions,
+      flowNumber,
+      jumpOnFail,
+      jumpOnSuccess,
+      payerIndex,
+      callIndex,
+      gasLimit,
+      flags,
+    };
+  };
+
+  private static getFlow = (flowNumber: number) => {
+    const flow = Object.entries(flows).find(([, value]) => {
+      return value.value === flowNumber.toString();
+    });
+    if (!flow) throw new Error("Invalid flow");
+    return Flow[flow[0] as keyof typeof Flow];
+  };
 }
