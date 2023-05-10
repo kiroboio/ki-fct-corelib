@@ -212,14 +212,14 @@ export const getKIROPrice = async ({
 
   // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
   if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
-    const priceAverage = isToken0KIRO ? s_price1Average : s_price0Average;
+    const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
 
     return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
   }
   const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
   const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
 
-  const priceAverage = isToken0KIRO ? price1Average : price0Average;
+  const priceAverage = isToken0KIRO ? price0Average : price1Average;
 
   return decode144(priceAverage * BigInt(1e18)).toString();
 };

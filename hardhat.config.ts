@@ -3,9 +3,11 @@ import "@nomiclabs/hardhat-web3";
 import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-ethers";
 
+// Import dot env
+import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/types";
 
-// Import dot env
+dotenv.config();
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -26,7 +28,7 @@ const config: HardhatUserConfig = {
       chainId: 1,
       allowUnlimitedContractSize: true,
       forking: {
-        url: "https://eth-mainnet.g.alchemy.com/v2/toMsPptyiRcDNFsB4auSaRTNHYnChOoB",
+        url: process.env.RPC_URL_MAINNET as string,
       },
     },
   },

@@ -1,4 +1,4 @@
-import { AaveV2, ERC20 } from "@kiroboio/fct-plugins";
+import { AaveV2, ChainId, ERC20 } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 
@@ -20,6 +20,52 @@ describe("BatchMultiSigCall", () => {
   beforeEach(async () => {
     batchMultiSigCall = new BatchMultiSigCall({
       chainId: "5",
+    });
+  });
+
+  describe("Settings", () => {
+    FCTOptionsErrors();
+
+    it("Should set settings", async () => {
+      const expiresAt = getDate(1);
+
+      const validSettings = {
+        maxGasPrice: "100000000000",
+        expiresAt,
+        purgeable: true,
+        blockable: true,
+        builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      };
+
+      expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
+      expect(batchMultiSigCall.options.builder).to.be.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+      expect(batchMultiSigCall.options.maxGasPrice).to.be.eq("100000000000");
+      expect(batchMultiSigCall.options.expiresAt).to.be.eq(expiresAt);
+      expect(batchMultiSigCall.options.purgeable).to.be.eq(true);
+      expect(batchMultiSigCall.options.blockable).to.be.eq(true);
+    });
+
+    it("Should expect chainId to be changed", () => {
+      batchMultiSigCall.changeChainId("1");
+      expect(batchMultiSigCall.chainId).to.be.eq("1");
+      expect(batchMultiSigCall.domain.chainId).to.be.eq(1);
+    });
+
+    it("Should expect error if chainId is not supported", () => {
+      expect(() => batchMultiSigCall.changeChainId("100" as ChainId)).to.throw(
+        "ChainId 100 is not supported. Please provide a custom EIP712 domain."
+      );
+    });
+
+    it("Should set call defaults", () => {
+      const from = createRandomAddress();
+
+      const defaults = batchMultiSigCall.setCallDefaults({
+        from,
+      });
+
+      expect(defaults).to.be.an("object");
+      expect(defaults.from).to.be.eq(from);
     });
   });
 
@@ -144,29 +190,6 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
       expect(callID).to.eq(Flow.OK_STOP_FAIL_STOP);
-    });
-  });
-
-  describe("Settings", () => {
-    FCTOptionsErrors();
-
-    it("Should set settings", async () => {
-      const expiresAt = getDate(1);
-
-      const validSettings = {
-        maxGasPrice: "100000000000",
-        expiresAt,
-        purgeable: true,
-        blockable: true,
-        builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-      };
-
-      expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
-      expect(batchMultiSigCall.options.builder).to.be.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-      expect(batchMultiSigCall.options.maxGasPrice).to.be.eq("100000000000");
-      expect(batchMultiSigCall.options.expiresAt).to.be.eq(expiresAt);
-      expect(batchMultiSigCall.options.purgeable).to.be.eq(true);
-      expect(batchMultiSigCall.options.blockable).to.be.eq(true);
     });
   });
 
