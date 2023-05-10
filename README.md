@@ -33,4 +33,16 @@ Before testing make sure to copy the `.env.example` file to `.env` and fill in t
 
 ```bash
 npm run test
+
+yarn run test
+```
+
+## Build
+
+Creates a `dist` folder with the compiled code.
+
+```bash
+npm run build
+
+yarn run build
 ```
