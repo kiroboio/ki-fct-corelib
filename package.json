@@ -1,10 +1,26 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.11.24",
+  "version": "1.11.25",
   "description": "Kirobo.io FCT Core library",
+  "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "keywords": [
+    "ethereum",
+    "web3",
+    "kirobo",
+    "fct"
+  ],
+  "homepage": "https://www.kirobo.io/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiroboio/ki-fct-corelib.git"
+  },
+  "license": "LGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
+  },
   "files": [
     "dist"
   ],
@@ -23,54 +39,6 @@
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kiroboio/ki-fct-corelib.git"
-  },
-  "keywords": [],
-  "author": "BK",
-  "license": "LGPL-3.0-only",
-  "bugs": {
-    "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
-  },
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "eslint",
-          "releaseRules": [
-            {
-              "tag": "Docs",
-              "message": "*README*",
-              "release": "patch"
-            },
-            {
-              "tag": "New",
-              "release": "patch"
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/npm",
-        {
-          "npmPublish": false
-        }
-      ],
-      "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/github",
-        {
-          "successComment": false
-        }
-      ]
-    ]
-  },
-  "homepage": "https://github.com/kiroboio/ki-fct-corelib#readme",
   "devDependencies": {
     "@babel/core": "^7.21.4",
     "@babel/eslint-parser": "^7.19.1",
