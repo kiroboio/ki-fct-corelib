@@ -5,7 +5,7 @@ import * as hre from "hardhat";
 
 import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { Interface } from "../src/helpers/Interfaces";
-import FCTData from "./Failing2.json";
+import FCTData from "./Failing.json";
 
 //  ChainId 5
 const actuatorAddress = "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b";
