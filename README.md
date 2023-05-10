@@ -46,7 +46,3 @@ npm run build
 
 yarn run build
 ```
-
-## License 
-
-GPL-3.0 license. See the [LICENSE](https://github.com/kiroboio/ki-fct-corelib/blob/main/LICENSE) file for details.
