@@ -16,7 +16,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
 
   const chainId = FCT.chainId;
 
-  for (const call of FCT.calls) {
+  for (const [callIndex, call] of FCT.calls.entries()) {
     if (typeof call.to !== "string") {
       continue;
     }
@@ -120,6 +120,21 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
             if (typeof call.from !== "string") {
               return true;
             }
+            const isGoingToGetApproved = FCT.calls.some((fctCall, i) => {
+              if (i >= callIndex) return false; // If the call is after the current call, we don't need to check
+              const { to, method, from } = fctCall;
+              if (typeof to !== "string" || typeof from !== "string") return false; // If the call doesn't have a to or from, we don't need to check
+
+              // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
+              return (
+                to.toLowerCase() === approval.token.toLowerCase() &&
+                method === approval.method &&
+                from.toLowerCase() === approval.from.toLowerCase()
+              );
+            });
+
+            if (isGoingToGetApproved) return false;
+
             const caller = getAddress(call.from);
             // If the protocol is AAVE, we check if the caller is the spender and the approver
             if (approval.protocol === "AAVE") {
