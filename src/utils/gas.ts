@@ -50,7 +50,7 @@ export const transactionValidator = async (
   const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
 
-  if (BigInt(maxGasPrice) > BigInt(gasPrice.maxFeePerGas)) {
+  if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: 2 },
