@@ -129,15 +129,6 @@ var index$3 = /*#__PURE__*/Object.freeze({
     nullValue: nullValue
 });
 
-const getVariablesAsBytes32 = (variables) => {
-    return variables.map((v) => {
-        if (isNaN(Number(v)) || ethers.utils.isAddress(v)) {
-            return `0x${String(v).replace("0x", "").padStart(64, "0")}`;
-        }
-        return `0x${Number(v).toString(16).padStart(64, "0")}`;
-    });
-};
-
 const fetchApprovalsInterface = new ethers.ethers.utils.Interface([
     "function allowance(address owner, address spender) view returns (uint256)",
     "function getApproved(uint256 tokenId) view returns (address)",
@@ -1578,25 +1569,10 @@ class CallID {
             `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0"));
     }
     static parse(callId) {
-        const permissions = callId.slice(36, 38);
-        const flowNumber = parseInt(callId.slice(38, 40), 16);
-        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-        const payerIndex = parseInt(callId.slice(48, 52), 16);
-        const callIndex = parseInt(callId.slice(52, 56), 16);
-        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-        const flags = parseInt(callId.slice(64, 66), 16);
-        const getFlow = () => {
-            const flow = Object.entries(flows).find(([, value]) => {
-                return value.value === flowNumber.toString();
-            });
-            if (!flow)
-                throw new Error("Invalid flow");
-            return Flow[flow[0]];
-        };
+        const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } = CallID.destructCallId(callId);
         const options = {
             gasLimit,
-            flow: getFlow(),
+            flow: CallID.getFlow(flowNumber),
             jumpOnFail: "",
             jumpOnSuccess: "",
         };
@@ -1613,25 +1589,10 @@ class CallID {
         };
     }
     static parseWithNumbers(callId) {
-        const permissions = callId.slice(36, 38);
-        const flowNumber = parseInt(callId.slice(38, 40), 16);
-        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
-        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
-        const payerIndex = parseInt(callId.slice(48, 52), 16);
-        const callIndex = parseInt(callId.slice(52, 56), 16);
-        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
-        const flags = parseInt(callId.slice(64, 66), 16);
-        const getFlow = () => {
-            const flow = Object.entries(flows).find(([, value]) => {
-                return value.value === flowNumber.toString();
-            });
-            if (!flow)
-                throw new Error("Invalid flow");
-            return Flow[flow[0]];
-        };
+        const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } = CallID.destructCallId(callId);
         const options = {
             gasLimit,
-            flow: getFlow(),
+            flow: CallID.getFlow(flowNumber),
             jumpOnFail,
             jumpOnSuccess,
         };
@@ -1643,6 +1604,34 @@ class CallID {
             callIndex,
         };
     }
+    static destructCallId = (callId) => {
+        const permissions = callId.slice(36, 38);
+        const flowNumber = parseInt(callId.slice(38, 40), 16);
+        const jumpOnFail = parseInt(callId.slice(40, 44), 16);
+        const jumpOnSuccess = parseInt(callId.slice(44, 48), 16);
+        const payerIndex = parseInt(callId.slice(48, 52), 16);
+        const callIndex = parseInt(callId.slice(52, 56), 16);
+        const gasLimit = parseInt(callId.slice(56, 64), 16).toString();
+        const flags = parseInt(callId.slice(64, 66), 16);
+        return {
+            permissions,
+            flowNumber,
+            jumpOnFail,
+            jumpOnSuccess,
+            payerIndex,
+            callIndex,
+            gasLimit,
+            flags,
+        };
+    };
+    static getFlow = (flowNumber) => {
+        const flow = Object.entries(flows).find(([, value]) => {
+            return value.value === flowNumber.toString();
+        });
+        if (!flow)
+            throw new Error("Invalid flow");
+        return Flow[flow[0]];
+    };
 }
 
 const getComputedVariableMessage = (computedVariables) => {
@@ -4514,7 +4503,7 @@ function getAllRequiredApprovals(FCT) {
         throw new Error("No chainId or provider has been set");
     }
     const chainId = FCT.chainId;
-    for (const call of FCT.calls) {
+    for (const [callIndex, call] of FCT.calls.entries()) {
         if (typeof call.to !== "string") {
             continue;
         }
@@ -4607,6 +4596,19 @@ function getAllRequiredApprovals(FCT) {
                     if (typeof call.from !== "string") {
                         return true;
                     }
+                    const isGoingToGetApproved = FCT.calls.some((fctCall, i) => {
+                        if (i >= callIndex)
+                            return false; // If the call is after the current call, we don't need to check
+                        const { to, method, from } = fctCall;
+                        if (typeof to !== "string" || typeof from !== "string")
+                            return false; // If the call doesn't have a to or from, we don't need to check
+                        // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
+                        return (to.toLowerCase() === approval.token.toLowerCase() &&
+                            method === approval.method &&
+                            from.toLowerCase() === approval.from.toLowerCase());
+                    });
+                    if (isGoingToGetApproved)
+                        return false;
                     const caller = utils$1.getAddress(call.from);
                     // If the protocol is AAVE, we check if the caller is the spender and the approver
                     if (approval.protocol === "AAVE") {
@@ -5099,15 +5101,6 @@ const INVESTOR_ADDRESS = "0xFA0C000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0xFA0D000000000000000000000000000000000000";
 const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
-// const getBlockHash = (indexOfPreviousBlock: number = 1) => {
-//   if (indexOfPreviousBlock === 0) {
-//     throw new Error("Only previous blocks are supported");
-//   }
-//   if (indexOfPreviousBlock > 255) {
-//     throw new Error("Only previous blocks up to 255 are supported");
-//   }
-//   return (indexOfPreviousBlock - 1).toString(16).padStart(BLOCK_HASH.length, BLOCK_HASH);
-// };
 const globalVariables = {
     blockNumber: BLOCK_NUMBER,
     blockTimestamp: BLOCK_TIMESTAMP,
@@ -5191,8 +5184,12 @@ class Variables extends FCTBase {
         }
         if (variable.type === "output") {
             const id = variable.id;
-            const indexForNode = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
-            return this.getOutputVariable(indexForNode, id.innerIndex, type);
+            const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
+            return this.getOutputVariable({
+                index,
+                innerIndex: id.innerIndex,
+                type,
+            });
         }
         if (variable.type === "global") {
             const globalVariable = globalVariables[variable.id];
@@ -5210,7 +5207,7 @@ class Variables extends FCTBase {
         }
         throw new Error("Variable type not found");
     }
-    getOutputVariable(index, innerIndex, type) {
+    getOutputVariable({ index, innerIndex, type = "uint256", }) {
         const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
         let base;
         let innerIndexHex;
@@ -5258,6 +5255,17 @@ class Variables extends FCTBase {
         }
         return this.getVariable(value, type);
     }
+    getVariablesAsBytes32 = (variables) => {
+        return Variables.getVariablesAsBytes32(variables);
+    };
+    static getVariablesAsBytes32 = (variables) => {
+        return variables.map((v) => {
+            if (isNaN(Number(v)) || ethers.utils.isAddress(v)) {
+                return `0x${String(v).replace("0x", "").padStart(64, "0")}`;
+            }
+            return `0x${Number(v).toString(16).padStart(64, "0")}`;
+        });
+    };
 }
 
 const gasPriceCalculationsByChains = {
@@ -5422,7 +5430,6 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
             return returnValue;
         }
         catch (err) {
-            console.log("Error getting gas prices, retrying", err);
             if (tries > 0) {
                 // Wait 3 seconds before retrying
                 await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -5433,19 +5440,6 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
         }
     } while (keepTrying && tries-- > 0);
     throw new Error("Could not get gas prices, issue might be related to node provider");
-};
-// 38270821632831754769812 - kiro price
-// 1275004198 - max fee
-// 462109 - gas
-
-// 0x95f9f186cbff60cecdecef460c442b82d938973becca0015d1376596daa6b574
-const getExecutedPath = async ({ 
-//   chainId,
-rpcUrl, txHash, }) => {
-    const provider = new ethers.ethers.providers.JsonRpcProvider(rpcUrl);
-    // Get the tx receipt
-    const txReceipt = await provider.getTransactionReceipt(txHash);
-    console.log("txReceipt", txReceipt);
 };
 
 async function create(call) {
@@ -6014,12 +6008,12 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
     const timeElapsed = blockTimestamp - s_blockTimestampLast.toNumber();
     // If time elapsed is less than the time between KIRO price updates, we don't need to update the price
     if (timeElapsed < s_timeBetweenKiroPriceUpdate.toNumber()) {
-        const priceAverage = isToken0KIRO ? s_price1Average : s_price0Average;
+        const priceAverage = isToken0KIRO ? s_price0Average : s_price1Average;
         return decode144(BigInt(priceAverage.toString()) * BigInt(1e18)).toString();
     }
     const price0Average = (price0Cumulative - BigInt(s_price0CumulativeLast.toString())) / BigInt(timeElapsed);
     const price1Average = (price1Cumulative - BigInt(s_price1CumulativeLast.toString())) / BigInt(timeElapsed);
-    const priceAverage = isToken0KIRO ? price1Average : price0Average;
+    const priceAverage = isToken0KIRO ? price0Average : price1Average;
     return decode144(priceAverage * BigInt(1e18)).toString();
 };
 
@@ -6027,10 +6021,8 @@ var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     FetchUtility: FetchUtility,
     fetchCurrentApprovals: fetchCurrentApprovals,
-    getExecutedPath: getExecutedPath,
     getGasPrices: getGasPrices,
     getKIROPrice: getKIROPrice,
-    getVariablesAsBytes32: getVariablesAsBytes32,
     transactionValidator: transactionValidator
 });
 

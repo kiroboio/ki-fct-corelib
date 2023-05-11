@@ -47,10 +47,7 @@ export const transactionValidator = async (
 ): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
 
-  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData(
-    "batchMultiSigCall",
-    Interface.FCT_Actuator.decodeFunctionData(activateForFree ? "activateForFree" : "activate", callData)[0]
-  );
+  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
 
   if (BigInt(maxGasPrice) > BigInt(gasPrice.maxFeePerGas)) {

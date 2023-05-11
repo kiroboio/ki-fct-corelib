@@ -111,8 +111,6 @@ declare namespace index$3 {
   };
 }
 
-declare const getVariablesAsBytes32: (variables: string[]) => string[];
-
 interface TypedDataRecurrency {
     max_repeats: string;
     chill_time: string;
@@ -547,11 +545,6 @@ declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
     tries?: number | undefined;
 }) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
 
-declare const getExecutedPath: ({ rpcUrl, txHash, }: {
-    rpcUrl: string;
-    txHash: string;
-}) => Promise<void>;
-
 declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
     chainId: number;
     rpcUrl?: string | undefined;
@@ -562,19 +555,15 @@ declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
 type index$1_FetchUtility = FetchUtility;
 declare const index$1_FetchUtility: typeof FetchUtility;
 declare const index$1_fetchCurrentApprovals: typeof fetchCurrentApprovals;
-declare const index$1_getExecutedPath: typeof getExecutedPath;
 declare const index$1_getGasPrices: typeof getGasPrices;
 declare const index$1_getKIROPrice: typeof getKIROPrice;
-declare const index$1_getVariablesAsBytes32: typeof getVariablesAsBytes32;
 declare const index$1_transactionValidator: typeof transactionValidator;
 declare namespace index$1 {
   export {
     index$1_FetchUtility as FetchUtility,
     index$1_fetchCurrentApprovals as fetchCurrentApprovals,
-    index$1_getExecutedPath as getExecutedPath,
     index$1_getGasPrices as getGasPrices,
     index$1_getKIROPrice as getKIROPrice,
-    index$1_getVariablesAsBytes32 as getVariablesAsBytes32,
     index$1_transactionValidator as transactionValidator,
   };
 }
@@ -764,10 +753,16 @@ declare class Variables extends FCTBase {
         type: "computed";
     };
     getVariable(variable: Variable, type: string): string;
-    getOutputVariable(index: number, innerIndex: number, type: string): string;
+    getOutputVariable({ index, innerIndex, type, }: {
+        index: number;
+        innerIndex: number;
+        type?: string;
+    }): string;
     getExternalVariable(index: number, type: string): string;
     getComputedVariable(index: number, type: string): string;
     getValue(value: undefined | Variable | string, type: string, ifValueUndefined?: string): string;
+    getVariablesAsBytes32: (variables: string[]) => string[];
+    static getVariablesAsBytes32: (variables: string[]) => string[];
 }
 
 declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
@@ -932,7 +927,7 @@ declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
     protocol: "ERC20" | "ERC721" | "ERC1155" | "AAVE" | "SUSHISWAP" | "UNISWAP" | "VALIDATOR" | "MATH" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE";
     type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE";
-    method: "" | "symbol" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "allowance" | "getApproved" | "isApprovedForAll" | "totalSupply" | "supportsInterface" | "name" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "balanceOf" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "mint" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "getReserves" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "positions" | "protocolFees" | "slot0" | "ticks" | "getEthBalance";
+    method: "" | "symbol" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "allowance" | "getApproved" | "isApprovedForAll" | "totalSupply" | "supportsInterface" | "name" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "balanceOf" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "getEthBalance";
     input: {
         to: string | Variable;
         value: string | Variable | undefined;
