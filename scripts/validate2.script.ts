@@ -1,4 +1,5 @@
 import { impersonateAccount, setNextBlockBaseFeePerGas } from "@nomicfoundation/hardhat-network-helpers";
+import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 import { writeFileSync } from "fs";
 import * as hre from "hardhat";
@@ -7,9 +8,11 @@ import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { Interface } from "../src/helpers/Interfaces";
 import FCTData from "./Failing.json";
 
+dotenv.config();
+
 //  ChainId 5
 const actuatorAddress = "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b";
-const chainIdImport = 5;
+const chainIdImport = 1;
 
 const txValidator = async ({
   rpcUrl,
@@ -76,8 +79,10 @@ const calldata = FCT.utils.getCalldataForActuator({
 });
 
 txValidator({
-  rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
-  chainId: 5,
+  // rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+  // chainId: 5,
+  rpcUrl: process.env.RPC_URL_MAINNET as string,
+  chainId: 1,
   calldata,
   actuatorAddress,
 })
