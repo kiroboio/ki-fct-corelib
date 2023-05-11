@@ -61,6 +61,8 @@ export class ExportFCT extends FCTBase {
   public getCalls(): MSCall[] {
     const typedData = this.typedData;
     const calls = this.calls;
+
+    console.log("Before calls");
     return calls.map((call, index) => {
       const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
 
