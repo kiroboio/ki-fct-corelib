@@ -62,7 +62,6 @@ export class ExportFCT extends FCTBase {
     const typedData = this.typedData;
     const calls = this.calls;
 
-    console.log("Before calls");
     return calls.map((call, index) => {
       const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
 
