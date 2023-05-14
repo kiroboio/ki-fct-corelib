@@ -13,5 +13,5 @@
     "strictBindCallApply": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "hardhat.config.ts"],
+  "include": ["src/**/*.test.ts", "scripts/**/*.ts", "hardhat.config.ts"]
 }
