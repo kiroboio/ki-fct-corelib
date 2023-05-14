@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 import { addresses } from "../batchMultiSigCall";
 import { multicallContracts } from "../constants";
-import { Interface } from "../helpers/Interfaces";
+import { Interfaces } from "../helpers/Interfaces";
 
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {
@@ -54,7 +54,7 @@ const getData = async ({
     "function price0CumulativeLast() external view returns (uint)",
     "function price1CumulativeLast() external view returns (uint)",
   ]);
-  const Actuator = Interface.FCT_Actuator;
+  const Actuator = Interfaces.FCT_Actuator;
 
   const multicallContract = getMulticallContract(chainId, provider);
 

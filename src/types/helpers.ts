@@ -7,5 +7,5 @@ export type DeepPartial<T> = T extends object
     }
   : T;
 
-// Create a type that makes makes specific properties mandatory
+// Create a type that makes specific properties mandatory
 export type RequiredKeys<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;

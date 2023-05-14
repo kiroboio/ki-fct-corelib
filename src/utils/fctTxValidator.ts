@@ -3,14 +3,14 @@ import { ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
 import { SessionID } from "../batchMultiSigCall/classes";
-import { Interface } from "../helpers/Interfaces";
+import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
 
-  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
+  const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
 
   if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {

@@ -4,7 +4,7 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import _ from "lodash";
 
-import { Interface } from "../../../helpers/Interfaces";
+import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { TypedDataLimits, TypedDataTypes } from "../../types";
 import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
@@ -411,8 +411,8 @@ export class FCTUtils extends FCTBase {
       provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     }
     const txReceipt = await provider.getTransactionReceipt(txHash);
-    const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
-    const controllerInterface = Interface.FCT_Controller;
+    const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+    const controllerInterface = Interfaces.FCT_Controller;
 
     // Get FCTE_Activated event
     const messageHash = txReceipt.logs.find((log) => {

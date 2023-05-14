@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from "ethers";
 
 import { multicallContracts } from "../../constants";
-import { Interface } from "../../helpers/Interfaces";
+import { Interfaces } from "../../helpers/Interfaces";
 import { IRequiredApproval } from "../../types";
 import { fetchCurrentApprovals } from "../fetch/helpers";
 
@@ -36,7 +36,7 @@ export class FetchUtility {
 
     this.multicallContract = new ethers.Contract(
       multicallContracts[Number(chainId) as keyof typeof multicallContracts],
-      Interface.Multicall,
+      Interfaces.Multicall,
       provider
     );
   }
