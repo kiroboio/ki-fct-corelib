@@ -10,7 +10,6 @@
     "strictPropertyInitialization": false,
     "allowJs": true,
     "moduleResolution": "node",
-    "lib": ["ES2021", "DOM"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strictBindCallApply": true,

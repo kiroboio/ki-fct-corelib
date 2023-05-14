@@ -1757,6 +1757,10 @@ const typeValue = (param) => {
         const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
         const insideType = typeValue(parameter);
         const type = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
+        if (type === TYPE_ARRAY_WITH_LENGTH) {
+            const length = param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
+            return [type, Number(length), ...insideType];
+        }
         return [type, ...insideType];
     }
     // If type is a string
