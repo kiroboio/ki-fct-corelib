@@ -10,6 +10,7 @@ interface FetchUtilConstructor {
   provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
   chainId: number | string;
 }
+
 export class FetchUtility {
   public chainId: number;
   private readonly multicallContract: ethers.Contract;
