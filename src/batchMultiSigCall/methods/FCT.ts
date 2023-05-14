@@ -98,64 +98,6 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
         types: typesObject,
         primaryType: `transaction${index + 1}`,
       });
-
-      // console.log(
-      //   FCTCalls.helpers.getParamsFromTypedData({
-      //     eip712InputTypes: inputs,
-      //     parameters,
-      //     types: typesObject,
-      //     primaryType: `transaction${index + 1}`,
-      //   })
-      // );
-
-      // const generateParamTypes = (types: TypedDataTypes, primaryType: string) => {
-      //   const type = types[primaryType];
-      //   // If the type[0] name is call and type is Call, then slice the first element
-      //   if (type[0].name === "call" && type[0].type === "Call") {
-      //     type.shift();
-      //   }
-      //   const params: ParamType[] = [];
-      //   for (const { name, type: paramType } of type) {
-      //     if (types[paramType]) {
-      //       const components = generateParamTypes(types, paramType);
-      //       params.push(ParamType.from({ name, type: paramType, components }));
-      //     } else {
-      //       params.push(ParamType.from({ name, type: paramType }));
-      //     }
-      //   }
-      //   return params;
-      // };
-
-      // // Create a functions that goes through all the inputs and adds the name of the parameter
-      // const addNameToParameter = (
-      //   inputs: ethers.utils.ParamType[],
-      //   dataTypes: { name: string; type: string }[]
-      // ): ParamType[] => {
-      //   return inputs.map((input, index) => {
-      //     const dataType = dataTypes[index];
-      //     if (input.type.includes("tuple")) {
-      //       const data = {
-      //         ...input,
-      //         name: dataType.name,
-      //         components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
-      //       };
-      //       return ParamType.from(data);
-      //     }
-      //     return ParamType.from({
-      //       ...input,
-      //       name: dataType.name,
-      //       type: dataType.type,
-      //     });
-      //   });
-      // };
-
-      // const functionSignatureHash = ethers.utils.id(signature);
-      // const updatedInputs = addNameToParameter(inputs, dataTypes);
-
-      // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
-      // const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-
-      // params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
     }
 
     const getFlow = () => {
