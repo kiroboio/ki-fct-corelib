@@ -41,7 +41,7 @@ export class FCTUtils extends FCTBase {
     purgedFCT: string;
     investor: string;
     activator: string;
-  }): string {
+  }) {
     return getCalldataForActuator({
       signedFCT: _.merge({}, this.FCTData, { signatures }),
       purgedFCT,
@@ -192,9 +192,6 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
-  // 38270821632831754769812 - kiro price
-  // 1275004198 - max fee
-  // 462109 - gas
   // TODO: Make this function deprecated. Use getPaymentPerPayer instead
   public getKIROPayment = ({
     priceOfETHInKiro,
