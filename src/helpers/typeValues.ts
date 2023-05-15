@@ -7,7 +7,7 @@ const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;
 const TYPE_BYTES = 3000;
 const TYPE_ARRAY = 4000;
-const TYPE_ARRAY_WITH_LENGTH = 5000;
+const TYPE_ARRAY_WITH_LENGTH = 5000; // Example: uint256[2] - [TYPE_ARRAY_WITH_LENGTH, 2, ...rest]
 
 const typeValue = (param: Param): number[] => {
   // If type is an array

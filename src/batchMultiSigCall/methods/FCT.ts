@@ -4,7 +4,7 @@ import { AbiCoder } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
-import { Interface } from "../../helpers/Interfaces";
+import { Interfaces } from "../../helpers/Interfaces";
 import { Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
@@ -15,6 +15,7 @@ import {
   IMSCallInputWithNodeId,
   TypedDataMessageTransaction,
 } from "../types";
+import { PluginParams } from "./types";
 
 export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
   return this._calls.create(call);
@@ -35,12 +36,22 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
   return callsCreated;
 }
 
-export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
-  const plugin = new Plugin({
+export function createPlugin<T extends AllPlugins>(
+  this: BatchMultiSigCall,
+  {
+    plugin,
+    initParams,
+  }: {
+    plugin: T;
+    initParams?: PluginParams<T>;
+  }
+) {
+  const Plugin = new plugin({
     chainId: this.chainId,
+    initParams: initParams ?? {},
   });
-  if (plugin instanceof Plugin) {
-    return plugin;
+  if (Plugin instanceof plugin) {
+    return Plugin;
   } else {
     throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
   }
@@ -98,64 +109,6 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
         types: typesObject,
         primaryType: `transaction${index + 1}`,
       });
-
-      // console.log(
-      //   FCTCalls.helpers.getParamsFromTypedData({
-      //     eip712InputTypes: inputs,
-      //     parameters,
-      //     types: typesObject,
-      //     primaryType: `transaction${index + 1}`,
-      //   })
-      // );
-
-      // const generateParamTypes = (types: TypedDataTypes, primaryType: string) => {
-      //   const type = types[primaryType];
-      //   // If the type[0] name is call and type is Call, then slice the first element
-      //   if (type[0].name === "call" && type[0].type === "Call") {
-      //     type.shift();
-      //   }
-      //   const params: ParamType[] = [];
-      //   for (const { name, type: paramType } of type) {
-      //     if (types[paramType]) {
-      //       const components = generateParamTypes(types, paramType);
-      //       params.push(ParamType.from({ name, type: paramType, components }));
-      //     } else {
-      //       params.push(ParamType.from({ name, type: paramType }));
-      //     }
-      //   }
-      //   return params;
-      // };
-
-      // // Create a functions that goes through all the inputs and adds the name of the parameter
-      // const addNameToParameter = (
-      //   inputs: ethers.utils.ParamType[],
-      //   dataTypes: { name: string; type: string }[]
-      // ): ParamType[] => {
-      //   return inputs.map((input, index) => {
-      //     const dataType = dataTypes[index];
-      //     if (input.type.includes("tuple")) {
-      //       const data = {
-      //         ...input,
-      //         name: dataType.name,
-      //         components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
-      //       };
-      //       return ParamType.from(data);
-      //     }
-      //     return ParamType.from({
-      //       ...input,
-      //       name: dataType.name,
-      //       type: dataType.type,
-      //     });
-      //   });
-      // };
-
-      // const functionSignatureHash = ethers.utils.id(signature);
-      // const updatedInputs = addNameToParameter(inputs, dataTypes);
-
-      // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
-      // const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-
-      // params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
     }
 
     const getFlow = () => {
@@ -194,7 +147,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
 }
 
 export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
-  const iface = Interface.FCT_BatchMultiSigCall;
+  const iface = Interfaces.FCT_BatchMultiSigCall;
   const chainId = this.chainId;
   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
 
