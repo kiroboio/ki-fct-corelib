@@ -5,7 +5,6 @@ var ethers = require('ethers');
 var _ = require('lodash');
 var utils$1 = require('ethers/lib/utils');
 var ethSigUtil = require('@metamask/eth-sig-util');
-var BigNumber = require('bignumber.js');
 var graphlib = require('graphlib');
 var util = require('util');
 
@@ -2113,10 +2112,10 @@ class Options {
                 const expiresAt = Number(value[objKey]);
                 const now = Number(new Date().getTime() / 1000).toFixed();
                 const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                if (BigInt(expiresAt) <= BigInt(now)) {
                     throw new Error(`Options: expiresAt must be in the future`);
                 }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
                     throw new Error(`Options: expiresAt must be greater than validFrom`);
                 }
             }
@@ -2524,7 +2523,7 @@ class FCTCalls extends FCTBase {
             return await this.createWithPlugin(call);
         }
         else if ("abi" in call) {
-            return await this.createWithEncodedData(call);
+            return this.createWithEncodedData(call);
         }
         else {
             const data = { ...call, nodeId: call.nodeId || generateNodeId() };
@@ -2547,7 +2546,7 @@ class FCTCalls extends FCTBase {
         };
         return this.addCall(data);
     }
-    async createWithEncodedData(callWithEncodedData) {
+    createWithEncodedData(callWithEncodedData) {
         const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
         const iface = new utils$1.Interface(abi);
         try {
@@ -4681,9 +4680,6 @@ class FCTUtils extends FCTBase {
         printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
-    // 38270821632831754769812 - kiro price
-    // 1275004198 - max fee
-    // 462109 - gas
     // TODO: Make this function deprecated. Use getPaymentPerPayer instead
     getKIROPayment = ({ priceOfETHInKiro, gasPrice, gas, }) => {
         const fct = this.FCTData;
@@ -5388,12 +5384,13 @@ async function createMultiple(calls) {
     }
     return callsCreated;
 }
-function createPlugin(Plugin) {
-    const plugin = new Plugin({
+function createPlugin({ plugin, initParams, }) {
+    const Plugin = new plugin({
         chainId: this.chainId,
+        initParams: initParams ?? {},
     });
-    if (plugin instanceof Plugin) {
-        return plugin;
+    if (Plugin instanceof plugin) {
+        return Plugin;
     }
     else {
         throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
@@ -5441,58 +5438,6 @@ function importFCT(fct) {
                 types: typesObject,
                 primaryType: `transaction${index + 1}`,
             });
-            // console.log(
-            //   FCTCalls.helpers.getParamsFromTypedData({
-            //     eip712InputTypes: inputs,
-            //     parameters,
-            //     types: typesObject,
-            //     primaryType: `transaction${index + 1}`,
-            //   })
-            // );
-            // const generateParamTypes = (types: TypedDataTypes, primaryType: string) => {
-            //   const type = types[primaryType];
-            //   // If the type[0] name is call and type is Call, then slice the first element
-            //   if (type[0].name === "call" && type[0].type === "Call") {
-            //     type.shift();
-            //   }
-            //   const params: ParamType[] = [];
-            //   for (const { name, type: paramType } of type) {
-            //     if (types[paramType]) {
-            //       const components = generateParamTypes(types, paramType);
-            //       params.push(ParamType.from({ name, type: paramType, components }));
-            //     } else {
-            //       params.push(ParamType.from({ name, type: paramType }));
-            //     }
-            //   }
-            //   return params;
-            // };
-            // // Create a functions that goes through all the inputs and adds the name of the parameter
-            // const addNameToParameter = (
-            //   inputs: ethers.utils.ParamType[],
-            //   dataTypes: { name: string; type: string }[]
-            // ): ParamType[] => {
-            //   return inputs.map((input, index) => {
-            //     const dataType = dataTypes[index];
-            //     if (input.type.includes("tuple")) {
-            //       const data = {
-            //         ...input,
-            //         name: dataType.name,
-            //         components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
-            //       };
-            //       return ParamType.from(data);
-            //     }
-            //     return ParamType.from({
-            //       ...input,
-            //       name: dataType.name,
-            //       type: dataType.type,
-            //     });
-            //   });
-            // };
-            // const functionSignatureHash = ethers.utils.id(signature);
-            // const updatedInputs = addNameToParameter(inputs, dataTypes);
-            // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
-            // const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-            // params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(flows).find(([, value]) => {
@@ -5807,7 +5752,7 @@ const getMulticallContract = (chainId, provider) => {
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
 };
-const getData = async ({ chainId, provider, }) => {
+const getData = async ({ chainId, provider }) => {
     const poolAddress = data[chainId].V2_Pool;
     const actuatorAddress = addresses[chainId].Actuator;
     if (!poolAddress) {

@@ -1,12 +1,11 @@
 import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
-import { utils as utils$1, BigNumber as BigNumber$1, ethers } from 'ethers';
+import { utils as utils$1, BigNumber, ethers } from 'ethers';
 export { ethers } from 'ethers';
 import _ from 'lodash';
 import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
-import BigNumber from 'bignumber.js';
 import { Graph } from 'graphlib';
 import util from 'util';
 
@@ -2114,10 +2113,10 @@ class Options {
                 const expiresAt = Number(value[objKey]);
                 const now = Number(new Date().getTime() / 1000).toFixed();
                 const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                if (BigInt(expiresAt) <= BigInt(now)) {
                     throw new Error(`Options: expiresAt must be in the future`);
                 }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
                     throw new Error(`Options: expiresAt must be greater than validFrom`);
                 }
             }
@@ -2321,7 +2320,7 @@ class ExportFCT extends FCTBase {
 
 const manageValue = (value) => {
     const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-    if (BigNumber$1.isBigNumber(value)) {
+    if (BigNumber.isBigNumber(value)) {
         const hexString = value.toHexString().toLowerCase();
         if (variables.some((v) => hexString.startsWith(v))) {
             value = hexString;
@@ -2525,7 +2524,7 @@ class FCTCalls extends FCTBase {
             return await this.createWithPlugin(call);
         }
         else if ("abi" in call) {
-            return await this.createWithEncodedData(call);
+            return this.createWithEncodedData(call);
         }
         else {
             const data = { ...call, nodeId: call.nodeId || generateNodeId() };
@@ -2548,7 +2547,7 @@ class FCTCalls extends FCTBase {
         };
         return this.addCall(data);
     }
-    async createWithEncodedData(callWithEncodedData) {
+    createWithEncodedData(callWithEncodedData) {
         const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
         const iface = new Interface(abi);
         try {
@@ -4682,9 +4681,6 @@ class FCTUtils extends FCTBase {
         printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
-    // 38270821632831754769812 - kiro price
-    // 1275004198 - max fee
-    // 462109 - gas
     // TODO: Make this function deprecated. Use getPaymentPerPayer instead
     getKIROPayment = ({ priceOfETHInKiro, gasPrice, gas, }) => {
         const fct = this.FCTData;
@@ -5389,12 +5385,13 @@ async function createMultiple(calls) {
     }
     return callsCreated;
 }
-function createPlugin(Plugin) {
-    const plugin = new Plugin({
+function createPlugin({ plugin, initParams, }) {
+    const Plugin = new plugin({
         chainId: this.chainId,
+        initParams: initParams ?? {},
     });
-    if (plugin instanceof Plugin) {
-        return plugin;
+    if (Plugin instanceof plugin) {
+        return Plugin;
     }
     else {
         throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
@@ -5442,58 +5439,6 @@ function importFCT(fct) {
                 types: typesObject,
                 primaryType: `transaction${index + 1}`,
             });
-            // console.log(
-            //   FCTCalls.helpers.getParamsFromTypedData({
-            //     eip712InputTypes: inputs,
-            //     parameters,
-            //     types: typesObject,
-            //     primaryType: `transaction${index + 1}`,
-            //   })
-            // );
-            // const generateParamTypes = (types: TypedDataTypes, primaryType: string) => {
-            //   const type = types[primaryType];
-            //   // If the type[0] name is call and type is Call, then slice the first element
-            //   if (type[0].name === "call" && type[0].type === "Call") {
-            //     type.shift();
-            //   }
-            //   const params: ParamType[] = [];
-            //   for (const { name, type: paramType } of type) {
-            //     if (types[paramType]) {
-            //       const components = generateParamTypes(types, paramType);
-            //       params.push(ParamType.from({ name, type: paramType, components }));
-            //     } else {
-            //       params.push(ParamType.from({ name, type: paramType }));
-            //     }
-            //   }
-            //   return params;
-            // };
-            // // Create a functions that goes through all the inputs and adds the name of the parameter
-            // const addNameToParameter = (
-            //   inputs: ethers.utils.ParamType[],
-            //   dataTypes: { name: string; type: string }[]
-            // ): ParamType[] => {
-            //   return inputs.map((input, index) => {
-            //     const dataType = dataTypes[index];
-            //     if (input.type.includes("tuple")) {
-            //       const data = {
-            //         ...input,
-            //         name: dataType.name,
-            //         components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
-            //       };
-            //       return ParamType.from(data);
-            //     }
-            //     return ParamType.from({
-            //       ...input,
-            //       name: dataType.name,
-            //       type: dataType.type,
-            //     });
-            //   });
-            // };
-            // const functionSignatureHash = ethers.utils.id(signature);
-            // const updatedInputs = addNameToParameter(inputs, dataTypes);
-            // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
-            // const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-            // params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(flows).find(([, value]) => {
@@ -5563,7 +5508,7 @@ async function importEncodedFCT(calldata) {
             }
             return {
                 ...acc,
-                [key]: BigNumber$1.isBigNumber(value) ? value.toHexString() : value,
+                [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
             };
         }, {});
     };
@@ -5598,7 +5543,7 @@ async function importEncodedFCT(calldata) {
                 methodParams: params.reduce((acc, param) => {
                     const getValue = (value) => {
                         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-                        if (BigNumber$1.isBigNumber(value)) {
+                        if (BigNumber.isBigNumber(value)) {
                             const hexString = value.toHexString();
                             if (variables.some((v) => hexString.startsWith(v))) {
                                 return hexString;
@@ -5808,7 +5753,7 @@ const getMulticallContract = (chainId, provider) => {
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
 };
-const getData = async ({ chainId, provider, }) => {
+const getData = async ({ chainId, provider }) => {
     const poolAddress = data[chainId].V2_Pool;
     const actuatorAddress = addresses[chainId].Actuator;
     if (!poolAddress) {

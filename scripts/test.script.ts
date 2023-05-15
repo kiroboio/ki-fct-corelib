@@ -1,17 +1,9 @@
-import { ERC20 } from "@kiroboio/fct-plugins";
 import util from "util";
 
 import { BatchMultiSigCall } from "../src";
 async function main() {
   const FCT = new BatchMultiSigCall({
     chainId: "1",
-  });
-
-  const data = FCT.createPlugin({
-    plugin: ERC20.getters.BalanceOf,
-    initParams: {
-      methodParams: {},
-    },
   });
 
   await FCT.create({

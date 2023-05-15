@@ -20,10 +20,7 @@ function decode144(val: bigint) {
   return val >> RESOLUTION;
 }
 
-const getMulticallContract = (
-  chainId: number,
-  provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider
-) => {
+const getMulticallContract = (chainId: number, provider: ethers.providers.Provider) => {
   const multicallAddress = multicallContracts[chainId as keyof typeof multicallContracts];
   if (!multicallAddress) {
     throw new Error(`No multicall address found for chainId ${chainId}`);
@@ -37,13 +34,7 @@ const getMulticallContract = (
   );
 };
 
-const getData = async ({
-  chainId,
-  provider,
-}: {
-  chainId: number;
-  provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-}) => {
+const getData = async ({ chainId, provider }: { chainId: number; provider: ethers.providers.Provider }) => {
   const poolAddress = data[chainId as keyof typeof data].V2_Pool;
   const actuatorAddress = addresses[chainId as keyof typeof addresses].Actuator;
   if (!poolAddress) {
@@ -178,7 +169,7 @@ export const getKIROPrice = async ({
 }: {
   chainId: number;
   rpcUrl?: string;
-  provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+  provider?: ethers.providers.Provider;
   blockTimestamp?: number;
 }) => {
   if (!provider) {

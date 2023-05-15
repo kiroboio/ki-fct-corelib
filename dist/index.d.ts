@@ -491,7 +491,7 @@ declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
 declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
     chainId: number;
     rpcUrl?: string | undefined;
-    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider | undefined;
+    provider?: ethers$1.providers.Provider | undefined;
     blockTimestamp?: number | undefined;
 }) => Promise<string>;
 
@@ -551,7 +551,7 @@ declare class FCTCalls extends FCTBase {
     getWithDecodedVariables(): DecodedCalls[];
     create(call: FCTCall): Promise<IMSCallInputWithNodeId>;
     createWithPlugin(callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId>;
-    createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): Promise<IMSCallInputWithNodeId>;
+    createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId;
     setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults;
     private addCall;
     private verifyCall;
@@ -708,25 +708,20 @@ declare class Variables extends FCTBase {
     static getVariablesAsBytes32: (variables: string[]) => string[];
 }
 
+type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
+
 declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
 declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
-declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kiroboio_fct_plugins.NewPluginType<"UNISWAP", "ACTION", "addLiquidityETH", string, {
+declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { plugin, initParams, }: {
+    plugin: T;
+    initParams?: PluginParams<T>;
+}): _kiroboio_fct_plugins.NewPluginType<"ERC20", "GETTER", "name", string, {
     input: {
         to: _kiroboio_fct_plugins.FctAddress;
-        value: _kiroboio_fct_plugins.FctValue;
-        methodParams: {
-            token: _kiroboio_fct_plugins.FctAddress;
-            amountTokenDesired: _kiroboio_fct_plugins.FctValue;
-            amountTokenMin: _kiroboio_fct_plugins.FctValue;
-            amountETHMin: _kiroboio_fct_plugins.FctValue;
-            to: _kiroboio_fct_plugins.FctAddress;
-            deadline: _kiroboio_fct_plugins.FctTimestamp;
-        };
+        methodParams: {};
     };
     output: {
-        amountA: _kiroboio_fct_plugins.FctValue;
-        amountB: _kiroboio_fct_plugins.FctValue;
-        liquidity: _kiroboio_fct_plugins.FctValue;
+        name: _kiroboio_fct_plugins.FctString;
     };
 }, Partial<{
     to: string | ({
@@ -745,120 +740,7 @@ declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kir
         type: "computed";
         id: string;
     }) | undefined;
-    value: string | ({
-        type: "output";
-        id: {
-            nodeId: string;
-            innerIndex: number;
-        };
-    } | {
-        type: "external";
-        id: number;
-    } | {
-        type: "global";
-        id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-    } | {
-        type: "computed";
-        id: string;
-    }) | undefined;
-    methodParams: Partial<{
-        token: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountTokenDesired: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountTokenMin: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountETHMin: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        to: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        deadline: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-    }>;
+    methodParams: Partial<{}>;
 }>>;
 declare function getCall(this: BatchMultiSigCall, index: number): IMSCallInput;
 declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
