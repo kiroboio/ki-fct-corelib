@@ -35,12 +35,28 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
   return callsCreated;
 }
 
-export function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins) {
-  const plugin = new Plugin({
+export type PluginInitParams<T> = T extends new (...args: any[]) => any
+  ? ConstructorParameters<T>[0]["initParams"]
+  : never;
+
+export type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
+
+export function createPlugin<T extends AllPlugins>(
+  this: BatchMultiSigCall,
+  {
+    plugin,
+    initParams,
+  }: {
+    plugin: T;
+    initParams?: PluginParams<T>;
+  }
+) {
+  const Plugin = new plugin({
     chainId: this.chainId,
+    initParams: initParams ?? {},
   });
-  if (plugin instanceof Plugin) {
-    return plugin;
+  if (Plugin instanceof plugin) {
+    return Plugin;
   } else {
     throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
   }
