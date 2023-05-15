@@ -15,6 +15,7 @@ import {
   IMSCallInputWithNodeId,
   TypedDataMessageTransaction,
 } from "../types";
+import { PluginParams } from "./types";
 
 export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
   return this._calls.create(call);
@@ -34,8 +35,6 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]):
   }
   return callsCreated;
 }
-
-export type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
 
 export function createPlugin<T extends AllPlugins>(
   this: BatchMultiSigCall,
