@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 import { addresses } from "../batchMultiSigCall";
 import { multicallContracts } from "../constants";
-import { Interface } from "../helpers/Interfaces";
+import { Interfaces } from "../helpers/Interfaces";
 
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {
@@ -20,10 +20,7 @@ function decode144(val: bigint) {
   return val >> RESOLUTION;
 }
 
-const getMulticallContract = (
-  chainId: number,
-  provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider
-) => {
+const getMulticallContract = (chainId: number, provider: ethers.providers.Provider) => {
   const multicallAddress = multicallContracts[chainId as keyof typeof multicallContracts];
   if (!multicallAddress) {
     throw new Error(`No multicall address found for chainId ${chainId}`);
@@ -37,13 +34,7 @@ const getMulticallContract = (
   );
 };
 
-const getData = async ({
-  chainId,
-  provider,
-}: {
-  chainId: number;
-  provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
-}) => {
+const getData = async ({ chainId, provider }: { chainId: number; provider: ethers.providers.Provider }) => {
   const poolAddress = data[chainId as keyof typeof data].V2_Pool;
   const actuatorAddress = addresses[chainId as keyof typeof addresses].Actuator;
   if (!poolAddress) {
@@ -54,7 +45,7 @@ const getData = async ({
     "function price0CumulativeLast() external view returns (uint)",
     "function price1CumulativeLast() external view returns (uint)",
   ]);
-  const Actuator = Interface.FCT_Actuator;
+  const Actuator = Interfaces.FCT_Actuator;
 
   const multicallContract = getMulticallContract(chainId, provider);
 
@@ -178,7 +169,7 @@ export const getKIROPrice = async ({
 }: {
   chainId: number;
   rpcUrl?: string;
-  provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+  provider?: ethers.providers.Provider;
   blockTimestamp?: number;
 }) => {
   if (!provider) {

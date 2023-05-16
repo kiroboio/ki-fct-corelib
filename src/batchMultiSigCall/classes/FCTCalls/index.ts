@@ -71,7 +71,7 @@ export class FCTCalls extends FCTBase {
     if ("plugin" in call) {
       return await this.createWithPlugin(call);
     } else if ("abi" in call) {
-      return await this.createWithEncodedData(call);
+      return this.createWithEncodedData(call);
     } else {
       const data = { ...call, nodeId: call.nodeId || generateNodeId() };
       return this.addCall(data);
@@ -96,7 +96,7 @@ export class FCTCalls extends FCTBase {
     return this.addCall(data);
   }
 
-  public async createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): Promise<IMSCallInputWithNodeId> {
+  public createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId {
     const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
     const iface = new Interface(abi);
 

@@ -3,6 +3,24 @@ import { ParamType } from "ethers/lib/utils";
 
 import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../types";
 
+const manageValue = (value: string | number | boolean | Variable) => {
+  const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+
+  if (BigNumber.isBigNumber(value)) {
+    const hexString = value.toHexString().toLowerCase();
+    if (variables.some((v) => hexString.startsWith(v))) {
+      value = hexString;
+    }
+    return value.toString();
+  }
+
+  if (typeof value === "number") {
+    return value.toString();
+  }
+
+  return value;
+};
+
 export const isInteger = (value: string, key: string) => {
   if (value.length === 0) {
     throw new Error(`${key} cannot be empty string`);
@@ -80,19 +98,7 @@ export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: et
     }
     let value = values[i];
     // Check if value isn't a variable
-    const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-
-    if (BigNumber.isBigNumber(value)) {
-      const hexString = value.toHexString().toLowerCase();
-      if (variables.some((v) => hexString.startsWith(v))) {
-        value = hexString;
-      }
-      value = value.toString();
-    }
-
-    if (typeof value === "number") {
-      value = value.toString();
-    }
+    value = manageValue(value);
 
     return {
       name: input.name,
@@ -165,20 +171,7 @@ export const getParamsFromTypedData = ({
       }
       let value = parameters[realInput.name] as boolean | string | Variable | number;
       // Check if value isn't a variable
-      const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-
-      if (BigNumber.isBigNumber(value)) {
-        const hexString = value.toHexString().toLowerCase();
-        if (variables.some((v) => hexString.startsWith(v))) {
-          value = hexString;
-        }
-        value = value.toString();
-      }
-
-      if (typeof value === "number") {
-        value = value.toString();
-      }
-
+      value = manageValue(value);
       return {
         name: realInput.name,
         type: realInput.type,

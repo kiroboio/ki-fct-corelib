@@ -1,12 +1,11 @@
 import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
-import { ethers, utils as utils$1, BigNumber as BigNumber$1 } from 'ethers';
+import { utils as utils$1, BigNumber, ethers } from 'ethers';
 export { ethers } from 'ethers';
 import _ from 'lodash';
-import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface as Interface$1, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
+import { toUtf8Bytes, defaultAbiCoder, isAddress as isAddress$1, hexlify, id, ParamType, Interface, splitSignature, getAddress, AbiCoder } from 'ethers/lib/utils';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
-import BigNumber from 'bignumber.js';
 import { Graph } from 'graphlib';
 import util from 'util';
 
@@ -86,28 +85,8 @@ const CALL_TYPE_MSG_REV = {
     library: "LIBRARY",
 };
 const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";
-const getFD = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
-};
-const getFDBytes = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
-};
-const getFDBack = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
-};
-const getFDBackBytes = ({ callIndex, innerIndex }) => {
-    const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-    const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
-};
 
-var index$3 = /*#__PURE__*/Object.freeze({
+var index$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     CALL_TYPE: CALL_TYPE,
     CALL_TYPE_MSG: CALL_TYPE_MSG,
@@ -122,148 +101,9 @@ var index$3 = /*#__PURE__*/Object.freeze({
     FDBase: FDBase,
     FDBaseBytes: FDBaseBytes,
     get Flow () { return Flow; },
-    getFD: getFD,
-    getFDBack: getFDBack,
-    getFDBackBytes: getFDBackBytes,
-    getFDBytes: getFDBytes,
     multicallContracts: multicallContracts,
     nullValue: nullValue
 });
-
-const fetchApprovalsInterface = new ethers.utils.Interface([
-    "function allowance(address owner, address spender) view returns (uint256)",
-    "function getApproved(uint256 tokenId) view returns (address)",
-    "function isApprovedForAll(address owner, address operator) view returns (bool)",
-]);
-const generateDataForCall = (data) => {
-    if (data.protocol === "ERC20") {
-        if (data.method === "approve") {
-            return {
-                functionName: "allowance",
-                encodedData: fetchApprovalsInterface.encodeFunctionData("allowance", [data.from, data.params.spender]),
-            };
-        }
-    }
-    if (data.protocol === "ERC721") {
-        if (data.method === "approve") {
-            return {
-                functionName: "getApproved",
-                encodedData: fetchApprovalsInterface.encodeFunctionData("getApproved", [data.params.tokenId]),
-            };
-        }
-    }
-    if (data.method === "setApprovalForAll") {
-        return {
-            functionName: "isApprovedForAll",
-            encodedData: fetchApprovalsInterface.encodeFunctionData("isApprovedForAll", [data.from, data.params.spender]),
-        };
-    }
-};
-const fetchCurrentApprovals = async ({ rpcUrl, provider, data, }) => {
-    if (!provider) {
-        if (!rpcUrl) {
-            throw new Error("No provider or rpcUrl provided");
-        }
-        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-    }
-    const chainId = (await provider.getNetwork()).chainId.toString();
-    if (!multicallContracts[Number(chainId)]) {
-        throw new Error("Multicall contract not found for this chain");
-    }
-    const multiCallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
-        "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-    ], provider);
-    const calls = data.map((approval) => {
-        const dataOfCall = generateDataForCall(approval);
-        if (!dataOfCall) {
-            throw new Error("Approval not found");
-        }
-        const { functionName, encodedData } = dataOfCall;
-        return {
-            functionName,
-            dataForMulticall: {
-                target: approval.token,
-                callData: encodedData,
-            },
-        };
-    });
-    const [, returnData] = await multiCallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
-    const approvals = returnData.map((res, index) => {
-        const functionName = calls[index].functionName;
-        const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
-        return {
-            ...data[index],
-            value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
-        };
-    });
-    return approvals;
-};
-class FetchUtility {
-    chainId;
-    mutlicallContract;
-    constructor({ rpcUrl, chainId, provider }) {
-        if (!provider) {
-            if (!rpcUrl) {
-                throw new Error("No provider or rpcUrl provided");
-            }
-            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-        }
-        if (typeof chainId === "string") {
-            chainId = Number(chainId);
-        }
-        this.chainId = chainId;
-        if (!multicallContracts[Number(chainId)]) {
-            throw new Error("Multicall contract not found for this chain");
-        }
-        this.mutlicallContract = new ethers.Contract(multicallContracts[Number(chainId)], [
-            "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
-        ], provider);
-    }
-    async fetchCurrentApprovals(data) {
-        const multiCallContract = this.mutlicallContract;
-        const calls = data.map((approval) => {
-            const dataOfCall = generateDataForCall(approval);
-            if (!dataOfCall) {
-                throw new Error("Approval not found");
-            }
-            const { functionName, encodedData } = dataOfCall;
-            return {
-                functionName,
-                dataForMulticall: {
-                    target: approval.token,
-                    callData: encodedData,
-                },
-            };
-        });
-        const [, returnData] = await multiCallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
-        const approvals = returnData.map((res, index) => {
-            const functionName = calls[index].functionName;
-            const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
-            return {
-                ...data[index],
-                value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
-            };
-        });
-        return approvals;
-    }
-    async getTokensTotalSupply(requiredApprovals) {
-        // Filter all tokens that are not ERC20 and duplicate tokens
-        const erc20Tokens = requiredApprovals.filter((approval) => approval.protocol === "ERC20");
-        const ERC20Interface = new ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
-        const calls = erc20Tokens.map(({ token: target }) => {
-            return {
-                target,
-                callData: ERC20Interface.encodeFunctionData("totalSupply"),
-            };
-        });
-        const [, returnData] = await this.mutlicallContract.callStatic.aggregate(calls);
-        return returnData.reduce((acc, res, index) => {
-            const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
-            acc[calls[index].target] = decoded[0].toString();
-            return acc;
-        }, {});
-    }
-}
 
 var FCTActuatorABI = [
 	{
@@ -1504,15 +1344,6 @@ const addresses = {
         ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
     },
 };
-const EIP712_RECURRENCY = [
-    { name: "max_repeats", type: "uint16" },
-    { name: "chill_time", type: "uint32" },
-    { name: "accumetable", type: "bool" },
-];
-const EIP712_MULTISIG = [
-    { name: "external_signers", type: "address[]" },
-    { name: "minimum_approvals", type: "uint8" },
-];
 const NO_JUMP = "NO_JUMP";
 const DEFAULT_CALL_OPTIONS = {
     permissions: "0000",
@@ -1747,7 +1578,7 @@ const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;
 const TYPE_BYTES = 3000;
 const TYPE_ARRAY = 4000;
-const TYPE_ARRAY_WITH_LENGTH = 5000;
+const TYPE_ARRAY_WITH_LENGTH = 5000; // Example: uint256[2] - [TYPE_ARRAY_WITH_LENGTH, 2, ...rest]
 const typeValue = (param) => {
     // If type is an array
     if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
@@ -1758,6 +1589,10 @@ const typeValue = (param) => {
         const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
         const insideType = typeValue(parameter);
         const type = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
+        if (type === TYPE_ARRAY_WITH_LENGTH) {
+            const length = param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
+            return [type, Number(length), ...insideType];
+        }
         return [type, ...insideType];
     }
     // If type is a string
@@ -1968,18 +1803,18 @@ const Multisig = [
     { name: "minimum_approvals", type: "uint8" },
 ];
 
-const getParams$1 = (params) => {
+const getParams = (params) => {
     return {
         ...params.reduce((acc, param) => {
             let value;
             if (param.customType || param.type.includes("tuple")) {
                 if (param.type.lastIndexOf("[") > 0) {
                     const valueArray = param.value;
-                    value = valueArray.map((item) => getParams$1(item));
+                    value = valueArray.map((item) => getParams(item));
                 }
                 else {
                     const valueArray = param.value;
-                    value = getParams$1(valueArray);
+                    value = getParams(valueArray);
                 }
             }
             else {
@@ -2135,7 +1970,7 @@ class EIP712 extends FCTBase {
     }
     getTransactionTypedDataMessage() {
         return this.FCT.decodedCalls.reduce((acc, call, index) => {
-            const paramsData = call.params ? getParams$1(call.params) : {};
+            const paramsData = call.params ? getParams(call.params) : {};
             const options = call.options || {};
             const gasLimit = options.gasLimit ?? "0";
             const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
@@ -2278,10 +2113,10 @@ class Options {
                 const expiresAt = Number(value[objKey]);
                 const now = Number(new Date().getTime() / 1000).toFixed();
                 const validFrom = value.validFrom;
-                if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+                if (BigInt(expiresAt) <= BigInt(now)) {
                     throw new Error(`Options: expiresAt must be in the future`);
                 }
-                if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+                if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
                     throw new Error(`Options: expiresAt must be greater than validFrom`);
                 }
             }
@@ -2399,30 +2234,6 @@ class SessionID extends FCTBase {
     }
 }
 
-const getParams = (params) => {
-    return {
-        ...params.reduce((acc, param) => {
-            let value;
-            if (param.customType || param.type.includes("tuple")) {
-                if (param.type.lastIndexOf("[") > 0) {
-                    const valueArray = param.value;
-                    value = valueArray.map((item) => getParams(item));
-                }
-                else {
-                    const valueArray = param.value;
-                    value = getParams(valueArray);
-                }
-            }
-            else {
-                value = param.value;
-            }
-            return {
-                ...acc,
-                [param.name]: value,
-            };
-        }, {}),
-    };
-};
 const getUsedStructTypes = (typedData, typeName) => {
     const mainType = typedData.types[typeName.replace("[]", "")];
     const usedStructTypes = mainType.reduce((acc, item) => {
@@ -2437,7 +2248,6 @@ const getUsedStructTypes = (typedData, typeName) => {
 
 var helpers$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    getParams: getParams,
     getUsedStructTypes: getUsedStructTypes
 });
 
@@ -2508,6 +2318,20 @@ class ExportFCT extends FCTBase {
     static helpers = helpers$1;
 }
 
+const manageValue = (value) => {
+    const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+    if (BigNumber.isBigNumber(value)) {
+        const hexString = value.toHexString().toLowerCase();
+        if (variables.some((v) => hexString.startsWith(v))) {
+            value = hexString;
+        }
+        return value.toString();
+    }
+    if (typeof value === "number") {
+        return value.toString();
+    }
+    return value;
+};
 const isInteger = (value, key) => {
     if (value.length === 0) {
         throw new Error(`${key} cannot be empty string`);
@@ -2582,17 +2406,7 @@ const getParamsFromInputs = (inputs, values) => {
         }
         let value = values[i];
         // Check if value isn't a variable
-        const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-        if (BigNumber$1.isBigNumber(value)) {
-            const hexString = value.toHexString().toLowerCase();
-            if (variables.some((v) => hexString.startsWith(v))) {
-                value = hexString;
-            }
-            value = value.toString();
-        }
-        if (typeof value === "number") {
-            value = value.toString();
-        }
+        value = manageValue(value);
         return {
             name: input.name,
             type: input.type,
@@ -2642,17 +2456,7 @@ const getParamsFromTypedData = ({ methodInterfaceParams, parameters, types, prim
             }
             let value = parameters[realInput.name];
             // Check if value isn't a variable
-            const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber$1.isBigNumber(value)) {
-                const hexString = value.toHexString().toLowerCase();
-                if (variables.some((v) => hexString.startsWith(v))) {
-                    value = hexString;
-                }
-                value = value.toString();
-            }
-            if (typeof value === "number") {
-                value = value.toString();
-            }
+            value = manageValue(value);
             return {
                 name: realInput.name,
                 type: realInput.type,
@@ -2720,7 +2524,7 @@ class FCTCalls extends FCTBase {
             return await this.createWithPlugin(call);
         }
         else if ("abi" in call) {
-            return await this.createWithEncodedData(call);
+            return this.createWithEncodedData(call);
         }
         else {
             const data = { ...call, nodeId: call.nodeId || generateNodeId() };
@@ -2743,9 +2547,9 @@ class FCTCalls extends FCTBase {
         };
         return this.addCall(data);
     }
-    async createWithEncodedData(callWithEncodedData) {
+    createWithEncodedData(callWithEncodedData) {
         const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-        const iface = new Interface$1(abi);
+        const iface = new Interface(abi);
         try {
             const { name, args, functionFragment: { inputs }, } = iface.parseTransaction({
                 data: encodedData,
@@ -4460,14 +4264,18 @@ var FCTControllerABI = [
 	}
 ];
 
-class Interface {
+const MulticallABI = [
+    "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
+];
+class Interfaces {
     static FCT_Controller = new ethers.utils.Interface(FCTControllerABI);
     static FCT_BatchMultiSigCall = new ethers.utils.Interface(FCTBatchMultiSigCallABI);
     static FCT_Actuator = new ethers.utils.Interface(FCTActuatorABI);
+    static Multicall = new ethers.utils.Interface(MulticallABI);
 }
 
 function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, version, }) {
-    return Interface.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
+    return Interfaces.FCT_BatchMultiSigCall.encodeFunctionData("batchMultiSigCall", [
         `0x${version}`.padEnd(66, "0"),
         signedFCT,
         purgedFCT,
@@ -4873,9 +4681,6 @@ class FCTUtils extends FCTBase {
         printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
-    // 38270821632831754769812 - kiro price
-    // 1275004198 - max fee
-    // 462109 - gas
     // TODO: Make this function deprecated. Use getPaymentPerPayer instead
     getKIROPayment = ({ priceOfETHInKiro, gasPrice, gas, }) => {
         const fct = this.FCTData;
@@ -5009,8 +4814,8 @@ class FCTUtils extends FCTBase {
             provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         }
         const txReceipt = await provider.getTransactionReceipt(txHash);
-        const batchMultiSigInterface = Interface.FCT_BatchMultiSigCall;
-        const controllerInterface = Interface.FCT_Controller;
+        const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+        const controllerInterface = Interfaces.FCT_Controller;
         // Get FCTE_Activated event
         const messageHash = txReceipt.logs.find((log) => {
             try {
@@ -5121,7 +4926,7 @@ const getInvestorAddress = () => ({ type: "global", id: "investorAddress" });
 const getActivatorAddress = () => ({ type: "global", id: "activatorAddress" });
 const getEngineAddress = () => ({ type: "global", id: "engineAddress" });
 
-var index$2 = /*#__PURE__*/Object.freeze({
+var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     getActivatorAddress: getActivatorAddress,
     getBlockNumber: getBlockNumber,
@@ -5269,27 +5074,9 @@ class Variables extends FCTBase {
     };
 }
 
-const gasPriceCalculationsByChains = {
-    5: (maxFeePerGas) => {
-        // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
-        if (maxFeePerGas < 70_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
-        }
-        // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
-        if (maxFeePerGas < 100_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
-        }
-        // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
-        if (maxFeePerGas > 200_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
-        }
-        return maxFeePerGas;
-    },
-    1: (maxFeePerGas) => maxFeePerGas,
-};
-const transactionValidator = async (txVal, pureGas = false) => {
+const transactionValidator = async (txVal) => {
     const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
-    const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
+    const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
     const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
     if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
         return {
@@ -5317,8 +5104,8 @@ const transactionValidator = async (txVal, pureGas = false) => {
                 ...gasPrice,
             });
         }
-        // Add 20% to gasUsed value
-        const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
+        // Add 20% to gasUsed value, calculate with BigInt
+        const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.2);
         return {
             isValid: true,
             txData: { gas: gasUsed, ...gasPrice, type: 2 },
@@ -5351,6 +5138,143 @@ const transactionValidator = async (txVal, pureGas = false) => {
             error: err.reason,
         };
     }
+};
+
+const fetchApprovalsInterface = new ethers.utils.Interface([
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function getApproved(uint256 tokenId) view returns (address)",
+    "function isApprovedForAll(address owner, address operator) view returns (bool)",
+]);
+const generateDataForCall = (data) => {
+    if (data.protocol === "ERC20") {
+        if (data.method === "approve") {
+            return {
+                functionName: "allowance",
+                encodedData: fetchApprovalsInterface.encodeFunctionData("allowance", [data.from, data.params.spender]),
+            };
+        }
+    }
+    if (data.protocol === "ERC721") {
+        if (data.method === "approve") {
+            return {
+                functionName: "getApproved",
+                encodedData: fetchApprovalsInterface.encodeFunctionData("getApproved", [data.params.tokenId]),
+            };
+        }
+    }
+    if (data.method === "setApprovalForAll") {
+        return {
+            functionName: "isApprovedForAll",
+            encodedData: fetchApprovalsInterface.encodeFunctionData("isApprovedForAll", [data.from, data.params.spender]),
+        };
+    }
+};
+const fetchCurrentApprovals = async ({ rpcUrl, provider, chainId, multicallContract, multicallContractAddress, data, }) => {
+    if (!provider) {
+        if (!rpcUrl) {
+            throw new Error("No provider or rpcUrl provided");
+        }
+        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
+    chainId = chainId || (await provider.getNetwork()).chainId.toString();
+    if (!multicallContract) {
+        multicallContractAddress =
+            multicallContractAddress ?? multicallContracts[Number(chainId)];
+        if (!multicallContractAddress) {
+            throw new Error("Multicall contract not found for this chain");
+        }
+        multicallContract = new ethers.Contract(multicallContractAddress, Interfaces.Multicall, provider);
+    }
+    const calls = data.map((approval) => {
+        const dataOfCall = generateDataForCall(approval);
+        if (!dataOfCall) {
+            throw new Error("Approval not found");
+        }
+        const { functionName, encodedData } = dataOfCall;
+        return {
+            functionName,
+            dataForMulticall: {
+                target: approval.token,
+                callData: encodedData,
+            },
+        };
+    });
+    const [, returnData] = await multicallContract.callStatic.aggregate(calls.map((call) => call.dataForMulticall));
+    const approvals = returnData.map((res, index) => {
+        const functionName = calls[index].functionName;
+        const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
+        return {
+            ...data[index],
+            value: functionName === "allowance" ? decoded[0].toString() : decoded[0],
+        };
+    });
+    return approvals;
+};
+
+class FetchUtility {
+    chainId;
+    multicallContract;
+    constructor({ rpcUrl, chainId, provider }) {
+        if (!provider) {
+            if (!rpcUrl) {
+                throw new Error("No provider or rpcUrl provided");
+            }
+            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        }
+        if (typeof chainId === "string") {
+            chainId = Number(chainId);
+        }
+        this.chainId = chainId;
+        if (!multicallContracts[Number(chainId)]) {
+            throw new Error("Multicall contract not found for this chain");
+        }
+        this.multicallContract = new ethers.Contract(multicallContracts[Number(chainId)], Interfaces.Multicall, provider);
+    }
+    async fetchCurrentApprovals(data) {
+        const multicallContract = this.multicallContract;
+        return await fetchCurrentApprovals({
+            data,
+            multicallContract,
+            chainId: this.chainId,
+            provider: multicallContract.provider,
+        });
+    }
+    async getTokensTotalSupply(requiredApprovals) {
+        // Filter all tokens that are not ERC20 and duplicate tokens
+        const erc20Tokens = requiredApprovals.filter((approval) => approval.protocol === "ERC20");
+        const ERC20Interface = new ethers.utils.Interface(["function totalSupply() view returns (uint256)"]);
+        const calls = erc20Tokens.map(({ token: target }) => {
+            return {
+                target,
+                callData: ERC20Interface.encodeFunctionData("totalSupply"),
+            };
+        });
+        const [, returnData] = await this.multicallContract.callStatic.aggregate(calls);
+        return returnData.reduce((acc, res, index) => {
+            const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
+            acc[calls[index].target] = decoded[0].toString();
+            return acc;
+        }, {});
+    }
+}
+
+const gasPriceCalculationsByChains = {
+    5: (maxFeePerGas) => {
+        // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
+        if (maxFeePerGas < 70_000_000_000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
+        }
+        // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
+        if (maxFeePerGas < 100_000_000_000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+        }
+        // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
+        if (maxFeePerGas > 200_000_000_000) {
+            return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
+        }
+        return maxFeePerGas;
+    },
+    1: (maxFeePerGas) => maxFeePerGas,
 };
 const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40, }) => {
     function avg(arr) {
@@ -5461,12 +5385,13 @@ async function createMultiple(calls) {
     }
     return callsCreated;
 }
-function createPlugin(Plugin) {
-    const plugin = new Plugin({
+function createPlugin({ plugin, initParams, }) {
+    const Plugin = new plugin({
         chainId: this.chainId,
+        initParams: initParams ?? {},
     });
-    if (plugin instanceof Plugin) {
-        return plugin;
+    if (Plugin instanceof plugin) {
+        return Plugin;
     }
     else {
         throw new Error(`Plugin creation failed: ${JSON.stringify(plugin)}`);
@@ -5514,58 +5439,6 @@ function importFCT(fct) {
                 types: typesObject,
                 primaryType: `transaction${index + 1}`,
             });
-            // console.log(
-            //   FCTCalls.helpers.getParamsFromTypedData({
-            //     eip712InputTypes: inputs,
-            //     parameters,
-            //     types: typesObject,
-            //     primaryType: `transaction${index + 1}`,
-            //   })
-            // );
-            // const generateParamTypes = (types: TypedDataTypes, primaryType: string) => {
-            //   const type = types[primaryType];
-            //   // If the type[0] name is call and type is Call, then slice the first element
-            //   if (type[0].name === "call" && type[0].type === "Call") {
-            //     type.shift();
-            //   }
-            //   const params: ParamType[] = [];
-            //   for (const { name, type: paramType } of type) {
-            //     if (types[paramType]) {
-            //       const components = generateParamTypes(types, paramType);
-            //       params.push(ParamType.from({ name, type: paramType, components }));
-            //     } else {
-            //       params.push(ParamType.from({ name, type: paramType }));
-            //     }
-            //   }
-            //   return params;
-            // };
-            // // Create a functions that goes through all the inputs and adds the name of the parameter
-            // const addNameToParameter = (
-            //   inputs: ethers.utils.ParamType[],
-            //   dataTypes: { name: string; type: string }[]
-            // ): ParamType[] => {
-            //   return inputs.map((input, index) => {
-            //     const dataType = dataTypes[index];
-            //     if (input.type.includes("tuple")) {
-            //       const data = {
-            //         ...input,
-            //         name: dataType.name,
-            //         components: addNameToParameter(input.components, typesObject[dataType.type as keyof typeof typesObject]),
-            //       };
-            //       return ParamType.from(data);
-            //     }
-            //     return ParamType.from({
-            //       ...input,
-            //       name: dataType.name,
-            //       type: dataType.type,
-            //     });
-            //   });
-            // };
-            // const functionSignatureHash = ethers.utils.id(signature);
-            // const updatedInputs = addNameToParameter(inputs, dataTypes);
-            // const encodedDataWithSignatureHash = functionSignatureHash.slice(0, 10) + call.data.slice(2);
-            // const decodedResult = iface.decodeFunctionData(functionName, encodedDataWithSignatureHash);
-            // params = FCTCalls.helpers.getParamsFromInputs(updatedInputs, decodedResult);
         }
         const getFlow = () => {
             const flow = Object.entries(flows).find(([, value]) => {
@@ -5599,7 +5472,7 @@ function importFCT(fct) {
     return this.calls;
 }
 async function importEncodedFCT(calldata) {
-    const iface = Interface.FCT_BatchMultiSigCall;
+    const iface = Interfaces.FCT_BatchMultiSigCall;
     const chainId = this.chainId;
     const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
     const arrayKeys = ["signatures", "mcall"];
@@ -5635,7 +5508,7 @@ async function importEncodedFCT(calldata) {
             }
             return {
                 ...acc,
-                [key]: BigNumber$1.isBigNumber(value) ? value.toHexString() : value,
+                [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
             };
         }, {});
     };
@@ -5670,7 +5543,7 @@ async function importEncodedFCT(calldata) {
                 methodParams: params.reduce((acc, param) => {
                     const getValue = (value) => {
                         const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-                        if (BigNumber$1.isBigNumber(value)) {
+                        if (BigNumber.isBigNumber(value)) {
                             const hexString = value.toHexString();
                             if (variables.some((v) => hexString.startsWith(v))) {
                                 return hexString;
@@ -5856,17 +5729,6 @@ class BatchMultiSigCall {
     };
 }
 
-var index$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    BatchMultiSigCall: BatchMultiSigCall,
-    DEFAULT_CALL_OPTIONS: DEFAULT_CALL_OPTIONS,
-    EIP712_MULTISIG: EIP712_MULTISIG,
-    EIP712_RECURRENCY: EIP712_RECURRENCY,
-    NO_JUMP: NO_JUMP,
-    addresses: addresses,
-    utils: utils
-});
-
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {
     5: {
@@ -5891,7 +5753,7 @@ const getMulticallContract = (chainId, provider) => {
         "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ], provider);
 };
-const getData = async ({ chainId, provider, }) => {
+const getData = async ({ chainId, provider }) => {
     const poolAddress = data[chainId].V2_Pool;
     const actuatorAddress = addresses[chainId].Actuator;
     if (!poolAddress) {
@@ -5902,7 +5764,7 @@ const getData = async ({ chainId, provider, }) => {
         "function price0CumulativeLast() external view returns (uint)",
         "function price1CumulativeLast() external view returns (uint)",
     ]);
-    const Actuator = Interface.FCT_Actuator;
+    const Actuator = Interfaces.FCT_Actuator;
     const multicallContract = getMulticallContract(chainId, provider);
     const [blockNumber, returnData] = await multicallContract.callStatic.aggregate([
         {
@@ -6027,4 +5889,4 @@ var index = /*#__PURE__*/Object.freeze({
     transactionValidator: transactionValidator
 });
 
-export { BatchMultiSigCall, index$1 as FCTBatchMultiSigCall, index$3 as constants, index as utils, index$2 as variables };
+export { BatchMultiSigCall, index$2 as constants, index as utils, index$1 as variables };

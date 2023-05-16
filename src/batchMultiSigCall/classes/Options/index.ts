@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import _ from "lodash";
 
 import { getDate } from "../../../helpers";
@@ -75,10 +74,11 @@ export class Options {
         const expiresAt = Number(value[objKey]);
         const now = Number(new Date().getTime() / 1000).toFixed();
         const validFrom = (value as IFCTOptions).validFrom;
-        if (BigNumber(expiresAt).isLessThanOrEqualTo(now)) {
+
+        if (BigInt(expiresAt) <= BigInt(now)) {
           throw new Error(`Options: expiresAt must be in the future`);
         }
-        if (validFrom && BigNumber(expiresAt).isLessThanOrEqualTo(validFrom)) {
+        if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
           throw new Error(`Options: expiresAt must be greater than validFrom`);
         }
       }
