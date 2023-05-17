@@ -1,25 +1,6 @@
-import { BigNumber as BigNumberEthers, ethers } from "ethers";
+import { ethers } from "ethers";
 
-import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
-import { SessionID } from "../batchMultiSigCall/classes";
-import { Interface } from "../helpers/Interfaces";
-import { EIP1559GasPrice, ITxValidator } from "../types";
-
-interface TransactionValidatorSuccess {
-  isValid: true;
-  txData: { gas: number; type: 2 } & EIP1559GasPrice;
-  prices: { gas: number; gasPrice: number };
-  error: null;
-}
-
-interface TransactionValidatorError {
-  isValid: false;
-  txData: { gas: number; type: 2 } & EIP1559GasPrice;
-  prices: { gas: number; gasPrice: number };
-  error: string;
-}
-
-type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
+import { EIP1559GasPrice } from "../types";
 
 const gasPriceCalculationsByChains = {
   5: (maxFeePerGas: number) => {
@@ -39,79 +20,6 @@ const gasPriceCalculationsByChains = {
     return maxFeePerGas;
   },
   1: (maxFeePerGas: number) => maxFeePerGas,
-};
-
-export const transactionValidator = async (
-  txVal: ITxValidator,
-  pureGas = false
-): Promise<TransactionValidatorResult> => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
-
-  const decodedFCTCalldata = Interface.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
-  const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
-
-  if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
-    return {
-      isValid: false,
-      txData: { gas: 0, ...gasPrice, type: 2 },
-      prices: {
-        gas: 0,
-        gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
-      },
-      error: "Max gas price for FCT is too high",
-    };
-  }
-
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
-
-  try {
-    let gas: BigNumberEthers;
-    if (activateForFree) {
-      gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-        ...gasPrice,
-      });
-    } else {
-      gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-        ...gasPrice,
-      });
-    }
-
-    // Add 20% to gasUsed value
-    const gasUsed = pureGas ? gas.toNumber() : Math.round(gas.toNumber() + gas.toNumber() * 0.2);
-
-    return {
-      isValid: true,
-      txData: { gas: gasUsed, ...gasPrice, type: 2 },
-      prices: { gas: gasUsed, gasPrice: gasPrice.maxFeePerGas },
-      error: null,
-    };
-  } catch (err: any) {
-    if (err.reason === "processing response error") {
-      throw err;
-    }
-    if (txVal.errorIsValid) {
-      return {
-        isValid: true,
-        txData: { gas: 1_000_000, ...gasPrice, type: 2 },
-        prices: {
-          gas: 1_000_000, // 900k is the default gas limit
-          gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
-        },
-        error: null,
-      };
-    }
-    return {
-      isValid: false,
-      txData: { gas: 0, ...gasPrice, type: 2 },
-      prices: {
-        gas: 0,
-        gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
-      },
-      error: err.reason,
-    };
-  }
 };
 
 export const getGasPrices = async ({

@@ -50,64 +50,40 @@ declare const CALL_TYPE_MSG_REV: {
     readonly library: "LIBRARY";
 };
 declare const FCT_VAULT_ADDRESS: "FCT_VAULT_ADDRESS";
-declare const getFD: ({ callIndex, innerIndex }: {
-    callIndex: number;
-    innerIndex: number;
-}) => string;
-declare const getFDBytes: ({ callIndex, innerIndex }: {
-    callIndex: number;
-    innerIndex: number;
-}) => string;
-declare const getFDBack: ({ callIndex, innerIndex }: {
-    callIndex: number;
-    innerIndex: number;
-}) => string;
-declare const getFDBackBytes: ({ callIndex, innerIndex }: {
-    callIndex: number;
-    innerIndex: number;
-}) => string;
 
-declare const index$3_CALL_TYPE: typeof CALL_TYPE;
-declare const index$3_CALL_TYPE_MSG: typeof CALL_TYPE_MSG;
-declare const index$3_CALL_TYPE_MSG_REV: typeof CALL_TYPE_MSG_REV;
-declare const index$3_ComputedBase: typeof ComputedBase;
-declare const index$3_ComputedBaseBytes: typeof ComputedBaseBytes;
-declare const index$3_FCBase: typeof FCBase;
-declare const index$3_FCBaseBytes: typeof FCBaseBytes;
-declare const index$3_FCT_VAULT_ADDRESS: typeof FCT_VAULT_ADDRESS;
-declare const index$3_FDBackBase: typeof FDBackBase;
-declare const index$3_FDBackBaseBytes: typeof FDBackBaseBytes;
-declare const index$3_FDBase: typeof FDBase;
-declare const index$3_FDBaseBytes: typeof FDBaseBytes;
-type index$3_Flow = Flow;
-declare const index$3_Flow: typeof Flow;
-declare const index$3_getFD: typeof getFD;
-declare const index$3_getFDBack: typeof getFDBack;
-declare const index$3_getFDBackBytes: typeof getFDBackBytes;
-declare const index$3_getFDBytes: typeof getFDBytes;
-declare const index$3_multicallContracts: typeof multicallContracts;
-declare const index$3_nullValue: typeof nullValue;
-declare namespace index$3 {
+declare const index$2_CALL_TYPE: typeof CALL_TYPE;
+declare const index$2_CALL_TYPE_MSG: typeof CALL_TYPE_MSG;
+declare const index$2_CALL_TYPE_MSG_REV: typeof CALL_TYPE_MSG_REV;
+declare const index$2_ComputedBase: typeof ComputedBase;
+declare const index$2_ComputedBaseBytes: typeof ComputedBaseBytes;
+declare const index$2_FCBase: typeof FCBase;
+declare const index$2_FCBaseBytes: typeof FCBaseBytes;
+declare const index$2_FCT_VAULT_ADDRESS: typeof FCT_VAULT_ADDRESS;
+declare const index$2_FDBackBase: typeof FDBackBase;
+declare const index$2_FDBackBaseBytes: typeof FDBackBaseBytes;
+declare const index$2_FDBase: typeof FDBase;
+declare const index$2_FDBaseBytes: typeof FDBaseBytes;
+type index$2_Flow = Flow;
+declare const index$2_Flow: typeof Flow;
+declare const index$2_multicallContracts: typeof multicallContracts;
+declare const index$2_nullValue: typeof nullValue;
+declare namespace index$2 {
   export {
-    index$3_CALL_TYPE as CALL_TYPE,
-    index$3_CALL_TYPE_MSG as CALL_TYPE_MSG,
-    index$3_CALL_TYPE_MSG_REV as CALL_TYPE_MSG_REV,
-    index$3_ComputedBase as ComputedBase,
-    index$3_ComputedBaseBytes as ComputedBaseBytes,
-    index$3_FCBase as FCBase,
-    index$3_FCBaseBytes as FCBaseBytes,
-    index$3_FCT_VAULT_ADDRESS as FCT_VAULT_ADDRESS,
-    index$3_FDBackBase as FDBackBase,
-    index$3_FDBackBaseBytes as FDBackBaseBytes,
-    index$3_FDBase as FDBase,
-    index$3_FDBaseBytes as FDBaseBytes,
-    index$3_Flow as Flow,
-    index$3_getFD as getFD,
-    index$3_getFDBack as getFDBack,
-    index$3_getFDBackBytes as getFDBackBytes,
-    index$3_getFDBytes as getFDBytes,
-    index$3_multicallContracts as multicallContracts,
-    index$3_nullValue as nullValue,
+    index$2_CALL_TYPE as CALL_TYPE,
+    index$2_CALL_TYPE_MSG as CALL_TYPE_MSG,
+    index$2_CALL_TYPE_MSG_REV as CALL_TYPE_MSG_REV,
+    index$2_ComputedBase as ComputedBase,
+    index$2_ComputedBaseBytes as ComputedBaseBytes,
+    index$2_FCBase as FCBase,
+    index$2_FCBaseBytes as FCBaseBytes,
+    index$2_FCT_VAULT_ADDRESS as FCT_VAULT_ADDRESS,
+    index$2_FDBackBase as FDBackBase,
+    index$2_FDBackBaseBytes as FDBackBaseBytes,
+    index$2_FDBase as FDBase,
+    index$2_FDBaseBytes as FDBaseBytes,
+    index$2_Flow as Flow,
+    index$2_multicallContracts as multicallContracts,
+    index$2_nullValue as nullValue,
   };
 }
 
@@ -355,28 +331,28 @@ declare const getInvestorAddress: () => Variable;
 declare const getActivatorAddress: () => Variable;
 declare const getEngineAddress: () => Variable;
 
-type index$2_GlobalVariable = GlobalVariable;
-declare const index$2_getActivatorAddress: typeof getActivatorAddress;
-declare const index$2_getBlockNumber: typeof getBlockNumber;
-declare const index$2_getBlockTimestamp: typeof getBlockTimestamp;
-declare const index$2_getEngineAddress: typeof getEngineAddress;
-declare const index$2_getGasPrice: typeof getGasPrice;
-declare const index$2_getInvestorAddress: typeof getInvestorAddress;
-declare const index$2_getMinerAddress: typeof getMinerAddress;
-declare const index$2_getOriginAddress: typeof getOriginAddress;
-declare const index$2_globalVariables: typeof globalVariables;
-declare namespace index$2 {
+type index$1_GlobalVariable = GlobalVariable;
+declare const index$1_getActivatorAddress: typeof getActivatorAddress;
+declare const index$1_getBlockNumber: typeof getBlockNumber;
+declare const index$1_getBlockTimestamp: typeof getBlockTimestamp;
+declare const index$1_getEngineAddress: typeof getEngineAddress;
+declare const index$1_getGasPrice: typeof getGasPrice;
+declare const index$1_getInvestorAddress: typeof getInvestorAddress;
+declare const index$1_getMinerAddress: typeof getMinerAddress;
+declare const index$1_getOriginAddress: typeof getOriginAddress;
+declare const index$1_globalVariables: typeof globalVariables;
+declare namespace index$1 {
   export {
-    index$2_GlobalVariable as GlobalVariable,
-    index$2_getActivatorAddress as getActivatorAddress,
-    index$2_getBlockNumber as getBlockNumber,
-    index$2_getBlockTimestamp as getBlockTimestamp,
-    index$2_getEngineAddress as getEngineAddress,
-    index$2_getGasPrice as getGasPrice,
-    index$2_getInvestorAddress as getInvestorAddress,
-    index$2_getMinerAddress as getMinerAddress,
-    index$2_getOriginAddress as getOriginAddress,
-    index$2_globalVariables as globalVariables,
+    index$1_GlobalVariable as GlobalVariable,
+    index$1_getActivatorAddress as getActivatorAddress,
+    index$1_getBlockNumber as getBlockNumber,
+    index$1_getBlockTimestamp as getBlockTimestamp,
+    index$1_getEngineAddress as getEngineAddress,
+    index$1_getGasPrice as getGasPrice,
+    index$1_getInvestorAddress as getInvestorAddress,
+    index$1_getMinerAddress as getMinerAddress,
+    index$1_getOriginAddress as getOriginAddress,
+    index$1_globalVariables as globalVariables,
   };
 }
 
@@ -451,67 +427,6 @@ interface EIP1559GasPrice {
     maxPriorityFeePerGas: number;
 }
 
-declare const fetchCurrentApprovals: ({ rpcUrl, provider, data, }: {
-    rpcUrl?: string | undefined;
-    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider | undefined;
-    data: IRequiredApproval[];
-}) => Promise<(IRequiredApproval & {
-    value: string | boolean;
-})[]>;
-interface FetchUtilConstructor {
-    rpcUrl?: string;
-    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider;
-    chainId: number | string;
-}
-declare class FetchUtility {
-    chainId: number;
-    private mutlicallContract;
-    constructor({ rpcUrl, chainId, provider }: FetchUtilConstructor);
-    fetchCurrentApprovals(data: IRequiredApproval[]): Promise<({
-        value: any;
-        protocol: "ERC20";
-        method: "approve";
-        params: {
-            spender: string;
-            amount: string;
-        };
-        token: string;
-        from: string;
-    } | {
-        value: any;
-        protocol: "ERC721";
-        method: "approve";
-        params: {
-            spender: string;
-            tokenId: string;
-        };
-        token: string;
-        from: string;
-    } | {
-        value: any;
-        protocol: "ERC721" | "ERC1155";
-        method: "setApprovalForAll";
-        params: {
-            spender: string;
-            approved: boolean;
-            ids: string[];
-        };
-        token: string;
-        from: string;
-    } | {
-        value: any;
-        protocol: "AAVE";
-        method: "approveDelegation";
-        params: {
-            delegatee: string;
-            amount: string;
-        };
-        token: string;
-        from: string;
-    })[]>;
-    getTokensTotalSupply(requiredApprovals: IRequiredApproval[]): Promise<Record<string, string>>;
-}
-
 interface TransactionValidatorSuccess {
     isValid: true;
     txData: {
@@ -537,7 +452,35 @@ interface TransactionValidatorError {
     error: string;
 }
 type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;
-declare const transactionValidator: (txVal: ITxValidator, pureGas?: boolean) => Promise<TransactionValidatorResult>;
+
+declare const transactionValidator: (txVal: ITxValidator) => Promise<TransactionValidatorResult>;
+
+interface FetchUtilConstructor {
+    rpcUrl?: string;
+    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider;
+    chainId: number | string;
+}
+declare class FetchUtility {
+    chainId: number;
+    private readonly multicallContract;
+    constructor({ rpcUrl, chainId, provider }: FetchUtilConstructor);
+    fetchCurrentApprovals(data: IRequiredApproval[]): Promise<(IRequiredApproval & {
+        value: string | boolean;
+    })[]>;
+    getTokensTotalSupply(requiredApprovals: IRequiredApproval[]): Promise<Record<string, string>>;
+}
+
+declare const fetchCurrentApprovals: ({ rpcUrl, provider, chainId, multicallContract, multicallContractAddress, data, }: {
+    rpcUrl?: string | undefined;
+    provider?: ethers$1.providers.Provider | undefined;
+    chainId?: string | number | undefined;
+    multicallContract?: ethers$1.Contract | undefined;
+    multicallContractAddress?: string | undefined;
+    data: IRequiredApproval[];
+}) => Promise<(IRequiredApproval & {
+    value: string | boolean;
+})[]>;
+
 declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
     rpcUrl: string;
     chainId: number;
@@ -548,23 +491,23 @@ declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
 declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
     chainId: number;
     rpcUrl?: string | undefined;
-    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider | undefined;
+    provider?: ethers$1.providers.Provider | undefined;
     blockTimestamp?: number | undefined;
 }) => Promise<string>;
 
-type index$1_FetchUtility = FetchUtility;
-declare const index$1_FetchUtility: typeof FetchUtility;
-declare const index$1_fetchCurrentApprovals: typeof fetchCurrentApprovals;
-declare const index$1_getGasPrices: typeof getGasPrices;
-declare const index$1_getKIROPrice: typeof getKIROPrice;
-declare const index$1_transactionValidator: typeof transactionValidator;
-declare namespace index$1 {
+type index_FetchUtility = FetchUtility;
+declare const index_FetchUtility: typeof FetchUtility;
+declare const index_fetchCurrentApprovals: typeof fetchCurrentApprovals;
+declare const index_getGasPrices: typeof getGasPrices;
+declare const index_getKIROPrice: typeof getKIROPrice;
+declare const index_transactionValidator: typeof transactionValidator;
+declare namespace index {
   export {
-    index$1_FetchUtility as FetchUtility,
-    index$1_fetchCurrentApprovals as fetchCurrentApprovals,
-    index$1_getGasPrices as getGasPrices,
-    index$1_getKIROPrice as getKIROPrice,
-    index$1_transactionValidator as transactionValidator,
+    index_FetchUtility as FetchUtility,
+    index_fetchCurrentApprovals as fetchCurrentApprovals,
+    index_getGasPrices as getGasPrices,
+    index_getKIROPrice as getKIROPrice,
+    index_transactionValidator as transactionValidator,
   };
 }
 
@@ -608,7 +551,7 @@ declare class FCTCalls extends FCTBase {
     getWithDecodedVariables(): DecodedCalls[];
     create(call: FCTCall): Promise<IMSCallInputWithNodeId>;
     createWithPlugin(callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId>;
-    createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): Promise<IMSCallInputWithNodeId>;
+    createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId;
     setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults;
     private addCall;
     private verifyCall;
@@ -765,25 +708,20 @@ declare class Variables extends FCTBase {
     static getVariablesAsBytes32: (variables: string[]) => string[];
 }
 
+type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
+
 declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
 declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
-declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kiroboio_fct_plugins.NewPluginType<"UNISWAP", "ACTION", "addLiquidityETH", string, {
+declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { plugin, initParams, }: {
+    plugin: T;
+    initParams?: PluginParams<T>;
+}): _kiroboio_fct_plugins.NewPluginType<"ERC20", "GETTER", "name", string, {
     input: {
         to: _kiroboio_fct_plugins.FctAddress;
-        value: _kiroboio_fct_plugins.FctValue;
-        methodParams: {
-            token: _kiroboio_fct_plugins.FctAddress;
-            amountTokenDesired: _kiroboio_fct_plugins.FctValue;
-            amountTokenMin: _kiroboio_fct_plugins.FctValue;
-            amountETHMin: _kiroboio_fct_plugins.FctValue;
-            to: _kiroboio_fct_plugins.FctAddress;
-            deadline: _kiroboio_fct_plugins.FctTimestamp;
-        };
+        methodParams: {};
     };
     output: {
-        amountA: _kiroboio_fct_plugins.FctValue;
-        amountB: _kiroboio_fct_plugins.FctValue;
-        liquidity: _kiroboio_fct_plugins.FctValue;
+        name: _kiroboio_fct_plugins.FctString;
     };
 }, Partial<{
     to: string | ({
@@ -797,125 +735,12 @@ declare function createPlugin(this: BatchMultiSigCall, Plugin: AllPlugins): _kir
         id: number;
     } | {
         type: "global";
-        id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
+        id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
     } | {
         type: "computed";
         id: string;
     }) | undefined;
-    value: string | ({
-        type: "output";
-        id: {
-            nodeId: string;
-            innerIndex: number;
-        };
-    } | {
-        type: "external";
-        id: number;
-    } | {
-        type: "global";
-        id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-    } | {
-        type: "computed";
-        id: string;
-    }) | undefined;
-    methodParams: Partial<{
-        token: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountTokenDesired: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountTokenMin: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        amountETHMin: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        to: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-        deadline: string | ({
-            type: "output";
-            id: {
-                nodeId: string;
-                innerIndex: number;
-            };
-        } | {
-            type: "external";
-            id: number;
-        } | {
-            type: "global";
-            id: "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
-        } | {
-            type: "computed";
-            id: string;
-        }) | undefined;
-    }>;
+    methodParams: Partial<{}>;
 }>>;
 declare function getCall(this: BatchMultiSigCall, index: number): IMSCallInput;
 declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
@@ -927,7 +752,7 @@ declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
     protocol: "ERC20" | "ERC721" | "ERC1155" | "AAVE" | "SUSHISWAP" | "UNISWAP" | "VALIDATOR" | "MATH" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE";
     type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE";
-    method: "" | "symbol" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "allowance" | "getApproved" | "isApprovedForAll" | "totalSupply" | "supportsInterface" | "name" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "balanceOf" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "getEthBalance";
+    method: "" | "symbol" | "supportsInterface" | "name" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "totalSupply" | "balanceOf" | "isApprovedForAll" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "allowance" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "getEthBalance";
     input: {
         to: string | Variable;
         value: string | Variable | undefined;
@@ -997,53 +822,4 @@ declare class BatchMultiSigCall {
     static from: (input: IBatchMultiSigCallFCT) => BatchMultiSigCall;
 }
 
-declare const addresses: {
-    1: {
-        FCT_Controller: string;
-        FCT_BatchMultiSig: string;
-        FCT_EnsManager: string;
-        FCT_Tokenomics: string;
-        Actuator: string;
-        ActuatorCore: string;
-    };
-    5: {
-        FCT_Controller: string;
-        FCT_BatchMultiSig: string;
-        FCT_EnsManager: string;
-        FCT_Tokenomics: string;
-        Actuator: string;
-        ActuatorCore: string;
-    };
-};
-declare const EIP712_RECURRENCY: {
-    name: string;
-    type: string;
-}[];
-declare const EIP712_MULTISIG: {
-    name: string;
-    type: string;
-}[];
-declare const NO_JUMP = "NO_JUMP";
-declare const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions>;
-
-type index_BatchMultiSigCall = BatchMultiSigCall;
-declare const index_BatchMultiSigCall: typeof BatchMultiSigCall;
-declare const index_DEFAULT_CALL_OPTIONS: typeof DEFAULT_CALL_OPTIONS;
-declare const index_EIP712_MULTISIG: typeof EIP712_MULTISIG;
-declare const index_EIP712_RECURRENCY: typeof EIP712_RECURRENCY;
-declare const index_NO_JUMP: typeof NO_JUMP;
-declare const index_addresses: typeof addresses;
-declare const index_utils: typeof utils;
-declare namespace index {
-  export {
-    index_BatchMultiSigCall as BatchMultiSigCall,
-    index_DEFAULT_CALL_OPTIONS as DEFAULT_CALL_OPTIONS,
-    index_EIP712_MULTISIG as EIP712_MULTISIG,
-    index_EIP712_RECURRENCY as EIP712_RECURRENCY,
-    index_NO_JUMP as NO_JUMP,
-    index_addresses as addresses,
-    index_utils as utils,
-  };
-}
-
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, index as FCTBatchMultiSigCall, FCTCall, FCTCallParam, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$3 as constants, index$1 as utils, index$2 as variables };
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };

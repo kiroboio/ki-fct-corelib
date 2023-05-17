@@ -93,6 +93,7 @@ describe("BatchMultiSigCall FCTUtils", () => {
     const hash = utils.getMessageHash();
 
     expect(hash).to.be.an("string");
+    expect(hash).to.match(/^0x[a-fA-F0-9]{64}$/);
   });
 
   it("Should check if FCT is valid", () => {
@@ -155,35 +156,3 @@ describe("BatchMultiSigCall FCTUtils", () => {
   //   console.log(payments);
   // });
 });
-
-// FCT_Tokenomics.sol - reduce only sequential calls
-
-// 1. totalCalls - how many times payment is requested
-// If payer == address(0) - activator pays
-
-// by: '0xC434b739d2DaC17279f8fA1B66C0C7381df4909b',
-// activator: '0xC434b739d2DaC17279f8fA1B66C0C7381df4909b',
-// id: '0xf6407ddd01010100000000000000000000000000000000000000000000000166',
-// builder: '0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30',
-// total: [
-//   BigNumber { value: "15209430279916199367" },
-//   BigNumber { value: "15209430279916199366" },
-//   BigNumber { value: "62160280274440119153" },
-//   BigNumber { value: "16531989434691521051" },
-//   BigNumber { value: "76047151399580996837" },
-//   BigNumber { value: "203950" },
-//   BigNumber { value: "79380" },
-//   BigNumber { value: "0" },
-//   BigNumber { value: "0" },
-//   kiroboPayment: BigNumber { value: "15209430279916199367" },
-//   builderPayment: BigNumber { value: "15209430279916199366" },
-//   activatorPayment: BigNumber { value: "62160280274440119153" },
-//   base: BigNumber { value: "16531989434691521051" },
-//   fees: BigNumber { value: "76047151399580996837" },
-//   commonGas: BigNumber { value: "203950" },
-//   userGas: BigNumber { value: "79380" },
-//   missingKiro: BigNumber { value: "0" },
-//   availableEth: BigNumber { value: "0" }
-// ],
-// gasPrice: BigNumber { value: "2000000000" },
-// timestamp: BigNumber { value: "1681817846" }

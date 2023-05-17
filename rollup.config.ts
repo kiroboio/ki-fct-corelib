@@ -5,16 +5,7 @@ import { default as dts } from "rollup-plugin-dts";
 
 const transpile = {
   input: "src/index.ts",
-  plugins: [
-    json(),
-    commonjs(),
-    typescript({
-      compilerOptions: {
-        rootDir: "src",
-        target: "ESNext",
-      },
-    }),
-  ],
+  plugins: [json(), commonjs(), typescript()],
 };
 
 const esm = {

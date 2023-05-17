@@ -37,31 +37,3 @@ export const CALL_TYPE_MSG_REV = {
 } as const;
 
 export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;
-
-export const getFD = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBase.length, FDBase);
-};
-
-export const getFDBytes = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBaseBytes.length, FDBaseBytes);
-};
-
-export const getFDBack = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBackBase.length, FDBackBase);
-};
-
-export const getFDBackBytes = ({ callIndex, innerIndex }: { callIndex: number; innerIndex: number }) => {
-  const outputIndexHex = (callIndex + 1).toString(16).padStart(4, "0");
-  const innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-
-  return (innerIndexHex + outputIndexHex).padStart(FDBackBaseBytes.length, FDBackBaseBytes);
-};
