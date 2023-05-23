@@ -77,6 +77,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
   this.chainId = domain.chainId.toString() as ChainId;
   this.domain = domain;
   this.randomId = meta.random_id.slice(2);
+
   this.setOptions(
     SessionID.asOptions({
       sessionId: fct.sessionId,
