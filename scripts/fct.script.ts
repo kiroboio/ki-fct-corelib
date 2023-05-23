@@ -29,6 +29,10 @@ async function main() {
   const vault = process.env.VAULT as string;
   const key = process.env.PRIVATE_KEY as string;
 
+  // Get address from private key
+  const address = ethers.utils.computeAddress("0x" + key);
+  console.log("address", address);
+
   const batchMultiSigCall = new BatchMultiSigCall({
     chainId,
   });
@@ -41,6 +45,10 @@ async function main() {
       accumetable: true,
       maxRepeats: "500",
       chillTime: "0",
+    },
+    multisig: {
+      externalSigners: ["0x9650578ebd1b08f98af81a84372ece4b448d7526"],
+      minimumApprovals: "1",
     },
   });
 
@@ -117,8 +125,6 @@ async function main() {
 
   const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
 
-  console.log("requiredApprovals", requiredApprovals);
-
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
     privateKey: Buffer.from(key, "hex"),
@@ -129,12 +135,15 @@ async function main() {
 
   const signedFCT = {
     ...FCT,
-    signatures: [splitSignature],
+    signatures: [...FCT.signatures, splitSignature],
     variables: [],
     externalSigners: [],
   };
 
   fs.writeFileSync("./scripts/FCT.json", JSON.stringify(signedFCT, null, 2));
+
+  const test = BatchMultiSigCall.from(FCT).utils.recoverAddress(splitSignature);
+  console.log("test", test);
 }
 
 main()
