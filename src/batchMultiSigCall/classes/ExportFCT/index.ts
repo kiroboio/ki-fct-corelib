@@ -48,7 +48,7 @@ export class ExportFCT extends FCTBase {
       nameHash: id(this.FCT.options.name),
       mcall: this.mcall,
       variables: [],
-      externalSigners: [],
+      externalSigners: this.FCT.options.multisig.externalSigners,
       signatures: [this.FCT.utils.getAuthenticatorSignature()],
       computed: this.FCT.computedWithValues.map((c) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

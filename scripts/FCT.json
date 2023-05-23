@@ -89,6 +89,16 @@
           "type": "bool"
         }
       ],
+      "Multisig": [
+        {
+          "name": "external_signers",
+          "type": "address[]"
+        },
+        {
+          "name": "minimum_approvals",
+          "type": "uint8"
+        }
+      ],
       "transaction1": [
         {
           "name": "call",
@@ -173,6 +183,10 @@
         {
           "name": "recurrency",
           "type": "Recurrency"
+        },
+        {
+          "name": "multisig",
+          "type": "Multisig"
         },
         {
           "name": "transaction_1",
@@ -264,13 +278,13 @@
         "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
         "selector": "0xf6407ddd",
         "version": "0x010101",
-        "random_id": "0x56fa30",
+        "random_id": "0xe7b0db",
         "eip712": true,
         "auth_enabled": true
       },
       "limits": {
-        "valid_from": "1683730699",
-        "expires_at": "88083730701",
+        "valid_from": "1684849951",
+        "expires_at": "88084849952",
         "gas_price_limit": "150000000000",
         "purgeable": false,
         "blockable": true
@@ -279,6 +293,12 @@
         "max_repeats": "500",
         "chill_time": "0",
         "accumetable": true
+      },
+      "multisig": {
+        "external_signers": [
+          "0x9650578ebd1b08f98af81a84372ece4b448d7526"
+        ],
+        "minimum_approvals": "1"
       },
       "transaction_1": {
         "call": {
@@ -367,8 +387,8 @@
     }
   },
   "builder": "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30",
-  "typeHash": "0x519c78f22bea437da8e47f910b137a143dee68314965ca4d683be6b53e0786cc",
-  "sessionId": "0x56fa300001010101f400000000148233110d00645bb10b00000022ecb25c001d",
+  "typeHash": "0xc1b7af9b4d9ee9efd22bdf873e5e02f9e7d6ba74d6dd9746bf3e430bb60355f8",
+  "sessionId": "0xe7b0db0101010101f400000000148244252000646cc51f00000022ecb25c001d",
   "nameHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "mcall": [
     {
@@ -424,13 +444,22 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xcbf85af7ed536f06cca6a9e0118df86eb924e4a4d48ed639d7a1a07605624195",
-      "s": "0x5dcfef494c5246ef280983773a2a36562c866a0bf80751c048596a367400ac75",
-      "_vs": "0xddcfef494c5246ef280983773a2a36562c866a0bf80751c048596a367400ac75",
+      "r": "0x89461d316bce3b40ded96787f7390bf15a3b71be4c365225739a3f4cc6accb3a",
+      "s": "0x28cfdd913fa70b0293ed914759b0b35371de48d7868a1b081718a2eb323fcd51",
+      "_vs": "0xa8cfdd913fa70b0293ed914759b0b35371de48d7868a1b081718a2eb323fcd51",
       "recoveryParam": 1,
       "v": 28,
-      "yParityAndS": "0xddcfef494c5246ef280983773a2a36562c866a0bf80751c048596a367400ac75",
-      "compact": "0xcbf85af7ed536f06cca6a9e0118df86eb924e4a4d48ed639d7a1a07605624195ddcfef494c5246ef280983773a2a36562c866a0bf80751c048596a367400ac75"
+      "yParityAndS": "0xa8cfdd913fa70b0293ed914759b0b35371de48d7868a1b081718a2eb323fcd51",
+      "compact": "0x89461d316bce3b40ded96787f7390bf15a3b71be4c365225739a3f4cc6accb3aa8cfdd913fa70b0293ed914759b0b35371de48d7868a1b081718a2eb323fcd51"
+    },
+    {
+      "r": "0xfc82d3c18301170c252f36d03da8a4191a9a9343f38f160817264566218d6e2b",
+      "s": "0x5c97086de0cc2bd0cdd43aadfae55fc566f0799ce2da3fb11fa59ecf67c92133",
+      "_vs": "0xdc97086de0cc2bd0cdd43aadfae55fc566f0799ce2da3fb11fa59ecf67c92133",
+      "recoveryParam": 1,
+      "v": 28,
+      "yParityAndS": "0xdc97086de0cc2bd0cdd43aadfae55fc566f0799ce2da3fb11fa59ecf67c92133",
+      "compact": "0xfc82d3c18301170c252f36d03da8a4191a9a9343f38f160817264566218d6e2bdc97086de0cc2bd0cdd43aadfae55fc566f0799ce2da3fb11fa59ecf67c92133"
     }
   ],
   "computed": []
