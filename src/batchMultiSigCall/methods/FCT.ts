@@ -1,6 +1,5 @@
 import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
 import { BigNumber, ethers, utils } from "ethers";
-import { AbiCoder } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
@@ -16,6 +15,8 @@ import {
   TypedDataMessageTransaction,
 } from "../types";
 import { PluginParams } from "./types";
+
+const AbiCoder = ethers.utils.AbiCoder;
 
 export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
   return this._calls.create(call);

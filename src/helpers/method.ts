@@ -1,8 +1,9 @@
 import { utils } from "ethers";
-import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
 import { MethodParamsInterface, Param } from "../types";
 import { instanceOfParams } from "./instanceOf";
+
+const { toUtf8Bytes, defaultAbiCoder } = utils;
 
 type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
 
