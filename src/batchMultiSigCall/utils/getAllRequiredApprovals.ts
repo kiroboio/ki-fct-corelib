@@ -1,5 +1,5 @@
 import { getPlugin } from "@kiroboio/fct-plugins";
-import { getAddress } from "ethers/lib/utils";
+import { utils } from "ethers";
 
 import { FCT_VAULT_ADDRESS } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
@@ -7,6 +7,8 @@ import { Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { handleFunctionSignature } from "../helpers";
 import { IRequiredApproval } from "../types";
+
+const { getAddress } = utils;
 
 export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];

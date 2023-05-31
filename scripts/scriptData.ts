@@ -29,6 +29,9 @@ export const scriptData = {
     RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
     rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
   },
+  42161: {
+    rpcUrl: "https://rpc.ankr.com/arbitrum",
+  },
 };
 
 export default scriptData;

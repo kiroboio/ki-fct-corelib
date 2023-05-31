@@ -1,4 +1,4 @@
-import { Interface } from "ethers/lib/utils";
+import { utils } from "ethers";
 import _ from "lodash";
 
 import { CALL_TYPE } from "../../../constants";
@@ -98,7 +98,7 @@ export class FCTCalls extends FCTBase {
 
   public createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId {
     const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
-    const iface = new Interface(abi);
+    const iface = new utils.Interface(abi);
 
     try {
       const {

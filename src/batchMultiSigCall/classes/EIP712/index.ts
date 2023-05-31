@@ -15,6 +15,7 @@ import * as helpers from "./helpers";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
+    // Mainnet
     name: "FCT Controller",
     version: "1",
     chainId: 1,
@@ -22,9 +23,28 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
     salt: "0x0100c3ae8d91c3ffd32800000a0ea58e6504aa7bfff6f3d069bd175abab638ee",
   },
   "5": {
+    // Goerli
     name: "FCT Controller",
     version: "1",
     chainId: 5,
+    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+  },
+  "42161": {
+    // Arbitrum
+    // TODO: Update this when the testnet is live
+    name: "FCT Controller",
+    version: "1",
+    chainId: 42161,
+    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+  },
+  "421613": {
+    // Arbitrum Testnet
+    // TODO: Update this when the testnet is live
+    name: "FCT Controller",
+    version: "1",
+    chainId: 421613,
     verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
     salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
   },

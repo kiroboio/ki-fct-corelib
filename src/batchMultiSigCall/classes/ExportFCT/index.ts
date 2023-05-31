@@ -1,5 +1,5 @@
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { hexlify, id } from "ethers/lib/utils";
+import { utils } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { handleData, handleFunctionSignature, handleTypes } from "../../helpers";
@@ -10,6 +10,8 @@ import { FCTBase } from "../FCTBase";
 import { Options } from "../Options";
 import { SessionID } from "../SessionID";
 import * as helpers from "./helpers";
+
+const { hexlify, id } = utils;
 
 export class ExportFCT extends FCTBase {
   public calls: DecodedCalls[];

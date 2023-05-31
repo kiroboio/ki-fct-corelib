@@ -1,4 +1,6 @@
-import { isAddress } from "ethers/lib/utils";
+import { ethers } from "ethers";
+
+const isAddress = ethers.utils.isAddress;
 
 export const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
 export const mustBeAddress = ["builder"];

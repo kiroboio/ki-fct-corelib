@@ -18,6 +18,24 @@ export const addresses = {
     Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
     ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
   },
+  42161: {
+    // TODO: All the contracts below are copied from Goerli, need to be changed
+    FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
+    FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
+    FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
+    Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
+    ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
+  },
+  421613: {
+    // TODO: All the contracts below are copied from Goerli, need to be changed
+    FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
+    FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
+    FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
+    Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
+    ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
+  },
 };
 
 export const EIP712_RECURRENCY = [
