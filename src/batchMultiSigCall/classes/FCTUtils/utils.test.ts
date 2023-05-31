@@ -1,10 +1,11 @@
 import { expect } from "chai";
-import { getAddress } from "ethers/lib/utils";
+import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import FCTData from "../../test/FCTExample.json";
 import { FCTUtils } from ".";
 
+const getAddress = ethers.utils.getAddress;
 // const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 

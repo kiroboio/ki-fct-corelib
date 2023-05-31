@@ -1,8 +1,8 @@
 import { BigNumber, ethers, utils } from "ethers";
-import { ParamType } from "ethers/lib/utils";
 
 import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../types";
 
+const ParamType = ethers.utils.ParamType;
 const manageValue = (value: string | number | boolean | Variable) => {
   const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
 
@@ -125,7 +125,7 @@ export const getParamsFromTypedData = ({
     if (type[0].name === "call" && type[0].type === "Call") {
       type = type.slice(1);
     }
-    const params: ParamType[] = [];
+    const params: ethers.utils.ParamType[] = [];
     for (const { name, type: paramType } of type) {
       // Remove [] from the end of the type
       const typeWithoutArray = paramType.replace(/\[\]$/, "");
@@ -141,8 +141,8 @@ export const getParamsFromTypedData = ({
   };
 
   const getParams = (
-    realInputParams: ParamType[],
-    eip712InputTypes: ParamType[],
+    realInputParams: ethers.utils.ParamType[],
+    eip712InputTypes: ethers.utils.ParamType[],
     parameters: Record<string, FCTCallParam>
   ) => {
     return eip712InputTypes.map((input, i): Param => {

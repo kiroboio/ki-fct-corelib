@@ -1,7 +1,7 @@
 import { JsonFragment } from "@ethersproject/abi";
 import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kiroboio/fct-plugins";
-import { Fragment } from "ethers/lib/utils";
+import { ethers } from "ethers";
 
 import {
   CallOptions,
@@ -71,7 +71,7 @@ export type IWithPlugin = {
 
 export type IMSCallWithEncodedData = {
   nodeId?: string;
-  abi: ReadonlyArray<Fragment | JsonFragment> | string[];
+  abi: ReadonlyArray<ethers.utils.Fragment | JsonFragment> | string[];
   encodedData: string;
   to: string | Variable;
 } & MSCallMandatory;
