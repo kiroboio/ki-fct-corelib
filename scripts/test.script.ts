@@ -1,27 +1,16 @@
-import util from "util";
+import { ethers } from "ethers";
 
-import { BatchMultiSigCall } from "../src";
+import scriptData from "./scriptData";
 async function main() {
-  const FCT = new BatchMultiSigCall({
-    chainId: "1",
-  });
+  const provider = new ethers.providers.JsonRpcProvider(scriptData[1].rpcUrl);
 
-  await FCT.create({
-    from: "0xF3458fc57645112de6f7993A91F6676EFE2C7D26",
-    to: "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
-    method: "action",
-    params: [
-      {
-        type: "uint256[3]",
-        name: "data",
-        value: ["10", "20", "30"],
-      },
-    ],
-  });
+  // Get balance at block 17385582
+  const balance = await provider.getBalance(
+    "0x003E36550908907c2a2dA960FD19A419B9A774b7",
+    "0x" + 17385582n.toString(16) // Block number as hexstring
+  );
 
-  console.log("Created");
-
-  console.log(util.inspect(FCT.exportFCT(), false, null, true /* enable colors */));
+  console.log("Balance: ", balance.toString());
 }
 
 main()
