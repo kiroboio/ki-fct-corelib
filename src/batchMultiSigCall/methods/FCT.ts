@@ -18,8 +18,8 @@ import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
-export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
-  return this._calls.create(call);
+export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F) {
+  return this._calls.create<F>(call);
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {

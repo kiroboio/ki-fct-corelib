@@ -40,7 +40,7 @@ export class BatchMultiSigCall {
   public utils = new FCTUtils(this);
   public variables = new Variables(this);
   protected _options = new Options();
-  protected _calls = new FCTCalls(this, {
+  public _calls = new FCTCalls(this, {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
   });
@@ -113,6 +113,8 @@ export class BatchMultiSigCall {
   public createPlugin = createPlugin;
 
   // FCT Functions
+  public add = create;
+  public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
