@@ -28,6 +28,7 @@ import {
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
+import Deep = Chai.Deep;
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0xf6407ddd";
@@ -86,13 +87,13 @@ export class BatchMultiSigCall {
   }
 
   // Setters
-  public setOptions = (options: DeepPartial<IFCTOptions>): IFCTOptions => {
+  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
     return this._options.set(options);
-  };
+  }
 
-  public setCallDefaults = (callDefault: DeepPartial<ICallDefaults>) => {
+  public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
     return this._calls.setCallDefaults(callDefault);
-  };
+  }
 
   public changeChainId = (chainId: ChainId) => {
     this.chainId = chainId;

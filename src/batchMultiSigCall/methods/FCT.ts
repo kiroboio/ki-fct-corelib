@@ -69,7 +69,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   return new ExportFCT(this).get();
 }
 
-export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
+export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta } = typedData.message;

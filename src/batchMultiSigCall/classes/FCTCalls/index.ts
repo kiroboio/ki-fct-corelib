@@ -145,9 +145,9 @@ export class FCTCalls extends FCTBase {
     return this.addCall<typeof data>(data);
   }
 
-  public setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults {
+  public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): ICallDefaults & C {
     this._callDefault = _.merge({}, this._callDefault, callDefault);
-    return this._callDefault;
+    return this._callDefault as ICallDefaults & C;
   }
 
   public addCall<C extends IMSCallInput & { nodeId: string }>(call: C): C {

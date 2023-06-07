@@ -17,7 +17,14 @@ async function main() {
     to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     value: "10",
     method: "balanceOf",
-    nodeId: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  } as const);
+
+  const options = FCT.setOptions({
+    name: "Test",
+  } as const);
+
+  const callDefaults = FCT.setCallDefaults({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
   } as const);
 }
 
