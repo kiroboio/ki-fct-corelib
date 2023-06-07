@@ -19,6 +19,11 @@ async function main() {
     method: "balanceOf",
   } as const);
 
+  const data = await FCT.create({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  } as const);
+
   const options = FCT.setOptions({
     name: "Test",
   } as const);

@@ -9,9 +9,9 @@ import { DEFAULT_CALL_OPTIONS } from "../../constants";
 import {
   DecodedCalls,
   FCTCall,
+  FCTMCall,
   ICallDefaults,
   IMSCallInput,
-  IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
   IWithPlugin,
   StrictMSCallInput,
@@ -32,13 +32,9 @@ function instanceOfCallWithEncodedData(object: any): object is IMSCallWithEncode
   return typeof object === "object" && "abi" in object;
 }
 
-function instanceOfRegularCall(object: any): object is IMSCallInput {
-  return typeof object === "object" && "to" in object && !("abi" in object) && !("plugin" in object);
-}
-
 export class FCTCalls extends FCTBase {
   static helpers = helpers;
-  private _calls: IMSCallInputWithNodeId[] = [];
+  private _calls: FCTMCall[] = [];
   private _callDefault: ICallDefaults = {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
@@ -75,7 +71,7 @@ export class FCTCalls extends FCTBase {
       }
       return {
         ...call,
-        params: [] as ParamWithoutVariable[],
+        params: [] as ParamWithoutVariable<Param>[],
       };
     });
   }
@@ -142,7 +138,7 @@ export class FCTCalls extends FCTBase {
 
   public createSimpleCall<C extends IMSCallInput>(call: C): C & { nodeId: string } {
     const data = _.merge({}, call, { nodeId: call.nodeId || generateNodeId() });
-    return this.addCall<typeof data>(data);
+    return this.addCall(data);
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): ICallDefaults & C {
@@ -155,7 +151,7 @@ export class FCTCalls extends FCTBase {
     this.verifyCall(call);
     this._calls.push(call);
 
-    return _.merge({}, this._callDefault, call);
+    return call;
   }
 
   private verifyCall(call: IMSCallInput) {
@@ -207,7 +203,7 @@ export class FCTCalls extends FCTBase {
     }
   }
 
-  public decodeParams(params: Param[]): ParamWithoutVariable[] {
+  public decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {
       if (param.type === "tuple" || param.customType) {
         if (param.type.lastIndexOf("[") > 0) {
@@ -224,7 +220,7 @@ export class FCTCalls extends FCTBase {
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];
       }
-      return [...acc, param as ParamWithoutVariable];
-    }, [] as ParamWithoutVariable[]);
+      return [...acc, param as ParamWithoutVariable<P>];
+    }, [] as ParamWithoutVariable<P>[]);
   }
 }
