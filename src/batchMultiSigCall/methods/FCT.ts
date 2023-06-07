@@ -142,7 +142,7 @@ export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSig
       },
     };
 
-    this.create(callInput);
+    this._calls.createSimpleCall(callInput);
   }
 
   return this.calls;

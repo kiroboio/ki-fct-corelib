@@ -6,7 +6,7 @@ import * as hre from "hardhat";
 
 import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { Interfaces } from "../src/helpers/Interfaces";
-import FCTData from "./FCTFail.json";
+import FCTData from "./Failing.json";
 
 dotenv.config();
 
