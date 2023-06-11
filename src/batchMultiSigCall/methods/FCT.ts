@@ -4,26 +4,20 @@ import { BigNumber, ethers, utils } from "ethers";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { Param } from "../../types";
+import { FCTMCall, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
-import {
-  FCTCall,
-  IBatchMultiSigCallFCT,
-  IMSCallInput,
-  IMSCallInputWithNodeId,
-  TypedDataMessageTransaction,
-} from "../types";
+import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
-export async function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId> {
+export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F) {
   return this._calls.create(call);
 }
 
-export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]> {
-  const callsCreated: IMSCallInputWithNodeId[] = [];
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<FCTMCall[]> {
+  const callsCreated: FCTMCall[] = [];
   for (const [index, call] of calls.entries()) {
     try {
       const createdCall = await this.create(call);
@@ -69,7 +63,7 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   return new ExportFCT(this).get();
 }
 
-export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[] {
+export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta } = typedData.message;
@@ -142,7 +136,7 @@ export function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): 
       },
     };
 
-    this.create(callInput);
+    this._calls.createSimpleCall(callInput);
   }
 
   return this.calls;

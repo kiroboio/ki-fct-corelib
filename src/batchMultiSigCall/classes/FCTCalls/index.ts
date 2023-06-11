@@ -3,29 +3,38 @@ import _ from "lodash";
 
 import { CALL_TYPE } from "../../../constants";
 import { instanceOfVariable } from "../../../helpers";
-import { DeepPartial, Param, ParamWithoutVariable, RequiredKeys } from "../../../types";
+import { DeepPartial, Param, ParamWithoutVariable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { DEFAULT_CALL_OPTIONS } from "../../constants";
 import {
   DecodedCalls,
   FCTCall,
+  FCTMCall,
   ICallDefaults,
   IMSCallInput,
-  IMSCallInputWithNodeId,
   IMSCallWithEncodedData,
   IWithPlugin,
   StrictMSCallInput,
 } from "../../types";
 import { FCTBase } from "../FCTBase";
 import * as helpers from "./helpers";
+import { CreateReturn } from "./types";
 
 function generateNodeId(): string {
   return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 }
 
+function instanceOfCallWithPlugin(object: any): object is IWithPlugin {
+  return typeof object === "object" && "plugin" in object;
+}
+
+function instanceOfCallWithEncodedData(object: any): object is IMSCallWithEncodedData {
+  return typeof object === "object" && "abi" in object;
+}
+
 export class FCTCalls extends FCTBase {
   static helpers = helpers;
-  private _calls: IMSCallInputWithNodeId[] = [];
+  private _calls: FCTMCall[] = [];
   private _callDefault: ICallDefaults = {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
@@ -62,22 +71,21 @@ export class FCTCalls extends FCTBase {
       }
       return {
         ...call,
-        params: [] as ParamWithoutVariable[],
+        params: [] as ParamWithoutVariable<Param>[],
       };
     });
   }
 
-  public async create(call: FCTCall): Promise<IMSCallInputWithNodeId> {
-    if ("plugin" in call) {
-      return await this.createWithPlugin(call);
-    } else if ("abi" in call) {
-      return this.createWithEncodedData(call);
+  public async create<C extends FCTCall>(call: C): Promise<CreateReturn<C>> {
+    if (instanceOfCallWithPlugin(call)) {
+      return (await this.createWithPlugin(call)) as CreateReturn<C>;
+    } else if (instanceOfCallWithEncodedData(call)) {
+      return this.createWithEncodedData(call) as CreateReturn<C>;
     } else {
-      const data = { ...call, nodeId: call.nodeId || generateNodeId() };
-      return this.addCall(data);
+      return this.createSimpleCall(call) as CreateReturn<C>;
     }
   }
-  public async createWithPlugin(callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId> {
+  public async createWithPlugin<C extends IWithPlugin>(callWithPlugin: C): Promise<IMSCallInput & { nodeId: string }> {
     if (!callWithPlugin.plugin) {
       throw new Error("Plugin is required to create a call with plugin.");
     }
@@ -87,16 +95,18 @@ export class FCTCalls extends FCTBase {
       throw new Error("Error creating call with plugin. Make sure input values are valid");
     }
 
-    const data: IMSCallInputWithNodeId = {
+    const data = {
       ...pluginCall,
       from: callWithPlugin.from,
       options: { ...pluginCall.options, ...callWithPlugin.options },
       nodeId: callWithPlugin.nodeId || generateNodeId(),
     };
-    return this.addCall(data);
+    return this.addCall<typeof data>(data);
   }
 
-  public createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId {
+  public createWithEncodedData<C extends IMSCallWithEncodedData>(
+    callWithEncodedData: C
+  ): IMSCallInput & { nodeId: string } {
     const { value, encodedData, abi, options, nodeId } = callWithEncodedData;
     const iface = new utils.Interface(abi);
 
@@ -120,18 +130,23 @@ export class FCTCalls extends FCTBase {
         nodeId: nodeId || generateNodeId(),
       };
 
-      return this.addCall(data);
+      return this.addCall<typeof data>(data);
     } catch {
       throw new Error("Failed to parse encoded data");
     }
   }
 
-  public setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults {
-    this._callDefault = _.merge({}, this._callDefault, callDefault);
-    return this._callDefault;
+  public createSimpleCall<C extends IMSCallInput>(call: C): C & { nodeId: string } {
+    const data = _.merge({}, call, { nodeId: call.nodeId || generateNodeId() });
+    return this.addCall(data);
   }
 
-  private addCall(call: RequiredKeys<IMSCallInput, "nodeId">): RequiredKeys<IMSCallInput, "nodeId"> {
+  public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): ICallDefaults & C {
+    this._callDefault = _.merge({}, this._callDefault, callDefault);
+    return this._callDefault as ICallDefaults & C;
+  }
+
+  public addCall<C extends IMSCallInput & { nodeId: string }>(call: C): C {
     // Before adding the call, we check if it is valid
     this.verifyCall(call);
     this._calls.push(call);
@@ -169,7 +184,7 @@ export class FCTCalls extends FCTBase {
     // Options validator
     if (call.options) {
       const { gasLimit, callType } = call.options;
-      if (gasLimit && typeof gasLimit === "string") {
+      if (gasLimit) {
         helpers.isInteger(gasLimit, "Gas limit");
       }
       if (callType) {
@@ -188,7 +203,7 @@ export class FCTCalls extends FCTBase {
     }
   }
 
-  public decodeParams(params: Param[]): ParamWithoutVariable[] {
+  public decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {
       if (param.type === "tuple" || param.customType) {
         if (param.type.lastIndexOf("[") > 0) {
@@ -205,7 +220,7 @@ export class FCTCalls extends FCTBase {
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];
       }
-      return [...acc, param as ParamWithoutVariable];
-    }, [] as ParamWithoutVariable[]);
+      return [...acc, param as ParamWithoutVariable<P>];
+    }, [] as ParamWithoutVariable<P>[]);
   }
 }

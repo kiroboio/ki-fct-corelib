@@ -53,14 +53,14 @@ export type IMSCallInput = {
   toENS?: string;
 } & MSCallMandatory;
 
-export type IMSCallInputWithNodeId = RequiredKeys<IMSCallInput, "nodeId">;
+export type FCTMCall = RequiredKeys<IMSCallInput, "nodeId">;
 
 export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
   options: DeepRequired<CallOptions>;
 };
 
 export interface DecodedCalls extends StrictMSCallInput {
-  params?: ParamWithoutVariable[];
+  params?: ParamWithoutVariable<Param>[];
 }
 
 export type IWithPlugin = {

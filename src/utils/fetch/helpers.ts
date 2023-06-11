@@ -91,7 +91,7 @@ export const fetchCurrentApprovals = async ({
     calls.map((call) => call.dataForMulticall)
   );
 
-  const approvals = returnData.map((res, index) => {
+  return returnData.map((res, index) => {
     const functionName = calls[index].functionName;
 
     const decoded = fetchApprovalsInterface.decodeFunctionResult(functionName, res);
@@ -101,6 +101,4 @@ export const fetchCurrentApprovals = async ({
       value: functionName === "allowance" ? (decoded[0] as BigNumber).toString() : decoded[0],
     };
   });
-
-  return approvals;
 };

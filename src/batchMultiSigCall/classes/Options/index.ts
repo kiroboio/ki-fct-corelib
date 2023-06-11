@@ -18,11 +18,11 @@ export class Options {
   static helpers = helpers;
   private _options: IFCTOptions = initOptions;
 
-  public set(options: DeepPartial<IFCTOptions>) {
+  public set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O {
     const mergedOptions = _.merge({}, this._options, options);
     Options.verify(mergedOptions);
     this._options = mergedOptions;
-    return this._options;
+    return this._options as IFCTOptions & O;
   }
 
   public get(): RequiredFCTOptions {
