@@ -28,6 +28,7 @@ import {
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
+import Deep = Chai.Deep;
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0xf6407ddd";
@@ -40,7 +41,7 @@ export class BatchMultiSigCall {
   public utils = new FCTUtils(this);
   public variables = new Variables(this);
   protected _options = new Options();
-  protected _calls = new FCTCalls(this, {
+  public _calls = new FCTCalls(this, {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
   });
@@ -86,13 +87,13 @@ export class BatchMultiSigCall {
   }
 
   // Setters
-  public setOptions = (options: DeepPartial<IFCTOptions>): IFCTOptions => {
+  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
     return this._options.set(options);
-  };
+  }
 
-  public setCallDefaults = (callDefault: DeepPartial<ICallDefaults>) => {
+  public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
     return this._calls.setCallDefaults(callDefault);
-  };
+  }
 
   public changeChainId = (chainId: ChainId) => {
     this.chainId = chainId;
@@ -113,6 +114,8 @@ export class BatchMultiSigCall {
   public createPlugin = createPlugin;
 
   // FCT Functions
+  public add = create;
+  public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;

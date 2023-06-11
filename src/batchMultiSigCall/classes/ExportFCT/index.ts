@@ -41,7 +41,7 @@ export class ExportFCT extends FCTBase {
     return new SessionID(this.FCT).asString();
   }
 
-  public get(): IBatchMultiSigCallFCT {
+  public get() {
     return {
       typedData: this.typedData,
       builder: this.FCT.options.builder,
@@ -57,7 +57,7 @@ export class ExportFCT extends FCTBase {
         const { index, ...rest } = c;
         return rest;
       }),
-    };
+    } satisfies IBatchMultiSigCallFCT;
   }
 
   public getCalls(): MSCall[] {

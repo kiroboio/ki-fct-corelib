@@ -495,7 +495,7 @@ describe("BatchMultiSigCall", () => {
         encodedData,
         abi: ABI,
         to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-      });
+      } as const);
 
       const params = call.params as Param[];
 

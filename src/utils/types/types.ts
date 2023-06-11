@@ -1,4 +1,4 @@
-import { EIP1559GasPrice } from "../types";
+import { EIP1559GasPrice } from "../../types";
 
 export interface TransactionValidatorSuccess {
   isValid: true;

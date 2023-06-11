@@ -1,16 +1,36 @@
-import { ethers } from "ethers";
+import { BatchMultiSigCall } from "../src";
 
-import scriptData from "./scriptData";
 async function main() {
-  const provider = new ethers.providers.JsonRpcProvider(scriptData[1].rpcUrl);
+  const FCT = new BatchMultiSigCall();
 
-  // Get balance at block 17385582
-  const balance = await provider.getBalance(
-    "0x003E36550908907c2a2dA960FD19A419B9A774b7",
-    "0x" + 17385582n.toString(16) // Block number as hexstring
-  );
+  // const data = await FCT.create({
+  //   from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  //   to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  //   value: "10",
+  //   method: "balanceOf",
+  // } as const);
+  //
+  // data.value;
 
-  console.log("Balance: ", balance.toString());
+  const data = await FCT.create({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+    value: "10",
+    method: "balanceOf",
+  } as const);
+
+  const data = await FCT.create({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  } as const);
+
+  const options = FCT.setOptions({
+    name: "Test",
+  } as const);
+
+  const callDefaults = FCT.setCallDefaults({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+  } as const);
 }
 
 main()

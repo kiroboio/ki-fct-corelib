@@ -121,6 +121,14 @@ async function main() {
     },
   ]);
 
+  const call = await batchMultiSigCall.add({
+    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526" as const,
+    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+    method: "balanceOf",
+  } as const);
+
+  const data = call.from;
+
   const FCT = batchMultiSigCall.exportFCT();
 
   const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();

@@ -3,7 +3,7 @@ import { BigNumber, ethers } from "ethers";
 import { multicallContracts } from "../../constants";
 import { Interfaces } from "../../helpers/Interfaces";
 import { IRequiredApproval } from "../../types";
-import { fetchCurrentApprovals } from "../fetch/helpers";
+import { fetchCurrentApprovals } from "../fetch";
 
 interface FetchUtilConstructor {
   rpcUrl?: string;
