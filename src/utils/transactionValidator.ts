@@ -1,4 +1,3 @@
-import { BigNumber as BigNumberEthers } from "@ethersproject/bignumber/lib/bignumber";
 import { ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
@@ -21,7 +20,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         gas: 0,
         gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
       },
-      error: "Max gas price for FCT is too high",
+      error: "Max gas price set for the FCT is too high",
     };
   }
 
@@ -30,16 +29,11 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
 
   try {
-    let gas: BigNumberEthers;
-    if (activateForFree) {
-      gas = await actuatorContract.estimateGas.activateForFree(callData, signer.address, {
-        ...gasPrice,
-      });
-    } else {
-      gas = await actuatorContract.estimateGas.activate(callData, signer.address, {
-        ...gasPrice,
-      });
-    }
+    const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](
+      callData,
+      signer.address,
+      { ...gasPrice }
+    );
 
     // Add 20% to gasUsed value, calculate with BigInt
     const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.2);
