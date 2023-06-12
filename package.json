@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.11.35",
+  "version": "1.11.36",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
