@@ -97,5 +97,11 @@
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8",
     "lodash": "^4.17.21"
+  },
+  "resolutions": {
+    "@uniswap/sdk-core": "3.2.3"
+  },
+  "overrides": {
+    "@uniswap/sdk-core": "3.2.3"
   }
 }
