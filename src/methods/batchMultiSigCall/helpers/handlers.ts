@@ -6,7 +6,10 @@ import { IMSCallInput } from "../types";
 
 export const handleMethodInterface = (call: IMSCallInput): string => {
   if (call.method) {
-    return getMethodInterface(call);
+    return getMethodInterface({
+      method: call.method,
+      params: call.params,
+    });
   }
 
   return "";
@@ -14,7 +17,10 @@ export const handleMethodInterface = (call: IMSCallInput): string => {
 
 export const handleFunctionSignature = (call: IMSCallInput) => {
   if (call.method) {
-    const value = getMethodInterface(call);
+    const value = getMethodInterface({
+      method: call.method,
+      params: call.params,
+    });
     return utils.id(value);
   }
   return nullValue;

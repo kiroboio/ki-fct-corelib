@@ -532,5 +532,30 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCTExport.mcall[0].data).to.eq(`0x${encodedData.slice(10)}`);
     });
+    it("should create FCT with tuple[] param", async () => {
+      await batchMultiSigCall.create({
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "methodName",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params: [
+          {
+            name: "param",
+            type: "tuple[]",
+            value: [
+              [
+                { name: "param1", type: "uint256", value: "1" },
+                { name: "param2", type: "uint256", value: "2" },
+              ],
+              [
+                { name: "param1", type: "uint256", value: "3" },
+                { name: "param2", type: "uint256", value: "4" },
+              ],
+            ],
+          },
+        ],
+      });
+
+      const FCT = batchMultiSigCall.exportFCT();
+    });
   });
 });

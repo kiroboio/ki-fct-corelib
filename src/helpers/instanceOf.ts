@@ -1,13 +1,20 @@
 import { Param, Variable } from "../types";
 
-export const instanceOfVariable = (object: any): object is Variable => {
-  return typeof object === "object" && "type" in object && "id" in object;
-};
+export class InstanceOf {
+  static Variable = (object: any): object is Variable => {
+    return typeof object === "object" && "type" in object && "id" in object;
+  };
 
-export function instanceOfParams(objectOrArray: any): objectOrArray is Param | Param[] {
-  if (Array.isArray(objectOrArray)) {
-    return instanceOfParams(objectOrArray[0]);
-  }
+  static Param = (objectOrArray: any): objectOrArray is Param[] => {
+    return (
+      Array.isArray(objectOrArray) &&
+      typeof objectOrArray[0] === "object" &&
+      "type" in objectOrArray[0] &&
+      "name" in objectOrArray[0]
+    );
+  };
 
-  return typeof objectOrArray === "object" && "type" in objectOrArray && "name" in objectOrArray;
+  static ParamArray = (object: any): object is Param[][] => {
+    return Array.isArray(object) && InstanceOf.Param(object[0]);
+  };
 }

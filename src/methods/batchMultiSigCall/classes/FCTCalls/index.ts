@@ -2,7 +2,7 @@ import { utils } from "ethers";
 import _ from "lodash";
 
 import { CALL_TYPE } from "../../../../constants";
-import { instanceOfVariable } from "../../../../helpers";
+import { InstanceOf } from "../../../../helpers";
 import { DeepPartial, Param, ParamWithoutVariable } from "../../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { DEFAULT_CALL_OPTIONS } from "../../constants";
@@ -215,7 +215,7 @@ export class FCTCalls extends FCTBase {
         const value = this.decodeParams(param.value as Param[]);
         return [...acc, { ...param, value }];
       }
-      if (instanceOfVariable(param.value)) {
+      if (InstanceOf.Variable(param.value)) {
         const value = this.FCT.variables.getVariable(param.value, param.type);
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];

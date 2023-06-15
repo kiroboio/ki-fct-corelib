@@ -1,30 +1,57 @@
 import { utils } from "ethers";
 
 import { MethodParamsInterface, Param } from "../types";
-import { instanceOfParams } from "./instanceOf";
+import { InstanceOf } from "./instanceOf";
 
 const { toUtf8Bytes, defaultAbiCoder } = utils;
 
 type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
 
-// From method and params create tuple
-export const getMethodInterface = (call: Partial<MethodParamsInterface>): string => {
-  const getParamsType = (param: Param): string => {
-    if (instanceOfParams(param.value)) {
-      if (Array.isArray(param.value[0])) {
-        const value = param.value[0] as Param[];
-        return `(${value.map(getParamsType).join(",")})[]`;
-      } else {
-        const value = param.value as Param[];
-        return `(${value.map(getParamsType).join(",")})`;
-      }
+// {
+//   "type": "function",
+//   "name": "addPerson",
+//   "constant": false,
+//   "payable": false,
+//   "inputs": [
+//   {
+//     "type": "tuple",
+//     "name": "person",
+//     "components": [
+//       { "type": "string", "name": "name" },
+//       { "type": "uint16", "name": "age" }
+//     ]
+//   }
+// ],
+//   "outputs": []
+// },
+
+const buildInputsFromParams = (params: Param[]): { type: string; name: string }[] => {
+  return params.map((param) => {
+    if (InstanceOf.Param(param.value)) {
+      return { type: "tuple", name: param.name, components: buildInputsFromParams(param.value) };
+    } else if (InstanceOf.ParamArray(param.value)) {
+      return { type: "tuple[]", name: param.name, components: buildInputsFromParams(param.value[0]) };
     }
 
-    return param.hashed ? "bytes32" : param.type;
-  };
-  const params = call.params ? call.params.map(getParamsType) : "";
+    return { type: param.hashed ? "bytes32" : param.type, name: param.name };
+  });
+};
 
-  return `${call.method}(${params})`;
+// From method and params create tuple
+// This version creates a ABI and gets the interface from it in ethers and then encodes the function bytes4
+export const getMethodInterface = (call: { method: string; params?: Param[] }): string => {
+  const ABI = [
+    {
+      name: call.method,
+      type: "function",
+      constant: false,
+      payable: false,
+      inputs: buildInputsFromParams(call.params || []),
+      outputs: [],
+    },
+  ];
+
+  return new utils.Interface(ABI).getFunction(call.method).format();
 };
 
 export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean): string => {
@@ -98,9 +125,4 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, wit
   if (!call.params) return "0x";
 
   return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
-};
-
-export const getParamsLength = (encodedParams: string): string => {
-  const paramsLength = defaultAbiCoder.encode(["bytes"], [encodedParams]).slice(66, 66 + 64);
-  return `0x${paramsLength}`;
 };
