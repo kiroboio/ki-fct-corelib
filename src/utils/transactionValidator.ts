@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 
 import FCTActuatorABI from "../abi/FCT_Actuator.abi.json";
-import { SessionID } from "../batchMultiSigCall/classes";
 import { Interfaces } from "../helpers/Interfaces";
+import { SessionID } from "../methods/batchMultiSigCall/classes";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 

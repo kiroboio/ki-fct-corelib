@@ -4,8 +4,8 @@ import { ethers } from "ethers";
 import { writeFileSync } from "fs";
 import * as hre from "hardhat";
 
-import { addresses, BatchMultiSigCall } from "../src/batchMultiSigCall";
 import { Interfaces } from "../src/helpers/Interfaces";
+import { addresses, BatchMultiSigCall } from "../src/methods/batchMultiSigCall";
 import FCTData from "./Failing.json";
 
 dotenv.config();

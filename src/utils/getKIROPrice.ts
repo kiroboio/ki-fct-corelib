@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 
-import { addresses } from "../batchMultiSigCall";
 import { multicallContracts } from "../constants";
 import { Interfaces } from "../helpers/Interfaces";
+import { addresses } from "../methods/batchMultiSigCall";
 
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3
 const data = {

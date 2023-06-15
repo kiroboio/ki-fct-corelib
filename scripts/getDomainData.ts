@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
 
-import { addresses } from "../src/batchMultiSigCall";
 import { Interface } from "../src/helpers/Interfaces";
 import { ethers } from "../src/index";
+import { addresses } from "../src/methods/batchMultiSigCall";
 import scriptData from "./scriptData";
 
 dotenv.config();
