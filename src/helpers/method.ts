@@ -7,24 +7,6 @@ const { toUtf8Bytes, defaultAbiCoder } = utils;
 
 type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
 
-// {
-//   "type": "function",
-//   "name": "addPerson",
-//   "constant": false,
-//   "payable": false,
-//   "inputs": [
-//   {
-//     "type": "tuple",
-//     "name": "person",
-//     "components": [
-//       { "type": "string", "name": "name" },
-//       { "type": "uint16", "name": "age" }
-//     ]
-//   }
-// ],
-//   "outputs": []
-// },
-
 const buildInputsFromParams = (params: Param[]): { type: string; name: string }[] => {
   return params.map((param) => {
     if (InstanceOf.Param(param.value)) {
