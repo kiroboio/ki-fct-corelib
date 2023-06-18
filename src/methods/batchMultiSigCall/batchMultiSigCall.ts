@@ -1,6 +1,6 @@
 import { ChainId } from "@kiroboio/fct-plugins";
 
-import { DeepPartial } from "../../types";
+import { DeepPartial, FCTMCall } from "../../types";
 import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -71,6 +71,10 @@ export class BatchMultiSigCall {
 
   get calls(): StrictMSCallInput[] {
     return this._calls.get();
+  }
+
+  get pureCalls(): FCTMCall[] {
+    return this._calls.getPure();
   }
 
   get decodedCalls(): DecodedCalls[] {

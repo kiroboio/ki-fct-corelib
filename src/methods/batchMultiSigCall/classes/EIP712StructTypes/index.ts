@@ -1,5 +1,6 @@
-import { Param } from "../../../../types";
-import { IMSCallInput } from "../../types";
+import _ from "lodash";
+
+import { Param, StrictMSCallInput } from "../../../../types";
 import * as helpers from "./helpers";
 
 type EIP712TypesObject = Record<string, { name: string; type: string }[]>;
@@ -10,8 +11,17 @@ export class EIP712StructTypes {
 
   static helpers = helpers;
 
-  constructor(calls: IMSCallInput[]) {
-    calls.forEach((call: IMSCallInput, index: number) => {
+  constructor(calls: StrictMSCallInput[]) {
+    calls.forEach((call, index: number) => {
+      if (call.multicall) {
+        _.merge(this.structTypes, call.multicall.generateEIP712Types());
+        this.transactionTypes[`transaction${index + 1}`] = [
+          { name: "call", type: "Call" },
+          { name: "calls", type: `FCTMulticall_${call.multicall.nodeId}[]` },
+        ];
+        return;
+      }
+
       const values = call.params
         ? call.params.map((param: Param) => {
             if (param.customType || param.type === "tuple") {
@@ -45,7 +55,8 @@ export class EIP712StructTypes {
     }
 
     let customCount = 0;
-    const eip712Type = paramValue.map((item) => {
+
+    this.structTypes[typeName] = paramValue.map((item) => {
       if (item.customType || item.type.includes("tuple")) {
         ++customCount;
         const innerTypeName = `Struct${this.getTypeCount() + customCount}`;
@@ -59,8 +70,6 @@ export class EIP712StructTypes {
         type: item.type,
       };
     });
-
-    this.structTypes[typeName] = eip712Type;
 
     if (param.type.lastIndexOf("[") > 0) {
       for (const parameter of (param.value as Param[][])[0]) {

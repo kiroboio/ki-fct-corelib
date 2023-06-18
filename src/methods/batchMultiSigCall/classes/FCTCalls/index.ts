@@ -17,19 +17,12 @@ import {
   StrictMSCallInput,
 } from "../../types";
 import { FCTBase } from "../FCTBase";
+import { FCTMulticall } from "../Multicall";
 import * as helpers from "./helpers";
 import { CreateReturn } from "./types";
 
-function generateNodeId(): string {
+export function generateNodeId(): string {
   return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
-
-function instanceOfCallWithPlugin(object: any): object is IWithPlugin {
-  return typeof object === "object" && "plugin" in object;
-}
-
-function instanceOfCallWithEncodedData(object: any): object is IMSCallWithEncodedData {
-  return typeof object === "object" && "abi" in object;
 }
 
 export class FCTCalls extends FCTBase {
@@ -50,6 +43,10 @@ export class FCTCalls extends FCTBase {
 
   get(): StrictMSCallInput[] {
     return this._calls.map((call): StrictMSCallInput => {
+      if (call instanceof FCTMulticall) {
+        return _.merge({ instanceOfMulticall: true, multicall: call }, this._callDefault, call.get());
+      }
+
       const fullCall = _.merge({}, this._callDefault, call);
 
       if (typeof fullCall.from === "undefined") {
@@ -60,6 +57,10 @@ export class FCTCalls extends FCTBase {
 
       return { ...fullCall, from };
     });
+  }
+
+  getPure(): FCTMCall[] {
+    return this._calls;
   }
 
   getWithDecodedVariables(): DecodedCalls[] {
@@ -76,11 +77,13 @@ export class FCTCalls extends FCTBase {
     });
   }
 
-  public async create<C extends FCTCall>(call: C): Promise<CreateReturn<C>> {
-    if (instanceOfCallWithPlugin(call)) {
+  public async create<C extends FCTCall>(call: C) {
+    if (InstanceOf.IWithPlugin(call)) {
       return (await this.createWithPlugin(call)) as CreateReturn<C>;
-    } else if (instanceOfCallWithEncodedData(call)) {
+    } else if (InstanceOf.IMSCallWithEncodedData(call)) {
       return this.createWithEncodedData(call) as CreateReturn<C>;
+    } else if (call instanceof FCTMulticall) {
+      return this.createMulticall(call) as CreateReturn<C>;
     } else {
       return this.createSimpleCall(call) as CreateReturn<C>;
     }
@@ -136,6 +139,18 @@ export class FCTCalls extends FCTBase {
     }
   }
 
+  public createMulticall(multicall: FCTMulticall) {
+    // Set chainId
+    if (!multicall.chainId) {
+      multicall.setChainId(this.FCT.chainId);
+    }
+
+    if (multicall.chainId !== this.FCT.chainId) {
+      throw new Error("Multicall chainId is different from FCT chainId");
+    }
+    return this.addCall(multicall);
+  }
+
   public createSimpleCall<C extends IMSCallInput>(call: C): C & { nodeId: string } {
     const data = _.merge({}, call, { nodeId: call.nodeId || generateNodeId() });
     return this.addCall(data);
@@ -146,7 +161,7 @@ export class FCTCalls extends FCTBase {
     return this._callDefault as ICallDefaults & C;
   }
 
-  public addCall<C extends IMSCallInput & { nodeId: string }>(call: C): C {
+  public addCall<C extends (IMSCallInput | FCTMulticall) & { nodeId: string }>(call: C): C {
     // Before adding the call, we check if it is valid
     this.verifyCall(call);
     this._calls.push(call);
@@ -154,7 +169,7 @@ export class FCTCalls extends FCTBase {
     return call;
   }
 
-  private verifyCall(call: IMSCallInput) {
+  private verifyCall(call: IMSCallInput | FCTMulticall) {
     // To address validator
     if (!call.to) {
       throw new Error("To address is required");

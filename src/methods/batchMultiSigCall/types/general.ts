@@ -13,6 +13,7 @@ import {
   RequiredKeys,
   Variable,
 } from "../../../types";
+import { FCTMulticall } from "../classes";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
@@ -40,7 +41,7 @@ export interface IBatchMultiSigCallFCT {
 
 export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
 
-export interface MSCallMandatory {
+export interface MSCallDefaults {
   nodeId?: string;
   from?: string | Variable;
   value?: string | Variable;
@@ -51,12 +52,13 @@ export type IMSCallInput = {
   params?: Param[];
   method?: string;
   toENS?: string;
-} & MSCallMandatory;
+} & MSCallDefaults;
 
-export type FCTMCall = RequiredKeys<IMSCallInput, "nodeId">;
+export type FCTMCall = RequiredKeys<IMSCallInput, "nodeId"> | FCTMulticall;
 
 export type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
   options: DeepRequired<CallOptions>;
+  multicall?: FCTMulticall;
 };
 
 export interface DecodedCalls extends StrictMSCallInput {
@@ -67,16 +69,16 @@ export type IWithPlugin = {
   plugin: {
     create(): Promise<IPluginCall | undefined>;
   };
-} & MSCallMandatory;
+} & MSCallDefaults;
 
 export type IMSCallWithEncodedData = {
   nodeId?: string;
   abi: ReadonlyArray<ethers.utils.Fragment | JsonFragment> | string[];
   encodedData: string;
   to: string | Variable;
-} & MSCallMandatory;
+} & MSCallDefaults;
 
-export type FCTCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData;
+export type FCTCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData | FCTMulticall;
 
 export interface MSCall {
   typeHash: string;
@@ -175,6 +177,6 @@ export type IRequiredApproval = (
   token: string;
   from: string;
 };
-export type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+export type ICallDefaults = Omit<RequiredKeys<MSCallDefaults, "value">, "nodeId"> & {
   options: DeepRequired<CallOptions>;
 };

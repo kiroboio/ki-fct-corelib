@@ -196,8 +196,12 @@ export class EIP712 extends FCTBase {
 
   private getTransactionTypedDataMessage() {
     return this.FCT.decodedCalls.reduce((acc: object, call, index: number) => {
-      const paramsData = call.params ? helpers.getParams(call.params) : {};
-
+      let paramsData;
+      if (call.multicall) {
+        paramsData = call.multicall.getEIP712MessageData();
+      } else {
+        paramsData = call.params ? helpers.getParams(call.params) : {};
+      }
       const options = call.options || {};
       const gasLimit = options.gasLimit ?? "0";
       const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";

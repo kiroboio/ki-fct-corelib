@@ -1,1 +1,1 @@
-export { Multicall } from "./Multicall";
+export { FCTMulticall } from "./FCTMulticall";

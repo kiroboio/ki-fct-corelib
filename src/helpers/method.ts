@@ -36,32 +36,32 @@ export const getMethodInterface = (call: { method: string; params?: Param[] }): 
   return new utils.Interface(ABI).getFunction(call.method).format();
 };
 
-export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>, withFunction?: boolean): string => {
+export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>): string => {
   if (!call.method) return "0x";
 
-  if (withFunction) {
-    const ABI = [
-      `function ${call.method}(${
-        call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""
-      })`,
-    ];
-
-    const iface = new utils.Interface(ABI);
-    return iface.encodeFunctionData(
-      call.method,
-      call.params
-        ? call.params.map((item) => {
-            if (item.hashed) {
-              if (typeof item.value === "string") {
-                return utils.keccak256(toUtf8Bytes(item.value));
-              }
-              throw new Error("Hashed value must be a string");
-            }
-            return item.value;
-          })
-        : []
-    );
-  }
+  // if (withFunction) {
+  //   const ABI = [
+  //     `function ${call.method}(${
+  //       call.params ? call.params.map((item) => (item.hashed ? "bytes32" : item.type)).join(",") : ""
+  //     })`,
+  //   ];
+  //
+  //   const iface = new utils.Interface(ABI);
+  //   return iface.encodeFunctionData(
+  //     call.method,
+  //     call.params
+  //       ? call.params.map((item) => {
+  //           if (item.hashed) {
+  //             if (typeof item.value === "string") {
+  //               return utils.keccak256(toUtf8Bytes(item.value));
+  //             }
+  //             throw new Error("Hashed value must be a string");
+  //           }
+  //           return item.value;
+  //         })
+  //       : []
+  //   );
+  // }
 
   const getType = (param: Param): string => {
     if (param.customType || param.type.includes("tuple")) {
