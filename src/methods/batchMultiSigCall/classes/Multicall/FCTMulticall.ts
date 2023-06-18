@@ -7,7 +7,7 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import _ from "lodash";
 
 import { getEncodedMethodParams } from "../../../../helpers";
-import { CallOptions, Param, StrictMSCallInput, Variable } from "../../../../types";
+import { CallOptions, Param, Variable } from "../../../../types";
 import { generateNodeId } from "../FCTCalls";
 import { FCT_MULTICALL_ADDRESS } from "./constants";
 import { IMulticall } from "./types";
@@ -18,16 +18,13 @@ interface IFCTMulticallConstructor {
   nodeId?: string;
 }
 
-type IFCTMulticall = StrictMSCallInput & {
-  options: CallOptions;
-};
-
 export class FCTMulticall {
   public calls: IMulticall[] = [];
   public from: string | Variable;
   public nodeId = "";
   public chainId: ChainId;
-  public options: CallOptions = {};
+  public options: CallOptions = { callType: "LIBRARY" };
+  private _to: string;
 
   constructor(
     input: IFCTMulticallConstructor = {
@@ -66,9 +63,19 @@ export class FCTMulticall {
     return this.chainId;
   };
 
+  public setTo = (to: string) => {
+    this._to = to;
+    return this.to;
+  };
+
   public get to() {
+    if (this._to) return this._to;
     if (!this.chainId) throw new Error("Chain ID is required");
     return FCT_MULTICALL_ADDRESS[this.chainId];
+  }
+
+  public get toENS() {
+    return "@lib:multicall";
   }
 
   public get params(): Param[] {
@@ -119,6 +126,7 @@ export class FCTMulticall {
     if (!this.from) throw new Error("From address is required");
     return {
       to: this.to,
+      toENS: this.toENS,
       from: this.from,
       params: this.params,
       method: this.method,

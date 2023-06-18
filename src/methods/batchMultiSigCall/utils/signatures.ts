@@ -1,6 +1,5 @@
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
-import util from "util";
 
 import { BatchMultiSigCallTypedData } from "../types";
 
@@ -9,7 +8,6 @@ const AUTHENTICATOR_PRIVATE_KEY = "5c35caeef2837c989ca02120f70b439b1f3266b779db6
 
 export const getAuthenticatorSignature = (typedData: BatchMultiSigCallTypedData) => {
   try {
-    console.log(util.inspect(typedData, false, null, true /* enable colors */));
     const signature = signTypedData({
       data: typedData as any,
       privateKey: Buffer.from(AUTHENTICATOR_PRIVATE_KEY, "hex"),
@@ -18,7 +16,6 @@ export const getAuthenticatorSignature = (typedData: BatchMultiSigCallTypedData)
 
     return splitSignature(signature);
   } catch (e) {
-    console.log(e);
     return { r: "0x", s: "0x", v: 0 };
   }
 };

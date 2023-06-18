@@ -9,6 +9,7 @@ export * as variables from "./variables";
 
 // FCT class exports
 export * from "./methods";
+export { FCTMulticall } from "./methods/batchMultiSigCall/classes";
 
 // Type exports
 export * from "./types";
