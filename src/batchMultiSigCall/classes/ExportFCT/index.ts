@@ -57,7 +57,7 @@ export class ExportFCT extends FCTBase {
         const { index, ...rest } = c;
         return rest;
       }),
-      validations: this.FCT.validation.validationWithValues(true).map((v) => {
+      validations: this.FCT.validation.getWithValues(true).map((v) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { index, ...rest } = v;
         return rest;

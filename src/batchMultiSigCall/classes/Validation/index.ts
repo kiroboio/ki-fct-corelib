@@ -1,4 +1,4 @@
-import { ComputedBase, ValidationBase, ValidationOperator } from "../../../constants";
+import { ValidationBase, ValidationOperator } from "../../../constants";
 import { instanceOfVariable } from "../../../helpers";
 import { IValidationEIP712, Variable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
@@ -30,7 +30,7 @@ export class Validation extends FCTBase {
     return index;
   }
 
-  public validationWithValues(hashed = false) {
+  public getWithValues(hashed = false) {
     return this._validations.map((c, i) => ({
       index: (i + 1).toString(),
       value1: this.handleVariable(c.value1, i),
@@ -50,13 +50,13 @@ export class Validation extends FCTBase {
   }
 
   private handleVariable(value: string | Variable | ValidationVariable, index: number) {
-    if (instanceOfVariable(value)) {
-      return this.FCT.variables.getVariable(value, "uin256");
-    }
     if (instanceOfValidationVariable(value)) {
       const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
 
-      return outputIndexHex.padStart(ValidationBase.length, ComputedBase);
+      return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
+    }
+    if (instanceOfVariable(value)) {
+      return this.FCT.variables.getVariable(value, "uint256");
     }
     return value;
   }

@@ -7,7 +7,13 @@ import { flows } from "../../../constants/flows";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
-import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
+import {
+  BatchMultiSigCallTypedData,
+  ComputedVariable,
+  TypedDataDomain,
+  TypedDataMessage,
+  TypedDataTypes,
+} from "../../types";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
@@ -125,6 +131,7 @@ export class EIP712 extends FCTBase {
       },
       ...optionalMessage,
       ...getComputedVariableMessage(this.FCT.computedWithValues),
+      ...this.getValidationMessage(),
       ...transactionTypedData,
     };
   }
@@ -151,7 +158,7 @@ export class EIP712 extends FCTBase {
       optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
     }
 
-    if (this.FCT.validations.get.length > 0) {
+    if (this.FCT.validation.get.length > 0) {
       optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
     }
     return {
@@ -200,7 +207,7 @@ export class EIP712 extends FCTBase {
   }
 
   private getValidationPrimaryType() {
-    return this.FCT.validations.get.map((_, index) => ({
+    return this.FCT.validation.get.map((_, index) => ({
       name: `validation_${index + 1}`,
       type: `Validation`,
     }));
@@ -262,6 +269,7 @@ export class EIP712 extends FCTBase {
             eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
             gas_limit: gasLimit,
             permissions: 0,
+            validation: call.options?.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
             flow_control: flow,
             returned_false_means_fail: options.falseMeansFail || false,
             jump_on_success: jumpOnSuccess,
@@ -272,5 +280,14 @@ export class EIP712 extends FCTBase {
         },
       };
     }, {} as TypedDataMessage);
+  }
+
+  private getValidationMessage() {
+    return this.FCT.validation.getWithValues().reduce((acc, item, i) => {
+      return {
+        ...acc,
+        [`validation_${i + 1}`]: item,
+      };
+    }, {} as Record<`validation_${number}`, ComputedVariable>);
   }
 }
