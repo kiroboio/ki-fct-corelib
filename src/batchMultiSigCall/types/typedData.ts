@@ -44,6 +44,7 @@ export type TypedDataMessageTransaction = {
     eth_value: string;
     gas_limit: string;
     permissions: number;
+    validation: number;
     flow_control: string;
     returned_false_means_fail: boolean;
     jump_on_success: number;

@@ -1,8 +1,9 @@
 import { ChainId } from "@kiroboio/fct-plugins";
 import _ from "lodash";
 
-import { DeepPartial, IFCT } from "../types";
-import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
+import { DeepPartial, IFCT, StrictMSCallInput } from "../types";
+import { EIP712, FCTUtils, Options, Variables } from "./classes";
+import { Call } from "./classes/Call";
 import { Validation } from "./classes/Validation";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -25,7 +26,6 @@ import {
   IComputed,
   IFCTOptions,
   RequiredFCTOptions,
-  StrictMSCallInput,
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
@@ -42,7 +42,13 @@ export class BatchMultiSigCall {
   public variables: Variables;
   public validation: Validation;
   protected _options: Options;
-  protected _calls: FCTCalls;
+  // protected _calls: FCTCalls;
+
+  protected _calls: Call[] = [];
+  protected _callDefault: ICallDefaults = {
+    value: "0",
+    options: DEFAULT_CALL_OPTIONS,
+  };
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
     this.utils = new FCTUtils(this);
@@ -50,16 +56,16 @@ export class BatchMultiSigCall {
     this.validation = new Validation(this);
     this._options = new Options();
 
-    this._calls = new FCTCalls(
-      this,
-      _.merge(
-        {
-          value: "0",
-          options: DEFAULT_CALL_OPTIONS,
-        },
-        input.defaults || {}
-      )
-    );
+    // this._calls = new FCTCalls(
+    //   this,
+    //   _.merge(
+    //     {
+    //       value: "0",
+    //       options: DEFAULT_CALL_OPTIONS,
+    //     },
+    //     input.defaults || {}
+    //   )
+    // );
 
     if (input.chainId) {
       this.chainId = input.chainId;
@@ -85,11 +91,19 @@ export class BatchMultiSigCall {
   }
 
   get calls(): StrictMSCallInput[] {
-    return this._calls.get();
+    return this._calls.map((call) => call.get);
+  }
+
+  get pureCalls(): Call[] {
+    return this._calls;
   }
 
   get decodedCalls(): DecodedCalls[] {
-    return this._calls.getWithDecodedVariables();
+    return this._calls.map((call) => call.getDecoded);
+  }
+
+  get callDefault(): ICallDefaults {
+    return this._callDefault;
   }
 
   get computed(): IComputed[] {
@@ -110,7 +124,8 @@ export class BatchMultiSigCall {
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
-    return this._calls.setCallDefaults(callDefault);
+    this._callDefault = _.merge({}, this._callDefault, callDefault);
+    return this._callDefault as ICallDefaults & C;
   }
 
   public changeChainId = (chainId: ChainId) => {

@@ -2,11 +2,8 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
 import _ from "lodash";
 
-import { CALL_TYPE_MSG } from "../../../constants";
-import { flows } from "../../../constants/flows";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { NO_JUMP } from "../../constants";
-import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
+import { getComputedVariableMessage } from "../../helpers";
 import {
   BatchMultiSigCallTypedData,
   ComputedVariable,
@@ -17,7 +14,6 @@ import {
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
-import * as helpers from "./helpers";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
@@ -137,7 +133,7 @@ export class EIP712 extends FCTBase {
   }
 
   public getTypedDataTypes(): TypedDataTypes {
-    const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.calls);
+    const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.pureCalls);
 
     const FCTOptions = this.FCT.options;
     const { recurrency, multisig } = FCTOptions;
@@ -214,70 +210,10 @@ export class EIP712 extends FCTBase {
   }
 
   private getTransactionTypedDataMessage() {
-    return this.FCT.decodedCalls.reduce((acc: object, call, index: number) => {
-      const paramsData = call.params ? helpers.getParams(call.params) : {};
-
-      const options = call.options || {};
-      const gasLimit = options.gasLimit ?? "0";
-      const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-
-      let jumpOnSuccess = 0;
-      let jumpOnFail = 0;
-
-      if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-        const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-
-        if (jumpOnSuccessIndex === -1) {
-          throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-        }
-
-        if (jumpOnSuccessIndex <= index) {
-          throw new Error(
-            `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
-          );
-        }
-
-        jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-      }
-
-      if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-        const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-
-        if (jumpOnFailIndex === -1) {
-          throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-        }
-
-        if (jumpOnFailIndex <= index) {
-          throw new Error(
-            `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
-          );
-        }
-
-        jumpOnFail = jumpOnFailIndex - index - 1;
-      }
-
+    return this.FCT.pureCalls.reduce((acc: object, call, index: number) => {
       return {
         ...acc,
-        [`transaction_${index + 1}`]: {
-          call: {
-            call_index: index + 1,
-            payer_index: index + 1,
-            call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-            from: this.FCT.variables.getValue(call.from, "address"),
-            to: this.FCT.variables.getValue(call.to, "address"),
-            to_ens: call.toENS || "",
-            eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-            gas_limit: gasLimit,
-            permissions: 0,
-            validation: call.options?.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
-            flow_control: flow,
-            returned_false_means_fail: options.falseMeansFail || false,
-            jump_on_success: jumpOnSuccess,
-            jump_on_fail: jumpOnFail,
-            method_interface: handleMethodInterface(call),
-          },
-          ...paramsData,
-        },
+        [`transaction_${index + 1}`]: call.generateEIP712Message(index),
       };
     }, {} as TypedDataMessage);
   }

@@ -1,6 +1,7 @@
 import { BatchMultiSigCallTypedData } from "../../types";
 
 export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeName: string): string[] => {
+  console.log(typedData);
   const mainType = typedData.types[typeName.replace("[]", "")];
 
   return mainType.reduce((acc, item) => {

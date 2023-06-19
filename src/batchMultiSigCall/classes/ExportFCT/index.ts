@@ -3,7 +3,8 @@ import { utils } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { handleData, handleFunctionSignature, handleTypes } from "../../helpers";
-import { DecodedCalls, IFCT, MSCall } from "../../types";
+import { IFCT, MSCall } from "../../types";
+import { Call } from "../Call";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
@@ -14,12 +15,12 @@ import * as helpers from "./helpers";
 const { hexlify, id } = utils;
 
 export class ExportFCT extends FCTBase {
-  public calls: DecodedCalls[];
+  public calls: Call[];
   private _eip712: EIP712;
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
-    this.calls = FCT.decodedCalls;
+    this.calls = FCT.pureCalls;
     this._eip712 = new EIP712(FCT);
 
     if (this.FCT.calls.length === 0) {
@@ -69,7 +70,8 @@ export class ExportFCT extends FCTBase {
     const typedData = this.typedData;
     const calls = this.calls;
 
-    return calls.map((call, index) => {
+    return calls.map((callClass, index) => {
+      const call = callClass.get;
       const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
 
       return {
@@ -78,7 +80,7 @@ export class ExportFCT extends FCTBase {
         functionSignature: handleFunctionSignature(call),
         value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         callId: CallID.asString({
-          calls,
+          calls: this.FCT.calls,
           validation: this.FCT.validation,
           call,
           index,

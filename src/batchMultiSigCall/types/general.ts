@@ -44,7 +44,7 @@ export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "
 
 export interface MSCallMandatory {
   nodeId?: string;
-  from?: string | Variable;
+  from: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
 }
@@ -190,6 +190,6 @@ export type IRequiredApproval = (
   token: string;
   from: string;
 };
-export type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
   options: DeepRequired<CallOptions>;
 };

@@ -4,20 +4,26 @@ import { BigNumber, ethers, utils } from "ethers";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { FCTMCall, IFCT, Param } from "../../types";
+import { IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
+import { Call } from "../classes/Call";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
 export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F) {
-  return this._calls.create(call);
+  const newCall = await Call.create({
+    FCT: this,
+    call,
+  });
+  this._calls.push(newCall);
+  return newCall;
 }
 
-export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<FCTMCall[]> {
-  const callsCreated: FCTMCall[] = [];
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<Call[]> {
+  const callsCreated: Call[] = [];
   for (const [index, call] of calls.entries()) {
     try {
       const createdCall = await this.create(call);
@@ -136,7 +142,12 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       },
     };
 
-    this._calls.createSimpleCall(callInput);
+    const callClass = new Call({
+      FCT: this,
+      input: callInput,
+    });
+
+    this._calls.push(callClass);
   }
 
   return this.calls;

@@ -1,5 +1,5 @@
 import { Param } from "../../../types";
-import { IMSCallInput } from "../../types";
+import { Call } from "../Call";
 import * as helpers from "./helpers";
 
 type EIP712TypesObject = Record<string, { name: string; type: string }[]>;
@@ -10,22 +10,11 @@ export class EIP712StructTypes {
 
   static helpers = helpers;
 
-  constructor(calls: IMSCallInput[]) {
-    calls.forEach((call: IMSCallInput, index: number) => {
-      const values = call.params
-        ? call.params.map((param: Param) => {
-            if (param.customType || param.type === "tuple") {
-              const type = this.getStructType(param, index);
-              return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
-            }
-            return {
-              name: param.name,
-              type: param.type,
-            };
-          })
-        : [];
-
-      this.transactionTypes[`transaction${index + 1}`] = [{ name: "call", type: "Call" }, ...values];
+  constructor(calls: Call[]) {
+    calls.forEach((call, index: number) => {
+      const { structTypes, callType } = call.generateEIP712Type();
+      this.transactionTypes[`transaction${index + 1}`] = callType;
+      this.structTypes = { ...this.structTypes, ...structTypes };
     });
   }
 
