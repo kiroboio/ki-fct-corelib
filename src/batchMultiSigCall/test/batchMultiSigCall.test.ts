@@ -1,6 +1,7 @@
 import { AaveV2, ChainId, ERC20 } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
+import util from "util";
 
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
@@ -10,7 +11,6 @@ import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
 import { FCTCreateCallErrors } from "./call.test";
 import { FCTOptionsErrors } from "./options.test";
-
 // Create a function that creates a random address
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
@@ -531,6 +531,47 @@ describe("BatchMultiSigCall", () => {
       });
 
       expect(FCTExport.mcall[0].data).to.eq(`0x${encodedData.slice(10)}`);
+    });
+    it("Should create FCT with tuple array", async () => {
+      const FCT = new BatchMultiSigCall({
+        chainId: "5",
+      });
+
+      await FCT.add({
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "multicall",
+        params: [
+          {
+            name: "data",
+            type: "tuple[]",
+            customType: true,
+            value: [
+              [
+                {
+                  name: "to",
+                  type: "address",
+                  value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+                },
+                {
+                  name: "value",
+                  type: "uint256",
+                  value: "30000",
+                },
+                {
+                  name: "isDeposit",
+                  type: "bool",
+                  value: true,
+                },
+              ],
+            ],
+          },
+        ],
+      });
+
+      const fctData = FCT.exportFCT();
+
+      console.log(util.inspect(fctData, false, null, true /* enable colors */));
     });
   });
 });
