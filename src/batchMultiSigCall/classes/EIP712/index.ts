@@ -10,7 +10,7 @@ import { getComputedVariableMessage, handleMethodInterface } from "../../helpers
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
-import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency } from "./constants";
+import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 import * as helpers from "./helpers";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
@@ -58,6 +58,7 @@ const types = {
   call: Call,
   recurrency: Recurrency,
   multisig: Multisig,
+  validation: Validation,
 } as const;
 
 export class EIP712 extends FCTBase {
@@ -150,6 +151,9 @@ export class EIP712 extends FCTBase {
       optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
     }
 
+    if (this.FCT.validations.get.length > 0) {
+      optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
+    }
     return {
       EIP712Domain: EIP712.types.domain,
       Meta: EIP712.types.meta,
@@ -176,6 +180,7 @@ export class EIP712 extends FCTBase {
       { name: "limits", type: "Limits" },
       ...additionalTypes,
       ...this.getComputedPrimaryType(),
+      ...this.getValidationPrimaryType(),
       ...this.getCallsPrimaryType(),
     ];
   }
@@ -191,6 +196,13 @@ export class EIP712 extends FCTBase {
     return this.FCT.computed.map((_, index) => ({
       name: `computed_${index + 1}`,
       type: `Computed`,
+    }));
+  }
+
+  private getValidationPrimaryType() {
+    return this.FCT.validations.get.map((_, index) => ({
+      name: `validation_${index + 1}`,
+      type: `Validation`,
     }));
   }
 

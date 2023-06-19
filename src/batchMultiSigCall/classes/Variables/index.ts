@@ -9,7 +9,6 @@ import {
   FDBackBaseBytes,
   FDBase,
   FDBaseBytes,
-  ValidationBase,
 } from "../../../constants";
 import { instanceOfVariable } from "../../../helpers";
 import { IValidationEIP712, Variable } from "../../../types";
@@ -28,10 +27,6 @@ export class Variables extends FCTBase {
 
   get computed() {
     return this._computed;
-  }
-
-  get validation() {
-    return this._validation;
   }
 
   get computedWithValues() {
@@ -118,13 +113,6 @@ export class Variables extends FCTBase {
 
       return this.getComputedVariable(index, type);
     }
-    if (variable.type === "validation") {
-      const index = this.validation.findIndex((validationVariable) => {
-        return validationVariable.id === variable.id;
-      });
-
-      return this.getValidationVariable(index);
-    }
 
     throw new Error("Variable type not found");
   }
@@ -180,12 +168,6 @@ export class Variables extends FCTBase {
     }
 
     return outputIndexHex.padStart(ComputedBase.length, ComputedBase);
-  }
-
-  private getValidationVariable(index: number) {
-    const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-
-    return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
   }
 
   public getValue(value: undefined | Variable | string, type: string, ifValueUndefined = ""): string {

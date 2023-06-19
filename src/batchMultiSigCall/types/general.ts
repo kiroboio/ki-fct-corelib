@@ -3,6 +3,7 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { ChainId } from "@kiroboio/fct-plugins";
 import { ethers } from "ethers";
 
+import { ValidationOperator } from "../../constants";
 import {
   CallOptions,
   DeepPartial,
@@ -36,7 +37,7 @@ export interface IFCT {
   externalSigners: string[];
   computed: Omit<ComputedVariable, "index">[];
   signatures: SignatureLike[];
-  validations: [];
+  validations: IValidation[];
 }
 
 export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "mcall">;
@@ -130,7 +131,7 @@ export interface IComputed {
 export interface IValidationEIP712 {
   id?: string;
   value1: string | Variable;
-  operator: string;
+  operator: keyof typeof ValidationOperator;
   value2: string | Variable;
 }
 

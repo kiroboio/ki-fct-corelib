@@ -57,7 +57,11 @@ export class ExportFCT extends FCTBase {
         const { index, ...rest } = c;
         return rest;
       }),
-      validations: [],
+      validations: this.FCT.validation.validationWithValues(true).map((v) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { index, ...rest } = v;
+        return rest;
+      }),
     } satisfies IFCT;
   }
 
@@ -75,6 +79,7 @@ export class ExportFCT extends FCTBase {
         value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         callId: CallID.asString({
           calls,
+          validation: this.FCT.validation,
           call,
           index,
         }),

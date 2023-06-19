@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import { DeepPartial, IFCT } from "../types";
 import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
+import { Validation } from "./classes/Validation";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
   create,
@@ -39,12 +40,14 @@ export class BatchMultiSigCall {
   // Utils
   public utils: FCTUtils;
   public variables: Variables;
+  public validation: Validation;
   protected _options: Options;
   protected _calls: FCTCalls;
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
     this.utils = new FCTUtils(this);
     this.variables = new Variables(this);
+    this.validation = new Validation(this);
     this._options = new Options();
 
     this._calls = new FCTCalls(
@@ -95,6 +98,10 @@ export class BatchMultiSigCall {
 
   get computedWithValues(): ComputedVariable[] {
     return this.variables.computedWithValues;
+  }
+
+  get validations() {
+    return this.validation.get;
   }
 
   // Setters

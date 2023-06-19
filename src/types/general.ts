@@ -33,6 +33,7 @@ export interface CallOptions {
   jumpOnFail?: string;
   falseMeansFail?: boolean;
   callType?: CallType;
+  validation?: string;
 }
 
 export interface IPluginCall {
