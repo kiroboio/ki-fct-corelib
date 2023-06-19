@@ -1,6 +1,7 @@
 import { ChainId } from "@kiroboio/fct-plugins";
+import _ from "lodash";
 
-import { DeepPartial } from "../types";
+import { DeepPartial, IFCT } from "../types";
 import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -19,7 +20,6 @@ import {
   BatchMultiSigCallConstructor,
   ComputedVariable,
   DecodedCalls,
-  IBatchMultiSigCallFCT,
   ICallDefaults,
   IComputed,
   IFCTOptions,
@@ -28,7 +28,6 @@ import {
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
-import Deep = Chai.Deep;
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0xf6407ddd";
@@ -38,15 +37,27 @@ export class BatchMultiSigCall {
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
   // Utils
-  public utils = new FCTUtils(this);
-  public variables = new Variables(this);
-  protected _options = new Options();
-  public _calls = new FCTCalls(this, {
-    value: "0",
-    options: DEFAULT_CALL_OPTIONS,
-  });
+  public utils: FCTUtils;
+  public variables: Variables;
+  protected _options: Options;
+  protected _calls: FCTCalls;
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
+    this.utils = new FCTUtils(this);
+    this.variables = new Variables(this);
+    this._options = new Options();
+
+    this._calls = new FCTCalls(
+      this,
+      _.merge(
+        {
+          value: "0",
+          options: DEFAULT_CALL_OPTIONS,
+        },
+        input.defaults || {}
+      )
+    );
+
     if (input.chainId) {
       this.chainId = input.chainId;
     } else {
@@ -125,7 +136,7 @@ export class BatchMultiSigCall {
 
   // Static functions
   static utils = utils;
-  static from = (input: IBatchMultiSigCallFCT) => {
+  static from = (input: IFCT & { validations?: [] }) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;

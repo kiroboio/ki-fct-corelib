@@ -5,7 +5,8 @@ export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
   | { type: "global"; id: GlobalVariable }
-  | { type: "computed"; id: string };
+  | { type: "computed"; id: string }
+  | { type: "validation"; id: string };
 
 export interface Param {
   name: string;

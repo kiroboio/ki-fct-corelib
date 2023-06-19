@@ -3,7 +3,7 @@ import { utils } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { handleData, handleFunctionSignature, handleTypes } from "../../helpers";
-import { DecodedCalls, IBatchMultiSigCallFCT, MSCall } from "../../types";
+import { DecodedCalls, IFCT, MSCall } from "../../types";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
@@ -57,7 +57,8 @@ export class ExportFCT extends FCTBase {
         const { index, ...rest } = c;
         return rest;
       }),
-    } satisfies IBatchMultiSigCallFCT;
+      validations: [],
+    } satisfies IFCT;
   }
 
   public getCalls(): MSCall[] {

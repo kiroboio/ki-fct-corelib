@@ -46,6 +46,7 @@ export const Call: MessageTypeProperty[] = [
   { name: "to_ens", type: "string" },
   { name: "eth_value", type: "uint256" },
   { name: "gas_limit", type: "uint32" },
+  { name: "validation", type: "uint16" },
   { name: "permissions", type: "uint16" },
   { name: "flow_control", type: "string" },
   { name: "returned_false_means_fail", type: "bool" },
@@ -63,4 +64,11 @@ export const Recurrency: MessageTypeProperty[] = [
 export const Multisig: MessageTypeProperty[] = [
   { name: "external_signers", type: "address[]" },
   { name: "minimum_approvals", type: "uint8" },
+];
+
+export const Validation: MessageTypeProperty[] = [
+  { name: "index", type: "uint256" },
+  { name: "value1", type: "uint256" },
+  { name: "operation", type: "bytes32" },
+  { name: "value2", type: "uint256" },
 ];

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { BatchMultiSigCall, utils } from "../index";
+import { utils } from "../index";
 import { FetchUtility } from "./fetch";
 
 const FCTData = {
@@ -409,11 +409,6 @@ const FCTData = {
 const ACTIVATOR = "0xE911180AcDe75bFBaCFc8BbFD484768b6aA3bd30";
 
 describe("Utility functions", () => {
-  let FCT: BatchMultiSigCall;
-  before(() => {
-    FCT = BatchMultiSigCall.from(FCTData);
-  });
-
   describe("Fetch functions", () => {
     const fetch = new FetchUtility({
       rpcUrl: "https://eth-goerli.public.blastapi.io",

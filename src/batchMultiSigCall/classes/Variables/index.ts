@@ -9,16 +9,18 @@ import {
   FDBackBaseBytes,
   FDBase,
   FDBaseBytes,
+  ValidationBase,
 } from "../../../constants";
 import { instanceOfVariable } from "../../../helpers";
-import { Variable } from "../../../types";
+import { IValidationEIP712, Variable } from "../../../types";
 import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { IComputed } from "../../types";
 import { FCTBase } from "../FCTBase";
 
 export class Variables extends FCTBase {
-  public _computed: Required<IComputed>[] = [];
+  protected _computed: Required<IComputed>[] = [];
+  protected _validation: Required<IValidationEIP712>[] = [];
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
@@ -26,6 +28,10 @@ export class Variables extends FCTBase {
 
   get computed() {
     return this._computed;
+  }
+
+  get validation() {
+    return this._validation;
   }
 
   get computedWithValues() {
@@ -68,6 +74,19 @@ export class Variables extends FCTBase {
     };
   }
 
+  public addValidation(validation: IValidationEIP712): Variable & { type: "validation" } {
+    const id = validation.id || this._validation.length.toString();
+    this._validation.push({
+      ...validation,
+      id,
+    });
+
+    return {
+      type: "validation",
+      id,
+    };
+  }
+
   public getVariable(variable: Variable, type: string) {
     if (variable.type === "external") {
       return this.getExternalVariable(variable.id, type);
@@ -99,11 +118,18 @@ export class Variables extends FCTBase {
 
       return this.getComputedVariable(index, type);
     }
+    if (variable.type === "validation") {
+      const index = this.validation.findIndex((validationVariable) => {
+        return validationVariable.id === variable.id;
+      });
+
+      return this.getValidationVariable(index);
+    }
 
     throw new Error("Variable type not found");
   }
 
-  public getOutputVariable({
+  private getOutputVariable({
     index,
     innerIndex,
     type = "uint256",
@@ -136,7 +162,7 @@ export class Variables extends FCTBase {
     return (innerIndexHex + outputIndexHex).padStart(base.length, base);
   }
 
-  public getExternalVariable(index: number, type: string) {
+  private getExternalVariable(index: number, type: string) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
 
     if (type.includes("bytes")) {
@@ -146,7 +172,7 @@ export class Variables extends FCTBase {
     return outputIndexHex.padStart(FCBase.length, FCBase);
   }
 
-  public getComputedVariable(index: number, type: string) {
+  private getComputedVariable(index: number, type: string) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
 
     if (type.includes("bytes")) {
@@ -154,6 +180,12 @@ export class Variables extends FCTBase {
     }
 
     return outputIndexHex.padStart(ComputedBase.length, ComputedBase);
+  }
+
+  private getValidationVariable(index: number) {
+    const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+
+    return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
   }
 
   public getValue(value: undefined | Variable | string, type: string, ifValueUndefined = ""): string {

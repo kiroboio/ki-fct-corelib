@@ -4,10 +4,10 @@ import { BigNumber, ethers, utils } from "ethers";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { FCTMCall, Param } from "../../types";
+import { FCTMCall, IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
-import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, TypedDataMessageTransaction } from "../types";
+import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
@@ -59,11 +59,11 @@ export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
   return this.calls[index];
 }
 
-export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
+export function exportFCT(this: BatchMultiSigCall): IFCT {
   return new ExportFCT(this).get();
 }
 
-export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT) {
+export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta } = typedData.message;
@@ -193,7 +193,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 
   const decodedFCT: {
     version: string;
-    tr: Omit<IBatchMultiSigCallFCT, "typedData">;
+    tr: Omit<IFCT, "typedData">;
     purgeFCT: string;
     investor: string;
     activator: string;

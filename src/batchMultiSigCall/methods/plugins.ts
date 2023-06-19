@@ -30,7 +30,7 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
 
   plugin.input.set({
     to: call.to,
-    value: call.value,
+    value: call.value as any, // TODO: Temporary fix, need to fix the type in plugins
     methodParams: call.params
       ? call.params.reduce((acc, param) => {
           return { ...acc, [param.name]: param.value };

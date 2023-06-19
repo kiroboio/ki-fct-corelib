@@ -25,7 +25,7 @@ export interface BatchMultiSigCallConstructor {
   version?: `0x${string}`;
 }
 
-export interface IBatchMultiSigCallFCT {
+export interface IFCT {
   typeHash: string;
   typedData: BatchMultiSigCallTypedData;
   sessionId: string;
@@ -36,9 +36,10 @@ export interface IBatchMultiSigCallFCT {
   externalSigners: string[];
   computed: Omit<ComputedVariable, "index">[];
   signatures: SignatureLike[];
+  validations: [];
 }
 
-export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
+export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "mcall">;
 
 export interface MSCallMandatory {
   nodeId?: string;
@@ -124,6 +125,19 @@ export interface IComputed {
   mul?: IComputedValue;
   div?: IComputedValue;
   mod?: IComputedValue;
+}
+
+export interface IValidationEIP712 {
+  id?: string;
+  value1: string | Variable;
+  operator: string;
+  value2: string | Variable;
+}
+
+export interface IValidation {
+  value1: string;
+  operator: string;
+  value2: string;
 }
 
 export interface ComputedVariable {
