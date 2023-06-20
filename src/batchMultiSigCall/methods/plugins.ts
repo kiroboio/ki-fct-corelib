@@ -1,6 +1,6 @@
 import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
 
-import { instanceOfVariable } from "../../helpers";
+import { InstanceOf } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
@@ -9,7 +9,7 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
 
   const callData = call.get;
 
-  if (instanceOfVariable(callData.to)) {
+  if (InstanceOf.Variable(callData.to)) {
     throw new Error("To value cannot be a variable");
   }
 
@@ -50,7 +50,7 @@ export async function getPluginClass(
   const call = this.getCall(index);
   const callData = call.get;
 
-  if (instanceOfVariable(callData.to)) {
+  if (InstanceOf.Variable(callData.to)) {
     throw new Error("To value cannot be a variable");
   }
 

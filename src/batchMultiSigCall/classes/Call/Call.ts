@@ -3,15 +3,16 @@ import { utils } from "ethers";
 import { defaultAbiCoder, hexlify, id, toUtf8Bytes } from "ethers/lib/utils";
 import _ from "lodash";
 
-import { CALL_TYPE, CALL_TYPE_MSG, nullValue } from "../../../constants";
+import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
 import { flows } from "../../../constants/flows";
-import { instanceOfParams, instanceOfVariable } from "../../../helpers";
+import { InstanceOf } from "../../../helpers";
 import {
   BatchMultiSigCallTypedData,
   CallOptions,
   DecodedCalls,
   DeepRequired,
   FCTCallParam,
+  IWithPlugin,
   MSCall,
   Param,
   ParamWithoutVariable,
@@ -20,48 +21,25 @@ import {
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
-import { IMSCallInput, IWithPlugin } from "../../types";
+import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
-import { FCTBase } from "../FCTBase";
-import * as helpers from "../FCTCalls/helpers";
-import { getParams, getTypesArray } from "./helpers";
+import { CallBase } from "./CallBase";
+import * as helpers from "./helpers";
+import { generateNodeId, getParams } from "./helpers";
+import { GetValueType, ICall } from "./types";
 
-type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
+export class Call extends CallBase implements ICall {
+  protected FCT: BatchMultiSigCall;
 
-function generateNodeId(): string {
-  return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
-}
+  constructor({ FCT, input }: { FCT: BatchMultiSigCall; input: IMSCallInput }) {
+    super(input);
+    this.FCT = FCT;
 
-function instanceOfCallWithPlugin(object: any): object is IWithPlugin {
-  return typeof object === "object" && "plugin" in object;
-}
-
-const isInstanceOfTupleArray = (value: Param["value"], param: Param): value is Param[][] => {
-  return (param.customType ?? false) && param.type.lastIndexOf("[") > 0;
-};
-
-const isInstanceOfTuple = (value: Param["value"], param: Param): value is Param[] => {
-  return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
-};
-
-export class Call extends FCTBase {
-  protected _call: IMSCallInput & { nodeId: string };
-
-  constructor({ FCT, input, verify = true }: { FCT: BatchMultiSigCall; input: IMSCallInput; verify?: boolean }) {
-    super(FCT);
-
-    let fullInput: IMSCallInput & { nodeId: string };
-    if (!input.nodeId) {
-      fullInput = { ...input, nodeId: generateNodeId() };
-    } else {
-      fullInput = input as IMSCallInput & { nodeId: string };
-    }
-    if (verify) this.verifyCall(fullInput);
-    this._call = fullInput;
+    this.verifyCall(this.call);
   }
 
   get get(): StrictMSCallInput {
-    return _.merge({}, this.FCT.callDefault, this._call) as StrictMSCallInput;
+    return _.merge({}, this.FCT.callDefault, this.call) as StrictMSCallInput;
   }
 
   get options(): DeepRequired<CallOptions> {
@@ -134,7 +112,7 @@ export class Call extends FCTBase {
     const paramsData = this.getParamsEIP712();
     const call = this.get;
     const options = this.options;
-    const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
+    const flow = flows[options.flow].text;
 
     const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
 
@@ -219,43 +197,6 @@ export class Call extends FCTBase {
     return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
   }
 
-  public getTypesArray() {
-    const call = this._call;
-    if (!call.params) {
-      return [];
-    }
-
-    return getTypesArray(call.params);
-  }
-
-  public getFunctionSignature(): string {
-    const call = this._call;
-    if (call.method) {
-      return utils.id(this.getFunction());
-    }
-    return nullValue;
-  }
-
-  public getFunction(): string {
-    const call = this._call;
-    const getParamsType = (param: Param): string => {
-      if (instanceOfParams(param.value)) {
-        if (Array.isArray(param.value[0])) {
-          const value = param.value[0] as Param[];
-          return `(${value.map(getParamsType).join(",")})[]`;
-        } else {
-          const value = param.value as Param[];
-          return `(${value.map(getParamsType).join(",")})`;
-        }
-      }
-
-      return param.hashed ? "bytes32" : param.type;
-    };
-    const params = call.params ? call.params.map(getParamsType) : "";
-
-    return `${call.method}(${params})`;
-  }
-
   // Private methods
 
   private getUsedStructTypes(
@@ -286,9 +227,9 @@ export class Call extends FCTBase {
 
     let paramValue: Param[] | Param[][];
 
-    if (isInstanceOfTupleArray(param.value, param)) {
+    if (InstanceOf.TupleArray(param.value, param)) {
       paramValue = param.value[0];
-    } else if (isInstanceOfTuple(param.value, param)) {
+    } else if (InstanceOf.Tuple(param.value, param)) {
       paramValue = param.value;
     } else {
       throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
@@ -324,25 +265,7 @@ export class Call extends FCTBase {
       return {};
     }
     return {
-      ...this.getDecoded.params.reduce((acc, param) => {
-        let value: FCTCallParam;
-
-        if (param.customType || param.type.includes("tuple")) {
-          if (param.type.lastIndexOf("[") > 0) {
-            const valueArray = param.value as Param[][];
-            value = valueArray.map((item) => getParams(item));
-          } else {
-            const valueArray = param.value as Param[];
-            value = getParams(valueArray);
-          }
-        } else {
-          value = param.value as string[] | string | boolean;
-        }
-        return {
-          ...acc,
-          [param.name]: value,
-        };
-      }, {}),
+      ...getParams(this.getDecoded.params),
     };
   }
 
@@ -402,7 +325,7 @@ export class Call extends FCTBase {
         const value = this.decodeParams(param.value as Param[]);
         return [...acc, { ...param, value }];
       }
-      if (instanceOfVariable(param.value)) {
+      if (InstanceOf.Variable(param.value)) {
         const value = this.FCT.variables.getVariable(param.value, param.type);
         const updatedParam = { ...param, value };
         return [...acc, updatedParam];
@@ -460,7 +383,7 @@ export class Call extends FCTBase {
     }
   }
   static async create({ call, FCT }: { call: IMSCallInput | IWithPlugin; FCT: BatchMultiSigCall }) {
-    if (instanceOfCallWithPlugin(call)) {
+    if (InstanceOf.CallWithPlugin(call)) {
       return await this.createWithPlugin(FCT, call);
     } else {
       return this.createSimpleCall(FCT, call);

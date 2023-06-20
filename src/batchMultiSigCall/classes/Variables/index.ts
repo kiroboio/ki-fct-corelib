@@ -10,7 +10,7 @@ import {
   FDBase,
   FDBaseBytes,
 } from "../../../constants";
-import { instanceOfVariable } from "../../../helpers";
+import { InstanceOf } from "../../../helpers";
 import { IValidationEIP712, Variable } from "../../../types";
 import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
@@ -31,7 +31,7 @@ export class Variables extends FCTBase {
 
   get computedWithValues() {
     const handleVariable = (value: string | Variable) => {
-      if (instanceOfVariable(value)) {
+      if (InstanceOf.Variable(value)) {
         return this.getVariable(value, "uint256");
       }
       return value;

@@ -1,5 +1,5 @@
 import { ValidationBase, ValidationOperator } from "../../../constants";
-import { instanceOfVariable } from "../../../helpers";
+import { InstanceOf } from "../../../helpers";
 import { IValidationEIP712, Variable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
@@ -55,7 +55,7 @@ export class Validation extends FCTBase {
 
       return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
     }
-    if (instanceOfVariable(value)) {
+    if (InstanceOf.Variable(value)) {
       return this.FCT.variables.getVariable(value, "uint256");
     }
     return value;

@@ -8,8 +8,8 @@ import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
 import { IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { CallID, EIP712, FCTCalls, SessionID } from "../classes";
-import { Call } from "../classes/Call";
+import { Call, CallID, EIP712, SessionID } from "../classes";
+import { getParamsFromTypedData } from "../classes/Call/helpers";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
@@ -130,7 +130,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       const ifaceFunction = iface.getFunction(functionName);
       const inputs = ifaceFunction.inputs;
 
-      params = FCTCalls.helpers.getParamsFromTypedData({
+      params = getParamsFromTypedData({
         methodInterfaceParams: inputs,
         parameters,
         types: typesObject,
