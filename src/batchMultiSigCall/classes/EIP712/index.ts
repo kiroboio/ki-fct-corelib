@@ -11,7 +11,6 @@ import {
   TypedDataMessage,
   TypedDataTypes,
 } from "../../types";
-import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
@@ -133,7 +132,7 @@ export class EIP712 extends FCTBase {
   }
 
   public getTypedDataTypes(): TypedDataTypes {
-    const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.pureCalls);
+    const { structTypes, transactionTypes } = this.getCallTypesAndStructs();
 
     const FCTOptions = this.FCT.options;
     const { recurrency, multisig } = FCTOptions;
@@ -225,5 +224,18 @@ export class EIP712 extends FCTBase {
         [`validation_${i + 1}`]: item,
       };
     }, {} as Record<`validation_${number}`, ComputedVariable>);
+  }
+
+  private getCallTypesAndStructs() {
+    let structs: Record<string, { name: string; type: string }[]> = {};
+    const types: Record<string, { name: string; type: string }[]> = {};
+
+    this.FCT.pureCalls.forEach((call, index) => {
+      const { structTypes, callType } = call.generateEIP712Type();
+      structs = { ...structs, ...structTypes };
+      types[`transaction${index + 1}`] = callType;
+    });
+
+    return { structTypes: structs, transactionTypes: types };
   }
 }

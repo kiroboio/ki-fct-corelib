@@ -1,13 +1,18 @@
+import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { utils } from "ethers";
+import { defaultAbiCoder, hexlify, id, toUtf8Bytes } from "ethers/lib/utils";
 import _ from "lodash";
 
-import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
+import { CALL_TYPE, CALL_TYPE_MSG, nullValue } from "../../../constants";
 import { flows } from "../../../constants/flows";
-import { instanceOfVariable } from "../../../helpers";
+import { instanceOfParams, instanceOfVariable } from "../../../helpers";
 import {
+  BatchMultiSigCallTypedData,
   CallOptions,
   DecodedCalls,
   DeepRequired,
   FCTCallParam,
+  MSCall,
   Param,
   ParamWithoutVariable,
   StrictMSCallInput,
@@ -15,11 +20,13 @@ import {
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
-import { handleMethodInterface } from "../../helpers";
 import { IMSCallInput, IWithPlugin } from "../../types";
+import { CallID } from "../CallID";
 import { FCTBase } from "../FCTBase";
 import * as helpers from "../FCTCalls/helpers";
-import { getParams } from "./helpers";
+import { getParams, getTypesArray } from "./helpers";
+
+type GetValueType = boolean | string | GetValueType[] | GetValueType[][];
 
 function generateNodeId(): string {
   return [...Array(20)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -36,10 +43,6 @@ const isInstanceOfTupleArray = (value: Param["value"], param: Param): value is P
 const isInstanceOfTuple = (value: Param["value"], param: Param): value is Param[] => {
   return (param.customType ?? false) && param.type.lastIndexOf("[") === -1;
 };
-
-// function instanceOfCallWithEncodedData(object: any): object is IMSCallWithEncodedData {
-//   return typeof object === "object" && "abi" in object;
-// }
 
 export class Call extends FCTBase {
   protected _call: IMSCallInput & { nodeId: string };
@@ -77,68 +80,53 @@ export class Call extends FCTBase {
     };
   }
 
+  public getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall {
+    const call = this.get;
+    return {
+      typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+      ensHash: id(call.toENS || ""),
+      functionSignature: this.getFunctionSignature(),
+      value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+      callId: CallID.asString({
+        calls: this.FCT.calls,
+        validation: this.FCT.validation,
+        call,
+        index,
+      }),
+      from: this.FCT.variables.getValue(call.from, "address"),
+      to: this.FCT.variables.getValue(call.to, "address"),
+      data: this.getEncodedData(),
+      types: this.getTypesArray(),
+      typedHashes: this.getTypedHashes(),
+    };
+  }
+
   public generateEIP712Type() {
     const call = this.get;
+    if (!call.params || (call.params && call.params.length === 0)) {
+      return {
+        structTypes: {},
+        callType: [{ name: "call", type: "Call" }],
+      };
+    }
+
     const structTypes: { [key: string]: { name: string; type: string }[] } = {};
 
-    function getStructType(param: Param, index: number, innerIndex = 0) {
-      const typeName = `CallStruct_${call.nodeId}_${index}_${innerIndex}`;
-
-      let paramValue: Param[] | Param[][];
-
-      if (isInstanceOfTupleArray(param.value, param)) {
-        paramValue = param.value[0];
-      } else if (isInstanceOfTuple(param.value, param)) {
-        paramValue = param.value;
-      } else {
-        throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
-      }
-
-      structTypes[typeName] = paramValue.map((item) => {
-        if (item.customType || item.type.includes("tuple")) {
-          const innerType = getStructType(item, index, innerIndex++);
-          return {
-            name: item.name,
-            type: innerType,
-          };
-        }
-        return {
-          name: item.name,
-          type: item.type,
-        };
+    const callParameters = call.params.map((param: Param) => {
+      const typeName = this.getStructType({
+        param,
+        nodeId: call.nodeId,
+        structTypes,
       });
 
-      if (param.type.lastIndexOf("[") > 0) {
-        for (const parameter of (param.value as Param[][])[0]) {
-          if (parameter.customType || parameter.type.includes("tuple")) {
-            getStructType(parameter, index, innerIndex);
-          }
-        }
-      } else {
-        for (const parameter of param.value as Param[]) {
-          if (parameter.customType || parameter.type.includes("tuple")) {
-            getStructType(parameter, index, innerIndex);
-          }
-        }
-      }
-
-      return typeName;
-    }
-    const values = call.params
-      ? call.params.map((param: Param, i: number) => {
-          if (param.customType || param.type === "tuple") {
-            const type = getStructType(param, i);
-            return { name: param.name, type: param.type.lastIndexOf("[") > 0 ? `${type}[]` : type };
-          }
-          return {
-            name: param.name,
-            type: param.type,
-          };
-        })
-      : [];
+      return {
+        name: param.name,
+        type: typeName,
+      };
+    });
     return {
       structTypes,
-      callType: [{ name: "call", type: "Call" }, ...values],
+      callType: [{ name: "call", type: "Call" }, ...callParameters],
     };
   }
 
@@ -148,8 +136,220 @@ export class Call extends FCTBase {
     const options = this.options;
     const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
 
+    const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
+
+    return {
+      call: {
+        call_index: index + 1,
+        payer_index: index + 1,
+        call_type: CALL_TYPE_MSG[call.options.callType],
+        from: this.FCT.variables.getValue(call.from, "address"),
+        to: this.FCT.variables.getValue(call.to, "address"),
+        to_ens: call.toENS || "",
+        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+        gas_limit: options.gasLimit,
+        permissions: 0,
+        validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
+        flow_control: flow,
+        returned_false_means_fail: options.falseMeansFail,
+        jump_on_success: jumpOnSuccess,
+        jump_on_fail: jumpOnFail,
+        method_interface: this.getFunction(),
+      },
+      ...paramsData,
+    };
+  }
+
+  public getTypedHashes(): string[] {
+    const { structTypes, callType } = this.generateEIP712Type();
+
+    return this.getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
+      return hexlify(TypedDataUtils.hashType(type, structTypes));
+    });
+  }
+
+  public getEncodedData(): string {
+    const call = this._call;
+    if (!call.method || !call.params) {
+      return "0x";
+    }
+
+    const getType = (param: Param): string => {
+      if (param.customType || param.type.includes("tuple")) {
+        let value: Param[];
+        let isArray = false;
+        if (param.type.lastIndexOf("[") > 0) {
+          isArray = true;
+          value = (param.value as Param[][])[0];
+        } else {
+          value = param.value as Param[];
+        }
+        return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
+      }
+      return param.hashed ? "bytes32" : param.type;
+    };
+
+    const getValues = (param: Param): GetValueType => {
+      if (!param.value) {
+        throw new Error("Param value is required");
+      }
+      if (param.customType || param.type.includes("tuple")) {
+        let value;
+        if (param.type.lastIndexOf("[") > 0) {
+          value = param.value as Param[][];
+          return value.reduce((acc, val) => {
+            return [...acc, val.map(getValues)];
+          }, [] as GetValueType[][]);
+        } else {
+          value = param.value as Param[];
+          return value.map(getValues);
+        }
+      }
+
+      if (param.hashed) {
+        if (typeof param.value === "string") {
+          return utils.keccak256(toUtf8Bytes(param.value));
+        }
+        throw new Error("Hashed value must be a string");
+      }
+
+      return param.value as boolean | string;
+    };
+
+    return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+  }
+
+  public getTypesArray() {
+    const call = this._call;
+    if (!call.params) {
+      return [];
+    }
+
+    return getTypesArray(call.params);
+  }
+
+  public getFunctionSignature(): string {
+    const call = this._call;
+    if (call.method) {
+      return utils.id(this.getFunction());
+    }
+    return nullValue;
+  }
+
+  public getFunction(): string {
+    const call = this._call;
+    const getParamsType = (param: Param): string => {
+      if (instanceOfParams(param.value)) {
+        if (Array.isArray(param.value[0])) {
+          const value = param.value[0] as Param[];
+          return `(${value.map(getParamsType).join(",")})[]`;
+        } else {
+          const value = param.value as Param[];
+          return `(${value.map(getParamsType).join(",")})`;
+        }
+      }
+
+      return param.hashed ? "bytes32" : param.type;
+    };
+    const params = call.params ? call.params.map(getParamsType) : "";
+
+    return `${call.method}(${params})`;
+  }
+
+  // Private methods
+
+  private getUsedStructTypes(
+    typedData: Record<string, { name: string; type: string }[]>,
+    mainType: { name: string; type: string }[]
+  ): string[] {
+    return mainType.reduce((acc, item) => {
+      if (item.type.includes("Struct_")) {
+        const type = item.type.replace("[]", "");
+        return [...acc, type, ...this.getUsedStructTypes(typedData, typedData[type])];
+      }
+      return acc;
+    }, [] as string[]);
+  }
+
+  private getStructType({
+    param,
+    nodeId,
+    structTypes = {},
+  }: {
+    param: Param;
+    nodeId: string;
+    structTypes?: Record<string, { name: string; type: string }[]>;
+  }): string {
+    if (!param.customType && !param.type.includes("tuple")) {
+      return param.type;
+    }
+
+    let paramValue: Param[] | Param[][];
+
+    if (isInstanceOfTupleArray(param.value, param)) {
+      paramValue = param.value[0];
+    } else if (isInstanceOfTuple(param.value, param)) {
+      paramValue = param.value;
+    } else {
+      throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
+    }
+
+    const generalType = paramValue.map((item) => {
+      if (item.customType || item.type.includes("tuple")) {
+        const typeName = this.getStructType({
+          param: item,
+          nodeId,
+          structTypes,
+        });
+        // structTypes = { ...structTypes, ...newStructTypes };
+        return {
+          name: item.name,
+          type: typeName,
+        };
+      }
+      return {
+        name: item.name,
+        type: item.type,
+      };
+    });
+
+    const typeName = `Struct_${nodeId}_${Object.keys(structTypes).length}`;
+    structTypes[typeName] = generalType;
+    return typeName;
+  }
+
+  private getParamsEIP712(): Record<string, FCTCallParam> {
+    if (!this.get.params) {
+      return {};
+    }
+    return {
+      ...this.get.params.reduce((acc, param) => {
+        let value: FCTCallParam;
+
+        if (param.customType || param.type.includes("tuple")) {
+          if (param.type.lastIndexOf("[") > 0) {
+            const valueArray = param.value as Param[][];
+            value = valueArray.map((item) => getParams(item));
+          } else {
+            const valueArray = param.value as Param[];
+            value = getParams(valueArray);
+          }
+        } else {
+          value = param.value as string[] | string | boolean;
+        }
+        return {
+          ...acc,
+          [param.name]: value,
+        };
+      }, {}),
+    };
+  }
+
+  private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
+    const call = this.get;
+    const options = call.options;
 
     if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
       const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
@@ -184,51 +384,8 @@ export class Call extends FCTBase {
     }
 
     return {
-      call: {
-        call_index: index + 1,
-        payer_index: index + 1,
-        call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-        from: this.FCT.variables.getValue(call.from, "address"),
-        to: this.FCT.variables.getValue(call.to, "address"),
-        to_ens: call.toENS || "",
-        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-        gas_limit: options.gasLimit,
-        permissions: 0,
-        validation: call.options?.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
-        flow_control: flow,
-        returned_false_means_fail: options.falseMeansFail || false,
-        jump_on_success: jumpOnSuccess,
-        jump_on_fail: jumpOnFail,
-        method_interface: handleMethodInterface(call),
-      },
-      ...paramsData,
-    };
-  }
-
-  private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.get.params) {
-      return {};
-    }
-    return {
-      ...this.get.params.reduce((acc, param) => {
-        let value: FCTCallParam;
-
-        if (param.customType || param.type.includes("tuple")) {
-          if (param.type.lastIndexOf("[") > 0) {
-            const valueArray = param.value as Param[][];
-            value = valueArray.map((item) => getParams(item));
-          } else {
-            const valueArray = param.value as Param[];
-            value = getParams(valueArray);
-          }
-        } else {
-          value = param.value as string[] | string | boolean;
-        }
-        return {
-          ...acc,
-          [param.name]: value,
-        };
-      }, {}),
+      jumpOnSuccess,
+      jumpOnFail,
     };
   }
 

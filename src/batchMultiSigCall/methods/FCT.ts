@@ -1,12 +1,14 @@
 import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
+import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
+import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
 import { IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
+import { CallID, EIP712, FCTCalls, SessionID } from "../classes";
 import { Call } from "../classes/Call";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
@@ -58,15 +60,38 @@ export function createPlugin<T extends AllPlugins>(
   }
 }
 
-export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
-  if (index < 0 || index >= this.calls.length) {
+export function getCall(this: BatchMultiSigCall, index: number): Call {
+  if (index < 0 || index >= this._calls.length) {
     throw new Error("Index out of range");
   }
-  return this.calls[index];
+  return this._calls[index];
 }
 
 export function exportFCT(this: BatchMultiSigCall): IFCT {
-  return new ExportFCT(this).get();
+  const typedData = new EIP712(this).getTypedData();
+  return {
+    typedData,
+    builder: this.options.builder,
+    typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
+    sessionId: new SessionID(this).asString(),
+    nameHash: id(this.options.name),
+    mcall: this.pureCalls.map((call, index) => {
+      return call.getAsMCall(typedData, index);
+    }),
+    variables: [],
+    externalSigners: this.options.multisig.externalSigners,
+    signatures: [this.utils.getAuthenticatorSignature()],
+    computed: this.computedWithValues.map((c) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { index, ...rest } = c;
+      return rest;
+    }),
+    validations: this.validation.getWithValues(true).map((v) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { index, ...rest } = v;
+      return rest;
+    }),
+  } satisfies IFCT;
 }
 
 export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {

@@ -5,7 +5,7 @@ import { FCT_VAULT_ADDRESS } from "../../constants";
 import { instanceOfVariable } from "../../helpers";
 import { Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { handleFunctionSignature } from "../helpers";
+import { Call } from "../classes";
 import { IRequiredApproval } from "../types";
 
 const { getAddress } = utils;
@@ -23,8 +23,13 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
       continue;
     }
 
+    const callClass = new Call({
+      FCT,
+      input: call,
+    });
+
     const pluginData = getPlugin({
-      signature: handleFunctionSignature(call),
+      signature: callClass.getFunctionSignature(),
       address: call.to,
       chainId,
     });

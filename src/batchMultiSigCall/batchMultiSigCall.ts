@@ -56,17 +56,6 @@ export class BatchMultiSigCall {
     this.validation = new Validation(this);
     this._options = new Options();
 
-    // this._calls = new FCTCalls(
-    //   this,
-    //   _.merge(
-    //     {
-    //       value: "0",
-    //       options: DEFAULT_CALL_OPTIONS,
-    //     },
-    //     input.defaults || {}
-    //   )
-    // );
-
     if (input.chainId) {
       this.chainId = input.chainId;
     } else {

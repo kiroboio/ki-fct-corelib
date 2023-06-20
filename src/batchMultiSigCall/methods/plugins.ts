@@ -2,19 +2,20 @@ import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kirobo
 
 import { instanceOfVariable } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { handleFunctionSignature } from "../helpers";
 
 export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
   const chainId = this.chainId;
   const call = this.getCall(index);
 
-  if (instanceOfVariable(call.to)) {
+  const callData = call.get;
+
+  if (instanceOfVariable(callData.to)) {
     throw new Error("To value cannot be a variable");
   }
 
   const pluginData = getPluginProvider({
-    signature: handleFunctionSignature(call),
-    address: call.to,
+    signature: call.getFunctionSignature(),
+    address: callData.to,
     chainId: chainId as ChainId,
   });
 
@@ -29,10 +30,10 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
   }) as PluginInstance;
 
   plugin.input.set({
-    to: call.to,
-    value: call.value as any, // TODO: Temporary fix, need to fix the type in plugins
-    methodParams: call.params
-      ? call.params.reduce((acc, param) => {
+    to: callData.to,
+    value: callData.value as any, // TODO: Temporary fix, need to fix the type in plugins
+    methodParams: callData.params
+      ? callData.params.reduce((acc, param) => {
           return { ...acc, [param.name]: param.value };
         }, {})
       : {},
@@ -47,14 +48,15 @@ export async function getPluginClass(
 ): Promise<ReturnType<typeof getPluginProvider>> {
   const chainId = this.chainId;
   const call = this.getCall(index);
+  const callData = call.get;
 
-  if (instanceOfVariable(call.to)) {
+  if (instanceOfVariable(callData.to)) {
     throw new Error("To value cannot be a variable");
   }
 
   const pluginData = getPluginProvider({
-    signature: handleFunctionSignature(call),
-    address: call.to,
+    signature: call.getFunctionSignature(),
+    address: callData.to,
     chainId: chainId.toString() as ChainId,
   });
 
@@ -64,12 +66,13 @@ export async function getPluginClass(
 export async function getPluginData(this: BatchMultiSigCall, index: number) {
   const plugin = await this.getPlugin(index); // get the plugin from the index
   const call = this.getCall(index); // get the call from the index
+  const callData = call.get;
 
   const input = {
-    to: call.to,
-    value: call.value,
-    methodParams: call.params
-      ? call.params.reduce((acc, param) => {
+    to: callData.to,
+    value: callData.value,
+    methodParams: callData.params
+      ? callData.params.reduce((acc, param) => {
           return { ...acc, [param.name]: param.value };
         }, {})
       : {},
