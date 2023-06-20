@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import util from "util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { Validation } from "./index";
@@ -43,7 +42,5 @@ describe("Validation", () => {
     });
 
     const fct = FCT.exportFCT();
-
-    console.log(util.inspect(fct, false, null, true /* enable colors */));
   });
 });

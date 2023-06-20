@@ -41,9 +41,8 @@ export class BatchMultiSigCall {
   public utils: FCTUtils;
   public variables: Variables;
   public validation: Validation;
-  protected _options: Options;
-  // protected _calls: FCTCalls;
 
+  protected _options: Options;
   protected _calls: Call[] = [];
   protected _callDefault: ICallDefaults = {
     value: "0",

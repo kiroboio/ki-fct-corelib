@@ -12,7 +12,7 @@ describe("BatchMultiSigCall EIP712", () => {
       chainId: "5",
     });
 
-    const { nodeId } = await FCT.create({
+    const Call = await FCT.create({
       to: USDC,
       // Random address
       from: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
@@ -32,7 +32,7 @@ describe("BatchMultiSigCall EIP712", () => {
     const computedVariable = FCT.addComputed({
       value: {
         type: "output",
-        id: { innerIndex: 0, nodeId },
+        id: { innerIndex: 0, nodeId: Call.get.nodeId },
       },
       div: "2",
     });
@@ -113,6 +113,7 @@ describe("BatchMultiSigCall EIP712", () => {
         eth_value: "0",
         gas_limit: "0",
         permissions: 0,
+        validation: 0,
         flow_control: "continue on success, revert on fail",
         returned_false_means_fail: false,
         jump_on_success: 0,
@@ -132,6 +133,7 @@ describe("BatchMultiSigCall EIP712", () => {
         eth_value: "0",
         gas_limit: "0",
         permissions: 0,
+        validation: 0,
         flow_control: "continue on success, revert on fail",
         returned_false_means_fail: false,
         jump_on_success: 0,

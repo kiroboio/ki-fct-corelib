@@ -1,12 +1,11 @@
 import { AaveV2, ChainId, ERC20 } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import util from "util";
 
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
-import { CallOptions, IMSCallInput, Param } from "../../types";
+import { CallOptions, IMSCallInput } from "../../types";
 import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
 import { FCTCreateCallErrors } from "./call.test";
@@ -452,86 +451,89 @@ describe("BatchMultiSigCall", () => {
       expect(FCT.computed[0].value).to.eq("0xFD00000000000000000000000000000000000001");
       expect(FCT.computed[0].sub).to.eq("10");
     });
-    it("Should create FCT with encoded data and ABI", async () => {
-      const ABI = [
-        {
-          inputs: [
-            { internalType: "address", name: "operator", type: "address" },
-            {
-              components: [
-                { internalType: "bool", name: "activate", type: "bool" },
-                { internalType: "bool", name: "activateBatch", type: "bool" },
-                { internalType: "bool", name: "activateForFree", type: "bool" },
-                { internalType: "bool", name: "activateForFreeBatch", type: "bool" },
-              ],
-              internalType: "struct IFCT_ActuatorStorage.Approvals",
-              name: "approvals",
-              type: "tuple",
-            },
-          ],
-          name: "setActivationApproval",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-      ];
-
-      const FCT = new BatchMultiSigCall({
-        chainId: "5",
-      });
-
-      FCT.setCallDefaults({
-        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-      });
-
-      const iface = new ethers.utils.Interface(ABI);
-
-      const encodedData = iface.encodeFunctionData("setActivationApproval", [
-        "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-        [true, true, true, true],
-      ]);
-
-      const call = await FCT.create({
-        encodedData,
-        abi: ABI,
-        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
-      } as const);
-
-      const params = call.params as Param[];
-
-      expect(call).to.be.an("object");
-
-      expect(params[0]).to.eql({
-        name: "operator",
-        type: "address",
-        value: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-      });
-      expect(params[1]).to.eql({
-        name: "approvals",
-        type: "tuple",
-        customType: true,
-        value: [
-          { name: "activate", type: "bool", value: true },
-          { name: "activateBatch", type: "bool", value: true },
-          { name: "activateForFree", type: "bool", value: true },
-          { name: "activateForFreeBatch", type: "bool", value: true },
-        ],
-      });
-
-      const FCTExport = FCT.exportFCT();
-
-      expect(FCTExport).to.be.an("object");
-
-      expect(FCTExport.typedData.message["transaction_1"].operator).to.eq("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
-      expect(FCTExport.typedData.message["transaction_1"].approvals).to.eql({
-        activate: true,
-        activateBatch: true,
-        activateForFree: true,
-        activateForFreeBatch: true,
-      });
-
-      expect(FCTExport.mcall[0].data).to.eq(`0x${encodedData.slice(10)}`);
-    });
+    //
+    // NOTE: THIS METHOD IS REMOVED
+    //
+    // it("Should create FCT with encoded data and ABI", async () => {
+    //   const ABI = [
+    //     {
+    //       inputs: [
+    //         { internalType: "address", name: "operator", type: "address" },
+    //         {
+    //           components: [
+    //             { internalType: "bool", name: "activate", type: "bool" },
+    //             { internalType: "bool", name: "activateBatch", type: "bool" },
+    //             { internalType: "bool", name: "activateForFree", type: "bool" },
+    //             { internalType: "bool", name: "activateForFreeBatch", type: "bool" },
+    //           ],
+    //           internalType: "struct IFCT_ActuatorStorage.Approvals",
+    //           name: "approvals",
+    //           type: "tuple",
+    //         },
+    //       ],
+    //       name: "setActivationApproval",
+    //       outputs: [],
+    //       stateMutability: "nonpayable",
+    //       type: "function",
+    //     },
+    //   ];
+    //
+    //   const FCT = new BatchMultiSigCall({
+    //     chainId: "5",
+    //   });
+    //
+    //   FCT.setCallDefaults({
+    //     from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    //   });
+    //
+    //   const iface = new ethers.utils.Interface(ABI);
+    //
+    //   const encodedData = iface.encodeFunctionData("setActivationApproval", [
+    //     "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+    //     [true, true, true, true],
+    //   ]);
+    //
+    //   const call = await FCT.create({
+    //     encodedData,
+    //     abi: ABI,
+    //     to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+    //   } as const);
+    //
+    //   const params = call.get.params as Param[];
+    //
+    //   expect(call).to.be.an("object");
+    //
+    //   expect(params[0]).to.eql({
+    //     name: "operator",
+    //     type: "address",
+    //     value: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+    //   });
+    //   expect(params[1]).to.eql({
+    //     name: "approvals",
+    //     type: "tuple",
+    //     customType: true,
+    //     value: [
+    //       { name: "activate", type: "bool", value: true },
+    //       { name: "activateBatch", type: "bool", value: true },
+    //       { name: "activateForFree", type: "bool", value: true },
+    //       { name: "activateForFreeBatch", type: "bool", value: true },
+    //     ],
+    //   });
+    //
+    //   const FCTExport = FCT.exportFCT();
+    //
+    //   expect(FCTExport).to.be.an("object");
+    //
+    //   expect(FCTExport.typedData.message["transaction_1"].operator).to.eq("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
+    //   expect(FCTExport.typedData.message["transaction_1"].approvals).to.eql({
+    //     activate: true,
+    //     activateBatch: true,
+    //     activateForFree: true,
+    //     activateForFreeBatch: true,
+    //   });
+    //
+    //   expect(FCTExport.mcall[0].data).to.eq(`0x${encodedData.slice(10)}`);
+    // });
     it("Should create FCT with tuple array", async () => {
       const FCT = new BatchMultiSigCall({
         chainId: "5",
@@ -571,7 +573,7 @@ describe("BatchMultiSigCall", () => {
 
       const fctData = FCT.exportFCT();
 
-      console.log(util.inspect(fctData, false, null, true /* enable colors */));
+      // console.log(util.inspect(fctData, false, null, true /* enable colors */));
     });
   });
 });

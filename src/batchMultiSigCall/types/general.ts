@@ -44,7 +44,7 @@ export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "
 
 export interface MSCallMandatory {
   nodeId?: string;
-  from: string | Variable;
+  from?: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
 }

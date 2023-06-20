@@ -47,7 +47,7 @@ const isInstanceOfTuple = (value: Param["value"], param: Param): value is Param[
 export class Call extends FCTBase {
   protected _call: IMSCallInput & { nodeId: string };
 
-  constructor({ FCT, input }: { FCT: BatchMultiSigCall; input: IMSCallInput }) {
+  constructor({ FCT, input, verify = true }: { FCT: BatchMultiSigCall; input: IMSCallInput; verify?: boolean }) {
     super(FCT);
 
     let fullInput: IMSCallInput & { nodeId: string };
@@ -56,12 +56,12 @@ export class Call extends FCTBase {
     } else {
       fullInput = input as IMSCallInput & { nodeId: string };
     }
-    this.verifyCall(fullInput);
+    if (verify) this.verifyCall(fullInput);
     this._call = fullInput;
   }
 
   get get(): StrictMSCallInput {
-    return _.merge({}, this.FCT.callDefault, this._call);
+    return _.merge({}, this.FCT.callDefault, this._call) as StrictMSCallInput;
   }
 
   get options(): DeepRequired<CallOptions> {
@@ -169,7 +169,7 @@ export class Call extends FCTBase {
   }
 
   public getEncodedData(): string {
-    const call = this._call;
+    const call = this.getDecoded;
     if (!call.method || !call.params) {
       return "0x";
     }
@@ -313,17 +313,18 @@ export class Call extends FCTBase {
       };
     });
 
+    // If param type is array, we need to add [] to the end of the type
     const typeName = `Struct_${nodeId}_${Object.keys(structTypes).length}`;
     structTypes[typeName] = generalType;
-    return typeName;
+    return typeName + (param.type.includes("[]") ? "[]" : "");
   }
 
   private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.get.params) {
+    if (!this.getDecoded.params) {
       return {};
     }
     return {
-      ...this.get.params.reduce((acc, param) => {
+      ...this.getDecoded.params.reduce((acc, param) => {
         let value: FCTCallParam;
 
         if (param.customType || param.type.includes("tuple")) {

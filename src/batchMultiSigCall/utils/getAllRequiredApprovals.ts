@@ -26,6 +26,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
     const callClass = new Call({
       FCT,
       input: call,
+      verify: false,
     });
 
     const pluginData = getPlugin({
