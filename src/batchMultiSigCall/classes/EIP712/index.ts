@@ -3,15 +3,15 @@ import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data
 import _ from "lodash";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { getComputedVariableMessage } from "../../helpers";
 import {
   BatchMultiSigCallTypedData,
-  ComputedVariable,
+  IValidation,
   TypedDataDomain,
   TypedDataMessage,
   TypedDataTypes,
 } from "../../types";
 import { FCTBase } from "../FCTBase";
+import { IComputedData } from "../Variables/types";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
@@ -125,7 +125,7 @@ export class EIP712 extends FCTBase {
         blockable: FCTOptions.blockable,
       },
       ...optionalMessage,
-      ...getComputedVariableMessage(this.FCT.computedWithValues),
+      ...this.getComputedVariableMessage(),
       ...this.getValidationMessage(),
       ...transactionTypedData,
     };
@@ -223,8 +223,17 @@ export class EIP712 extends FCTBase {
         ...acc,
         [`validation_${i + 1}`]: item,
       };
-    }, {} as Record<`validation_${number}`, ComputedVariable>);
+    }, {} as Record<`validation_${number}`, IValidation>);
   }
+
+  private getComputedVariableMessage = () => {
+    return this.FCT.computedAsData.reduce((acc, item, i) => {
+      return {
+        ...acc,
+        [`computed_${i + 1}`]: item,
+      };
+    }, {} as Record<`computed_${number}`, IComputedData>);
+  };
 
   private getCallTypesAndStructs() {
     let structs: Record<string, { name: string; type: string }[]> = {};

@@ -14,6 +14,7 @@ import {
   RequiredKeys,
   Variable,
 } from "../../types";
+import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
@@ -35,7 +36,7 @@ export interface IFCT {
   builder: string;
   variables: string[];
   externalSigners: string[];
-  computed: Omit<ComputedVariable, "index">[];
+  computed: Omit<IComputedData, "index">[];
   signatures: SignatureLike[];
   validations: IValidation[];
 }
@@ -115,19 +116,6 @@ export interface IFCTOptions {
 
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 
-type IComputedValue = string | Variable;
-
-export interface IComputed {
-  id?: string;
-  value: IComputedValue;
-  add?: IComputedValue;
-  sub?: IComputedValue;
-  pow?: IComputedValue;
-  mul?: IComputedValue;
-  div?: IComputedValue;
-  mod?: IComputedValue;
-}
-
 export interface IValidationEIP712 {
   id?: string;
   value1: string | Variable;
@@ -139,17 +127,6 @@ export interface IValidation {
   value1: string;
   operator: string;
   value2: string;
-}
-
-export interface ComputedVariable {
-  index: string;
-  value: string;
-  add: string;
-  sub: string;
-  pow: string;
-  mul: string;
-  div: string;
-  mod: string;
 }
 
 export type IRequiredApproval = (

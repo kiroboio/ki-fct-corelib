@@ -28,13 +28,14 @@ export const Limits: MessageTypeProperty[] = [
 
 export const Computed: MessageTypeProperty[] = [
   { name: "index", type: "uint256" },
-  { name: "value", type: "uint256" },
-  { name: "add", type: "uint256" },
-  { name: "sub", type: "uint256" },
-  { name: "pow", type: "uint256" },
-  { name: "mul", type: "uint256" },
-  { name: "div", type: "uint256" },
-  { name: "mod", type: "uint256" },
+  { name: "value_1", type: "uint256" },
+  { name: "op_1", type: "string" },
+  { name: "value_2", type: "uint256" },
+  { name: "op_2", type: "string" },
+  { name: "value_3", type: "uint256" },
+  { name: "op_3", type: "string" },
+  { name: "value_4", type: "uint256" },
+  { name: "overflow_protection", type: "bool" },
 ];
 
 export const Call: MessageTypeProperty[] = [

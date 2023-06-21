@@ -2,9 +2,8 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import _ from "lodash";
 
 import { DeepPartial, IFCT, StrictMSCallInput } from "../types";
-import { EIP712, FCTUtils, Options, Variables } from "./classes";
-import { Call } from "./classes/Call";
-import { Validation } from "./classes/Validation";
+import { Call, EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
   create,
@@ -21,10 +20,8 @@ import {
 } from "./methods";
 import {
   BatchMultiSigCallConstructor,
-  ComputedVariable,
   DecodedCalls,
   ICallDefaults,
-  IComputed,
   IFCTOptions,
   RequiredFCTOptions,
   TypedDataDomain,
@@ -99,8 +96,8 @@ export class BatchMultiSigCall {
     return this.variables.computed;
   }
 
-  get computedWithValues(): ComputedVariable[] {
-    return this.variables.computedWithValues;
+  get computedAsData(): IComputedData[] {
+    return this.variables.computedAsData;
   }
 
   get validations() {
@@ -125,7 +122,7 @@ export class BatchMultiSigCall {
   };
 
   // Variables
-  public addComputed = (computed: IComputed) => {
+  public addComputed = (computed: Partial<IComputed>) => {
     return this.variables.addComputed(computed);
   };
 

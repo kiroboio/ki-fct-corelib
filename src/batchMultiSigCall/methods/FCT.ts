@@ -89,11 +89,7 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     variables: [],
     externalSigners: this.options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
-    computed: this.computedWithValues.map((c) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { index, ...rest } = c;
-      return rest;
-    }),
+    computed: this.computedAsData,
     validations: this.validation.getWithValues(true).map((v) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { index, ...rest } = v;

@@ -1,4 +1,4 @@
-import { utils } from "ethers";
+import { ethers, utils } from "ethers";
 
 import {
   ComputedBase,
@@ -14,8 +14,9 @@ import { InstanceOf } from "../../../helpers";
 import { IValidationEIP712, Variable } from "../../../types";
 import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { IComputed } from "../../types";
 import { FCTBase } from "../FCTBase";
+import { ComputedOperators } from "./computedConstants";
+import { IComputed, IComputedData } from "./types";
 
 export class Variables extends FCTBase {
   protected _computed: Required<IComputed>[] = [];
@@ -29,36 +30,35 @@ export class Variables extends FCTBase {
     return this._computed;
   }
 
-  get computedWithValues() {
-    const handleVariable = (value: string | Variable) => {
-      if (InstanceOf.Variable(value)) {
-        return this.getVariable(value, "uint256");
-      }
-      return value;
-    };
-    return this._computed.map((c, i) => ({
-      index: (i + 1).toString(),
-      value: handleVariable(c.value),
-      add: handleVariable(c.add),
-      sub: handleVariable(c.sub),
-      mul: handleVariable(c.mul),
-      pow: handleVariable(c.pow),
-      div: handleVariable(c.div),
-      mod: handleVariable(c.mod),
+  get computedAsData(): IComputedData[] {
+    return this._computed.map((c) => ({
+      values: [c.value1, c.value2, c.value3, c.value4].map((value) => {
+        if (InstanceOf.Variable(value)) {
+          return this.getVariable(value, "uint256");
+        }
+        return value;
+      }) as [string, string, string, string],
+      operators: [c.operator1, c.operator2, c.operator3].map((operator) => {
+        return ethers.utils.id(operator);
+      }) as [string, string, string],
+      overflowProtection: c.overflowProtection,
     }));
   }
 
-  public addComputed(computed: IComputed): Variable & { type: "computed" } {
+  public addComputed(computed: Partial<IComputed>): Variable & { type: "computed" } {
     // Add the computed value to the batch call.
+    const defaultValue = "0";
+    const defaultOperator = ComputedOperators.ADD;
     const data = {
       id: computed.id || this._computed.length.toString(),
-      value: computed.value,
-      add: computed.add || "0",
-      sub: computed.sub || "0",
-      mul: computed.mul || "1",
-      pow: computed.pow || "1",
-      div: computed.div || "1",
-      mod: computed.mod || "0",
+      value1: computed.value1 || defaultValue,
+      operator1: computed.operator1 || defaultOperator,
+      value2: computed.value2 || defaultValue,
+      operator2: computed.operator2 || defaultOperator,
+      value3: computed.value3 || defaultValue,
+      operator3: computed.operator2 || defaultOperator,
+      value4: computed.value4 || defaultValue,
+      overflowProtection: computed.overflowProtection || true,
     };
     this._computed.push(data);
 

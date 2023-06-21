@@ -407,14 +407,15 @@ describe("BatchMultiSigCall", () => {
 
       batchMultiSigCall.addComputed({
         id: "test",
-        value: {
+        value1: {
           type: "output",
           id: {
             nodeId: "node2",
             innerIndex: 0,
           },
         },
-        sub: "10",
+        operator1: "-",
+        value2: "1",
       });
 
       await batchMultiSigCall.createMultiple([
@@ -449,8 +450,8 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFE00000000000000000000000000000000000001");
 
-      expect(FCT.computed[0].value).to.eq("0xFD00000000000000000000000000000000000001");
-      expect(FCT.computed[0].sub).to.eq("10");
+      expect(FCT.computed[0].values[0]).to.eq("0xFD00000000000000000000000000000000000001");
+      expect(FCT.computed[0].operators[0]).to.eq(ethers.utils.id("-"));
     });
     //
     // NOTE: THIS METHOD IS REMOVED
