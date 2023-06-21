@@ -67,6 +67,14 @@ export function getCall(this: BatchMultiSigCall, index: number): Call {
   return this._calls[index];
 }
 
+export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): Call {
+  const call = this._calls.find((c) => c.get.nodeId === nodeId);
+  if (!call) {
+    throw new Error(`Call with nodeId ${nodeId} not found`);
+  }
+  return call;
+}
+
 export function exportFCT(this: BatchMultiSigCall): IFCT {
   const typedData = new EIP712(this).getTypedData();
   return {

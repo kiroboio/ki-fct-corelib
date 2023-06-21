@@ -12,6 +12,7 @@ import {
   createPlugin,
   exportFCT,
   getCall,
+  getCallByNodeId,
   getPlugin,
   getPluginClass,
   getPluginData,
@@ -143,6 +144,7 @@ export class BatchMultiSigCall {
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
+  public getCallByNodeId = getCallByNodeId;
 
   // Static functions
   static utils = utils;

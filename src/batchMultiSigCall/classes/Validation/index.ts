@@ -49,6 +49,14 @@ export class Validation extends FCTBase {
     return { type: "validation", id };
   }
 
+  public addAndSetForCall({ nodeId, validation }: { nodeId: string; validation: IValidationEIP712 }) {
+    const call = this.FCT.getCallByNodeId(nodeId);
+    const validationVariable = this.add(validation);
+    call.setOptions({
+      validation: validationVariable.id,
+    });
+  }
+
   private handleVariable(value: string | Variable | ValidationVariable, index: number) {
     if (instanceOfValidationVariable(value)) {
       const outputIndexHex = (index + 1).toString(16).padStart(4, "0");

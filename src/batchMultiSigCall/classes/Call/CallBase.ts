@@ -2,7 +2,7 @@ import { utils } from "ethers";
 
 import { nullValue } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
-import { Param } from "../../../types";
+import { CallOptions, DeepPartial, Param } from "../../../types";
 import { IMSCallInput } from "../../types";
 import { generateNodeId, getTypesArray } from "./helpers";
 
@@ -21,6 +21,10 @@ export class CallBase {
 
   get call(): IMSCallInput & { nodeId: string } {
     return this._call;
+  }
+
+  public setOptions(options: DeepPartial<CallOptions>) {
+    this._call.options = { ...this._call.options, ...options };
   }
 
   public getTypesArray() {
