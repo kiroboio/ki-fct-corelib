@@ -145,16 +145,16 @@ describe("BatchMultiSigCall EIP712", () => {
       amount: "0xFE00000000000000000000000000000000000001", // Computed Variable
       recipient: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
     });
-    console.log(computed_1);
-    // expect(computed_1).to.deep.equal({
-    //   index: "1",
-    //   value: "0xFD00000000000000000000000000000000000001",
-    //   add: "0",
-    //   sub: "0",
-    //   mul: "1",
-    //   pow: "1",
-    //   div: "2",
-    //   mod: "0",
-    // });
+    expect(computed_1).to.deep.equal({
+      index: "1",
+      value_1: "0xFD00000000000000000000000000000000000001",
+      op_1: "+",
+      value_2: "2",
+      op_2: "*",
+      value_3: "3",
+      op_3: "*",
+      value_4: "4",
+      overflow_protection: true,
+    });
   });
 });

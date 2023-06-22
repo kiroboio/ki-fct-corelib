@@ -15,6 +15,18 @@ export interface IComputed {
   overflowProtection: boolean;
 }
 
+export interface IComputedEIP712 {
+  index: string;
+  value_1: string;
+  op_1: string;
+  value_2: string;
+  op_2: string;
+  value_3: string;
+  op_3: string;
+  value_4: string;
+  overflow_protection: boolean;
+}
+
 export interface IComputedData {
   overflowProtection: boolean;
   values: [string, string, string, string];

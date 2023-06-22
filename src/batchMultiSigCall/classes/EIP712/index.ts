@@ -3,15 +3,10 @@ import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data
 import _ from "lodash";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import {
-  BatchMultiSigCallTypedData,
-  IValidation,
-  TypedDataDomain,
-  TypedDataMessage,
-  TypedDataTypes,
-} from "../../types";
+import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { FCTBase } from "../FCTBase";
-import { IComputedData } from "../Variables/types";
+import { IValidationEIP712 } from "../Validation/types";
+import { IComputedEIP712 } from "../Variables/types";
 import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
@@ -218,21 +213,21 @@ export class EIP712 extends FCTBase {
   }
 
   private getValidationMessage() {
-    return this.FCT.validation.getWithValues().reduce((acc, item, i) => {
+    return this.FCT.validation.getForEIP712.reduce((acc, item, i) => {
       return {
         ...acc,
         [`validation_${i + 1}`]: item,
       };
-    }, {} as Record<`validation_${number}`, IValidation>);
+    }, {} as Record<`validation_${number}`, IValidationEIP712>);
   }
 
   private getComputedVariableMessage = () => {
-    return this.FCT.computedAsData.reduce((acc, item, i) => {
+    return this.FCT.variables.computedForEIP712.reduce((acc, item, i) => {
       return {
         ...acc,
         [`computed_${i + 1}`]: item,
       };
-    }, {} as Record<`computed_${number}`, IComputedData>);
+    }, {} as Record<`computed_${number}`, IComputedEIP712>);
   };
 
   private getCallTypesAndStructs() {

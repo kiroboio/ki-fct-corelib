@@ -16,7 +16,6 @@ export const getAuthenticatorSignature = (typedData: BatchMultiSigCallTypedData)
 
     return splitSignature(signature);
   } catch (e) {
-    console.log(e);
-    return { r: "0x", s: "0x", v: 0 };
+    throw new Error("Error signing typed data");
   }
 };

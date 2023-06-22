@@ -11,16 +11,15 @@ import {
   FDBaseBytes,
 } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
-import { IValidationEIP712, Variable } from "../../../types";
+import { Variable } from "../../../types";
 import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 import { ComputedOperators } from "./computedConstants";
-import { IComputed, IComputedData } from "./types";
+import { IComputed, IComputedData, IComputedEIP712 } from "./types";
 
 export class Variables extends FCTBase {
   protected _computed: Required<IComputed>[] = [];
-  protected _validation: Required<IValidationEIP712>[] = [];
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
@@ -45,6 +44,26 @@ export class Variables extends FCTBase {
     }));
   }
 
+  get computedForEIP712(): IComputedEIP712[] {
+    const handleVariable = (value: string | Variable) => {
+      if (InstanceOf.Variable(value)) {
+        return this.getVariable(value, "uint256");
+      }
+      return value;
+    };
+    return this._computed.map((c, i) => ({
+      index: (i + 1).toString(),
+      value_1: handleVariable(c.value1),
+      op_1: c.operator1,
+      value_2: handleVariable(c.value2),
+      op_2: c.operator2,
+      value_3: handleVariable(c.value3),
+      op_3: c.operator3,
+      value_4: handleVariable(c.value4),
+      overflow_protection: c.overflowProtection,
+    }));
+  }
+
   public addComputed(computed: Partial<IComputed>): Variable & { type: "computed" } {
     // Add the computed value to the batch call.
     const defaultValue = "0";
@@ -66,19 +85,6 @@ export class Variables extends FCTBase {
     return {
       type: "computed",
       id: data.id,
-    };
-  }
-
-  public addValidation(validation: IValidationEIP712): Variable & { type: "validation" } {
-    const id = validation.id || this._validation.length.toString();
-    this._validation.push({
-      ...validation,
-      id,
-    });
-
-    return {
-      type: "validation",
-      id,
     };
   }
 

@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { nullValue } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
-import { CallOptions, DeepPartial, Param } from "../../../types";
+import { CallOptions, DeepPartial, Param, Variable } from "../../../types";
 import { IMSCallInput } from "../../types";
 import { generateNodeId, getTypesArray } from "./helpers";
 
@@ -24,8 +24,14 @@ export class CallBase {
     return this._call;
   }
 
-  public setOptions(options: DeepPartial<CallOptions>) {
-    this._call.options = _.merge({}, this._call.options, options);
+  public getOutputVariable(innerIndex = 0): Variable & { type: "output" } {
+    return {
+      type: "output",
+      id: {
+        nodeId: this._call.nodeId,
+        innerIndex,
+      },
+    };
   }
 
   public getTypesArray() {
@@ -62,5 +68,13 @@ export class CallBase {
     const params = call.params ? call.params.map(getParamsType) : "";
 
     return `${call.method}(${params})`;
+  }
+
+  public setOptions(options: DeepPartial<CallOptions>) {
+    this._call.options = _.merge({}, this._call.options, options);
+  }
+
+  public setCall(call: DeepPartial<IMSCallInput>) {
+    this._call = _.merge({}, this._call, call);
   }
 }

@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import util from "util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 
@@ -71,7 +70,5 @@ describe("Call", () => {
     });
 
     const fct = FCT.exportFCT();
-
-    console.log(util.inspect(fct, false, null, true /* enable colors */));
   });
 });

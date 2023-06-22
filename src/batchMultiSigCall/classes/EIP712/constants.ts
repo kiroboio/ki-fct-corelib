@@ -69,7 +69,7 @@ export const Multisig: MessageTypeProperty[] = [
 
 export const Validation: MessageTypeProperty[] = [
   { name: "index", type: "uint256" },
-  { name: "value1", type: "uint256" },
-  { name: "operator", type: "string" },
-  { name: "value2", type: "uint256" },
+  { name: "value_1", type: "uint256" },
+  { name: "op", type: "string" },
+  { name: "value_2", type: "uint256" },
 ];
