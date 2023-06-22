@@ -24,8 +24,7 @@ import { NO_JUMP } from "../../constants";
 import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { CallBase } from "./CallBase";
-import * as helpers from "./helpers";
-import { generateNodeId, getParams } from "./helpers";
+import { generateNodeId, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { GetValueType, ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
@@ -339,12 +338,12 @@ export class Call extends CallBase implements ICall {
     if (!call.to) {
       throw new Error("To address is required");
     } else if (typeof call.to === "string") {
-      helpers.isAddress(call.to, "To");
+      isAddress(call.to, "To");
     }
 
     // Value validator
     if (call.value && typeof call.value === "string") {
-      helpers.isInteger(call.value, "Value");
+      isInteger(call.value, "Value");
     }
 
     // Method validator
@@ -365,7 +364,7 @@ export class Call extends CallBase implements ICall {
     if (call.options) {
       const { gasLimit, callType } = call.options;
       if (gasLimit) {
-        helpers.isInteger(gasLimit, "Gas limit");
+        isInteger(gasLimit, "Gas limit");
       }
       if (callType) {
         const keysOfCALLTYPE = Object.keys(CALL_TYPE);
@@ -379,7 +378,7 @@ export class Call extends CallBase implements ICall {
       if (!call.method) {
         throw new Error("Method is required when params are present");
       }
-      call.params.map(helpers.verifyParam);
+      call.params.map(verifyParam);
     }
   }
   static async create({ call, FCT }: { call: IMSCallInput | IWithPlugin; FCT: BatchMultiSigCall }) {

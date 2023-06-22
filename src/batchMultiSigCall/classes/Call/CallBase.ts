@@ -1,4 +1,5 @@
 import { utils } from "ethers";
+import _ from "lodash";
 
 import { nullValue } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
@@ -24,7 +25,7 @@ export class CallBase {
   }
 
   public setOptions(options: DeepPartial<CallOptions>) {
-    this._call.options = { ...this._call.options, ...options };
+    this._call.options = _.merge({}, this._call.options, options);
   }
 
   public getTypesArray() {

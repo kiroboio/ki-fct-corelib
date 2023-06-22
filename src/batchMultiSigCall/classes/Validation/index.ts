@@ -27,7 +27,7 @@ export class Validation extends FCTBase {
   public getIndex(id: string) {
     const index = this._validations.findIndex((v) => v.id === id);
     if (index === -1) throw new Error(`Validation with id ${id} not found`);
-    return index;
+    return index + 1;
   }
 
   public getWithValues(hashed = false) {

@@ -70,8 +70,6 @@ describe("Call", () => {
       ],
     });
 
-    // console.log(util.inspect(Call.generateEIP712Type(), false, null, true /* enable colors */));
-
     const fct = FCT.exportFCT();
 
     console.log(util.inspect(fct, false, null, true /* enable colors */));
