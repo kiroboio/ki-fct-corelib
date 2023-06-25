@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.11.37",
+  "version": "2.0.1",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
@@ -28,6 +28,9 @@
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
     "test:fct": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/*.test.ts",
     "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
+    "test:validation": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/Validation.test.ts",
+    "test:variable": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Variables/Variables.test.ts",
+    "test:call": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Call/Call.test.ts",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
     "script": "ts-node --project tsconfig.testing.json",
     "fct": "ts-node scripts/fct.script.ts",

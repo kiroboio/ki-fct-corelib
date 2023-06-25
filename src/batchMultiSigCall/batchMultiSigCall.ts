@@ -1,7 +1,9 @@
 import { ChainId } from "@kiroboio/fct-plugins";
+import _ from "lodash";
 
-import { DeepPartial } from "../types";
-import { EIP712, FCTCalls, FCTUtils, Options, Variables } from "./classes";
+import { DeepPartial, IFCT, StrictMSCallInput } from "../types";
+import { Call, EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
   create,
@@ -9,6 +11,7 @@ import {
   createPlugin,
   exportFCT,
   getCall,
+  getCallByNodeId,
   getPlugin,
   getPluginClass,
   getPluginData,
@@ -17,18 +20,13 @@ import {
 } from "./methods";
 import {
   BatchMultiSigCallConstructor,
-  ComputedVariable,
   DecodedCalls,
-  IBatchMultiSigCallFCT,
   ICallDefaults,
-  IComputed,
   IFCTOptions,
   RequiredFCTOptions,
-  StrictMSCallInput,
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
-import Deep = Chai.Deep;
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0xf6407ddd";
@@ -38,15 +36,23 @@ export class BatchMultiSigCall {
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
   // Utils
-  public utils = new FCTUtils(this);
-  public variables = new Variables(this);
-  protected _options = new Options();
-  public _calls = new FCTCalls(this, {
+  public utils: FCTUtils;
+  public variables: Variables;
+  public validation: Validation;
+
+  protected _options: Options;
+  protected _calls: Call[] = [];
+  protected _callDefault: ICallDefaults = {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
-  });
+  };
 
   constructor(input: BatchMultiSigCallConstructor = {}) {
+    this.utils = new FCTUtils(this);
+    this.variables = new Variables(this);
+    this.validation = new Validation(this);
+    this._options = new Options();
+
     if (input.chainId) {
       this.chainId = input.chainId;
     } else {
@@ -71,19 +77,31 @@ export class BatchMultiSigCall {
   }
 
   get calls(): StrictMSCallInput[] {
-    return this._calls.get();
+    return this._calls.map((call) => call.get);
+  }
+
+  get pureCalls(): Call[] {
+    return this._calls;
   }
 
   get decodedCalls(): DecodedCalls[] {
-    return this._calls.getWithDecodedVariables();
+    return this._calls.map((call) => call.getDecoded);
+  }
+
+  get callDefault(): ICallDefaults {
+    return this._callDefault;
   }
 
   get computed(): IComputed[] {
     return this.variables.computed;
   }
 
-  get computedWithValues(): ComputedVariable[] {
-    return this.variables.computedWithValues;
+  get computedAsData(): IComputedData[] {
+    return this.variables.computedAsData;
+  }
+
+  get validations() {
+    return this.validation.get;
   }
 
   // Setters
@@ -92,7 +110,8 @@ export class BatchMultiSigCall {
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
-    return this._calls.setCallDefaults(callDefault);
+    this._callDefault = _.merge({}, this._callDefault, callDefault);
+    return this._callDefault as ICallDefaults & C;
   }
 
   public changeChainId = (chainId: ChainId) => {
@@ -103,7 +122,7 @@ export class BatchMultiSigCall {
   };
 
   // Variables
-  public addComputed = (computed: IComputed) => {
+  public addComputed = (computed: Partial<IComputed>) => {
     return this.variables.addComputed(computed);
   };
 
@@ -122,10 +141,11 @@ export class BatchMultiSigCall {
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
+  public getCallByNodeId = getCallByNodeId;
 
   // Static functions
   static utils = utils;
-  static from = (input: IBatchMultiSigCallFCT) => {
+  static from = (input: IFCT & { validations?: [] }) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;

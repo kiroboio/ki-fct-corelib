@@ -59,4 +59,5 @@ export const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions> = {
   jumpOnFail: NO_JUMP,
   falseMeansFail: false,
   callType: "ACTION",
+  validation: "",
 };

@@ -1,4 +1,2 @@
 export * from "./instanceOf";
-export * from "./method";
 export * from "./misc";
-export * from "./typeValues";

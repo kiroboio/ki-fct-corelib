@@ -7,6 +7,7 @@ import FCTControllerABI from "../abi/FCT_Controller.abi.json";
 
 const MulticallABI = [
   "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
+  "function getEthBalance(address addr) external view returns (uint256 balance)",
 ];
 export class Interfaces {
   static FCT_Controller = new ethers.utils.Interface(FCTControllerABI);

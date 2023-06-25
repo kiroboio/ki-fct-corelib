@@ -13,7 +13,7 @@ describe("BatchMultiSigCall FCTUtils", () => {
   let FCT: BatchMultiSigCall;
   let utils: FCTUtils;
   before(async () => {
-    FCT = BatchMultiSigCall.from(FCTData);
+    FCT = BatchMultiSigCall.from(FCTData as any);
     utils = FCT.utils;
   });
 
