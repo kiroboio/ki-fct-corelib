@@ -1,3 +1,7 @@
+import { ethers } from "ethers";
+
+const { keccak256, toUtf8Bytes } = ethers.utils;
+
 export const multicallContracts = {
   1: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
   5: "0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e",
@@ -16,6 +20,18 @@ export const FDBackBaseBytes = "0xFDB0000000000000000000000000000000000000000000
 
 export const ComputedBase = "0xFE00000000000000000000000000000000000000";
 export const ComputedBaseBytes = "0xFE00000000000000000000000000000000000000000000000000000000000000";
+
+export const ValidationBase = "0xE900000000000000000000000000000000000000000000000000000000000000";
+
+export const ValidationOperator = {
+  equal: keccak256(toUtf8Bytes("equal")),
+  "greater than": keccak256(toUtf8Bytes("greater than")),
+  "greater equal than": keccak256(toUtf8Bytes("greater equal than")),
+  or: keccak256(toUtf8Bytes("or")),
+  and: keccak256(toUtf8Bytes("and")),
+  "and not": keccak256(toUtf8Bytes("and not")),
+  "not equal": keccak256(toUtf8Bytes("not equal")),
+} as const;
 
 export const CALL_TYPE = {
   ACTION: "0",

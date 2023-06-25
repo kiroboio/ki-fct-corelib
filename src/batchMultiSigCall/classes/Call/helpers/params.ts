@@ -1,8 +1,9 @@
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
-import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../types";
+import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../../types";
 
 const ParamType = ethers.utils.ParamType;
+
 const manageValue = (value: string | number | boolean | Variable) => {
   const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
 
@@ -21,61 +22,28 @@ const manageValue = (value: string | number | boolean | Variable) => {
   return value;
 };
 
-export const isInteger = (value: string, key: string) => {
-  if (value.length === 0) {
-    throw new Error(`${key} cannot be empty string`);
-  }
-  if (value.startsWith("-")) {
-    throw new Error(`${key} cannot be negative`);
-  }
-  if (value.includes(".")) {
-    throw new Error(`${key} cannot be a decimal`);
-  }
-};
+export const getParams = (params: Param[]): Record<string, FCTCallParam> => {
+  return {
+    ...params.reduce((acc, param) => {
+      let value: FCTCallParam;
 
-export const isAddress = (value: string, key: string) => {
-  if (value.length === 0) {
-    throw new Error(`${key} address cannot be empty string`);
-  }
-  if (!utils.isAddress(value)) {
-    throw new Error(`${key} address is not a valid address`);
-  }
-};
-
-export const verifyParam = (param: Param) => {
-  if (!param.value) {
-    throw new Error(`Param ${param.name} is missing a value`);
-  }
-  if (typeof param.value !== "string") {
-    return;
-  }
-  // uint value
-  if (param.type.startsWith("uint")) {
-    if (param.value.includes(".")) {
-      throw new Error(`Param ${param.name} cannot be a decimal`);
-    }
-    if (param.value.startsWith("-")) {
-      throw new Error(`Param ${param.name} cannot be negative`);
-    }
-  }
-  // int value
-  if (param.type.startsWith("int")) {
-    if (param.value.includes(".")) {
-      throw new Error(`Param ${param.name} cannot be a decimal`);
-    }
-  }
-  // address
-  if (param.type === "address") {
-    if (!utils.isAddress(param.value)) {
-      throw new Error(`Param ${param.name} is not a valid address`);
-    }
-  }
-  // bytes
-  if (param.type.startsWith("bytes")) {
-    if (!param.value.startsWith("0x")) {
-      throw new Error(`Param ${param.name} is not a valid bytes value`);
-    }
-  }
+      if (param.customType || param.type.includes("tuple")) {
+        if (param.type.lastIndexOf("[") > 0) {
+          const valueArray = param.value as Param[][];
+          value = valueArray.map((item) => getParams(item));
+        } else {
+          const valueArray = param.value as Param[];
+          value = getParams(valueArray);
+        }
+      } else {
+        value = param.value as string[] | string | boolean;
+      }
+      return {
+        ...acc,
+        [param.name]: value,
+      };
+    }, {}),
+  };
 };
 
 export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: ethers.utils.Result): Param[] => {

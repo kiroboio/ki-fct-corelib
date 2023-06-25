@@ -13,6 +13,8 @@ import {
   RequiredKeys,
   Variable,
 } from "../../types";
+import { IValidationData } from "../classes/Validation/types";
+import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
@@ -25,7 +27,7 @@ export interface BatchMultiSigCallConstructor {
   version?: `0x${string}`;
 }
 
-export interface IBatchMultiSigCallFCT {
+export interface IFCT {
   typeHash: string;
   typedData: BatchMultiSigCallTypedData;
   sessionId: string;
@@ -34,11 +36,12 @@ export interface IBatchMultiSigCallFCT {
   builder: string;
   variables: string[];
   externalSigners: string[];
-  computed: Omit<ComputedVariable, "index">[];
+  computed: Omit<IComputedData, "index">[];
   signatures: SignatureLike[];
+  validations: IValidationData[];
 }
 
-export type PartialBatchMultiSigCall = Pick<IBatchMultiSigCallFCT, "typedData" | "signatures" | "mcall">;
+export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "mcall">;
 
 export interface MSCallMandatory {
   nodeId?: string;
@@ -113,30 +116,6 @@ export interface IFCTOptions {
 
 export type RequiredFCTOptions = DeepRequired<IFCTOptions>;
 
-type IComputedValue = string | Variable;
-
-export interface IComputed {
-  id?: string;
-  value: IComputedValue;
-  add?: IComputedValue;
-  sub?: IComputedValue;
-  pow?: IComputedValue;
-  mul?: IComputedValue;
-  div?: IComputedValue;
-  mod?: IComputedValue;
-}
-
-export interface ComputedVariable {
-  index: string;
-  value: string;
-  add: string;
-  sub: string;
-  pow: string;
-  mul: string;
-  div: string;
-  mod: string;
-}
-
 export type IRequiredApproval = (
   | {
       protocol: "ERC20";
@@ -175,6 +154,6 @@ export type IRequiredApproval = (
   token: string;
   from: string;
 };
-export type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
   options: DeepRequired<CallOptions>;
 };

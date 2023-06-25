@@ -13,7 +13,7 @@ const USDC = {
 export const TestFCT = BaseTestFCT;
 
 export const buildTestFCT = () => {
-  const FCT = BatchMultiSigCall.from(TestFCT);
+  const FCT = BatchMultiSigCall.from(TestFCT as any);
 
   return { FCT, FCTJson: TestFCT };
 };

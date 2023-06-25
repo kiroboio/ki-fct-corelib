@@ -2,6 +2,7 @@ import { CALL_TYPE, Flow } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput, StrictMSCallInput } from "../../types";
+import { Validation } from "../Validation";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");
@@ -20,8 +21,22 @@ const valueWithPadStart = (value: string | number, padStart: number) => {
 // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
 
 export class CallID {
-  static asString({ calls, call, index }: { calls: IMSCallInput[]; call: StrictMSCallInput; index: number }): string {
+  static asString({
+    calls,
+    validation,
+    call,
+    index,
+  }: {
+    calls: IMSCallInput[];
+    validation: Validation;
+    call: StrictMSCallInput;
+    index: number;
+  }): string {
     const permissions = "0000";
+    const validationIndex = valueWithPadStart(
+      call.options.validation ? validation.getIndex(call.options.validation) : 0,
+      4
+    );
     const flow = valueWithPadStart(flows[call.options.flow].value, 2);
     const payerIndex = valueWithPadStart(index + 1, 4);
     const callIndex = valueWithPadStart(index + 1, 4);
@@ -58,7 +73,10 @@ export class CallID {
 
     return (
       "0x" +
-      `${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(64, "0")
+      `${validationIndex}${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(
+        64,
+        "0"
+      )
     );
   }
 

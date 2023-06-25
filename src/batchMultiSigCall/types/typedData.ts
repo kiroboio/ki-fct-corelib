@@ -1,7 +1,8 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { CALL_TYPE_MSG } from "../../constants";
-import { ComputedVariable, FCTCallParam } from "./general";
+import { IComputedData } from "../classes/Variables/types";
+import { FCTCallParam } from "./general";
 
 export interface TypedDataRecurrency {
   max_repeats: string;
@@ -44,6 +45,7 @@ export type TypedDataMessageTransaction = {
     eth_value: string;
     gas_limit: string;
     permissions: number;
+    validation: number;
     flow_control: string;
     returned_false_means_fail: boolean;
     jump_on_success: number;
@@ -77,7 +79,7 @@ export type MessageMeta = Record<"meta", TypedDataMeta>;
 export type MessageLimits = Record<"limits", TypedDataLimits>;
 export type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 export type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
-export type MessageComputed = Record<`computed_${number}`, Omit<ComputedVariable, "index">>;
+export type MessageComputed = Record<`computed_${number}`, IComputedData>;
 
 export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
 export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;

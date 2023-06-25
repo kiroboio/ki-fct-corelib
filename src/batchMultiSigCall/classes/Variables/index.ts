@@ -1,4 +1,4 @@
-import { utils } from "ethers";
+import { ethers, utils } from "ethers";
 
 import {
   ComputedBase,
@@ -10,15 +10,16 @@ import {
   FDBase,
   FDBaseBytes,
 } from "../../../constants";
-import { instanceOfVariable } from "../../../helpers";
+import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
 import { globalVariables } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { IComputed } from "../../types";
 import { FCTBase } from "../FCTBase";
+import { ComputedOperators } from "./computedConstants";
+import { IComputed, IComputedData, IComputedEIP712 } from "./types";
 
 export class Variables extends FCTBase {
-  public _computed: Required<IComputed>[] = [];
+  protected _computed: Required<IComputed>[] = [];
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
@@ -28,36 +29,55 @@ export class Variables extends FCTBase {
     return this._computed;
   }
 
-  get computedWithValues() {
+  get computedAsData(): IComputedData[] {
+    return this._computed.map((c) => ({
+      values: [c.value1, c.value2, c.value3, c.value4].map((value) => {
+        if (InstanceOf.Variable(value)) {
+          return this.getVariable(value, "uint256");
+        }
+        return value;
+      }) as [string, string, string, string],
+      operators: [c.operator1, c.operator2, c.operator3].map((operator) => {
+        return ethers.utils.id(operator);
+      }) as [string, string, string],
+      overflowProtection: c.overflowProtection,
+    }));
+  }
+
+  get computedForEIP712(): IComputedEIP712[] {
     const handleVariable = (value: string | Variable) => {
-      if (instanceOfVariable(value)) {
+      if (InstanceOf.Variable(value)) {
         return this.getVariable(value, "uint256");
       }
       return value;
     };
     return this._computed.map((c, i) => ({
       index: (i + 1).toString(),
-      value: handleVariable(c.value),
-      add: handleVariable(c.add),
-      sub: handleVariable(c.sub),
-      mul: handleVariable(c.mul),
-      pow: handleVariable(c.pow),
-      div: handleVariable(c.div),
-      mod: handleVariable(c.mod),
+      value_1: handleVariable(c.value1),
+      op_1: c.operator1,
+      value_2: handleVariable(c.value2),
+      op_2: c.operator2,
+      value_3: handleVariable(c.value3),
+      op_3: c.operator3,
+      value_4: handleVariable(c.value4),
+      overflow_protection: c.overflowProtection,
     }));
   }
 
-  public addComputed(computed: IComputed): Variable & { type: "computed" } {
+  public addComputed(computed: Partial<IComputed>): Variable & { type: "computed" } {
     // Add the computed value to the batch call.
+    const defaultValue = "0";
+    const defaultOperator = ComputedOperators.ADD;
     const data = {
       id: computed.id || this._computed.length.toString(),
-      value: computed.value,
-      add: computed.add || "0",
-      sub: computed.sub || "0",
-      mul: computed.mul || "1",
-      pow: computed.pow || "1",
-      div: computed.div || "1",
-      mod: computed.mod || "0",
+      value1: computed.value1 || defaultValue,
+      operator1: computed.operator1 || defaultOperator,
+      value2: computed.value2 || defaultValue,
+      operator2: computed.operator2 || defaultOperator,
+      value3: computed.value3 || defaultValue,
+      operator3: computed.operator2 || defaultOperator,
+      value4: computed.value4 || defaultValue,
+      overflowProtection: computed.overflowProtection || true,
     };
     this._computed.push(data);
 
@@ -103,7 +123,7 @@ export class Variables extends FCTBase {
     throw new Error("Variable type not found");
   }
 
-  public getOutputVariable({
+  private getOutputVariable({
     index,
     innerIndex,
     type = "uint256",
@@ -136,7 +156,7 @@ export class Variables extends FCTBase {
     return (innerIndexHex + outputIndexHex).padStart(base.length, base);
   }
 
-  public getExternalVariable(index: number, type: string) {
+  private getExternalVariable(index: number, type: string) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
 
     if (type.includes("bytes")) {
@@ -146,7 +166,7 @@ export class Variables extends FCTBase {
     return outputIndexHex.padStart(FCBase.length, FCBase);
   }
 
-  public getComputedVariable(index: number, type: string) {
+  private getComputedVariable(index: number, type: string) {
     const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
 
     if (type.includes("bytes")) {

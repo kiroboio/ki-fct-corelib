@@ -1,7 +1,4 @@
-import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { utils } from "ethers";
-
-import { BatchMultiSigCallTypedData, Param } from "../types";
+import { Param } from "../../../../types";
 
 const TYPE_NATIVE = 1000;
 const TYPE_STRING = 2000;
@@ -20,12 +17,10 @@ const typeValue = (param: Param): number[] => {
 
     // If the type is an array of tuple/custom struct
     if (param.customType || param.type.includes("tuple")) {
-      console.log("value[0]", value[0]);
-      const typesArray = getTypesArray(value[0]);
+      const typesArray = getTypesArray(value[0], false);
       if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
         return [TYPE, getFixedArrayLength(param.type), countOfElements, ...typesArray];
       }
-      console.log("typesArray", typesArray);
       return [TYPE, countOfElements, ...typesArray];
     }
 
@@ -65,25 +60,14 @@ const typeValue = (param: Param): number[] => {
   return [TYPE_NATIVE];
 };
 
-// Get Types array
-export const getTypesArray = (params: Param[]): number[] => {
+export const getTypesArray = (params: Param[], removeNative = true): number[] => {
   const types = params.reduce((acc, item) => {
     const data = typeValue(item);
     return [...acc, ...data];
   }, [] as number[]);
 
-  if (!types.some((item) => item !== TYPE_NATIVE)) {
+  if (removeNative && !types.some((item) => item !== TYPE_NATIVE)) {
     return [];
   }
   return types;
-};
-
-export const getTypedHashes = (params: Param[], typedData: BatchMultiSigCallTypedData): string[] => {
-  return params.reduce((acc, item) => {
-    if (item.customType) {
-      const type: string = item.type.lastIndexOf("[") > 0 ? item.type.slice(0, item.type.lastIndexOf("[")) : item.type;
-      return [...acc, utils.hexlify(utils.hexlify(TypedDataUtils.hashType(type, typedData.types)))];
-    }
-    return acc;
-  }, [] as string[]);
 };

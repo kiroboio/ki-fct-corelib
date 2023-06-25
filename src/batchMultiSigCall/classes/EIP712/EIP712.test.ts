@@ -12,7 +12,7 @@ describe("BatchMultiSigCall EIP712", () => {
       chainId: "5",
     });
 
-    const { nodeId } = await FCT.create({
+    const Call = await FCT.create({
       to: USDC,
       // Random address
       from: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
@@ -30,11 +30,13 @@ describe("BatchMultiSigCall EIP712", () => {
     });
 
     const computedVariable = FCT.addComputed({
-      value: {
-        type: "output",
-        id: { innerIndex: 0, nodeId },
-      },
-      div: "2",
+      value1: { type: "output", id: { nodeId: Call.get.nodeId, innerIndex: 0 } },
+      operator1: "+",
+      value2: "2",
+      operator2: "*",
+      value3: "3",
+      operator3: "/",
+      value4: "4",
     });
 
     await FCT.create({
@@ -113,6 +115,7 @@ describe("BatchMultiSigCall EIP712", () => {
         eth_value: "0",
         gas_limit: "0",
         permissions: 0,
+        validation: 0,
         flow_control: "continue on success, revert on fail",
         returned_false_means_fail: false,
         jump_on_success: 0,
@@ -132,6 +135,7 @@ describe("BatchMultiSigCall EIP712", () => {
         eth_value: "0",
         gas_limit: "0",
         permissions: 0,
+        validation: 0,
         flow_control: "continue on success, revert on fail",
         returned_false_means_fail: false,
         jump_on_success: 0,
@@ -143,13 +147,14 @@ describe("BatchMultiSigCall EIP712", () => {
     });
     expect(computed_1).to.deep.equal({
       index: "1",
-      value: "0xFD00000000000000000000000000000000000001",
-      add: "0",
-      sub: "0",
-      mul: "1",
-      pow: "1",
-      div: "2",
-      mod: "0",
+      value_1: "0xFD00000000000000000000000000000000000001",
+      op_1: "+",
+      value_2: "2",
+      op_2: "*",
+      value_3: "3",
+      op_3: "*",
+      value_4: "4",
+      overflow_protection: true,
     });
   });
 });

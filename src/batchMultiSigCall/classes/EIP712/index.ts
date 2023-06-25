@@ -2,16 +2,12 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
 import _ from "lodash";
 
-import { CALL_TYPE_MSG } from "../../../constants";
-import { flows } from "../../../constants/flows";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { NO_JUMP } from "../../constants";
-import { getComputedVariableMessage, handleMethodInterface } from "../../helpers";
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
-import { EIP712StructTypes } from "../EIP712StructTypes";
 import { FCTBase } from "../FCTBase";
-import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency } from "./constants";
-import * as helpers from "./helpers";
+import { IValidationEIP712 } from "../Validation/types";
+import { IComputedEIP712 } from "../Variables/types";
+import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
@@ -58,6 +54,7 @@ const types = {
   call: Call,
   recurrency: Recurrency,
   multisig: Multisig,
+  validation: Validation,
 } as const;
 
 export class EIP712 extends FCTBase {
@@ -123,13 +120,14 @@ export class EIP712 extends FCTBase {
         blockable: FCTOptions.blockable,
       },
       ...optionalMessage,
-      ...getComputedVariableMessage(this.FCT.computedWithValues),
+      ...this.getComputedVariableMessage(),
+      ...this.getValidationMessage(),
       ...transactionTypedData,
     };
   }
 
   public getTypedDataTypes(): TypedDataTypes {
-    const { structTypes, transactionTypes } = new EIP712StructTypes(this.FCT.calls);
+    const { structTypes, transactionTypes } = this.getCallTypesAndStructs();
 
     const FCTOptions = this.FCT.options;
     const { recurrency, multisig } = FCTOptions;
@@ -150,6 +148,9 @@ export class EIP712 extends FCTBase {
       optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
     }
 
+    if (this.FCT.validation.get.length > 0) {
+      optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
+    }
     return {
       EIP712Domain: EIP712.types.domain,
       Meta: EIP712.types.meta,
@@ -176,6 +177,7 @@ export class EIP712 extends FCTBase {
       { name: "limits", type: "Limits" },
       ...additionalTypes,
       ...this.getComputedPrimaryType(),
+      ...this.getValidationPrimaryType(),
       ...this.getCallsPrimaryType(),
     ];
   }
@@ -194,71 +196,50 @@ export class EIP712 extends FCTBase {
     }));
   }
 
+  private getValidationPrimaryType() {
+    return this.FCT.validation.get.map((_, index) => ({
+      name: `validation_${index + 1}`,
+      type: `Validation`,
+    }));
+  }
+
   private getTransactionTypedDataMessage() {
-    return this.FCT.decodedCalls.reduce((acc: object, call, index: number) => {
-      const paramsData = call.params ? helpers.getParams(call.params) : {};
-
-      const options = call.options || {};
-      const gasLimit = options.gasLimit ?? "0";
-      const flow = options.flow ? flows[options.flow].text : "continue on success, revert on fail";
-
-      let jumpOnSuccess = 0;
-      let jumpOnFail = 0;
-
-      if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-        const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-
-        if (jumpOnSuccessIndex === -1) {
-          throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-        }
-
-        if (jumpOnSuccessIndex <= index) {
-          throw new Error(
-            `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
-          );
-        }
-
-        jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-      }
-
-      if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-        const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-
-        if (jumpOnFailIndex === -1) {
-          throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-        }
-
-        if (jumpOnFailIndex <= index) {
-          throw new Error(
-            `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
-          );
-        }
-
-        jumpOnFail = jumpOnFailIndex - index - 1;
-      }
-
+    return this.FCT.pureCalls.reduce((acc: object, call, index: number) => {
       return {
         ...acc,
-        [`transaction_${index + 1}`]: {
-          call: {
-            call_index: index + 1,
-            payer_index: index + 1,
-            call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
-            from: this.FCT.variables.getValue(call.from, "address"),
-            to: this.FCT.variables.getValue(call.to, "address"),
-            to_ens: call.toENS || "",
-            eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-            gas_limit: gasLimit,
-            permissions: 0,
-            flow_control: flow,
-            returned_false_means_fail: options.falseMeansFail || false,
-            jump_on_success: jumpOnSuccess,
-            jump_on_fail: jumpOnFail,
-            method_interface: handleMethodInterface(call),
-          },
-          ...paramsData,
-        },
+        [`transaction_${index + 1}`]: call.generateEIP712Message(index),
       };
     }, {} as TypedDataMessage);
+  }
+
+  private getValidationMessage() {
+    return this.FCT.validation.getForEIP712.reduce((acc, item, i) => {
+      return {
+        ...acc,
+        [`validation_${i + 1}`]: item,
+      };
+    }, {} as Record<`validation_${number}`, IValidationEIP712>);
+  }
+
+  private getComputedVariableMessage = () => {
+    return this.FCT.variables.computedForEIP712.reduce((acc, item, i) => {
+      return {
+        ...acc,
+        [`computed_${i + 1}`]: item,
+      };
+    }, {} as Record<`computed_${number}`, IComputedEIP712>);
+  };
+
+  private getCallTypesAndStructs() {
+    let structs: Record<string, { name: string; type: string }[]> = {};
+    const types: Record<string, { name: string; type: string }[]> = {};
+
+    this.FCT.pureCalls.forEach((call, index) => {
+      const { structTypes, callType } = call.generateEIP712Type();
+      structs = { ...structs, ...structTypes };
+      types[`transaction${index + 1}`] = callType;
+    });
+
+    return { structTypes: structs, transactionTypes: types };
   }
 }

@@ -1,23 +1,31 @@
 import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
+import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
+import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { FCTMCall, Param } from "../../types";
+import { IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { CallID, ExportFCT, FCTCalls, SessionID } from "../classes";
-import { FCTCall, IBatchMultiSigCallFCT, IMSCallInput, TypedDataMessageTransaction } from "../types";
+import { Call, CallID, EIP712, SessionID } from "../classes";
+import { getParamsFromTypedData } from "../classes/Call/helpers";
+import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
 export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F) {
-  return this._calls.create(call);
+  const newCall = await Call.create({
+    FCT: this,
+    call,
+  });
+  this._calls.push(newCall);
+  return newCall;
 }
 
-export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<FCTMCall[]> {
-  const callsCreated: FCTMCall[] = [];
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<Call[]> {
+  const callsCreated: Call[] = [];
   for (const [index, call] of calls.entries()) {
     try {
       const createdCall = await this.create(call);
@@ -52,18 +60,41 @@ export function createPlugin<T extends AllPlugins>(
   }
 }
 
-export function getCall(this: BatchMultiSigCall, index: number): IMSCallInput {
-  if (index < 0 || index >= this.calls.length) {
+export function getCall(this: BatchMultiSigCall, index: number): Call {
+  if (index < 0 || index >= this._calls.length) {
     throw new Error("Index out of range");
   }
-  return this.calls[index];
+  return this._calls[index];
 }
 
-export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  return new ExportFCT(this).get();
+export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): Call {
+  const call = this._calls.find((c) => c.get.nodeId === nodeId);
+  if (!call) {
+    throw new Error(`Call with nodeId ${nodeId} not found`);
+  }
+  return call;
 }
 
-export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT) {
+export function exportFCT(this: BatchMultiSigCall): IFCT {
+  const typedData = new EIP712(this).getTypedData();
+  return {
+    typedData,
+    builder: this.options.builder,
+    typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
+    sessionId: new SessionID(this).asString(),
+    nameHash: id(this.options.name),
+    mcall: this.pureCalls.map((call, index) => {
+      return call.getAsMCall(typedData, index);
+    }),
+    variables: [],
+    externalSigners: this.options.multisig.externalSigners,
+    signatures: [this.utils.getAuthenticatorSignature()],
+    computed: this.computedAsData,
+    validations: this.validation.getForData,
+  };
+}
+
+export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta } = typedData.message;
@@ -99,7 +130,7 @@ export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSig
       const ifaceFunction = iface.getFunction(functionName);
       const inputs = ifaceFunction.inputs;
 
-      params = FCTCalls.helpers.getParamsFromTypedData({
+      params = getParamsFromTypedData({
         methodInterfaceParams: inputs,
         parameters,
         types: typesObject,
@@ -136,7 +167,12 @@ export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSig
       },
     };
 
-    this._calls.createSimpleCall(callInput);
+    const callClass = new Call({
+      FCT: this,
+      input: callInput,
+    });
+
+    this._calls.push(callClass);
   }
 
   return this.calls;
@@ -193,7 +229,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
 
   const decodedFCT: {
     version: string;
-    tr: Omit<IBatchMultiSigCallFCT, "typedData">;
+    tr: Omit<IFCT, "typedData">;
     purgeFCT: string;
     investor: string;
     activator: string;
