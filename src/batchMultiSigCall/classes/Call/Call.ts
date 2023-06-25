@@ -201,7 +201,7 @@ export class Call extends CallBase implements ICall {
       }
       return {
         name: item.name,
-        type: item.type,
+        type: item.hashed ? "string" : item.type,
       };
     });
 

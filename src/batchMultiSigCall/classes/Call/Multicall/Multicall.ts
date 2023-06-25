@@ -1,4 +1,3 @@
-import { ChainId } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
@@ -47,7 +46,6 @@ export class Multicall implements ICall {
   private _nodeId: string;
   private _options: CallOptions = { callType: "LIBRARY" };
   private _to: string;
-  private _chainId: ChainId;
   constructor(input: IFCTMulticallConstructor) {
     this._from = input.from;
     this.FCT = input.FCT;
@@ -57,8 +55,7 @@ export class Multicall implements ICall {
 
   get to() {
     if (this._to) return this._to;
-    if (!this._chainId) throw new Error("Chain ID is required");
-    return FCT_MULTICALL_ADDRESS[this._chainId];
+    return FCT_MULTICALL_ADDRESS[this.FCT.chainId];
   }
   //
   get toENS() {
@@ -267,11 +264,6 @@ export class Multicall implements ICall {
     return this._nodeId;
   };
 
-  public setChainId = (chainId: ChainId) => {
-    this._chainId = chainId;
-    return this._chainId;
-  };
-
   private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {
       if (param.type === "tuple" || param.customType) {
@@ -336,7 +328,6 @@ export class Multicall implements ICall {
           nodeId,
           structTypes,
         });
-        // structTypes = { ...structTypes, ...newStructTypes };
         return {
           name: item.name,
           type: typeName,
@@ -344,7 +335,7 @@ export class Multicall implements ICall {
       }
       return {
         name: item.name,
-        type: item.type,
+        type: item.hashed ? "string" : item.type,
       };
     });
 
