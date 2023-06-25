@@ -1,6 +1,5 @@
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { utils } from "ethers";
-import { defaultAbiCoder, hexlify, id, toUtf8Bytes } from "ethers/lib/utils";
+import { hexlify, id } from "ethers/lib/utils";
 import _ from "lodash";
 
 import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
@@ -25,7 +24,8 @@ import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getParams, isAddress, isInteger, verifyParam } from "./helpers";
-import { GetValueType, ICall } from "./types";
+import { getEncodedMethodParams } from "./helpers/callParams";
+import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;
@@ -146,58 +146,10 @@ export class Call extends CallBase implements ICall {
   }
 
   public getEncodedData(): string {
-    const call = this.getDecoded;
-    if (!call.method || !call.params) {
-      return "0x";
-    }
-
-    const getType = (param: Param): string => {
-      if (param.customType || param.type.includes("tuple")) {
-        let value: Param[];
-        let isArray = false;
-        if (param.type.lastIndexOf("[") > 0) {
-          isArray = true;
-          value = (param.value as Param[][])[0];
-        } else {
-          value = param.value as Param[];
-        }
-        return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
-      }
-      return param.hashed ? "bytes32" : param.type;
-    };
-
-    const getValues = (param: Param): GetValueType => {
-      if (!param.value) {
-        throw new Error("Param value is required");
-      }
-      if (param.customType || param.type.includes("tuple")) {
-        let value;
-        if (param.type.lastIndexOf("[") > 0) {
-          value = param.value as Param[][];
-          return value.reduce((acc, val) => {
-            return [...acc, val.map(getValues)];
-          }, [] as GetValueType[][]);
-        } else {
-          value = param.value as Param[];
-          return value.map(getValues);
-        }
-      }
-
-      if (param.hashed) {
-        if (typeof param.value === "string") {
-          return utils.keccak256(toUtf8Bytes(param.value));
-        }
-        throw new Error("Hashed value must be a string");
-      }
-
-      return param.value as boolean | string;
-    };
-
-    return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+    return getEncodedMethodParams(this.call);
   }
 
   // Private methods
-
   private getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
     mainType: { name: string; type: string }[]
