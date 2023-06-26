@@ -45,7 +45,7 @@ export const Call: MessageTypeProperty[] = [
   { name: "from", type: "address" },
   { name: "to", type: "address" },
   { name: "to_ens", type: "string" },
-  { name: "eth_value", type: "uint256" },
+  { name: "value", type: "uint256" },
   { name: "gas_limit", type: "uint32" },
   { name: "permissions", type: "uint16" },
   { name: "validation", type: "uint16" },
