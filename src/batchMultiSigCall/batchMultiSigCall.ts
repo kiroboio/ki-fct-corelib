@@ -29,7 +29,7 @@ import {
 import * as utils from "./utils";
 
 export class BatchMultiSigCall {
-  public batchMultiSigSelector = "0xf6407ddd";
+  public batchMultiSigSelector = "0x68a65119";
   public version = "0x010101";
   public chainId: ChainId;
   public domain: TypedDataDomain;

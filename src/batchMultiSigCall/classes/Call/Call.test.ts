@@ -71,4 +71,35 @@ describe("Call", () => {
 
     const fct = FCT.exportFCT();
   });
+
+  it("Should add a call", async () => {
+    await FCT.create({
+      nodeId: "node1",
+      to: createRandomAddress(),
+      toENS: "@token.kiro.eth",
+      method: "transfer",
+      params: [
+        { name: "to", type: "address", value: createRandomAddress() },
+        { name: "token_amount", type: "uint256", value: "20" },
+      ],
+      from: createRandomAddress(),
+      value: "0",
+    });
+
+    await FCT.create({
+      nodeId: "node2",
+      to: createRandomAddress(),
+      method: "erc20Airdrop",
+      params: [
+        { name: "token", type: "address", value: createRandomAddress() },
+        { name: "from", type: "address", value: createRandomAddress() },
+        { name: "amount", type: "uint256", value: "100" },
+        { name: "recipients", type: "address[]", value: [createRandomAddress(), createRandomAddress()] },
+      ],
+      from: createRandomAddress(),
+    });
+
+    const fct = FCT.exportFCT();
+    console.log(JSON.stringify(fct, null, 2));
+  });
 });
