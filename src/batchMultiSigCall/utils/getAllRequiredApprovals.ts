@@ -1,7 +1,6 @@
 import { getPlugin } from "@kiroboio/fct-plugins";
 import { utils } from "ethers";
 
-import { FCT_VAULT_ADDRESS } from "../../constants";
 import { InstanceOf } from "../../helpers";
 import { Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
@@ -32,7 +31,10 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
     });
 
     if (pluginData) {
-      const initPlugin = new pluginData.plugin({ chainId });
+      const initPlugin = new pluginData.plugin({
+        chainId,
+        vaultAddress: typeof call.from === "string" ? call.from : "",
+      });
 
       const methodParams = call.params
         ? call.params.reduce((acc, param) => {
@@ -52,9 +54,6 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
         const manageValue = (value: string | Variable | undefined) => {
           if (InstanceOf.Variable(value) || !value) {
             return "";
-          }
-          if (value === FCT_VAULT_ADDRESS && typeof call.from === "string") {
-            return call.from;
           }
 
           return value;

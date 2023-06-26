@@ -13,6 +13,8 @@ import {
   RequiredKeys,
   Variable,
 } from "../../types";
+import { Call } from "../classes";
+import { Multicall } from "../classes/Call/Multicall/Multicall";
 import { IValidationData } from "../classes/Validation/types";
 import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
@@ -79,7 +81,8 @@ export type IMSCallWithEncodedData = {
   to: string | Variable;
 } & MSCallMandatory;
 
-export type FCTCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData;
+export type FCTInputCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData | Multicall;
+export type FCTCall = Call | Multicall;
 
 export interface MSCall {
   typeHash: string;

@@ -2,10 +2,10 @@ import { utils } from "ethers";
 import _ from "lodash";
 
 import { nullValue } from "../../../constants";
-import { InstanceOf } from "../../../helpers";
-import { CallOptions, DeepPartial, Param, Variable } from "../../../types";
+import { CallOptions, DeepPartial, Variable } from "../../../types";
 import { IMSCallInput } from "../../types";
 import { generateNodeId, getTypesArray } from "./helpers";
+import { getMethodInterface } from "./helpers/callParams";
 
 export class CallBase {
   protected _call: IMSCallInput & { nodeId: string };
@@ -44,30 +44,17 @@ export class CallBase {
   }
 
   public getFunctionSignature(): string {
-    const call = this._call;
-    if (call.method) {
+    if (this._call.method) {
       return utils.id(this.getFunction());
     }
     return nullValue;
   }
 
   public getFunction(): string {
-    const call = this._call;
-
-    const getParamsType = (param: Param): string => {
-      if (InstanceOf.Tuple(param.value, param)) {
-        const value = param.value as Param[];
-        return `(${value.map(getParamsType).join(",")})`;
-      } else if (InstanceOf.TupleArray(param.value, param)) {
-        const value = param.value[0] as Param[];
-        return `(${value.map(getParamsType).join(",")})[]`;
-      }
-
-      return param.hashed ? "bytes32" : param.type;
-    };
-    const params = call.params ? call.params.map(getParamsType) : "";
-
-    return `${call.method}(${params})`;
+    return getMethodInterface({
+      method: this._call.method,
+      params: this._call.params,
+    });
   }
 
   public setOptions(options: DeepPartial<CallOptions>) {

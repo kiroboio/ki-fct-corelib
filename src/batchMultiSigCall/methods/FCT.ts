@@ -6,16 +6,21 @@ import { hexlify, id } from "ethers/lib/utils";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { IFCT, Param } from "../../types";
+import { FCTInputCall, IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData } from "../classes/Call/helpers";
+import { Multicall } from "../classes/Call/Multicall/Multicall";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
-export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F) {
+export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F) {
+  if (call instanceof Multicall) {
+    this._calls.push(call);
+    return call;
+  }
   const newCall = await Call.create({
     FCT: this,
     call,
@@ -24,8 +29,8 @@ export async function create<F extends FCTCall>(this: BatchMultiSigCall, call: F
   return newCall;
 }
 
-export async function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<Call[]> {
-  const callsCreated: Call[] = [];
+export async function createMultiple(this: BatchMultiSigCall, calls: FCTInputCall[]): Promise<FCTCall[]> {
+  const callsCreated: FCTCall[] = [];
   for (const [index, call] of calls.entries()) {
     try {
       const createdCall = await this.create(call);
@@ -60,14 +65,14 @@ export function createPlugin<T extends AllPlugins>(
   }
 }
 
-export function getCall(this: BatchMultiSigCall, index: number): Call {
+export function getCall(this: BatchMultiSigCall, index: number): FCTCall {
   if (index < 0 || index >= this._calls.length) {
     throw new Error("Index out of range");
   }
   return this._calls[index];
 }
 
-export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): Call {
+export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): FCTCall {
   const call = this._calls.find((c) => c.get.nodeId === nodeId);
   if (!call) {
     throw new Error(`Call with nodeId ${nodeId} not found`);
