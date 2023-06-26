@@ -20,6 +20,8 @@ describe("BatchMultiSigCall FCTUtils", () => {
   it("Should be able to get all required approvals", async () => {
     const approvals = await utils.getAllRequiredApprovals();
 
+    console.log(approvals);
+
     expect(approvals).to.be.an("array");
     expect(approvals).to.have.lengthOf(3);
     expect(approvals[0]).to.deep.eq({

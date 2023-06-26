@@ -20,12 +20,10 @@ const typeValue = (param: Param): number[] => {
 
     // If the type is an array of tuple/custom struct
     if (param.customType || param.type.includes("tuple")) {
-      console.log("value[0]", value[0]);
       const typesArray = getTypesArray(value[0]);
       if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
         return [TYPE, getFixedArrayLength(param.type), countOfElements, ...typesArray];
       }
-      console.log("typesArray", typesArray);
       return [TYPE, countOfElements, ...typesArray];
     }
 

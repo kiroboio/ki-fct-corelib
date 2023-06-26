@@ -1,7 +1,6 @@
 import { AaveV2, ChainId, ERC20 } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import util from "util";
 
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
@@ -571,7 +570,7 @@ describe("BatchMultiSigCall", () => {
 
       const fctData = FCT.exportFCT();
 
-      console.log(util.inspect(fctData, false, null, true /* enable colors */));
+      // console.log(util.inspect(fctData, false, null, true /* enable colors */));
     });
   });
 });
