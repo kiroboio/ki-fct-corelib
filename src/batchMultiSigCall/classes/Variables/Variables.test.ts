@@ -15,7 +15,7 @@ describe("Variables", () => {
       chainId: "1",
     });
 
-    Call = await FCT.add({
+    Call = (await FCT.add({
       nodeId: "balanceOf",
       from: createRandomAddress(),
       to: createRandomAddress(),
@@ -30,7 +30,7 @@ describe("Variables", () => {
           value: createRandomAddress(),
         },
       ],
-    });
+    })) as Call;
   });
 
   describe("computed variables", () => {

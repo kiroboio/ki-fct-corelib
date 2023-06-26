@@ -172,7 +172,7 @@ export class Multicall implements ICall {
         from: this.FCT.variables.getValue(call.from, "address"),
         to: this.FCT.variables.getValue(call.to, "address"),
         to_ens: call.toENS || "",
-        eth_value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+        value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         gas_limit: options.gasLimit,
         permissions: 0,
         validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
