@@ -5,7 +5,7 @@ import { Multicall } from "./Multicall";
 
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
-describe("Call", () => {
+describe("FCT Multicall", () => {
   let FCT: BatchMultiSigCall;
   let MCall: Multicall;
 

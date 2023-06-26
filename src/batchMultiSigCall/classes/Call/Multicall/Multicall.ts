@@ -249,6 +249,17 @@ export class Multicall implements ICall {
     return this._calls;
   };
 
+  // public addPlugin = async ({ plugin, from }: { plugin: PluginInstance; from: string | Variable }) => {
+  //   const call = await plugin.create();
+  //   if (!call) {
+  //     throw new Error("Error when creating call from plugin");
+  //   }
+  //
+  //   const data: IMulticall = {
+  //     callType: call.options.callType,
+  //   };
+  // };
+
   public setFrom = (from: string | Variable) => {
     this._from = from;
     return this._from;
