@@ -21,4 +21,12 @@ export class InstanceOf {
   static ValidationVariable = (object: any): object is ValidationVariable => {
     return typeof object === "object" && "type" in object && object.type === "validation" && "id" in object;
   };
+
+  static Param = (data: any): data is Param[] => {
+    return Array.isArray(data) && typeof data[0] === "object" && "type" in data[0] && "name" in data[0];
+  };
+
+  static ParamArray = (data: any): data is Param[][] => {
+    return Array.isArray(data) && InstanceOf.Param(data[0]);
+  };
 }

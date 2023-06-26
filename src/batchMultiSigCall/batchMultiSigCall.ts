@@ -1,8 +1,8 @@
 import { ChainId } from "@kiroboio/fct-plugins";
 import _ from "lodash";
 
-import { DeepPartial, IFCT, StrictMSCallInput } from "../types";
-import { Call, EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
+import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -41,7 +41,7 @@ export class BatchMultiSigCall {
   public validation: Validation;
 
   protected _options: Options;
-  protected _calls: Call[] = [];
+  protected _calls: FCTCall[] = [];
   protected _callDefault: ICallDefaults = {
     value: "0",
     options: DEFAULT_CALL_OPTIONS,
@@ -80,7 +80,7 @@ export class BatchMultiSigCall {
     return this._calls.map((call) => call.get);
   }
 
-  get pureCalls(): Call[] {
+  get pureCalls(): FCTCall[] {
     return this._calls;
   }
 
