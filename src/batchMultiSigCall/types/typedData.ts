@@ -42,7 +42,7 @@ export type TypedDataMessageTransaction = {
     from: string;
     to: string;
     to_ens: string;
-    eth_value: string;
+    value: string;
     gas_limit: string;
     permissions: number;
     validation: number;
