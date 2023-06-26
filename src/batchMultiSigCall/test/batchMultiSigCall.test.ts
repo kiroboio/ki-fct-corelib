@@ -379,6 +379,7 @@ describe("BatchMultiSigCall", () => {
           flow: "OK_STOP_FAIL_CONT",
           jumpOnFail: 1,
           jumpOnSuccess: 1,
+          validation: 0,
         },
         viewOnly: false,
         permissions: "00",

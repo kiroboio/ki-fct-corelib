@@ -86,13 +86,14 @@ export class CallID {
       flow: Flow;
       jumpOnSuccess: string;
       jumpOnFail: string;
+      validation: string;
     };
     viewOnly: boolean;
     permissions: string;
     payerIndex: number;
     callIndex: number;
   } {
-    const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
+    const { validation, permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
       CallID.destructCallId(callId);
 
     const options = {
@@ -100,6 +101,7 @@ export class CallID {
       flow: CallID.getFlow(flowNumber),
       jumpOnFail: "",
       jumpOnSuccess: "",
+      validation: validation.toString(),
     };
 
     if (jumpOnFail) options["jumpOnFail"] = `node${callIndex + jumpOnFail}`;
@@ -120,13 +122,14 @@ export class CallID {
       flow: Flow;
       jumpOnSuccess: number;
       jumpOnFail: number;
+      validation: number;
     };
     viewOnly: boolean;
     permissions: string;
     payerIndex: number;
     callIndex: number;
   } {
-    const { permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
+    const { validation, permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
       CallID.destructCallId(callId);
 
     const options = {
@@ -134,6 +137,7 @@ export class CallID {
       flow: CallID.getFlow(flowNumber),
       jumpOnFail,
       jumpOnSuccess,
+      validation,
     };
 
     return {
@@ -146,6 +150,7 @@ export class CallID {
   }
 
   private static destructCallId = (callId: string) => {
+    const validation = parseInt(callId.slice(34, 36), 16);
     const permissions = callId.slice(36, 38);
     const flowNumber = parseInt(callId.slice(38, 40), 16);
     const jumpOnFail = parseInt(callId.slice(40, 44), 16);
@@ -156,6 +161,7 @@ export class CallID {
     const flags = parseInt(callId.slice(64, 66), 16);
 
     return {
+      validation,
       permissions,
       flowNumber,
       jumpOnFail,

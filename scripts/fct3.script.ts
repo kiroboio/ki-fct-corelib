@@ -1,74 +1,20 @@
-import { BatchMultiSigCall, ChainId, ERC20, ethers } from "../src";
-import scriptData from "./scriptData";
+import { recoverTypedSignature, SignTypedDataVersion } from "@metamask/eth-sig-util";
+import { utils } from "ethers";
 
-const getERC20Plugin = ({ chainId }: { chainId: number }) =>
-  new ERC20.actions.Transfer({
-    chainId: chainId.toString() as ChainId,
-    initParams: {
-      to: scriptData[chainId as keyof typeof scriptData].USDC,
-      methodParams: {
-        recipient: ethers.constants.AddressZero,
-        amount: ethers.utils.parseEther("1").toString(),
-      },
-    },
-  });
-
-// Create a function called "getRandomAddress" that generates random Ethereum address
-// Hint: use ethers.utils.randomBytes(20)
-function getRandomAddress() {
-  return ethers.utils.getAddress(ethers.utils.hexlify(ethers.utils.randomBytes(20)));
-}
+import FCTData from "../Fail.json";
+import { CallID } from "../src/batchMultiSigCall/classes";
 
 async function main() {
-  const FCT = new BatchMultiSigCall({
-    options: {
-      maxGasPrice: "100" + "0".repeat(9),
-    },
+  const parse = CallID.parse("0x0000000000000000000000000000000000000000000000000100010000000000");
+  console.log(parse);
+
+  const address = recoverTypedSignature({
+    data: FCTData.typedData as any,
+    signature: utils.joinSignature(FCTData.signatures[0]),
+    version: SignTypedDataVersion.V4,
   });
 
-  const ethPriceInKIRO = BigInt("0x62eb71d53b26def2939").toString();
-
-  const randomAddress1 = getRandomAddress();
-  const randomAddress2 = getRandomAddress();
-
-  console.log({
-    randomAddress1,
-    randomAddress2,
-  });
-
-  const plugin = getERC20Plugin({
-    chainId: 5,
-  });
-
-  await FCT.createMultiple([
-    {
-      nodeId: "1",
-      from: randomAddress1,
-      plugin,
-      options: {
-        jumpOnSuccess: "3",
-      },
-    },
-    {
-      nodeId: "2",
-      from: randomAddress2,
-      plugin,
-    },
-    {
-      nodeId: "3",
-      from: randomAddress1,
-      plugin,
-    },
-  ]);
-
-  const paymentPerPayer = FCT.utils.getPaymentPerPayer({
-    ethPriceInKIRO,
-    maxGasPrice: "100" + "0".repeat(9),
-    // gasPrice: "30" + "0".repeat(9),
-    penalty: "40000",
-  });
-
-  console.log(paymentPerPayer);
+  console.log(address);
 }
 
 main()
