@@ -146,7 +146,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public getEncodedData(): string {
-    return getEncodedMethodParams(this.call);
+    return getEncodedMethodParams(this.getDecoded);
   }
 
   // Private methods
