@@ -1,3 +1,4 @@
+import { PluginInstance } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
@@ -10,7 +11,6 @@ import {
   BatchMultiSigCallTypedData,
   CallOptions,
   DeepRequired,
-  FCTCallParam,
   Param,
   ParamWithoutVariable,
   TypedDataMessageTransaction,
@@ -19,7 +19,7 @@ import {
 import { BatchMultiSigCall } from "../../../batchMultiSigCall";
 import { DEFAULT_CALL_OPTIONS, NO_JUMP } from "../../../constants";
 import { CallID } from "../../CallID";
-import { generateNodeId, getParams, getTypesArray } from "../helpers";
+import { generateNodeId, getTypesArray } from "../helpers";
 import { getEncodedMethodParams } from "../helpers/callParams";
 import { ICall } from "../types";
 import { FCT_MULTICALL_ADDRESS } from "./constants";
@@ -37,6 +37,11 @@ interface IFCTMulticallConstructor {
   nodeId?: string;
   FCT: BatchMultiSigCall;
 }
+
+const callOptionType = {
+  ACTION: "action",
+  VIEW_ONLY: "view only",
+} as const;
 
 export class Multicall implements ICall {
   protected FCT: BatchMultiSigCall;
@@ -61,14 +66,6 @@ export class Multicall implements ICall {
   get toENS() {
     return "@lib:multicall";
   }
-  //
-  // get method() {
-  //   return "multicall";
-  // }
-  //
-  // get value() {
-  //   return "0"; // For now we only support multicalls with no value
-  // }
 
   get options(): DeepRequired<CallOptions> {
     return _.merge({}, DEFAULT_CALL_OPTIONS, this._options);
@@ -98,6 +95,21 @@ export class Multicall implements ICall {
       ...this.get,
       params: [] as ParamWithoutVariable<Param>[],
     };
+  }
+
+  get EIP712MessageData() {
+    const calls = this._calls;
+    return calls.map((call) => ({
+      target: call.target,
+      ctype: call.callType,
+      method: call.method,
+      ...call.params.reduce((acc, param) => {
+        return {
+          ...acc,
+          [param.name]: param.value,
+        };
+      }, {}),
+    }));
   }
 
   get params(): Param[] {
@@ -136,6 +148,42 @@ export class Multicall implements ICall {
     ];
   }
 
+  public add = (call: IMulticall) => {
+    this._calls.push(call);
+    return this._calls;
+  };
+
+  public addPlugin = async (plugin: PluginInstance) => {
+    const call = await plugin.create();
+    if (!call) {
+      throw new Error("Error when creating call from plugin");
+    }
+
+    const data: IMulticall = {
+      callType: callOptionType[call.options?.callType as keyof typeof callOptionType] || "action",
+      target: call.to,
+      params: call.params,
+      method: call.method,
+    };
+
+    return this.add(data);
+  };
+
+  public setFrom = (from: string | Variable) => {
+    this._from = from;
+    return this._from;
+  };
+
+  public setOptions = (options: Omit<CallOptions, "callType">) => {
+    this._options = _.merge({}, this._options, options);
+    return this._options;
+  };
+
+  public setNodeId = (nodeId: string) => {
+    this._nodeId = nodeId;
+    return this._nodeId;
+  };
+
   public getAsMCall = (typedData: BatchMultiSigCallTypedData, index: number) => {
     return {
       typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
@@ -157,7 +205,6 @@ export class Multicall implements ICall {
   };
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
-    const paramsData = this.getParamsEIP712();
     const call = this.get;
     const options = this.options;
     const flow = flows[options.flow].text;
@@ -182,7 +229,7 @@ export class Multicall implements ICall {
         jump_on_fail: jumpOnFail,
         method_interface: this.getFunction(),
       },
-      ...paramsData,
+      calls: this.EIP712MessageData,
     };
   }
 
@@ -216,64 +263,48 @@ export class Multicall implements ICall {
   }
 
   public generateEIP712Type() {
-    const call = this.get;
-    if (!call.params || (call.params && call.params.length === 0)) {
-      return {
-        structTypes: {},
-        callType: [{ name: "call", type: "Call" }],
-      };
+    const calls = this._calls;
+
+    if (calls.length === 0) {
+      throw new Error("No calls have been added to ");
     }
 
-    const structTypes: { [key: string]: { name: string; type: string }[] } = {};
+    const paramsTypes = calls[0].params.reduce(
+      (acc, param) => {
+        return [...acc, { name: param.name, type: param.type }];
+      },
+      [] as {
+        name: string;
+        type: string;
+      }[]
+    );
 
-    const callParameters = call.params.map((param: Param) => {
-      const typeName = this.getStructType({
-        param,
-        nodeId: call.nodeId,
-        structTypes,
-      });
+    const structTypes = {
+      [`Multicall_${this.get.nodeId}`]: [
+        {
+          name: "target",
+          type: "address",
+        },
+        {
+          name: "ctype",
+          type: "string",
+        },
+        {
+          name: "method",
+          type: "string",
+        },
+        ...paramsTypes,
+      ],
+    };
 
-      return {
-        name: param.name,
-        type: typeName,
-      };
-    });
     return {
       structTypes,
-      callType: [{ name: "call", type: "Call" }, ...callParameters],
+      callType: [
+        { name: "call", type: "Call" },
+        { name: "calls", type: `Multicall_${this.get.nodeId}[]` },
+      ],
     };
   }
-
-  public add = (call: IMulticall) => {
-    this._calls.push(call);
-    return this._calls;
-  };
-
-  // public addPlugin = async ({ plugin, from }: { plugin: PluginInstance; from: string | Variable }) => {
-  //   const call = await plugin.create();
-  //   if (!call) {
-  //     throw new Error("Error when creating call from plugin");
-  //   }
-  //
-  //   const data: IMulticall = {
-  //     callType: call.options.callType,
-  //   };
-  // };
-
-  public setFrom = (from: string | Variable) => {
-    this._from = from;
-    return this._from;
-  };
-
-  public setOptions = (options: Omit<CallOptions, "callType">) => {
-    this._options = _.merge({}, this._options, options);
-    return this._options;
-  };
-
-  public setNodeId = (nodeId: string) => {
-    this._nodeId = nodeId;
-    return this._nodeId;
-  };
 
   private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {
@@ -356,15 +387,6 @@ export class Multicall implements ICall {
     return typeName + (param.type.includes("[]") ? "[]" : "");
   }
 
-  private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.getDecoded.params) {
-      return {};
-    }
-    return {
-      ...getParams(this.getDecoded.params),
-    };
-  }
-
   private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
@@ -409,3 +431,33 @@ export class Multicall implements ICall {
     };
   }
 }
+
+// 0x0000000000000000000000000000000000000000000000000000000000000020
+//   0000000000000000000000000000000000000000000000000000000000000001
+//   0000000000000000000000000000000000000000000000000000000000000020
+//   00000000000000000000000037b51c9edaa9894bde4904bfedd6309a3c8ba044
+//   15eef5bfea8da92e7e8fec353cef8b538633489b095e0b71a9d2a347f67036bd
+//   b483afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e
+//   0000000000000000000000000000000000000000000000000000000000000080
+//   0000000000000000000000000000000000000000000000000000000000000040
+//   000000000000000000000000842eb778bd0f7938e5e7ccd754dc502774c3abcc
+//   0000000000000000000000000000000000000000000000000000000000000064
+
+// 0x0000000000000000000000000000000000000000000000000000000000000020
+//   0000000000000000000000000000000000000000000000000000000000000002
+//   0000000000000000000000000000000000000000000000000000000000000040
+//   0000000000000000000000000000000000000000000000000000000000000120
+//   000000000000000000000000cd24675adcb2c1a6c99d84871a419b2553e107bb
+//   15eef5bfea8da92e7e8fec353cef8b538633489b095e0b71a9d2a347f67036bd
+//   b483afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e
+//   0000000000000000000000000000000000000000000000000000000000000080
+//   0000000000000000000000000000000000000000000000000000000000000040
+//   00000000000000000000000005ebaab32a73991c0960041b81ffe9459dedb1da
+//   0000000000000000000000000000000000000000000000000000000000000064
+//   000000000000000000000000619d3d0d392a020d84a3e2e21f175d0985ea4696
+//   15eef5bfea8da92e7e8fec353cef8b538633489b095e0b71a9d2a347f67036bd
+//   b483afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e
+//   0000000000000000000000000000000000000000000000000000000000000080
+//   0000000000000000000000000000000000000000000000000000000000000040
+//   0000000000000000000000009477744e252d1b92dca6e1688e6d040d8e7f181b
+//   0000000000000000000000000000000000000000000000000000000000000064

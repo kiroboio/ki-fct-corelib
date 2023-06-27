@@ -38,8 +38,28 @@ describe("FCT Multicall", () => {
       callType: "action",
     });
 
+    MCall.add({
+      method: "transfer",
+      params: [
+        {
+          name: "to",
+          type: "address",
+          value: createRandomAddress(),
+        },
+        {
+          name: "amount",
+          type: "uint256",
+          value: "100",
+        },
+      ],
+      target: createRandomAddress(),
+      callType: "action",
+    });
+
     await FCT.add(MCall);
 
     const fct = FCT.exportFCT();
+
+    console.log(JSON.stringify(fct, null, 2));
   });
 });
