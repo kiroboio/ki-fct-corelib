@@ -76,12 +76,12 @@ export class BatchMultiSigCall {
     return this._options.get();
   }
 
-  get calls(): StrictMSCallInput[] {
-    return this._calls.map((call) => call.get);
+  get calls(): FCTCall[] {
+    return this._calls;
   }
 
-  get pureCalls(): FCTCall[] {
-    return this._calls;
+  get callsAsObjects(): StrictMSCallInput[] {
+    return this._calls.map((call) => call.get);
   }
 
   get decodedCalls(): DecodedCalls[] {

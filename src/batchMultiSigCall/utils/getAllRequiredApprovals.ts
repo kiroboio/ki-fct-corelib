@@ -17,7 +17,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
 
   const chainId = FCT.chainId;
 
-  for (const [callIndex, call] of FCT.calls.entries()) {
+  for (const [callIndex, call] of FCT.callsAsObjects.entries()) {
     if (typeof call.to !== "string") {
       continue;
     }
@@ -123,7 +123,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
             if (typeof call.from !== "string") {
               return true;
             }
-            const isGoingToGetApproved = FCT.calls.some((fctCall, i) => {
+            const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
               if (i >= callIndex) return false; // If the call is after the current call, we don't need to check
               const { to, method, from } = fctCall;
               if (typeof to !== "string" || typeof from !== "string") return false; // If the call doesn't have a to or from, we don't need to check

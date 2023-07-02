@@ -88,7 +88,7 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
     sessionId: new SessionID(this).asString(),
     nameHash: id(this.options.name),
-    mcall: this.pureCalls.map((call, index) => {
+    mcall: this.calls.map((call, index) => {
       return call.getAsMCall(typedData, index);
     }),
     variables: [],

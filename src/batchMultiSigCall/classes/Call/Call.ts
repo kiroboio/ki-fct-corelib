@@ -65,7 +65,7 @@ export class Call extends CallBase implements ICall {
       functionSignature: this.getFunctionSignature(),
       value: this.FCT.variables.getValue(call.value, "uint256", "0"),
       callId: CallID.asString({
-        calls: this.FCT.calls,
+        calls: this.FCT.callsAsObjects,
         validation: this.FCT.validation,
         call,
         index,
@@ -227,7 +227,7 @@ export class Call extends CallBase implements ICall {
     const options = call.options;
 
     if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-      const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
+      const jumpOnSuccessIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnSuccess);
 
       if (jumpOnSuccessIndex === -1) {
         throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
@@ -243,7 +243,7 @@ export class Call extends CallBase implements ICall {
     }
 
     if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-      const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
+      const jumpOnFailIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnFail);
 
       if (jumpOnFailIndex === -1) {
         throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
@@ -305,7 +305,7 @@ export class Call extends CallBase implements ICall {
 
     // Node ID validator
     if (call.nodeId) {
-      const index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
+      const index = this.FCT.callsAsObjects.findIndex((item) => item.nodeId === call.nodeId);
 
       if (index > -1) {
         throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);

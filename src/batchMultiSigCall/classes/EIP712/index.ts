@@ -204,7 +204,7 @@ export class EIP712 extends FCTBase {
   }
 
   private getTransactionTypedDataMessage() {
-    return this.FCT.pureCalls.reduce((acc: object, call, index: number) => {
+    return this.FCT.calls.reduce((acc: object, call, index: number) => {
       return {
         ...acc,
         [`transaction_${index + 1}`]: call.generateEIP712Message(index),
@@ -234,7 +234,7 @@ export class EIP712 extends FCTBase {
     let structs: Record<string, { name: string; type: string }[]> = {};
     const types: Record<string, { name: string; type: string }[]> = {};
 
-    this.FCT.pureCalls.forEach((call, index) => {
+    this.FCT.calls.forEach((call, index) => {
       const { structTypes, callType } = call.generateEIP712Type();
       structs = { ...structs, ...structTypes };
       types[`transaction${index + 1}`] = callType;

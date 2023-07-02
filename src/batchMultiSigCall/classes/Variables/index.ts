@@ -94,7 +94,7 @@ export class Variables extends FCTBase {
     }
     if (variable.type === "output") {
       const id = variable.id as { nodeId: string; innerIndex: number };
-      const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
+      const index = this.FCT.callsAsObjects.findIndex((call) => call.nodeId === id.nodeId);
 
       return this.getOutputVariable({
         index,
