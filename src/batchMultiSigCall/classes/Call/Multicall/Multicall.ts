@@ -6,7 +6,6 @@ import _ from "lodash";
 
 import { CALL_TYPE_MSG } from "../../../../constants";
 import { flows } from "../../../../constants/flows";
-import { InstanceOf } from "../../../../helpers";
 import {
   BatchMultiSigCallTypedData,
   CallOptions,
@@ -17,10 +16,10 @@ import {
   Variable,
 } from "../../../../types";
 import { BatchMultiSigCall } from "../../../batchMultiSigCall";
-import { DEFAULT_CALL_OPTIONS, NO_JUMP } from "../../../constants";
+import { DEFAULT_CALL_OPTIONS } from "../../../constants";
 import { CallID } from "../../CallID";
-import { generateNodeId, getTypesArray } from "../helpers";
-import { getEncodedMethodParams } from "../helpers/callParams";
+import { generateNodeId, getEncodedMethodParams, getTypesArray } from "../helpers";
+import { decodeParams, getJumps, getUsedStructTypes } from "../methods";
 import { ICall } from "../types";
 import { FCT_MULTICALL_ADDRESS } from "./constants";
 
@@ -44,7 +43,7 @@ const callOptionType = {
 } as const;
 
 export class Multicall implements ICall {
-  protected FCT: BatchMultiSigCall;
+  FCT: BatchMultiSigCall;
 
   private _calls: IMulticall[] = [];
   private _from: string | Variable;
@@ -71,7 +70,7 @@ export class Multicall implements ICall {
     return _.merge({}, DEFAULT_CALL_OPTIONS, this._options);
   }
 
-  get get() {
+  get data() {
     if (!this._from) throw new Error("From address is required");
     return {
       to: this.to,
@@ -85,14 +84,14 @@ export class Multicall implements ICall {
     };
   }
 
-  get getDecoded() {
-    const params = this.get.params;
+  get decodedData() {
+    const params = this.data.params;
     if (params && params.length > 0) {
       const parameters = this.decodeParams(params);
-      return { ...this.get, params: parameters };
+      return { ...this.data, params: parameters };
     }
     return {
-      ...this.get,
+      ...this.data,
       params: [] as ParamWithoutVariable<Param>[],
     };
   }
@@ -193,7 +192,7 @@ export class Multicall implements ICall {
       callId: CallID.asString({
         calls: this.FCT.callsAsObjects,
         validation: this.FCT.validation,
-        call: this.get,
+        call: this.data,
         index,
       }),
       from: this.FCT.variables.getValue(this._from, "address"),
@@ -205,8 +204,8 @@ export class Multicall implements ICall {
   };
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
-    const call = this.get;
-    const options = this.options;
+    const call = this.data;
+    const options = call.options;
     const flow = flows[options.flow].text;
 
     const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
@@ -215,14 +214,14 @@ export class Multicall implements ICall {
       call: {
         call_index: index + 1,
         payer_index: index + 1,
-        call_type: CALL_TYPE_MSG[call.options.callType],
+        call_type: CALL_TYPE_MSG[options.callType],
         from: this.FCT.variables.getValue(call.from, "address"),
         to: this.FCT.variables.getValue(call.to, "address"),
         to_ens: call.toENS || "",
         value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         gas_limit: options.gasLimit,
         permissions: 0,
-        validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
+        validation: options.validation ? this.FCT.validation.getIndex(options.validation) : 0,
         flow_control: flow,
         returned_false_means_fail: options.falseMeansFail,
         jump_on_success: jumpOnSuccess,
@@ -242,11 +241,11 @@ export class Multicall implements ICall {
   }
 
   public getEncodedData() {
-    return getEncodedMethodParams(this.get);
+    return getEncodedMethodParams(this.decodedData);
   }
 
   public getTypesArray(): number[] {
-    const call = this.get;
+    const call = this.data;
     if (!call.params) {
       return [];
     }
@@ -280,7 +279,7 @@ export class Multicall implements ICall {
     );
 
     const structTypes = {
-      [`Multicall_${this.get.nodeId}`]: [
+      [`Multicall_${this.data.nodeId}`]: [
         {
           name: "target",
           type: "address",
@@ -301,133 +300,12 @@ export class Multicall implements ICall {
       structTypes,
       callType: [
         { name: "call", type: "Call" },
-        { name: "calls", type: `Multicall_${this.get.nodeId}[]` },
+        { name: "calls", type: `Multicall_${this.data.nodeId}[]` },
       ],
     };
   }
 
-  private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
-    return params.reduce((acc, param) => {
-      if (param.type === "tuple" || param.customType) {
-        if (param.type.lastIndexOf("[") > 0) {
-          const value = param.value as Param[][];
-          const decodedValue = value.map((tuple) => this.decodeParams(tuple));
-          return [...acc, { ...param, value: decodedValue }];
-        }
-
-        const value = this.decodeParams(param.value as Param[]);
-        return [...acc, { ...param, value }];
-      }
-      if (InstanceOf.Variable(param.value)) {
-        const value = this.FCT.variables.getVariable(param.value, param.type);
-        const updatedParam = { ...param, value };
-        return [...acc, updatedParam];
-      }
-      return [...acc, param as ParamWithoutVariable<P>];
-    }, [] as ParamWithoutVariable<P>[]);
-  }
-
-  private getUsedStructTypes(
-    typedData: Record<string, { name: string; type: string }[]>,
-    mainType: { name: string; type: string }[]
-  ): string[] {
-    return mainType.reduce((acc, item) => {
-      if (item.type.includes("Struct_")) {
-        const type = item.type.replace("[]", "");
-        return [...acc, type, ...this.getUsedStructTypes(typedData, typedData[type])];
-      }
-      return acc;
-    }, [] as string[]);
-  }
-
-  private getStructType({
-    param,
-    nodeId,
-    structTypes = {},
-  }: {
-    param: Param;
-    nodeId: string;
-    structTypes?: Record<string, { name: string; type: string }[]>;
-  }): string {
-    if (!param.customType && !param.type.includes("tuple")) {
-      return param.type;
-    }
-
-    let paramValue: Param[] | Param[][];
-
-    if (InstanceOf.TupleArray(param.value, param)) {
-      paramValue = param.value[0];
-    } else if (InstanceOf.Tuple(param.value, param)) {
-      paramValue = param.value;
-    } else {
-      throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
-    }
-
-    const generalType = paramValue.map((item) => {
-      if (item.customType || item.type.includes("tuple")) {
-        const typeName = this.getStructType({
-          param: item,
-          nodeId,
-          structTypes,
-        });
-        return {
-          name: item.name,
-          type: typeName,
-        };
-      }
-      return {
-        name: item.name,
-        type: item.hashed ? "string" : item.type,
-      };
-    });
-
-    // If param type is array, we need to add [] to the end of the type
-    const typeName = `Struct_${nodeId}_${Object.keys(structTypes).length}`;
-    structTypes[typeName] = generalType;
-    return typeName + (param.type.includes("[]") ? "[]" : "");
-  }
-
-  private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
-    let jumpOnSuccess = 0;
-    let jumpOnFail = 0;
-    const call = this.get;
-    const options = call.options;
-
-    if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-      const jumpOnSuccessIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-
-      if (jumpOnSuccessIndex === -1) {
-        throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-      }
-
-      if (jumpOnSuccessIndex <= index) {
-        throw new Error(
-          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
-        );
-      }
-
-      jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-    }
-
-    if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-      const jumpOnFailIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnFail);
-
-      if (jumpOnFailIndex === -1) {
-        throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-      }
-
-      if (jumpOnFailIndex <= index) {
-        throw new Error(
-          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
-        );
-      }
-
-      jumpOnFail = jumpOnFailIndex - index - 1;
-    }
-
-    return {
-      jumpOnSuccess,
-      jumpOnFail,
-    };
-  }
+  private decodeParams = decodeParams;
+  private getUsedStructTypes = getUsedStructTypes;
+  private getJumps = getJumps;
 }

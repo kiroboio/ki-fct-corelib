@@ -30,7 +30,7 @@ describe("BatchMultiSigCall EIP712", () => {
     });
 
     const computedVariable = FCT.addComputed({
-      value1: { type: "output", id: { nodeId: Call.get.nodeId, innerIndex: 0 } },
+      value1: { type: "output", id: { nodeId: Call.data.nodeId, innerIndex: 0 } },
       operator1: "+",
       value2: "2",
       operator2: "*",

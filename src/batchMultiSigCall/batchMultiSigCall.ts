@@ -81,11 +81,11 @@ export class BatchMultiSigCall {
   }
 
   get callsAsObjects(): StrictMSCallInput[] {
-    return this._calls.map((call) => call.get);
+    return this._calls.map((call) => call.data);
   }
 
   get decodedCalls(): DecodedCalls[] {
-    return this._calls.map((call) => call.getDecoded);
+    return this._calls.map((call) => call.decodedData);
   }
 
   get callDefault(): ICallDefaults {

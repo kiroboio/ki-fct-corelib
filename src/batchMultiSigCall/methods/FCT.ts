@@ -73,7 +73,7 @@ export function getCall(this: BatchMultiSigCall, index: number): FCTCall {
 }
 
 export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): FCTCall {
-  const call = this._calls.find((c) => c.get.nodeId === nodeId);
+  const call = this._calls.find((c) => c.data.nodeId === nodeId);
   if (!call) {
     throw new Error(`Call with nodeId ${nodeId} not found`);
   }

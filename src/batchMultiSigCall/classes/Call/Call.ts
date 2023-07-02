@@ -19,16 +19,15 @@ import {
   TypedDataMessageTransaction,
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { NO_JUMP } from "../../constants";
 import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { CallBase } from "./CallBase";
-import { generateNodeId, getParams, isAddress, isInteger, verifyParam } from "./helpers";
-import { getEncodedMethodParams } from "./helpers/callParams";
+import { generateNodeId, getEncodedMethodParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
+import { getJumps } from "./methods";
 import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
-  protected FCT: BatchMultiSigCall;
+  FCT: BatchMultiSigCall;
 
   constructor({ FCT, input }: { FCT: BatchMultiSigCall; input: IMSCallInput }) {
     super(input);
@@ -37,28 +36,28 @@ export class Call extends CallBase implements ICall {
     this.verifyCall(this.call);
   }
 
-  get get(): StrictMSCallInput {
+  get data(): StrictMSCallInput {
     return _.merge({}, this.FCT.callDefault, this.call) as StrictMSCallInput;
   }
 
   get options(): DeepRequired<CallOptions> {
-    return this.get.options;
+    return this.data.options;
   }
 
-  get getDecoded(): DecodedCalls {
-    const params = this.get.params;
+  get decodedData(): DecodedCalls {
+    const params = this.data.params;
     if (params && params.length > 0) {
       const parameters = this.decodeParams(params);
-      return { ...this.get, params: parameters };
+      return { ...this.data, params: parameters };
     }
     return {
-      ...this.get,
+      ...this.data,
       params: [] as ParamWithoutVariable<Param>[],
     };
   }
 
   public getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall {
-    const call = this.get;
+    const call = this.data;
     return {
       typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
       ensHash: id(call.toENS || ""),
@@ -79,7 +78,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public generateEIP712Type() {
-    const call = this.get;
+    const call = this.data;
     if (!call.params || (call.params && call.params.length === 0)) {
       return {
         structTypes: {},
@@ -109,8 +108,8 @@ export class Call extends CallBase implements ICall {
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
     const paramsData = this.getParamsEIP712();
-    const call = this.get;
-    const options = this.options;
+    const call = this.data;
+    const options = call.options;
     const flow = flows[options.flow].text;
 
     const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
@@ -119,14 +118,14 @@ export class Call extends CallBase implements ICall {
       call: {
         call_index: index + 1,
         payer_index: index + 1,
-        call_type: CALL_TYPE_MSG[call.options.callType],
+        call_type: CALL_TYPE_MSG[options.callType],
         from: this.FCT.variables.getValue(call.from, "address"),
         to: this.FCT.variables.getValue(call.to, "address"),
         to_ens: call.toENS || "",
         value: this.FCT.variables.getValue(call.value, "uint256", "0"),
         gas_limit: options.gasLimit,
         permissions: 0,
-        validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
+        validation: options.validation ? this.FCT.validation.getIndex(options.validation) : 0,
         flow_control: flow,
         returned_false_means_fail: options.falseMeansFail,
         jump_on_success: jumpOnSuccess,
@@ -146,7 +145,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public getEncodedData(): string {
-    return getEncodedMethodParams(this.getDecoded);
+    return getEncodedMethodParams(this.decodedData);
   }
 
   // Private methods
@@ -212,57 +211,15 @@ export class Call extends CallBase implements ICall {
   }
 
   private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.getDecoded.params) {
+    if (!this.decodedData.params) {
       return {};
     }
     return {
-      ...getParams(this.getDecoded.params),
+      ...getParams(this.decodedData.params),
     };
   }
 
-  private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
-    let jumpOnSuccess = 0;
-    let jumpOnFail = 0;
-    const call = this.get;
-    const options = call.options;
-
-    if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-      const jumpOnSuccessIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-
-      if (jumpOnSuccessIndex === -1) {
-        throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-      }
-
-      if (jumpOnSuccessIndex <= index) {
-        throw new Error(
-          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
-        );
-      }
-
-      jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-    }
-
-    if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-      const jumpOnFailIndex = this.FCT.callsAsObjects.findIndex((c) => c.nodeId === options.jumpOnFail);
-
-      if (jumpOnFailIndex === -1) {
-        throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-      }
-
-      if (jumpOnFailIndex <= index) {
-        throw new Error(
-          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
-        );
-      }
-
-      jumpOnFail = jumpOnFailIndex - index - 1;
-    }
-
-    return {
-      jumpOnSuccess,
-      jumpOnFail,
-    };
-  }
+  private getJumps = getJumps;
 
   private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {

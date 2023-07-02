@@ -1,4 +1,5 @@
 import { CallOptions, DeepRequired } from "../../../types";
+import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import {
   BatchMultiSigCallTypedData,
   DecodedCalls,
@@ -8,9 +9,10 @@ import {
 } from "../../types";
 
 export interface ICall {
-  get get(): StrictMSCallInput;
+  FCT: BatchMultiSigCall;
+  get data(): StrictMSCallInput;
   get options(): DeepRequired<CallOptions>;
-  get getDecoded(): DecodedCalls;
+  get decodedData(): DecodedCalls;
   getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
   generateEIP712Type(): {
     structTypes: { [key: string]: { name: string; type: string }[] };

@@ -4,8 +4,7 @@ import _ from "lodash";
 import { nullValue } from "../../../constants";
 import { CallOptions, DeepPartial, Variable } from "../../../types";
 import { IMSCallInput } from "../../types";
-import { generateNodeId, getTypesArray } from "./helpers";
-import { getMethodInterface } from "./helpers/callParams";
+import { generateNodeId, getMethodInterface, getTypesArray } from "./helpers";
 
 export class CallBase {
   protected _call: IMSCallInput & { nodeId: string };
