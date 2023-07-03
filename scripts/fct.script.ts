@@ -133,6 +133,8 @@ async function main() {
 
   const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
 
+  console.log("requiredApprovals", requiredApprovals);
+
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
     privateKey: Buffer.from(key, "hex"),
