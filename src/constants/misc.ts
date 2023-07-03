@@ -37,19 +37,22 @@ export const CALL_TYPE = {
   ACTION: "0",
   VIEW_ONLY: "1",
   LIBRARY: "2",
+  LIBRARY_VIEW_ONLY: "3",
 };
 
 export const CALL_TYPE_MSG = {
   ACTION: "action",
   VIEW_ONLY: "view only",
-  LIBRARY: "library",
+  LIBRARY: "library: action",
+  LIBRARY_VIEW_ONLY: "library: view only",
 };
 
 // Reverse Call Type MSG
 export const CALL_TYPE_MSG_REV = {
   action: "ACTION",
   "view only": "VIEW_ONLY",
-  library: "LIBRARY",
+  "library: action": "LIBRARY",
+  "library: view only": "LIBRARY_VIEW_ONLY",
 } as const;
 
 export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;
