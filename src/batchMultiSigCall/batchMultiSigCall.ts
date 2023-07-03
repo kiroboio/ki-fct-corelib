@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { IValidation, ValidationVariable } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -104,8 +105,11 @@ export class BatchMultiSigCall {
     return this.validation.get;
   }
 
+  public getCall = getCall;
+  public getCallByNodeId = getCallByNodeId;
+
   // Setters
-  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
+  public setOptions(options: DeepPartial<IFCTOptions>) {
     return this._options.set(options);
   }
 
@@ -126,6 +130,14 @@ export class BatchMultiSigCall {
     return this.variables.addComputed(computed);
   };
 
+  public addValidation = (validation: IValidation): ValidationVariable => {
+    return this.validation.add(validation);
+  };
+
+  public addValidationAndSetForCall = (data: { nodeId: string; validation: IValidation }) => {
+    return this.validation.addAndSetForCall(data);
+  };
+
   // Plugin functions
   public getPlugin = getPlugin;
   public getPluginClass = getPluginClass;
@@ -137,15 +149,13 @@ export class BatchMultiSigCall {
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
-  public exportFCT = exportFCT;
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
-  public getCall = getCall;
-  public getCallByNodeId = getCallByNodeId;
+  public exportFCT = exportFCT;
 
   // Static functions
   static utils = utils;
-  static from = (input: IFCT & { validations?: [] }) => {
+  static from = (input: IFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;
