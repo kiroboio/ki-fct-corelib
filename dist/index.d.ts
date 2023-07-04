@@ -2,12 +2,10 @@ import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
 import { ChainId, AllPlugins, PluginInstance, getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
-import * as ethers from 'ethers';
-import { ethers as ethers$1 } from 'ethers';
+import { ethers } from 'ethers';
 export { ethers } from 'ethers';
 import { JsonFragment } from '@ethersproject/abi';
 import { SignatureLike } from '@ethersproject/bytes';
-import { Fragment } from 'ethers/lib/utils';
 import { MessageTypeProperty } from '@metamask/eth-sig-util';
 
 declare enum Flow {
@@ -202,12 +200,12 @@ type IMSCallInput = {
     method?: string;
     toENS?: string;
 } & MSCallMandatory;
-type IMSCallInputWithNodeId = RequiredKeys<IMSCallInput, "nodeId">;
+type FCTMCall = RequiredKeys<IMSCallInput, "nodeId">;
 type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
     options: DeepRequired<CallOptions>;
 };
 interface DecodedCalls extends StrictMSCallInput {
-    params?: ParamWithoutVariable[];
+    params?: ParamWithoutVariable<Param>[];
 }
 type IWithPlugin = {
     plugin: {
@@ -216,7 +214,7 @@ type IWithPlugin = {
 } & MSCallMandatory;
 type IMSCallWithEncodedData = {
     nodeId?: string;
-    abi: ReadonlyArray<Fragment | JsonFragment> | string[];
+    abi: ReadonlyArray<ethers.utils.Fragment | JsonFragment> | string[];
     encodedData: string;
     to: string | Variable;
 } & MSCallMandatory;
@@ -294,7 +292,6 @@ type IRequiredApproval = ({
     params: {
         spender: string;
         approved: boolean;
-        ids: string[];
     };
 } | {
     protocol: "AAVE";
@@ -308,7 +305,9 @@ type IRequiredApproval = ({
     from: string;
 };
 type ICallDefaults = Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
-    options: DeepRequired<CallOptions>;
+    options: DeepRequired<Omit<CallOptions, "payerIndex">> & {
+        payerIndex?: number;
+    };
 };
 
 type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
@@ -379,9 +378,9 @@ interface Param {
     customType?: boolean;
     hashed?: boolean;
 }
-interface ParamWithoutVariable extends Param {
+type ParamWithoutVariable<P extends Param> = P & {
     value?: boolean | string | string[] | Param[] | Param[][];
-}
+};
 interface MethodParamsInterface {
     method: string;
     params: Param[];
@@ -396,6 +395,7 @@ interface CallOptions {
     jumpOnFail?: string;
     falseMeansFail?: boolean;
     callType?: CallType;
+    payerIndex?: number;
 }
 interface IPluginCall {
     value?: string | Variable;
@@ -427,6 +427,46 @@ interface EIP1559GasPrice {
     maxPriorityFeePerGas: number;
 }
 
+interface FetchUtilConstructor {
+    rpcUrl?: string;
+    provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+    chainId: number | string;
+}
+declare class FetchUtility {
+    chainId: number;
+    private readonly multicallContract;
+    constructor({ rpcUrl, chainId, provider }: FetchUtilConstructor);
+    fetchCurrentApprovals(data: IRequiredApproval[]): Promise<(IRequiredApproval & {
+        value: string | boolean;
+    })[]>;
+    getTokensTotalSupply(requiredApprovals: IRequiredApproval[]): Promise<Record<string, string>>;
+}
+
+declare const fetchCurrentApprovals: ({ rpcUrl, provider, chainId, multicallContract, multicallContractAddress, data, }: {
+    rpcUrl?: string | undefined;
+    provider?: ethers.providers.Provider | undefined;
+    chainId?: string | number | undefined;
+    multicallContract?: ethers.Contract | undefined;
+    multicallContractAddress?: string | undefined;
+    data: IRequiredApproval[];
+}) => Promise<(IRequiredApproval & {
+    value: string | boolean;
+})[]>;
+
+declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
+    rpcUrl: string;
+    chainId: number;
+    historicalBlocks?: number | undefined;
+    tries?: number | undefined;
+}) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
+
+declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
+    chainId: number;
+    rpcUrl?: string | undefined;
+    provider?: ethers.providers.Provider | undefined;
+    blockTimestamp?: number | undefined;
+}) => Promise<string>;
+
 interface TransactionValidatorSuccess {
     isValid: true;
     txData: {
@@ -455,46 +495,6 @@ type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValid
 
 declare const transactionValidator: (txVal: ITxValidator) => Promise<TransactionValidatorResult>;
 
-interface FetchUtilConstructor {
-    rpcUrl?: string;
-    provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider;
-    chainId: number | string;
-}
-declare class FetchUtility {
-    chainId: number;
-    private readonly multicallContract;
-    constructor({ rpcUrl, chainId, provider }: FetchUtilConstructor);
-    fetchCurrentApprovals(data: IRequiredApproval[]): Promise<(IRequiredApproval & {
-        value: string | boolean;
-    })[]>;
-    getTokensTotalSupply(requiredApprovals: IRequiredApproval[]): Promise<Record<string, string>>;
-}
-
-declare const fetchCurrentApprovals: ({ rpcUrl, provider, chainId, multicallContract, multicallContractAddress, data, }: {
-    rpcUrl?: string | undefined;
-    provider?: ethers$1.providers.Provider | undefined;
-    chainId?: string | number | undefined;
-    multicallContract?: ethers$1.Contract | undefined;
-    multicallContractAddress?: string | undefined;
-    data: IRequiredApproval[];
-}) => Promise<(IRequiredApproval & {
-    value: string | boolean;
-})[]>;
-
-declare const getGasPrices: ({ rpcUrl, chainId, historicalBlocks, tries, }: {
-    rpcUrl: string;
-    chainId: number;
-    historicalBlocks?: number | undefined;
-    tries?: number | undefined;
-}) => Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>>;
-
-declare const getKIROPrice: ({ chainId, rpcUrl, provider, blockTimestamp, }: {
-    chainId: number;
-    rpcUrl?: string | undefined;
-    provider?: ethers$1.providers.Provider | undefined;
-    blockTimestamp?: number | undefined;
-}) => Promise<string>;
-
 type index_FetchUtility = FetchUtility;
 declare const index_FetchUtility: typeof FetchUtility;
 declare const index_fetchCurrentApprovals: typeof fetchCurrentApprovals;
@@ -519,9 +519,9 @@ declare class FCTBase {
 declare const isInteger: (value: string, key: string) => void;
 declare const isAddress: (value: string, key: string) => void;
 declare const verifyParam: (param: Param) => void;
-declare const getParamsFromInputs: (inputs: ethers$1.utils.ParamType[], values: ethers$1.utils.Result) => Param[];
+declare const getParamsFromInputs: (inputs: ethers.utils.ParamType[], values: ethers.utils.Result) => Param[];
 declare const getParamsFromTypedData: ({ methodInterfaceParams, parameters, types, primaryType, }: {
-    methodInterfaceParams: ethers$1.utils.ParamType[];
+    methodInterfaceParams: ethers.utils.ParamType[];
     parameters: Record<string, FCTCallParam>;
     types: TypedDataTypes;
     primaryType: string;
@@ -542,20 +542,48 @@ declare namespace helpers$1 {
   };
 }
 
+type CreateReturn<T extends FCTCall> = T extends IMSCallWithEncodedData ? IMSCallInput & {
+    nodeId: string;
+    method: string;
+    params: Param[];
+    to: T["to"];
+    from: T["from"];
+    value: T["value"];
+    options: T["options"];
+} : T extends IWithPlugin ? IMSCallInput & {
+    nodeId: string;
+    from: T["from"];
+    value: T["value"];
+    options: T["options"];
+} : IMSCallInput & T & {
+    nodeId: string;
+};
+
 declare class FCTCalls extends FCTBase {
     static helpers: typeof helpers$1;
     private _calls;
     private _callDefault;
     constructor(FCT: BatchMultiSigCall, callDefault?: DeepPartial<ICallDefaults>);
+    getCallDefaults(): ICallDefaults;
     get(): StrictMSCallInput[];
     getWithDecodedVariables(): DecodedCalls[];
-    create(call: FCTCall): Promise<IMSCallInputWithNodeId>;
-    createWithPlugin(callWithPlugin: IWithPlugin): Promise<IMSCallInputWithNodeId>;
-    createWithEncodedData(callWithEncodedData: IMSCallWithEncodedData): IMSCallInputWithNodeId;
-    setCallDefaults(callDefault: DeepPartial<ICallDefaults>): ICallDefaults;
-    private addCall;
+    create<C extends FCTCall>(call: C): Promise<CreateReturn<C>>;
+    createWithPlugin<C extends IWithPlugin>(callWithPlugin: C): Promise<IMSCallInput & {
+        nodeId: string;
+    }>;
+    createWithEncodedData<C extends IMSCallWithEncodedData>(callWithEncodedData: C): IMSCallInput & {
+        nodeId: string;
+    };
+    createSimpleCall<C extends IMSCallInput>(call: C): C & {
+        nodeId: string;
+    };
+    setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): ICallDefaults & C;
+    addCall<C extends IMSCallInput & {
+        nodeId: string;
+    }>(call: C): C;
     private verifyCall;
-    decodeParams(params: Param[]): ParamWithoutVariable[];
+    decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[];
+    private getSpecificCallDefaults;
 }
 
 declare class FCTUtils extends FCTBase {
@@ -591,6 +619,7 @@ declare class FCTUtils extends FCTBase {
     };
     getMessageHash(): string;
     isValid(softValidation?: boolean): boolean | Error;
+    isValidNotification(): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
     getKIROPayment: ({ priceOfETHInKiro, gasPrice, gas, }: {
@@ -640,7 +669,7 @@ declare class FCTUtils extends FCTBase {
     }[];
     getCallResults: ({ rpcUrl, provider, txHash, }: {
         rpcUrl?: string | undefined;
-        provider?: ethers$1.providers.JsonRpcProvider | ethers$1.providers.Web3Provider | undefined;
+        provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider | undefined;
         txHash: string;
     }) => Promise<{
         index: string;
@@ -670,7 +699,7 @@ declare namespace helpers {
 declare class Options {
     static helpers: typeof helpers;
     private _options;
-    set(options: DeepPartial<IFCTOptions>): IFCTOptions;
+    set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O;
     get(): RequiredFCTOptions;
     reset(): void;
     static verify(options: IFCTOptions): void;
@@ -710,8 +739,8 @@ declare class Variables extends FCTBase {
 
 type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
 
-declare function create(this: BatchMultiSigCall, call: FCTCall): Promise<IMSCallInputWithNodeId>;
-declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<IMSCallInputWithNodeId[]>;
+declare function create<F extends FCTCall>(this: BatchMultiSigCall, call: F): Promise<CreateReturn<F>>;
+declare function createMultiple(this: BatchMultiSigCall, calls: FCTCall[]): Promise<FCTMCall[]>;
 declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { plugin, initParams, }: {
     plugin: T;
     initParams?: PluginParams<T>;
@@ -744,15 +773,16 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
 }>>;
 declare function getCall(this: BatchMultiSigCall, index: number): IMSCallInput;
 declare function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
-declare function importFCT(this: BatchMultiSigCall, fct: IBatchMultiSigCallFCT): IMSCallInput[];
+declare function exportNotificationFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT;
+declare function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT): StrictMSCallInput[];
 declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<StrictMSCallInput[]>;
 
 declare function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance>;
 declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise<ReturnType<typeof getPlugin$1>>;
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
-    protocol: "ERC20" | "ERC721" | "ERC1155" | "AAVE" | "SUSHISWAP" | "UNISWAP" | "VALIDATOR" | "MATH" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE";
+    protocol: "ERC20" | "ERC721" | "ERC1155" | "SUSHISWAP" | "UNISWAP" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE" | "RADIANTV2" | "AaveV3";
     type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE";
-    method: "" | "symbol" | "supportsInterface" | "name" | "add" | "sub" | "mul" | "div" | "mod" | "approve" | "setApprovalForAll" | "getAmountsOut" | "decimals" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "transferFrom" | "safeTransferFrom" | "withdraw" | "getAmountsIn" | "totalSupply" | "balanceOf" | "isApprovedForAll" | "borrow" | "between" | "betweenEqual" | "equal" | "greaterEqual" | "greaterThan" | "lessEqual" | "lessThan" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "repay" | "swapBorrowRateMode" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "transfer" | "simpleTransfer" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supply" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getUserAccountData" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "allowance" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "mulAndDiv" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "equalBytes32" | "getEthBalance";
+    method: "" | "symbol" | "name" | "approve" | "totalSupply" | "decimals" | "balanceOf" | "allowance" | "supportsInterface" | "add" | "sub" | "mul" | "div" | "mod" | "setApprovalForAll" | "getApproved" | "isApprovedForAll" | "getAmountsOut" | "deposit" | "borrow" | "getUserAccountData" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "safeTransferFrom" | "withdraw" | "repay" | "supply" | "swapBorrowRateMode" | "getAmountsIn" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "lessThan" | "between" | "greaterThan" | "FLASHLOAN_PREMIUM_TOTAL" | "FLASHLOAN_PREMIUM_TO_PROTOCOL" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "liquidationCall" | "mintToTreasury" | "rebalanceStableBorrowRate" | "repayWithATokens" | "setUserEMode" | "setUserUseReserveAsCollateral" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "mulAndDiv" | "betweenEqual" | "equal" | "equalAddress" | "equalBytes32" | "greaterEqual" | "lessEqual" | "getEthBalance" | "getEModeCategoryData" | "getReserveNormalizedIncome" | "getReserveNormalizedVariableDebt" | "getUserEMode" | ("transferFrom" | "transfer");
     input: {
         to: string | Variable;
         value: string | Variable | undefined;
@@ -792,15 +822,28 @@ declare class BatchMultiSigCall {
     utils: FCTUtils;
     variables: Variables;
     protected _options: Options;
-    protected _calls: FCTCalls;
+    _calls: FCTCalls;
     constructor(input?: BatchMultiSigCallConstructor);
     get options(): RequiredFCTOptions;
     get calls(): StrictMSCallInput[];
     get decodedCalls(): DecodedCalls[];
     get computed(): IComputed[];
     get computedWithValues(): ComputedVariable[];
-    setOptions: (options: DeepPartial<IFCTOptions>) => IFCTOptions;
-    setCallDefaults: (callDefault: DeepPartial<ICallDefaults>) => ICallDefaults;
+    get callDefaults(): ICallDefaults;
+    setOptions<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O;
+    setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): Omit<RequiredKeys<MSCallMandatory, "value">, "nodeId"> & {
+        options: {
+            permissions: string;
+            gasLimit: string;
+            flow: Flow;
+            jumpOnSuccess: string;
+            jumpOnFail: string;
+            falseMeansFail: boolean;
+            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY";
+        } & {
+            payerIndex?: number | undefined;
+        };
+    } & C;
     changeChainId: (chainId: ChainId) => void;
     addComputed: (computed: IComputed) => {
         type: "computed";
@@ -812,9 +855,12 @@ declare class BatchMultiSigCall {
     getPluginClass: typeof getPluginClass;
     getPluginData: typeof getPluginData;
     createPlugin: typeof createPlugin;
+    add: typeof create;
+    addMultiple: typeof createMultiple;
     create: typeof create;
     createMultiple: typeof createMultiple;
     exportFCT: typeof exportFCT;
+    exportNotificationFCT: typeof exportNotificationFCT;
     importFCT: typeof importFCT;
     importEncodedFCT: typeof importEncodedFCT;
     getCall: typeof getCall;
@@ -822,4 +868,4 @@ declare class BatchMultiSigCall {
     static from: (input: IBatchMultiSigCallFCT) => BatchMultiSigCall;
 }
 
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallInputWithNodeId, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, ComputedVariable, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTMCall, IBatchMultiSigCallFCT, ICallDefaults, IComputed, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
