@@ -51,7 +51,7 @@ export const EIP712_MULTISIG = [
 
 export const NO_JUMP = "NO_JUMP";
 
-export const DEFAULT_CALL_OPTIONS: DeepRequired<CallOptions> = {
+export const DEFAULT_CALL_OPTIONS: DeepRequired<Omit<CallOptions, "payerIndex">> = {
   permissions: "0000",
   gasLimit: "0",
   flow: Flow.OK_CONT_FAIL_REVERT,

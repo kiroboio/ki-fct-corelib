@@ -158,5 +158,5 @@ export type IRequiredApproval = (
   from: string;
 };
 export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
-  options: DeepRequired<CallOptions>;
+  options: DeepRequired<Omit<CallOptions, "payerIndex">>;
 };

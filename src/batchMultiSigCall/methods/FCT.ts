@@ -99,6 +99,18 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   };
 }
 
+export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
+  const callDefault = this.callDefault;
+  this.setCallDefaults({
+    options: {
+      payerIndex: 0,
+    },
+  });
+  const fct = this.exportFCT();
+  this.setCallDefaults(callDefault);
+  return fct;
+}
+
 export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;

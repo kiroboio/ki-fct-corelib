@@ -35,7 +35,7 @@ describe("FCT Multicall", () => {
         },
       ],
       target: createRandomAddress(),
-      callType: "action",
+      callType: "ACTION",
     });
 
     await FCT.add(MCall);

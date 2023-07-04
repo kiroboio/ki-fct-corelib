@@ -64,21 +64,31 @@ export class Multicall implements ICall {
     this._nodeId = input.nodeId || generateNodeId();
   }
 
+  get nodeId() {
+    return this._nodeId;
+  }
+
   get to() {
     if (this._to) return this._to;
     return FCT_MULTICALL_ADDRESS[this.FCT.chainId];
   }
-  //
+
   get toENS() {
     return "@lib:multicall";
   }
 
   get options(): DeepRequired<CallOptions> {
-    return _.merge({}, DEFAULT_CALL_OPTIONS, this._options);
+    return _.merge(
+      {},
+      DEFAULT_CALL_OPTIONS,
+      { options: { payerIndex: this.FCT.getIndexByNodeId(this._nodeId) } },
+      this._options
+    ) as DeepRequired<CallOptions>;
   }
 
   get get() {
     if (!this._from) throw new Error("From address is required");
+
     return {
       to: this.to,
       toENS: this.toENS,
