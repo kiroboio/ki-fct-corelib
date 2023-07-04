@@ -23,7 +23,7 @@ export class CallID {
   static asString({ calls, call, index }: { calls: IMSCallInput[]; call: StrictMSCallInput; index: number }): string {
     const permissions = "0000";
     const flow = valueWithPadStart(flows[call.options.flow].value, 2);
-    const payerIndex = valueWithPadStart(index + 1, 4);
+    const payerIndex = valueWithPadStart(call.options.payerIndex, 4);
     const callIndex = valueWithPadStart(index + 1, 4);
     const gasLimit = valueWithPadStart(call.options.gasLimit, 8);
 

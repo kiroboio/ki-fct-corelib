@@ -48,9 +48,13 @@ export class FCTCalls extends FCTBase {
     }
   }
 
+  getCallDefaults(): ICallDefaults {
+    return this._callDefault;
+  }
+
   get(): StrictMSCallInput[] {
-    return this._calls.map((call): StrictMSCallInput => {
-      const fullCall = _.merge({}, this._callDefault, call);
+    return this._calls.map((call, index): StrictMSCallInput => {
+      const fullCall = _.merge({}, this.getSpecificCallDefaults(index), call);
 
       if (typeof fullCall.from === "undefined") {
         throw new Error("From address is required");
@@ -58,7 +62,10 @@ export class FCTCalls extends FCTBase {
 
       const from = fullCall.from;
 
-      return { ...fullCall, from };
+      return {
+        ...fullCall,
+        from,
+      };
     });
   }
 
@@ -223,4 +230,16 @@ export class FCTCalls extends FCTBase {
       return [...acc, param as ParamWithoutVariable<P>];
     }, [] as ParamWithoutVariable<P>[]);
   }
+
+  private getSpecificCallDefaults = (index: number) => {
+    const optionsPayerIndex = this._callDefault.options.payerIndex;
+    const payerIndex = optionsPayerIndex !== undefined ? optionsPayerIndex : index + 1;
+    return {
+      ...this._callDefault,
+      options: {
+        ...this._callDefault.options,
+        payerIndex,
+      },
+    };
+  };
 }

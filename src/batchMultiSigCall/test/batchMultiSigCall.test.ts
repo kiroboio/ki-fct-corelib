@@ -573,4 +573,48 @@ describe("BatchMultiSigCall", () => {
       // console.log(util.inspect(fctData, false, null, true /* enable colors */));
     });
   });
+
+  describe("Export Notification FCT", () => {
+    it("Should get notification FCT", async () => {
+      await batchMultiSigCall.create({
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "balanceOf",
+        params: [
+          {
+            name: "account",
+            type: "address",
+            value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+          },
+        ],
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        options: {
+          callType: "VIEW_ONLY",
+        },
+      });
+
+      const FCT = batchMultiSigCall.exportNotificationFCT();
+
+      expect(FCT.typedData.message.transaction_1.call.payer_index).to.eq(0);
+
+      expect(batchMultiSigCall.utils.isValidNotification()).to.eq(true);
+    });
+    it("Should throw error", async () => {
+      await batchMultiSigCall.create({
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "balanceOf",
+        params: [
+          {
+            name: "account",
+            type: "address",
+            value: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+          },
+        ],
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+      });
+
+      expect(function () {
+        batchMultiSigCall.exportNotificationFCT();
+      }).to.throw("Cannot export as test FCT: not all calls are view only");
+    });
+  });
 });

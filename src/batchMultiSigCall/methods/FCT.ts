@@ -63,6 +63,24 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
   return new ExportFCT(this).get();
 }
 
+export function exportNotificationFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
+  const calls = this.calls;
+  const isViewOnly = calls.every((call) => call.options.callType === CALL_TYPE_MSG_REV["view only"]);
+  if (!isViewOnly) {
+    throw new Error("Cannot export as test FCT: not all calls are view only");
+  }
+
+  const currentCallDefaults = this._calls.getCallDefaults();
+  this.setCallDefaults({
+    options: {
+      payerIndex: 0,
+    },
+  });
+  const fct = new ExportFCT(this).get();
+  this.setCallDefaults(currentCallDefaults);
+  return fct;
+}
+
 export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
@@ -117,8 +135,10 @@ export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSig
       return Flow[flow[0] as keyof typeof Flow];
     };
 
+    const nodeIndex = index + 1;
+
     const callInput: IMSCallInput = {
-      nodeId: `node${index + 1}`,
+      nodeId: `node${nodeIndex}`,
       to: call.to,
       from: call.from,
       value: call.value,
@@ -127,12 +147,13 @@ export function importFCT<FCT extends IBatchMultiSigCallFCT>(this: BatchMultiSig
       toENS: meta.to_ens,
       options: {
         gasLimit: meta.gas_limit,
-        jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
-        jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
+        jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${nodeIndex + 1 + meta.jump_on_success}`,
+        jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${nodeIndex + 1 + meta.jump_on_fail}`,
         flow: getFlow(),
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
+        payerIndex: meta.payer_index,
       },
     };
 

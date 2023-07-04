@@ -242,7 +242,7 @@ export class EIP712 extends FCTBase {
         [`transaction_${index + 1}`]: {
           call: {
             call_index: index + 1,
-            payer_index: index + 1,
+            payer_index: call.options?.payerIndex,
             call_type: call.options?.callType ? CALL_TYPE_MSG[call.options.callType] : CALL_TYPE_MSG.ACTION,
             from: this.FCT.variables.getValue(call.from, "address"),
             to: this.FCT.variables.getValue(call.to, "address"),

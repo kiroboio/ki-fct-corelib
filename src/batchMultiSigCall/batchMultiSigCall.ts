@@ -8,6 +8,7 @@ import {
   createMultiple,
   createPlugin,
   exportFCT,
+  exportNotificationFCT,
   getCall,
   getPlugin,
   getPluginClass,
@@ -86,6 +87,10 @@ export class BatchMultiSigCall {
     return this.variables.computedWithValues;
   }
 
+  get callDefaults(): ICallDefaults {
+    return this._calls.getCallDefaults();
+  }
+
   // Setters
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
     return this._options.set(options);
@@ -118,7 +123,10 @@ export class BatchMultiSigCall {
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
+
   public exportFCT = exportFCT;
+  public exportNotificationFCT = exportNotificationFCT;
+
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
