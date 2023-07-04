@@ -3690,7 +3690,7 @@ const typeValue = (param) => {
         const TYPE = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
         // If the type is an array of tuple/custom struct
         if (param.customType || param.type.includes("tuple")) {
-            const typesArray = getTypesArray(value[0]);
+            const typesArray = getTypesArray(value[0], false);
             if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
                 return [TYPE, getFixedArrayLength(param.type), countOfElements, ...typesArray];
             }
@@ -3724,12 +3724,12 @@ const typeValue = (param) => {
     return [TYPE_NATIVE];
 };
 // Get Types array
-const getTypesArray = (params) => {
+const getTypesArray = (params, removeNative = true) => {
     const types = params.reduce((acc, item) => {
         const data = typeValue(item);
         return [...acc, ...data];
     }, []);
-    if (!types.some((item) => item !== TYPE_NATIVE)) {
+    if (removeNative && !types.some((item) => item !== TYPE_NATIVE)) {
         return [];
     }
     return types;
@@ -4367,7 +4367,7 @@ class SessionID extends FCTBase {
 const getUsedStructTypes = (typedData, typeName) => {
     const mainType = typedData.types[typeName.replace("[]", "")];
     return mainType.reduce((acc, item) => {
-        if (item.type.includes("Struct") || item.type[0] === item.type[0].toUpperCase()) {
+        if (item.type.includes("Struct")) {
             const type = item.type.replace("[]", "");
             return [...acc, type, ...getUsedStructTypes(typedData, type)];
         }
@@ -4425,6 +4425,7 @@ class ExportFCT extends FCTBase {
         const calls = this.calls;
         return calls.map((call, index) => {
             const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
+            console.log("usedTypeStructs", usedTypeStructs);
             return {
                 typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: id(call.toENS || ""),

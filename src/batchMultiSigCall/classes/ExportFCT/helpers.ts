@@ -4,7 +4,7 @@ export const getUsedStructTypes = (typedData: BatchMultiSigCallTypedData, typeNa
   const mainType = typedData.types[typeName.replace("[]", "")];
 
   return mainType.reduce((acc, item) => {
-    if (item.type.includes("Struct") || item.type[0] === item.type[0].toUpperCase()) {
+    if (item.type.includes("Struct")) {
       const type = item.type.replace("[]", "");
       return [...acc, type, ...getUsedStructTypes(typedData, type)];
     }

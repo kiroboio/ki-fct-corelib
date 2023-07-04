@@ -20,7 +20,7 @@ const typeValue = (param: Param): number[] => {
 
     // If the type is an array of tuple/custom struct
     if (param.customType || param.type.includes("tuple")) {
-      const typesArray = getTypesArray(value[0]);
+      const typesArray = getTypesArray(value[0], false);
       if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
         return [TYPE, getFixedArrayLength(param.type), countOfElements, ...typesArray];
       }
@@ -64,13 +64,13 @@ const typeValue = (param: Param): number[] => {
 };
 
 // Get Types array
-export const getTypesArray = (params: Param[]): number[] => {
+export const getTypesArray = (params: Param[], removeNative = true): number[] => {
   const types = params.reduce((acc, item) => {
     const data = typeValue(item);
     return [...acc, ...data];
   }, [] as number[]);
 
-  if (!types.some((item) => item !== TYPE_NATIVE)) {
+  if (removeNative && !types.some((item) => item !== TYPE_NATIVE)) {
     return [];
   }
   return types;
