@@ -33,6 +33,7 @@ export interface CallOptions {
   falseMeansFail?: boolean;
   callType?: CallType;
   validation?: string;
+  payerIndex?: number;
 }
 
 export interface IPluginCall {

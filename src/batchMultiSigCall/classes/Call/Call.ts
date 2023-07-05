@@ -38,7 +38,14 @@ export class Call extends CallBase implements ICall {
   }
 
   get get(): StrictMSCallInput {
-    return _.merge({}, this.FCT.callDefault, this.call) as StrictMSCallInput;
+    return _.merge(
+      {},
+      this.FCT.callDefault,
+      {
+        options: { payerIndex: this.FCT.getIndexByNodeId(this.call.nodeId) },
+      },
+      this.call
+    ) as StrictMSCallInput;
   }
 
   get options(): DeepRequired<CallOptions> {

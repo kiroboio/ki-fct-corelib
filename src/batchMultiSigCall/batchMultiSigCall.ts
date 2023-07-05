@@ -104,6 +104,10 @@ export class BatchMultiSigCall {
     return this.validation.get;
   }
 
+  public getSpecificCallDefault = (index: number) => {
+    return _.merge({}, this._callDefault, { options: { payerIndex: index + 1 } });
+  };
+
   // Setters
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
     return this._options.set(options);
@@ -138,10 +142,14 @@ export class BatchMultiSigCall {
   public create = create;
   public createMultiple = createMultiple;
   public exportFCT = exportFCT;
+
   public importFCT = importFCT;
   public importEncodedFCT = importEncodedFCT;
   public getCall = getCall;
   public getCallByNodeId = getCallByNodeId;
+  public getIndexByNodeId = (nodeId: string) => {
+    return this._calls.findIndex((call) => call.nodeId === nodeId);
+  };
 
   // Static functions
   static utils = utils;

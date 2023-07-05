@@ -96,7 +96,21 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
     validations: this.validation.getForData,
+    appHash: id(this.options.app),
+    byHash: id(this.options.by),
   };
+}
+
+export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
+  const callDefault = this.callDefault;
+  this.setCallDefaults({
+    options: {
+      payerIndex: 0,
+    },
+  });
+  const fct = this.exportFCT();
+  this.setCallDefaults(callDefault);
+  return fct;
 }
 
 export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {

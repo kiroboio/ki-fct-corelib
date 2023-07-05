@@ -30,16 +30,18 @@ export interface BatchMultiSigCallConstructor {
 }
 
 export interface IFCT {
-  typeHash: string;
   typedData: BatchMultiSigCallTypedData;
+  typeHash: string;
   sessionId: string;
   nameHash: string;
-  mcall: MSCall[];
+  appHash: string;
+  byHash: string;
   builder: string;
+  mcall: MSCall[];
+  signatures: SignatureLike[];
   variables: string[];
   externalSigners: string[];
   computed: Omit<IComputedData, "index">[];
-  signatures: SignatureLike[];
   validations: IValidationData[];
 }
 
@@ -106,6 +108,9 @@ export interface IFCTOptions {
   purgeable: boolean;
   builder: string;
   authEnabled: boolean;
+  dryRun: boolean;
+  app: string;
+  by: string;
   recurrency?: {
     maxRepeats: string;
     chillTime: string;
@@ -158,5 +163,5 @@ export type IRequiredApproval = (
   from: string;
 };
 export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
-  options: DeepRequired<CallOptions>;
+  options: DeepRequired<Omit<CallOptions, "payerIndex">>;
 };
