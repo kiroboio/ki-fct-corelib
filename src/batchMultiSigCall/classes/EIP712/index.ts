@@ -105,12 +105,15 @@ export class EIP712 extends FCTBase {
     return {
       meta: {
         name: FCTOptions.name || "",
+        app: FCTOptions.app || "",
+        by: FCTOptions.by || "",
         builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
         selector: this.FCT.batchMultiSigSelector,
         version: this.FCT.version,
         random_id: `0x${this.FCT.randomId}`,
         eip712: true,
         auth_enabled: FCTOptions.authEnabled,
+        dry_run: FCTOptions.dryRun,
       },
       limits: {
         valid_from: FCTOptions.validFrom,

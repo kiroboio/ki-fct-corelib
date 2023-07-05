@@ -12,6 +12,9 @@ const initOptions = {
   blockable: true,
   builder: "0x0000000000000000000000000000000000000000",
   authEnabled: true,
+  dryRun: false,
+  app: "",
+  by: "",
 };
 
 export class Options {

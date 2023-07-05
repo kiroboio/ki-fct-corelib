@@ -30,8 +30,8 @@ export interface BatchMultiSigCallConstructor {
 }
 
 export interface IFCT {
-  typeHash: string;
   typedData: BatchMultiSigCallTypedData;
+  typeHash: string;
   sessionId: string;
   nameHash: string;
   appHash: string;
@@ -109,6 +109,8 @@ export interface IFCTOptions {
   builder: string;
   authEnabled: boolean;
   dryRun: boolean;
+  app: string;
+  by: string;
   recurrency?: {
     maxRepeats: string;
     chillTime: string;

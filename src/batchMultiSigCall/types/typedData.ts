@@ -66,12 +66,15 @@ export interface TypedDataLimits {
 
 export interface TypedDataMeta {
   name: string;
+  app: string;
+  by: string;
   builder: string;
   selector: string;
   version: string;
   random_id: string;
   eip712: boolean;
   auth_enabled: boolean;
+  dry_run: boolean;
 }
 
 export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;

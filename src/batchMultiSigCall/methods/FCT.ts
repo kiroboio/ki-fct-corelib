@@ -96,6 +96,8 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
     validations: this.validation.getForData,
+    appHash: id(this.options.app),
+    byHash: id(this.options.by),
   };
 }
 
