@@ -4424,7 +4424,6 @@ class ExportFCT extends FCTBase {
         const calls = this.calls;
         return calls.map((call, index) => {
             const usedTypeStructs = getUsedStructTypes(typedData, `transaction${index + 1}`);
-            console.log("usedTypeStructs", usedTypeStructs);
             return {
                 typeHash: hexlify(ethSigUtil.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
                 ensHash: id(call.toENS || ""),
@@ -4811,6 +4810,17 @@ function getCalldataForActuator({ signedFCT, purgedFCT, investor, activator, ver
     ]);
 }
 
+function isValidNotification(fct) {
+    const FCT = BatchMultiSigCall.from(fct);
+    const calls = FCT.calls;
+    for (const call of calls) {
+        if (call.options.payerIndex !== 0) {
+            throw new Error(`CallID.payerIndex must be 0 for notification`);
+        }
+    }
+    return true;
+}
+
 const splitSignature = ethers.ethers.utils.splitSignature;
 const AUTHENTICATOR_PRIVATE_KEY = "5c35caeef2837c989ca02120f70b439b1f3266b779db6eb38ccabba24a2522b3";
 const getAuthenticatorSignature = (typedData) => {
@@ -4831,7 +4841,8 @@ const getAuthenticatorSignature = (typedData) => {
 var utils = /*#__PURE__*/Object.freeze({
     __proto__: null,
     getAuthenticatorSignature: getAuthenticatorSignature,
-    getCalldataForActuator: getCalldataForActuator
+    getCalldataForActuator: getCalldataForActuator,
+    isValidNotification: isValidNotification
 });
 
 const { getAddress } = ethers.utils;
@@ -5157,16 +5168,17 @@ class FCTUtils extends FCTBase {
         }
         return true;
     }
-    isValidNotification() {
-        // Check every call, that callId.payerIndex is 0 after decoding
-        const calls = this.FCT.calls;
-        for (const call of calls) {
-            if (call.options.payerIndex !== 0) {
-                throw new Error(`CallID.payerIndex must be 0 for notification`);
-            }
-        }
-        return true;
-    }
+    // public isValidNotification(): boolean | Error {
+    //   // Check every call, that callId.payerIndex is 0 after decoding
+    //   const calls = this.FCT.calls;
+    //   for (const call of calls) {
+    //     if (call.options.payerIndex !== 0) {
+    //       throw new Error(`CallID.payerIndex must be 0 for notification`);
+    //     }
+    //   }
+    //
+    //   return true;
+    // }
     getSigners() {
         return this.FCTData.mcall.reduce((acc, { from }) => {
             if (!acc.includes(from)) {
@@ -5311,8 +5323,7 @@ class FCTUtils extends FCTBase {
                 const { payerIndex } = CallID.parse(call.callId);
                 if (payerIndex === 0)
                     return ethers.ethers.constants.AddressZero;
-                const payer = fct.mcall[payerIndex - 1].from;
-                return payer;
+                return fct.mcall[payerIndex - 1].from;
             })),
         ];
         return allPayers.map((payer) => {
@@ -5653,19 +5664,21 @@ function exportFCT() {
     return new ExportFCT(this).get();
 }
 function exportNotificationFCT() {
-    const calls = this.calls;
-    const isViewOnly = calls.every((call) => call.options.callType === CALL_TYPE_MSG_REV["view only"]);
-    if (!isViewOnly) {
-        throw new Error("Cannot export as test FCT: not all calls are view only");
-    }
     const currentCallDefaults = this._calls.getCallDefaults();
     this.setCallDefaults({
         options: {
             payerIndex: 0,
         },
     });
+    const currentMaxGasPrice = this.options.maxGasPrice;
+    this.setOptions({
+        maxGasPrice: "1",
+    });
     const fct = new ExportFCT(this).get();
     this.setCallDefaults(currentCallDefaults);
+    this.setOptions({
+        maxGasPrice: currentMaxGasPrice,
+    });
     return fct;
 }
 function importFCT(fct) {

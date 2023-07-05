@@ -64,20 +64,24 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
-  const calls = this.calls;
-  const isViewOnly = calls.every((call) => call.options.callType === CALL_TYPE_MSG_REV["view only"]);
-  if (!isViewOnly) {
-    throw new Error("Cannot export as test FCT: not all calls are view only");
-  }
-
   const currentCallDefaults = this._calls.getCallDefaults();
   this.setCallDefaults({
     options: {
       payerIndex: 0,
     },
   });
+  const currentMaxGasPrice = this.options.maxGasPrice;
+  this.setOptions({
+    maxGasPrice: "1",
+  });
+
   const fct = new ExportFCT(this).get();
+
   this.setCallDefaults(currentCallDefaults);
+  this.setOptions({
+    maxGasPrice: currentMaxGasPrice,
+  });
+
   return fct;
 }
 

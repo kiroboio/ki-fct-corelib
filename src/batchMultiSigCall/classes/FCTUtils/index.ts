@@ -128,17 +128,17 @@ export class FCTUtils extends FCTBase {
     return true;
   }
 
-  public isValidNotification(): boolean | Error {
-    // Check every call, that callId.payerIndex is 0 after decoding
-    const calls = this.FCT.calls;
-    for (const call of calls) {
-      if (call.options.payerIndex !== 0) {
-        throw new Error(`CallID.payerIndex must be 0 for notification`);
-      }
-    }
-
-    return true;
-  }
+  // public isValidNotification(): boolean | Error {
+  //   // Check every call, that callId.payerIndex is 0 after decoding
+  //   const calls = this.FCT.calls;
+  //   for (const call of calls) {
+  //     if (call.options.payerIndex !== 0) {
+  //       throw new Error(`CallID.payerIndex must be 0 for notification`);
+  //     }
+  //   }
+  //
+  //   return true;
+  // }
 
   public getSigners(): string[] {
     return this.FCTData.mcall.reduce((acc: string[], { from }) => {
@@ -366,8 +366,7 @@ export class FCTUtils extends FCTBase {
         fct.mcall.map((call) => {
           const { payerIndex } = CallID.parse(call.callId);
           if (payerIndex === 0) return ethers.constants.AddressZero;
-          const payer = fct.mcall[payerIndex - 1].from;
-          return payer;
+          return fct.mcall[payerIndex - 1].from;
         })
       ),
     ];

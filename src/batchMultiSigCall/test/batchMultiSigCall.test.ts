@@ -596,7 +596,7 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT.typedData.message.transaction_1.call.payer_index).to.eq(0);
 
-      expect(batchMultiSigCall.utils.isValidNotification()).to.eq(true);
+      expect(BatchMultiSigCall.utils.isValidNotification(FCT)).to.eq(true);
     });
     it("Should throw error", async () => {
       await batchMultiSigCall.create({

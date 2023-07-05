@@ -619,7 +619,6 @@ declare class FCTUtils extends FCTBase {
     };
     getMessageHash(): string;
     isValid(softValidation?: boolean): boolean | Error;
-    isValidNotification(): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
     getKIROPayment: ({ priceOfETHInKiro, gasPrice, gas, }: {
@@ -798,6 +797,8 @@ declare function getCalldataForActuator({ signedFCT, purgedFCT, investor, activa
     version: string;
 }): string;
 
+declare function isValidNotification(fct: IBatchMultiSigCallFCT): boolean | Error;
+
 declare const getAuthenticatorSignature: (typedData: BatchMultiSigCallTypedData) => ethers.Signature | {
     r: string;
     s: string;
@@ -806,10 +807,12 @@ declare const getAuthenticatorSignature: (typedData: BatchMultiSigCallTypedData)
 
 declare const utils_getAuthenticatorSignature: typeof getAuthenticatorSignature;
 declare const utils_getCalldataForActuator: typeof getCalldataForActuator;
+declare const utils_isValidNotification: typeof isValidNotification;
 declare namespace utils {
   export {
     utils_getAuthenticatorSignature as getAuthenticatorSignature,
     utils_getCalldataForActuator as getCalldataForActuator,
+    utils_isValidNotification as isValidNotification,
   };
 }
 
