@@ -34,12 +34,14 @@ export interface IFCT {
   typedData: BatchMultiSigCallTypedData;
   sessionId: string;
   nameHash: string;
-  mcall: MSCall[];
+  appHash: string;
+  byHash: string;
   builder: string;
+  mcall: MSCall[];
+  signatures: SignatureLike[];
   variables: string[];
   externalSigners: string[];
   computed: Omit<IComputedData, "index">[];
-  signatures: SignatureLike[];
   validations: IValidationData[];
 }
 
@@ -106,6 +108,7 @@ export interface IFCTOptions {
   purgeable: boolean;
   builder: string;
   authEnabled: boolean;
+  dryRun: boolean;
   recurrency?: {
     maxRepeats: string;
     chillTime: string;

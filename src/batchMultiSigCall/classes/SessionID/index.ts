@@ -8,6 +8,7 @@ const sessionIdFlag = {
   blockable: 0x4,
   eip712: 0x8,
   authEnabled: 0x10,
+  dryRun: 0x20,
 } as const;
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
@@ -62,6 +63,7 @@ export class SessionID extends FCTBase {
     if (options.purgeable) flagValue += sessionIdFlag.purgeable;
     if (options.blockable) flagValue += sessionIdFlag.blockable;
     if (options.authEnabled) flagValue += sessionIdFlag.authEnabled;
+    if (options.dryRun) flagValue += sessionIdFlag.dryRun;
 
     const flags = flagValue.toString(16).padStart(2, "0");
 
