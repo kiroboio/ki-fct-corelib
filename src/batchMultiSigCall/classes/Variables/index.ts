@@ -12,7 +12,7 @@ import {
 } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
-import { globalVariables } from "../../../variables";
+import { globalVariables, globalVariablesBytes } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 import { ComputedOperators } from "./computedConstants";
@@ -103,7 +103,15 @@ export class Variables extends FCTBase {
       });
     }
     if (variable.type === "global") {
-      const globalVariable = globalVariables[variable.id];
+      const id = variable.id;
+      if (type.includes("bytes")) {
+        // Check if id is in globalVariablesBytes
+        if (!(id in globalVariablesBytes)) {
+          throw new Error("Global variable not found");
+        }
+        return globalVariablesBytes[id as keyof typeof globalVariablesBytes];
+      }
+      const globalVariable = globalVariables[id];
 
       if (!globalVariable) {
         throw new Error("Global variable not found");
