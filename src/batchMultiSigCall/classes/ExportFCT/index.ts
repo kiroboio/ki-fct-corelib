@@ -67,8 +67,6 @@ export class ExportFCT extends FCTBase {
     return calls.map((call, index) => {
       const usedTypeStructs = helpers.getUsedStructTypes(typedData, `transaction${index + 1}`);
 
-      console.log("usedTypeStructs", usedTypeStructs);
-
       return {
         typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
         ensHash: id(call.toENS || ""),
