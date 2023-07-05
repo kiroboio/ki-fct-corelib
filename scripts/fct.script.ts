@@ -119,6 +119,29 @@ async function main() {
       plugin: aaveDeposit,
       nodeId: "5",
     },
+    {
+      value: "0",
+      to: "0x23D560eF20B57A87489D3Ec72D3789E73DF90424",
+      method: "multiBalance",
+      params: [
+        {
+          name: "Balances",
+          type: "tuple[]",
+          customType: true,
+          value: [
+            [
+              { name: "token", type: "address", value: "0x75ab5ab1eef154c0352fc31d2428cef80c7f8b33" },
+              { name: "account", type: "address", value: "0xD4a0281cEeebA1CEeFB4eAbF63ca6A608E143Fdc" },
+            ],
+            [
+              { name: "token", type: "address", value: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6" },
+              { name: "account", type: "address", value: "0x014aEbA4e0f1a9B6942f1d43F1cC5af17fe8253D" },
+            ],
+          ],
+        },
+      ],
+      options: { gasLimit: "153768", falseMeansFail: false, callType: "LIBRARY_VIEW_ONLY" },
+    },
   ]);
 
   const call = await batchMultiSigCall.add({

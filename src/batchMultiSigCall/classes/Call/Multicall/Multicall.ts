@@ -1,3 +1,4 @@
+import { PluginInstance } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
@@ -24,9 +25,14 @@ import { getEncodedMethodParams } from "../helpers/callParams";
 import { ICall } from "../types";
 import { FCT_MULTICALL_ADDRESS } from "./constants";
 
+const MULTICALL_TYPES = {
+  ACTION: "action",
+  VIEW_ONLY: "view only",
+};
+
 interface IMulticall {
   target: string;
-  callType: "action" | "view only";
+  callType: keyof typeof MULTICALL_TYPES;
   method: string;
   params: Param[];
 }
@@ -38,6 +44,10 @@ interface IFCTMulticallConstructor {
   FCT: BatchMultiSigCall;
 }
 
+interface IMulticallOutput {
+  type: string;
+}
+
 export class Multicall implements ICall {
   protected FCT: BatchMultiSigCall;
 
@@ -46,6 +56,7 @@ export class Multicall implements ICall {
   private _nodeId: string;
   private _options: CallOptions = { callType: "LIBRARY" };
   private _to: string;
+  private _outputTypes: IMulticallOutput;
   constructor(input: IFCTMulticallConstructor) {
     this._from = input.from;
     this.FCT = input.FCT;
@@ -53,32 +64,34 @@ export class Multicall implements ICall {
     this._nodeId = input.nodeId || generateNodeId();
   }
 
+  get nodeId() {
+    return this._nodeId;
+  }
+
   get to() {
     if (this._to) return this._to;
     return FCT_MULTICALL_ADDRESS[this.FCT.chainId];
   }
-  //
+
   get toENS() {
     return "@lib:multicall";
   }
-  //
-  // get method() {
-  //   return "multicall";
-  // }
-  //
-  // get value() {
-  //   return "0"; // For now we only support multicalls with no value
-  // }
 
   get options(): DeepRequired<CallOptions> {
-    return _.merge({}, DEFAULT_CALL_OPTIONS, this._options);
+    return _.merge(
+      {},
+      DEFAULT_CALL_OPTIONS,
+      { options: { payerIndex: this.FCT.getIndexByNodeId(this._nodeId) } },
+      this._options
+    ) as DeepRequired<CallOptions>;
   }
 
   get get() {
     if (!this._from) throw new Error("From address is required");
+
     return {
       to: this.to,
-      toENS: "@lib:multicall",
+      toENS: this.toENS,
       from: this._from,
       params: this.params,
       method: "multicall",
@@ -100,6 +113,71 @@ export class Multicall implements ICall {
     };
   }
 
+  get outputs() {
+    return this._calls.reduce((acc, _, i) => {
+      return {
+        ...acc,
+        [`call${i}`]: { type: "output", id: { nodeId: this._nodeId, innerIndex: i + 3 } },
+      };
+    }, {}) as Record<string, Variable & { type: "output" }>;
+  }
+
+  public add = (call: IMulticall) => {
+    if (this._calls.length > 0) {
+      const firstCall = this._calls[0];
+      if (firstCall.params.length !== call.params.length) {
+        throw new Error("All calls must have the same number of params");
+      }
+      firstCall.params.forEach((param, index) => {
+        if (param.type !== call.params[index].type) {
+          throw new Error("All calls must have the same param types");
+        }
+      });
+    }
+    this._calls.push(call);
+    return this._calls;
+  };
+
+  public addPlugin = async (plugin: PluginInstance) => {
+    const call = await plugin.create();
+    if (!call) {
+      throw new Error("Error when creating call from plugin");
+    }
+
+    const callType =
+      call.options?.callType && (call.options?.callType === "ACTION" || call.options?.callType === "VIEW_ONLY")
+        ? call.options?.callType
+        : "ACTION";
+
+    const data: IMulticall = {
+      target: call.to,
+      params: call.params,
+      method: call.method,
+      callType,
+    };
+    this.add(data);
+  };
+
+  public setFrom = (from: string | Variable) => {
+    this._from = from;
+    return this._from;
+  };
+
+  public setOutputType = (outputType: IMulticallOutput) => {
+    this._outputTypes = outputType;
+    return this._outputTypes;
+  };
+
+  public setOptions = (options: Omit<CallOptions, "callType">) => {
+    this._options = _.merge({}, this._options, options);
+    return this._options;
+  };
+
+  public setNodeId = (nodeId: string) => {
+    this._nodeId = nodeId;
+    return this._nodeId;
+  };
+
   get params(): Param[] {
     return [
       {
@@ -114,7 +192,7 @@ export class Multicall implements ICall {
               value: call.target,
             },
             {
-              name: "ctype",
+              name: "callType",
               type: "bytes32",
               value: call.callType,
               hashed: true,
@@ -243,37 +321,6 @@ export class Multicall implements ICall {
       callType: [{ name: "call", type: "Call" }, ...callParameters],
     };
   }
-
-  public add = (call: IMulticall) => {
-    this._calls.push(call);
-    return this._calls;
-  };
-
-  // public addPlugin = async ({ plugin, from }: { plugin: PluginInstance; from: string | Variable }) => {
-  //   const call = await plugin.create();
-  //   if (!call) {
-  //     throw new Error("Error when creating call from plugin");
-  //   }
-  //
-  //   const data: IMulticall = {
-  //     callType: call.options.callType,
-  //   };
-  // };
-
-  public setFrom = (from: string | Variable) => {
-    this._from = from;
-    return this._from;
-  };
-
-  public setOptions = (options: Omit<CallOptions, "callType">) => {
-    this._options = _.merge({}, this._options, options);
-    return this._options;
-  };
-
-  public setNodeId = (nodeId: string) => {
-    this._nodeId = nodeId;
-    return this._nodeId;
-  };
 
   private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {

@@ -10,12 +10,15 @@ export const EIP712Domain: MessageTypeProperty[] = [
 
 export const Meta: MessageTypeProperty[] = [
   { name: "name", type: "string" },
+  { name: "app", type: "string" },
+  { name: "by", type: "string" },
   { name: "builder", type: "address" },
   { name: "selector", type: "bytes4" },
   { name: "version", type: "bytes3" },
   { name: "random_id", type: "bytes3" },
   { name: "eip712", type: "bool" },
   { name: "auth_enabled", type: "bool" },
+  { name: "dry_run", type: "bool" },
 ];
 
 export const Limits: MessageTypeProperty[] = [

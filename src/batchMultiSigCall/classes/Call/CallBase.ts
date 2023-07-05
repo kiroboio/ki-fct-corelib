@@ -24,6 +24,10 @@ export class CallBase {
     return this._call;
   }
 
+  get nodeId(): string {
+    return this._call.nodeId;
+  }
+
   public getOutputVariable(innerIndex = 0): Variable & { type: "output" } {
     return {
       type: "output",
