@@ -4815,7 +4815,10 @@ function isValidNotification(fct) {
     const calls = FCT.calls;
     for (const call of calls) {
         if (call.options.payerIndex !== 0) {
-            throw new Error(`CallID.payerIndex must be 0 for notification`);
+            throw new Error(`payerIndex must be 0 for notification`);
+        }
+        if (call.options.callType !== "VIEW_ONLY") {
+            throw new Error(`callType must be view only for notification`);
         }
     }
     return true;
@@ -5664,6 +5667,10 @@ function exportFCT() {
     return new ExportFCT(this).get();
 }
 function exportNotificationFCT() {
+    const allCallsAreViewOnly = this.calls.every((call) => call.options.callType === CALL_TYPE_MSG_REV["view only"]);
+    if (!allCallsAreViewOnly) {
+        throw new Error("All calls must be view only to create an notification FCT");
+    }
     const currentCallDefaults = this._calls.getCallDefaults();
     this.setCallDefaults({
         options: {
@@ -5672,7 +5679,7 @@ function exportNotificationFCT() {
     });
     const currentMaxGasPrice = this.options.maxGasPrice;
     this.setOptions({
-        maxGasPrice: "1",
+        maxGasPrice: ethers.ethers.utils.parseUnits("1000", "gwei").toString(),
     });
     const fct = new ExportFCT(this).get();
     this.setCallDefaults(currentCallDefaults);
