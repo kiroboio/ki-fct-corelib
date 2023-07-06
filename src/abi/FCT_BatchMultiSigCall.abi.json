@@ -188,6 +188,16 @@
             "type": "bytes32"
           },
           {
+            "internalType": "bytes32",
+            "name": "appHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "byHash",
+            "type": "bytes32"
+          },
+          {
             "internalType": "address",
             "name": "builder",
             "type": "address"
@@ -284,43 +294,45 @@
           {
             "components": [
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
+                "internalType": "bool",
+                "name": "overflowProtection",
+                "type": "bool"
               },
               {
-                "internalType": "uint256",
-                "name": "add",
-                "type": "uint256"
+                "internalType": "uint256[4]",
+                "name": "values",
+                "type": "uint256[4]"
               },
               {
-                "internalType": "uint256",
-                "name": "sub",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "mul",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "pow",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "div",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "mod",
-                "type": "uint256"
+                "internalType": "bytes32[3]",
+                "name": "operators",
+                "type": "bytes32[3]"
               }
             ],
             "internalType": "struct FCT_BatchMultiSig.Computed[]",
             "name": "computed",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "value1",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "operator",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "uint256",
+                "name": "value2",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct FCT_BatchMultiSig.Validation[]",
+            "name": "validations",
             "type": "tuple[]"
           }
         ],
