@@ -64,6 +64,12 @@ export function exportFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IBatchMultiSigCallFCT {
+  const allCallsAreViewOnly = this.calls.every((call) => call.options.callType === CALL_TYPE_MSG_REV["view only"]);
+
+  if (!allCallsAreViewOnly) {
+    throw new Error("All calls must be view only to create an notification FCT");
+  }
+
   const currentCallDefaults = this._calls.getCallDefaults();
   this.setCallDefaults({
     options: {
@@ -72,7 +78,7 @@ export function exportNotificationFCT(this: BatchMultiSigCall): IBatchMultiSigCa
   });
   const currentMaxGasPrice = this.options.maxGasPrice;
   this.setOptions({
-    maxGasPrice: "1",
+    maxGasPrice: ethers.utils.parseUnits("1000", "gwei").toString(),
   });
 
   const fct = new ExportFCT(this).get();
