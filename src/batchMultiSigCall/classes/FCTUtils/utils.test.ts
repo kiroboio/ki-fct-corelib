@@ -76,20 +76,6 @@ describe("BatchMultiSigCall FCTUtils", () => {
     expect(getAddress(recovered)).to.eq(getAddress("0x991e5E72D9aCC110B1D8D2AA06C26931eE8CF330"));
   });
 
-  it("Should get options", () => {
-    const options = utils.getOptions();
-    expect(options).to.be.an("object");
-    expect(options).to.have.property("valid_from");
-    expect(options).to.have.property("expires_at");
-    expect(options).to.have.property("gas_price_limit");
-    expect(options).to.have.property("blockable");
-    expect(options).to.have.property("purgeable");
-    expect(options).to.have.property("builder");
-    expect(options).to.have.property("recurrency");
-    expect(options).to.have.property("multisig");
-    expect(options).to.have.property("authEnabled");
-  });
-
   it("Should get message hash", () => {
     const hash = utils.getMessageHash();
 

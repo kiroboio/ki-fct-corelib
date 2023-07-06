@@ -12,7 +12,6 @@ import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
-import { SessionID } from "../SessionID";
 import { getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
 import { PayerPayment } from "./types";
 
@@ -66,26 +65,6 @@ export class FCTUtils extends FCTBase {
     } catch (e) {
       return null;
     }
-  }
-
-  public getOptions() {
-    const parsedSessionID = SessionID.asOptions({
-      builder: this.FCTData.builder,
-      sessionId: this.FCTData.sessionId,
-      name: "",
-    });
-
-    return {
-      valid_from: parsedSessionID.validFrom,
-      expires_at: parsedSessionID.expiresAt,
-      gas_price_limit: parsedSessionID.maxGasPrice,
-      blockable: parsedSessionID.blockable,
-      purgeable: parsedSessionID.purgeable,
-      builder: parsedSessionID.builder,
-      recurrency: parsedSessionID.recurrency,
-      multisig: parsedSessionID.multisig,
-      authEnabled: parsedSessionID.authEnabled,
-    };
   }
 
   public getMessageHash(): string {

@@ -128,6 +128,8 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       sessionId: fct.sessionId,
       builder: fct.builder,
       externalSigners: fct.externalSigners,
+      app: typedData.message.meta.app,
+      by: typedData.message.meta.by,
       name: typedData.message.meta.name,
     })
   );
@@ -258,6 +260,8 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     sessionId: decodedFCT.tr.sessionId,
     builder: decodedFCT.tr.builder,
     name: "",
+    app: "",
+    by: "",
     externalSigners: decodedFCT.tr.externalSigners,
   });
   this.setOptions(FCTOptions);
