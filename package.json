@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
@@ -38,8 +38,7 @@
     "fct:estimate": "ts-node scripts/estimate.script.ts",
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
-    "lint:fix": "eslint --fix --ext .js,.ts .",
-    "prepare": "yarn run build && yarn version --patch"
+    "lint:fix": "eslint --fix --ext .js,.ts ."
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
