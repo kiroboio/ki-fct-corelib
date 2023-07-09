@@ -94,6 +94,9 @@ describe("BatchMultiSigCall EIP712", () => {
       selector: FCT.batchMultiSigSelector,
       version: FCT.version,
       random_id: "0x" + FCT.randomId,
+      app: "",
+      by: "",
+      dry_run: false,
       eip712: true,
       auth_enabled: true,
     });

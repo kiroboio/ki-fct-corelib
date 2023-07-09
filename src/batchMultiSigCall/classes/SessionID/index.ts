@@ -74,11 +74,15 @@ export class SessionID extends FCTBase {
     sessionId,
     builder,
     name,
+    app,
+    by,
     externalSigners = [],
   }: {
     sessionId: string;
     builder: string;
     name: string;
+    app: string;
+    by: string;
     externalSigners?: string[];
   }) {
     const parsedSessionID = SessionID.parse(sessionId);
@@ -87,6 +91,8 @@ export class SessionID extends FCTBase {
       ...parsedSessionID,
       builder,
       name,
+      app,
+      by,
       multisig: {
         ...parsedSessionID.multisig,
         externalSigners,
@@ -109,12 +115,14 @@ export class SessionID extends FCTBase {
       purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
       blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
       authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
+      dryRun: (flagsNumber & sessionIdFlag.dryRun) !== 0,
     };
 
     return {
       validFrom,
       expiresAt,
       maxGasPrice,
+      dryRun: flags.dryRun,
       blockable: flags.blockable,
       purgeable: flags.purgeable,
       authEnabled: flags.authEnabled,
