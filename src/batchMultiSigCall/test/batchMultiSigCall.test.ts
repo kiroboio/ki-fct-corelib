@@ -343,6 +343,8 @@ describe("BatchMultiSigCall", () => {
       const sessionId = SessionID.asOptions({
         sessionId: FCT.sessionId,
         builder: FCT.builder,
+        by: FCT.typedData.message.meta.by,
+        app: FCT.typedData.message.meta.app,
         name: FCT.typedData.message.meta.name,
       });
       expect(sessionId).to.be.an("object");
@@ -355,6 +357,9 @@ describe("BatchMultiSigCall", () => {
         purgeable: false,
         authEnabled: true,
         builder: FCT.builder,
+        dryRun: false,
+        app: "",
+        by: "",
         recurrency: {
           accumetable: false,
           chillTime: "0",

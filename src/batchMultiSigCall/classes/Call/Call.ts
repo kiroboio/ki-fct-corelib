@@ -38,11 +38,12 @@ export class Call extends CallBase implements ICall {
   }
 
   get get(): StrictMSCallInput {
+    const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     return _.merge(
       {},
       this.FCT.callDefault,
       {
-        options: { payerIndex: this.FCT.getIndexByNodeId(this.call.nodeId) },
+        options: { payerIndex: payerIndex + 1 },
       },
       this.call
     ) as StrictMSCallInput;

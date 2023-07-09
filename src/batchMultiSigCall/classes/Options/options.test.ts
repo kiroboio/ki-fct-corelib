@@ -20,6 +20,9 @@ describe("BatchMultiSigCall Options", () => {
       purgeable: true,
       builder: ethers.constants.AddressZero,
       authEnabled: true,
+      dryRun: false,
+      by: "",
+      app: "",
       recurrency: {
         maxRepeats: "100",
         chillTime: "5",
