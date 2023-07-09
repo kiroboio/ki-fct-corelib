@@ -109,7 +109,7 @@ export class BatchMultiSigCall {
   };
 
   // Setters
-  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
+  public setOptions(options: DeepPartial<IFCTOptions>) {
     return this._options.set(options);
   }
 

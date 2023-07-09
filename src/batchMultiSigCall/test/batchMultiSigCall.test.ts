@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
-import { CallOptions, IMSCallInput } from "../../types";
+import { CallOptions, DeepPartial, IFCTOptions, IMSCallInput } from "../../types";
 import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
 import { FCTCreateCallErrors } from "./call.test";
@@ -28,12 +28,16 @@ describe("BatchMultiSigCall", () => {
     it("Should set settings", async () => {
       const expiresAt = getDate(1);
 
-      const validSettings = {
+      const validSettings: DeepPartial<IFCTOptions> = {
         maxGasPrice: "100000000000",
         expiresAt,
         purgeable: true,
         blockable: true,
         builder: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        name: "Test",
+        app: "@kirobo",
+        by: "developer",
+        validFrom: "0",
       };
 
       expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
