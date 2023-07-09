@@ -66,6 +66,23 @@ describe("BatchMultiSigCall", () => {
       expect(defaults).to.be.an("object");
       expect(defaults.from).to.be.eq(from);
     });
+
+    describe("Version", () => {
+      it("Should change the version", () => {
+        batchMultiSigCall.changeVersion("0x010101");
+        expect(batchMultiSigCall.version).to.be.eq("0x010101");
+      });
+      it("Should throw an error if version is not 6 bytes long", () => {
+        expect(() => batchMultiSigCall.changeVersion("0x0101011")).to.throw(
+          "Version must be a hex string and 6 bytes long"
+        );
+      });
+      it("Should throw an error if version is not a hex string", () => {
+        expect(() => batchMultiSigCall.changeVersion("010101g")).to.throw(
+          "Version must be a hex string and 6 bytes long"
+        );
+      });
+    });
   });
 
   describe("Calls", () => {

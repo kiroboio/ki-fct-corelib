@@ -81,26 +81,32 @@ export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): FCTCal
 }
 
 export function exportFCT(this: BatchMultiSigCall): IFCT {
-  const typedData = new EIP712(this).getTypedData();
-  return {
-    typedData,
-    builder: this.options.builder,
-    typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
-    sessionId: new SessionID(this).asString(),
-    nameHash: id(this.options.name),
-    mcall: this.pureCalls.map((call, index) => {
-      return call.getAsMCall(typedData, index);
-    }),
-    variables: [],
-    externalSigners: this.options.multisig.externalSigners,
-    signatures: [this.utils.getAuthenticatorSignature()],
-    computed: this.computedAsData,
-    validations: this.validation.getForData,
-    appHash: id(this.options.app),
-    byHash: id(this.options.by),
-  };
+  try {
+    const typedData = new EIP712(this).getTypedData();
+    return {
+      typedData,
+      builder: this.options.builder,
+      typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
+      sessionId: new SessionID(this).asString(),
+      nameHash: id(this.options.name),
+      mcall: this.pureCalls.map((call, index) => {
+        return call.getAsMCall(typedData, index);
+      }),
+      variables: [],
+      externalSigners: this.options.multisig.externalSigners,
+      signatures: [this.utils.getAuthenticatorSignature()],
+      computed: this.computedAsData,
+      validations: this.validation.getForData,
+      appHash: id(this.options.app),
+      byHash: id(this.options.by),
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : JSON.stringify(err);
+    throw new Error(`Error exporting FCT: ${message}`);
+  }
 }
 
+// TODO: This will change in V2 FCTs
 export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
   const callDefault = this.callDefault;
   this.setCallDefaults({

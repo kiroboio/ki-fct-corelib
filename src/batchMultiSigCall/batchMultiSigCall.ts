@@ -125,6 +125,13 @@ export class BatchMultiSigCall {
     this.domain = domain;
   };
 
+  public changeVersion = (version: string) => {
+    // Make sure that the version is a hex string and is 6 bytes long
+    if (!/^0x([0-9a-fA-F]{2}){3}$/.test(version)) throw new Error("Version must be a hex string and 6 bytes long");
+    this.version = version;
+    return this.version;
+  };
+
   // Variables
   public addComputed = (computed: Partial<IComputed>) => {
     return this.variables.addComputed(computed);
