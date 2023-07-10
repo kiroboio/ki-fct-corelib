@@ -10,6 +10,7 @@ import {
   createMultiple,
   createPlugin,
   exportFCT,
+  exportNotificationFCT,
   getCall,
   getCallByNodeId,
   getIndexByNodeId,
@@ -140,6 +141,7 @@ export class BatchMultiSigCall {
 
   // Export FCT
   public exportFCT = exportFCT;
+  public exportNotificationFCT = exportNotificationFCT;
 
   // Import FCT
   public importFCT = importFCT;
