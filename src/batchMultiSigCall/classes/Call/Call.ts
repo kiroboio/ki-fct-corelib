@@ -37,7 +37,11 @@ export class Call extends CallBase implements ICall {
     this.verifyCall(this.call);
   }
 
-  get get(): StrictMSCallInput {
+  get options(): DeepRequired<CallOptions> {
+    return this.get().options;
+  }
+
+  public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     return _.merge(
       {},
@@ -49,24 +53,20 @@ export class Call extends CallBase implements ICall {
     ) as StrictMSCallInput;
   }
 
-  get options(): DeepRequired<CallOptions> {
-    return this.get.options;
-  }
-
-  get getDecoded(): DecodedCalls {
-    const params = this.get.params;
+  public getDecoded(): DecodedCalls {
+    const params = this.get().params;
     if (params && params.length > 0) {
       const parameters = this.decodeParams(params);
-      return { ...this.get, params: parameters };
+      return { ...this.get(), params: parameters };
     }
     return {
-      ...this.get,
+      ...this.get(),
       params: [] as ParamWithoutVariable<Param>[],
     };
   }
 
   public getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall {
-    const call = this.get;
+    const call = this.get();
     return {
       typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
       ensHash: id(call.toENS || ""),
@@ -87,7 +87,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public generateEIP712Type() {
-    const call = this.get;
+    const call = this.get();
     if (!call.params || (call.params && call.params.length === 0)) {
       return {
         structTypes: {},
@@ -117,7 +117,7 @@ export class Call extends CallBase implements ICall {
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
     const paramsData = this.getParamsEIP712();
-    const call = this.get;
+    const call = this.get();
     const options = this.options;
     const flow = flows[options.flow].text;
 
@@ -154,7 +154,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public getEncodedData(): string {
-    return getEncodedMethodParams(this.getDecoded);
+    return getEncodedMethodParams(this.getDecoded());
   }
 
   // Private methods
@@ -220,18 +220,19 @@ export class Call extends CallBase implements ICall {
   }
 
   private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.getDecoded.params) {
+    const decoded = this.getDecoded();
+    if (!decoded.params) {
       return {};
     }
     return {
-      ...getParams(this.getDecoded.params),
+      ...getParams(decoded.params),
     };
   }
 
   private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
-    const call = this.get;
+    const call = this.get();
     const options = call.options;
 
     if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
@@ -347,15 +348,6 @@ export class Call extends CallBase implements ICall {
     } else {
       return this.createSimpleCall(FCT, call);
     }
-
-    // Remove createWithEncodedData, this is the full function
-    // if (instanceOfCallWithPlugin(call)) {
-    //   return await this.createWithPlugin(call);
-    // } else if (instanceOfCallWithEncodedData(call)) {
-    //   return this.createWithEncodedData(call);
-    // } else {
-    //   return this.createSimpleCall(call);
-    // }
   }
 
   private static async createWithPlugin(FCT: BatchMultiSigCall, callWithPlugin: IWithPlugin): Promise<Call> {

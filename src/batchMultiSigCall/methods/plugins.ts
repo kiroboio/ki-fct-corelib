@@ -7,7 +7,7 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
   const chainId = this.chainId;
   const call = this.getCall(index);
 
-  const callData = call.get;
+  const callData = call.get();
 
   if (InstanceOf.Variable(callData.to)) {
     throw new Error("To value cannot be a variable");
@@ -48,7 +48,7 @@ export async function getPluginClass(
 ): Promise<ReturnType<typeof getPluginProvider>> {
   const chainId = this.chainId;
   const call = this.getCall(index);
-  const callData = call.get;
+  const callData = call.get();
 
   if (InstanceOf.Variable(callData.to)) {
     throw new Error("To value cannot be a variable");
@@ -66,7 +66,7 @@ export async function getPluginClass(
 export async function getPluginData(this: BatchMultiSigCall, index: number) {
   const plugin = await this.getPlugin(index); // get the plugin from the index
   const call = this.getCall(index); // get the call from the index
-  const callData = call.get;
+  const callData = call.get();
 
   const input = {
     to: callData.to,

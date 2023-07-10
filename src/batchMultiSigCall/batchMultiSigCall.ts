@@ -15,7 +15,6 @@ import {
   getPlugin,
   getPluginClass,
   getPluginData,
-  importEncodedFCT,
   importFCT,
 } from "./methods";
 import {
@@ -77,7 +76,7 @@ export class BatchMultiSigCall {
   }
 
   get calls(): StrictMSCallInput[] {
-    return this._calls.map((call) => call.get);
+    return this._calls.map((call) => call.get());
   }
 
   get pureCalls(): FCTCall[] {
@@ -85,7 +84,7 @@ export class BatchMultiSigCall {
   }
 
   get decodedCalls(): DecodedCalls[] {
-    return this._calls.map((call) => call.getDecoded);
+    return this._calls.map((call) => call.getDecoded());
   }
 
   get callDefault(): ICallDefaults {
@@ -144,7 +143,7 @@ export class BatchMultiSigCall {
   public exportFCT = exportFCT;
 
   public importFCT = importFCT;
-  public importEncodedFCT = importEncodedFCT;
+  // public importEncodedFCT = importEncodedFCT; // Removing it because we have custom plugins
   public getCall = getCall;
   public getCallByNodeId = getCallByNodeId;
   public getIndexByNodeId = (nodeId: string) => {
@@ -153,7 +152,7 @@ export class BatchMultiSigCall {
 
   // Static functions
   static utils = utils;
-  static from = (input: IFCT & { validations?: [] }) => {
+  static from = (input: IFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;
