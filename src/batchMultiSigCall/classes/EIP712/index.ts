@@ -151,7 +151,7 @@ export class EIP712 extends FCTBase {
       optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
     }
 
-    if (this.FCT.validation.get.length > 0) {
+    if (this.FCT.validation.get().length > 0) {
       optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
     }
     return {
@@ -200,14 +200,14 @@ export class EIP712 extends FCTBase {
   }
 
   private getValidationPrimaryType() {
-    return this.FCT.validation.get.map((_, index) => ({
+    return this.FCT.validation.get().map((_, index) => ({
       name: `validation_${index + 1}`,
       type: `Validation`,
     }));
   }
 
   private getTransactionTypedDataMessage() {
-    return this.FCT.pureCalls.reduce((acc: object, call, index: number) => {
+    return this.FCT.calls.reduce((acc: object, call, index: number) => {
       return {
         ...acc,
         [`transaction_${index + 1}`]: call.generateEIP712Message(index),
@@ -216,7 +216,7 @@ export class EIP712 extends FCTBase {
   }
 
   private getValidationMessage() {
-    return this.FCT.validation.getForEIP712.reduce((acc, item, i) => {
+    return this.FCT.validation.getForEIP712().reduce((acc, item, i) => {
       return {
         ...acc,
         [`validation_${i + 1}`]: item,
@@ -237,7 +237,7 @@ export class EIP712 extends FCTBase {
     let structs: Record<string, { name: string; type: string }[]> = {};
     const types: Record<string, { name: string; type: string }[]> = {};
 
-    this.FCT.pureCalls.forEach((call, index) => {
+    this.FCT.calls.forEach((call, index) => {
       const { structTypes, callType } = call.generateEIP712Type();
       structs = { ...structs, ...structTypes };
       types[`transaction${index + 1}`] = callType;

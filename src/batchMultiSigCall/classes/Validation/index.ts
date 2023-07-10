@@ -12,11 +12,11 @@ export class Validation extends FCTBase {
     super(FCT);
   }
 
-  get get() {
+  public get() {
     return this._validations;
   }
 
-  get getForEIP712(): IValidationEIP712[] {
+  public getForEIP712(): IValidationEIP712[] {
     return this._validations.map((c, i) => ({
       index: (i + 1).toString(),
       value_1: this.handleVariable(c.value1, i),
@@ -25,7 +25,7 @@ export class Validation extends FCTBase {
     }));
   }
 
-  get getForData(): IValidationData[] {
+  public getForData(): IValidationData[] {
     return this._validations.map((c, i) => ({
       value1: this.handleVariable(c.value1, i),
       operator: ValidationOperator[c.operator],

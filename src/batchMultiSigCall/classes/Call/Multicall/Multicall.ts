@@ -86,7 +86,7 @@ export class Multicall implements ICall {
     ) as DeepRequired<CallOptions>;
   }
 
-  get get() {
+  public get() {
     if (!this._from) throw new Error("From address is required");
 
     return {
@@ -101,14 +101,14 @@ export class Multicall implements ICall {
     };
   }
 
-  get getDecoded() {
-    const params = this.get.params;
+  public getDecoded() {
+    const params = this.get().params;
     if (params && params.length > 0) {
       const parameters = this.decodeParams(params);
-      return { ...this.get, params: parameters };
+      return { ...this.get(), params: parameters };
     }
     return {
-      ...this.get,
+      ...this.get(),
       params: [] as ParamWithoutVariable<Param>[],
     };
   }
@@ -221,9 +221,9 @@ export class Multicall implements ICall {
       functionSignature: this.getFunctionSignature(),
       value: "0",
       callId: CallID.asString({
-        calls: this.FCT.calls,
+        calls: this.FCT.callsAsObjects,
         validation: this.FCT.validation,
-        call: this.get,
+        call: this.get(),
         index,
       }),
       from: this.FCT.variables.getValue(this._from, "address"),
@@ -236,7 +236,7 @@ export class Multicall implements ICall {
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
     const paramsData = this.getParamsEIP712();
-    const call = this.get;
+    const call = this.get();
     const options = this.options;
     const flow = flows[options.flow].text;
 
@@ -273,11 +273,11 @@ export class Multicall implements ICall {
   }
 
   public getEncodedData() {
-    return getEncodedMethodParams(this.get);
+    return getEncodedMethodParams(this.get());
   }
 
   public getTypesArray(): number[] {
-    const call = this.get;
+    const call = this.get();
     if (!call.params) {
       return [];
     }
@@ -294,7 +294,7 @@ export class Multicall implements ICall {
   }
 
   public generateEIP712Type() {
-    const call = this.get;
+    const call = this.get();
     if (!call.params || (call.params && call.params.length === 0)) {
       return {
         structTypes: {},
@@ -404,18 +404,19 @@ export class Multicall implements ICall {
   }
 
   private getParamsEIP712(): Record<string, FCTCallParam> {
-    if (!this.getDecoded.params) {
+    const decoded = this.getDecoded();
+    if (!decoded.params) {
       return {};
     }
     return {
-      ...getParams(this.getDecoded.params),
+      ...getParams(decoded.params),
     };
   }
 
   private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
-    const call = this.get;
+    const call = this.get();
     const options = call.options;
 
     if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
