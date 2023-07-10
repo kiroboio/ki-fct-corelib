@@ -8,10 +8,10 @@ import {
 } from "../../types";
 
 export interface ICall {
-  get get(): StrictMSCallInput;
   get options(): DeepRequired<CallOptions>;
-  get getDecoded(): DecodedCalls;
   get nodeId(): string;
+  get(): StrictMSCallInput;
+  getDecoded(): DecodedCalls;
   getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
   generateEIP712Type(): {
     structTypes: { [key: string]: { name: string; type: string }[] };

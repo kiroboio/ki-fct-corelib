@@ -69,6 +69,8 @@ describe("Call", () => {
       ],
     });
 
+    console.log(Call.get);
+
     const fct = FCT.exportFCT();
   });
 
@@ -100,6 +102,5 @@ describe("Call", () => {
     });
 
     const fct = FCT.exportFCT();
-    console.log(JSON.stringify(fct, null, 2));
   });
 });

@@ -12,10 +12,10 @@ import {
   exportFCT,
   getCall,
   getCallByNodeId,
+  getIndexByNodeId,
   getPlugin,
   getPluginClass,
   getPluginData,
-  importEncodedFCT,
   importFCT,
 } from "./methods";
 import {
@@ -76,16 +76,16 @@ export class BatchMultiSigCall {
     return this._options.get();
   }
 
-  get calls(): StrictMSCallInput[] {
-    return this._calls.map((call) => call.get);
-  }
-
-  get pureCalls(): FCTCall[] {
+  get calls(): FCTCall[] {
     return this._calls;
   }
 
+  get callsAsObjects(): StrictMSCallInput[] {
+    return this._calls.map((call) => call.get());
+  }
+
   get decodedCalls(): DecodedCalls[] {
-    return this._calls.map((call) => call.getDecoded);
+    return this._calls.map((call) => call.getDecoded());
   }
 
   get callDefault(): ICallDefaults {
@@ -101,12 +101,8 @@ export class BatchMultiSigCall {
   }
 
   get validations() {
-    return this.validation.get;
+    return this.validation.get();
   }
-
-  public getSpecificCallDefault = (index: number) => {
-    return _.merge({}, this._callDefault, { options: { payerIndex: index + 1 } });
-  };
 
   // Setters
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
@@ -136,24 +132,26 @@ export class BatchMultiSigCall {
   public getPluginData = getPluginData;
   public createPlugin = createPlugin;
 
-  // FCT Functions
+  // Add calls to FCT
   public add = create;
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
+
+  // Export FCT
   public exportFCT = exportFCT;
 
+  // Import FCT
   public importFCT = importFCT;
-  public importEncodedFCT = importEncodedFCT;
+
+  // FCT Call getters
   public getCall = getCall;
   public getCallByNodeId = getCallByNodeId;
-  public getIndexByNodeId = (nodeId: string) => {
-    return this._calls.findIndex((call) => call.nodeId === nodeId);
-  };
+  public getIndexByNodeId = getIndexByNodeId;
 
   // Static functions
   static utils = utils;
-  static from = (input: IFCT & { validations?: [] }) => {
+  static from = (input: IFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;

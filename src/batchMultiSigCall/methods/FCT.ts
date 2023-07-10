@@ -17,10 +17,12 @@ import { PluginParams } from "./types";
 const AbiCoder = ethers.utils.AbiCoder;
 
 export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F) {
-  if (call instanceof Multicall) {
+  // If the input is already made Call class, we just add it to _calls.
+  if (call instanceof Multicall || call instanceof Call) {
     this._calls.push(call);
     return call;
   }
+  // Else we create Call class from the input
   const newCall = await Call.create({
     FCT: this,
     call,
@@ -73,11 +75,15 @@ export function getCall(this: BatchMultiSigCall, index: number): FCTCall {
 }
 
 export function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): FCTCall {
-  const call = this._calls.find((c) => c.get.nodeId === nodeId);
+  const call = this._calls.find((c) => c.nodeId === nodeId);
   if (!call) {
     throw new Error(`Call with nodeId ${nodeId} not found`);
   }
   return call;
+}
+
+export function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): number {
+  return this._calls.findIndex((call) => call.nodeId === nodeId);
 }
 
 export function exportFCT(this: BatchMultiSigCall): IFCT {
@@ -88,14 +94,14 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
     sessionId: new SessionID(this).asString(),
     nameHash: id(this.options.name),
-    mcall: this.pureCalls.map((call, index) => {
+    mcall: this.calls.map((call, index) => {
       return call.getAsMCall(typedData, index);
     }),
     variables: [],
     externalSigners: this.options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
-    validations: this.validation.getForData,
+    validations: this.validation.getForData(),
     appHash: id(this.options.app),
     byHash: id(this.options.by),
   };

@@ -83,7 +83,7 @@ export type IMSCallWithEncodedData = {
   to: string | Variable;
 } & MSCallMandatory;
 
-export type FCTInputCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData | Multicall;
+export type FCTInputCall = IMSCallInput | IWithPlugin | Multicall | Call;
 export type FCTCall = Call | Multicall;
 
 export interface MSCall {
