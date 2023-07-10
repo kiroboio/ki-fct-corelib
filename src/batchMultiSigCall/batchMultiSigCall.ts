@@ -76,14 +76,6 @@ export class BatchMultiSigCall {
     return this._options.get();
   }
 
-  // get calls(): StrictMSCallInput[] {
-  //   return this._calls.map((call) => call.get());
-  // }
-  //
-  // get pureCalls(): FCTCall[] {
-  //   return this._calls;
-  // }
-
   get calls(): FCTCall[] {
     return this._calls;
   }
@@ -140,15 +132,19 @@ export class BatchMultiSigCall {
   public getPluginData = getPluginData;
   public createPlugin = createPlugin;
 
-  // FCT Functions
+  // Add calls to FCT
   public add = create;
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
+
+  // Export FCT
   public exportFCT = exportFCT;
 
+  // Import FCT
   public importFCT = importFCT;
-  // public importEncodedFCT = importEncodedFCT; // Removing it because we have custom plugins
+
+  // FCT Call getters
   public getCall = getCall;
   public getCallByNodeId = getCallByNodeId;
   public getIndexByNodeId = getIndexByNodeId;
