@@ -12,6 +12,7 @@ import {
   exportFCT,
   getCall,
   getCallByNodeId,
+  getIndexByNodeId,
   getPlugin,
   getPluginClass,
   getPluginData,
@@ -75,12 +76,20 @@ export class BatchMultiSigCall {
     return this._options.get();
   }
 
-  get calls(): StrictMSCallInput[] {
-    return this._calls.map((call) => call.get());
+  // get calls(): StrictMSCallInput[] {
+  //   return this._calls.map((call) => call.get());
+  // }
+  //
+  // get pureCalls(): FCTCall[] {
+  //   return this._calls;
+  // }
+
+  get calls(): FCTCall[] {
+    return this._calls;
   }
 
-  get pureCalls(): FCTCall[] {
-    return this._calls;
+  get callsAsObjects(): StrictMSCallInput[] {
+    return this._calls.map((call) => call.get());
   }
 
   get decodedCalls(): DecodedCalls[] {
@@ -100,12 +109,8 @@ export class BatchMultiSigCall {
   }
 
   get validations() {
-    return this.validation.get;
+    return this.validation.get();
   }
-
-  public getSpecificCallDefault = (index: number) => {
-    return _.merge({}, this._callDefault, { options: { payerIndex: index + 1 } });
-  };
 
   // Setters
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
@@ -146,9 +151,7 @@ export class BatchMultiSigCall {
   // public importEncodedFCT = importEncodedFCT; // Removing it because we have custom plugins
   public getCall = getCall;
   public getCallByNodeId = getCallByNodeId;
-  public getIndexByNodeId = (nodeId: string) => {
-    return this._calls.findIndex((call) => call.nodeId === nodeId);
-  };
+  public getIndexByNodeId = getIndexByNodeId;
 
   // Static functions
   static utils = utils;

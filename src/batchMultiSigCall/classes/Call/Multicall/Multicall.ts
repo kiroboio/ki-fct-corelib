@@ -221,7 +221,7 @@ export class Multicall implements ICall {
       functionSignature: this.getFunctionSignature(),
       value: "0",
       callId: CallID.asString({
-        calls: this.FCT.calls,
+        calls: this.FCT.callsAsObjects,
         validation: this.FCT.validation,
         call: this.get(),
         index,
