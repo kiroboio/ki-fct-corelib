@@ -171,47 +171,6 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
-  // TODO: Make this function deprecated. Use getPaymentPerPayer instead
-  public getKIROPayment = ({
-    priceOfETHInKiro,
-    gasPrice,
-    gas,
-  }: {
-    priceOfETHInKiro: string;
-    gasPrice: number;
-    gas: number;
-  }) => {
-    const fct = this.FCTData;
-    const vault = fct.typedData.message["transaction_1"].call.from;
-
-    const gasInt = BigInt(gas);
-    const gasPriceFormatted = BigInt(gasPrice);
-
-    const limits = fct.typedData.message.limits;
-    const maxGasPrice = limits.gas_price_limit;
-
-    // 1000 - baseFee
-    // 5000 - bonusFee
-
-    const effectiveGasPrice =
-      (gasPriceFormatted * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - gasPriceFormatted) * BigInt(5000)) /
-      BigInt(10000);
-
-    const feeGasCost = gasInt * (effectiveGasPrice - gasPriceFormatted);
-    const baseGasCost = gasInt * gasPriceFormatted;
-
-    const totalCost = baseGasCost + feeGasCost;
-
-    const normalisedPriceOfETHInKiro = BigInt(priceOfETHInKiro);
-    const kiroCost = (totalCost * normalisedPriceOfETHInKiro) / BigInt(1e18);
-
-    return {
-      vault,
-      amountInKIRO: kiroCost.toString(),
-      amountInETH: totalCost.toString(),
-    };
-  };
-
   public kiroPerPayerGas = ({
     gas,
     gasPrice,
