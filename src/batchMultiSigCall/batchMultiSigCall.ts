@@ -29,7 +29,6 @@ import {
   TypedDataDomain,
 } from "./types";
 import * as utils from "./utils";
-import Deep = Chai.Deep;
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0xf6407ddd";
