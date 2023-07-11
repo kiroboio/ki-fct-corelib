@@ -97,15 +97,19 @@
   },
   "dependencies": {
     "@kiroboio/fct-plugins": "latest",
-    "@metamask/eth-sig-util": "^5.0.2",
+    "@metamask/eth-sig-util": "^5.1.0",
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8",
     "lodash": "^4.17.21"
   },
   "resolutions": {
-    "@uniswap/sdk-core": "3.2.3"
+    "ethereum-cryptography": "2.0.0"
   },
   "overrides": {
-    "@uniswap/sdk-core": "3.2.3"
+    "@metamask/eth-sig-util": {
+      "@ethereumjs/util": {
+        "ethereum-cryptography": "2.0.0"
+      }
+    }
   }
 }
