@@ -22,6 +22,7 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
+import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { getEncodedMethodParams } from "./helpers/callParams";
@@ -86,6 +87,16 @@ export class Call extends CallBase implements ICall {
     };
   }
 
+  public addValidation(validation: IValidation): ValidationVariable {
+    const validationVariable = this.FCT.validation.add({
+      validation,
+      nodeId: this.nodeId,
+    });
+    this.setOptions({ validation: validationVariable.id });
+    return validationVariable;
+  }
+
+  // EIP 712 methods
   public generateEIP712Type() {
     const call = this.get();
     if (!call.params || (call.params && call.params.length === 0)) {

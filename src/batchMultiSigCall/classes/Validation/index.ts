@@ -39,22 +39,19 @@ export class Validation extends FCTBase {
     return index + 1;
   }
 
-  public add(validation: IValidation): ValidationVariable {
+  public add({ nodeId, validation }: { nodeId: string; validation: IValidation }): ValidationVariable {
+    const call = this.FCT.getCallByNodeId(nodeId);
     const id = validation.id || this._validations.length.toString();
     this._validations.push({
       ...validation,
       id,
     });
 
-    return { type: "validation", id };
-  }
-
-  public addAndSetForCall({ nodeId, validation }: { nodeId: string; validation: IValidation }) {
-    const call = this.FCT.getCallByNodeId(nodeId);
-    const validationVariable = this.add(validation);
     call.setOptions({
-      validation: validationVariable.id,
+      validation: id,
     });
+
+    return { type: "validation", id };
   }
 
   private handleVariable(value: string | Variable | ValidationVariable, index: number) {
