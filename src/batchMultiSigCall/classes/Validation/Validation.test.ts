@@ -46,4 +46,25 @@ describe("Validation", () => {
     expect(validation1.operator).to.equal(ethers.utils.id("equal"));
     expect(validation1.value2).to.equal("20");
   });
+
+  it("Should expect an error when adding a validation with invalid value", async () => {
+    await FCT.add({
+      nodeId: "transfer",
+      from: createRandomAddress(),
+      to: createRandomAddress(),
+      method: "transfer",
+    });
+
+    expect(() => {
+      validations.add({
+        nodeId: "transfer",
+        validation: {
+          id: "compare",
+          value1: "hhhhhh", // String not allowed
+          operator: "equal",
+          value2: "20",
+        },
+      });
+    }).to.throw("Invalid value1 for validation compare");
+  });
 });

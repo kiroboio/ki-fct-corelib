@@ -42,6 +42,15 @@ export class Validation extends FCTBase {
   public add({ nodeId, validation }: { nodeId: string; validation: IValidation }): ValidationVariable {
     const call = this.FCT.getCallByNodeId(nodeId);
     const id = validation.id || this._validations.length.toString();
+
+    // if value1 or value2 is a string, check if it is a integer
+    if (typeof validation.value1 === "string") {
+      if (isNaN(parseInt(validation.value1, 10))) throw new Error(`Invalid value1 for validation ${id}`);
+    }
+    if (typeof validation.value2 === "string") {
+      if (isNaN(parseInt(validation.value2, 10))) throw new Error(`Invalid value2 for validation ${id}`);
+    }
+
     this._validations.push({
       ...validation,
       id,
