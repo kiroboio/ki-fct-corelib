@@ -31,7 +31,7 @@ import {
 import * as utils from "./utils";
 
 export class BatchMultiSigCall {
-  public batchMultiSigSelector = "0xa585028b";
+  public batchMultiSigSelector = "0x9b2542b3";
   public version = "0x010101";
   public chainId: ChainId;
   public domain: TypedDataDomain;

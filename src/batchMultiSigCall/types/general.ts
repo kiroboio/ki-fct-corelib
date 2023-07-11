@@ -36,6 +36,7 @@ export interface IFCT {
   nameHash: string;
   appHash: string;
   byHash: string;
+  verifierHash: string;
   builder: string;
   mcall: MSCall[];
   signatures: SignatureLike[];
@@ -111,6 +112,7 @@ export interface IFCTOptions {
   dryRun: boolean;
   app: string;
   by: string;
+  verifier: string;
   recurrency?: {
     maxRepeats: string;
     chillTime: string;
