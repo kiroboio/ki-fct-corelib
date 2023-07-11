@@ -6248,7 +6248,7 @@ exports.constants = index$2;
 exports.utils = index;
 exports.variables = index$1;
 Object.keys(fctPlugins).forEach(function (k) {
-    if (k !== 'default' && !exports.hasOwnProperty(k)) Object.defineProperty(exports, k, {
+    if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) Object.defineProperty(exports, k, {
         enumerable: true,
         get: function () { return fctPlugins[k]; }
     });
