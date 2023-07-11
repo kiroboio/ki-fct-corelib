@@ -9,6 +9,7 @@ import {
   BatchMultiSigCallTypedData,
   CallOptions,
   DecodedCalls,
+  DeepPartial,
   DeepRequired,
   FCTCallParam,
   IWithPlugin,
@@ -35,8 +36,33 @@ export class Call extends CallBase implements ICall {
     super(input);
     this.FCT = FCT;
 
-    this.verifyCall(this.call);
+    this.verifyCall({ call: this.call });
   }
+
+  //
+  // Setter methods
+  //
+
+  public update(call: DeepPartial<IMSCallInput>) {
+    const data = _.merge({}, this._call, call);
+    // Verify the call
+    this.verifyCall({ call: data, update: true });
+    this._call = data as IMSCallInput & { nodeId: string };
+    return this.get();
+  }
+
+  public addValidation(validation: IValidation): ValidationVariable {
+    const validationVariable = this.FCT.validation.add({
+      validation,
+      nodeId: this.nodeId,
+    });
+    this.setOptions({ validation: validationVariable.id });
+    return validationVariable;
+  }
+
+  //
+  // Getter methods
+  //
 
   get options(): DeepRequired<CallOptions> {
     return this.get().options;
@@ -87,16 +113,9 @@ export class Call extends CallBase implements ICall {
     };
   }
 
-  public addValidation(validation: IValidation): ValidationVariable {
-    const validationVariable = this.FCT.validation.add({
-      validation,
-      nodeId: this.nodeId,
-    });
-    this.setOptions({ validation: validationVariable.id });
-    return validationVariable;
-  }
-
+  //
   // EIP 712 methods
+  //
   public generateEIP712Type() {
     const call = this.get();
     if (!call.params || (call.params && call.params.length === 0)) {
@@ -168,7 +187,9 @@ export class Call extends CallBase implements ICall {
     return getEncodedMethodParams(this.getDecoded());
   }
 
+  //
   // Private methods
+  //
   private getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
     mainType: { name: string; type: string }[]
@@ -305,7 +326,7 @@ export class Call extends CallBase implements ICall {
     }, [] as ParamWithoutVariable<P>[]);
   }
 
-  private verifyCall(call: IMSCallInput) {
+  private verifyCall({ call, update = false }: { call: IMSCallInput; update?: boolean }) {
     // To address validator
     if (!call.to) {
       throw new Error("To address is required");
@@ -325,8 +346,16 @@ export class Call extends CallBase implements ICall {
 
     // Node ID validator
     if (call.nodeId) {
-      const index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
-
+      let index: number;
+      if (update) {
+        // If it is an update, we need to ignore the current node ID
+        const currentCallIndex = this.FCT.getIndexByNodeId(this.nodeId);
+        // Ignore the current node ID from this.calls;
+        const calls = this.FCT.calls.filter((item, i) => i !== currentCallIndex);
+        index = calls.findIndex((item) => item.nodeId === call.nodeId);
+      } else {
+        index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
+      }
       if (index > -1) {
         throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
       }
