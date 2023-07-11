@@ -73,6 +73,7 @@ export interface TypedDataMeta {
   version: string;
   random_id: string;
   eip712: boolean;
+  verifier: string;
   auth_enabled: boolean;
   dry_run: boolean;
 }

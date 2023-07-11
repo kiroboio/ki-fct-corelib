@@ -17,6 +17,7 @@ export const Meta: MessageTypeProperty[] = [
   { name: "version", type: "bytes3" },
   { name: "random_id", type: "bytes3" },
   { name: "eip712", type: "bool" },
+  { name: "verifier", type: "string" },
   { name: "auth_enabled", type: "bool" },
   { name: "dry_run", type: "bool" },
 ];

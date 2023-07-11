@@ -107,6 +107,7 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     validations: this.validation.getForData(),
     appHash: id(this.options.app),
     byHash: id(this.options.by),
+    verifierHash: id(this.options.verifier),
   };
 }
 
@@ -137,6 +138,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       externalSigners: fct.externalSigners,
       app: typedData.message.meta.app,
       by: typedData.message.meta.by,
+      verifier: typedData.message.meta.verifier,
       name: typedData.message.meta.name,
     })
   );
@@ -269,6 +271,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     name: "",
     app: "",
     by: "",
+    verifier: "",
     externalSigners: decodedFCT.tr.externalSigners,
   });
   this.setOptions(FCTOptions);

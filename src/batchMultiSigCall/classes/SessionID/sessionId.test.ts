@@ -24,6 +24,7 @@ describe("BatchMultiSigCall SessionId", () => {
       name: FCT.options.name,
       app: FCT.options.app,
       by: FCT.options.by,
+      verifier: FCT.options.verifier,
       externalSigners: FCT.options.multisig.externalSigners,
     });
 

@@ -15,6 +15,7 @@ const initOptions = {
   dryRun: false,
   app: "",
   by: "",
+  verifier: "",
 };
 
 export class Options {

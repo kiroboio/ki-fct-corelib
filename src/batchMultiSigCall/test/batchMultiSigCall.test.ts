@@ -337,6 +337,8 @@ describe("BatchMultiSigCall", () => {
 
       const FCT = batchMultiSigCall.exportFCT();
 
+      console.log(JSON.stringify(FCT, null, 2));
+
       expect(FCT).to.be.an("object");
 
       // parse SessionId
@@ -346,6 +348,7 @@ describe("BatchMultiSigCall", () => {
         by: FCT.typedData.message.meta.by,
         app: FCT.typedData.message.meta.app,
         name: FCT.typedData.message.meta.name,
+        verifier: FCT.typedData.message.meta.verifier,
       });
       expect(sessionId).to.be.an("object");
       expect(sessionId).to.be.eql({
@@ -360,6 +363,7 @@ describe("BatchMultiSigCall", () => {
         dryRun: false,
         app: "",
         by: "",
+        verifier: "",
         recurrency: {
           accumetable: false,
           chillTime: "0",

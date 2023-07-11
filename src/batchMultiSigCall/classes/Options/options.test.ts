@@ -23,6 +23,7 @@ describe("BatchMultiSigCall Options", () => {
       dryRun: false,
       by: "",
       app: "",
+      verifier: "",
       recurrency: {
         maxRepeats: "100",
         chillTime: "5",
