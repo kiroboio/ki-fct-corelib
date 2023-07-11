@@ -198,6 +198,11 @@
             "type": "bytes32"
           },
           {
+            "internalType": "bytes32",
+            "name": "verifierHash",
+            "type": "bytes32"
+          },
+          {
             "internalType": "address",
             "name": "builder",
             "type": "address"
