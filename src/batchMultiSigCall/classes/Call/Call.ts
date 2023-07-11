@@ -346,21 +346,18 @@ export class Call extends CallBase implements ICall {
 
     // Node ID validator
     if (call.nodeId) {
+      let index: number;
       if (update) {
         // If it is an update, we need to ignore the current node ID
         const currentCallIndex = this.FCT.getIndexByNodeId(this.nodeId);
         // Ignore the current node ID from this.calls;
         const calls = this.FCT.calls.filter((item, i) => i !== currentCallIndex);
-        const index2 = calls.findIndex((item) => item.nodeId === call.nodeId);
-        if (index2 > -1) {
-          throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
-        }
+        index = calls.findIndex((item) => item.nodeId === call.nodeId);
       } else {
-        const index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
-
-        if (index > -1) {
-          throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
-        }
+        index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
+      }
+      if (index > -1) {
+        throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
       }
     }
 
