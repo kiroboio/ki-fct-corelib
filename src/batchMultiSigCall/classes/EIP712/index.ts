@@ -112,6 +112,7 @@ export class EIP712 extends FCTBase {
         version: this.FCT.version,
         random_id: `0x${this.FCT.randomId}`,
         eip712: true,
+        verifier: FCTOptions.verifier,
         auth_enabled: FCTOptions.authEnabled,
         dry_run: FCTOptions.dryRun,
       },

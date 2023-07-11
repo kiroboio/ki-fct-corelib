@@ -76,6 +76,7 @@ export class SessionID extends FCTBase {
     name,
     app,
     by,
+    verifier,
     externalSigners = [],
   }: {
     sessionId: string;
@@ -83,6 +84,7 @@ export class SessionID extends FCTBase {
     name: string;
     app: string;
     by: string;
+    verifier: string;
     externalSigners?: string[];
   }) {
     const parsedSessionID = SessionID.parse(sessionId);
@@ -93,6 +95,7 @@ export class SessionID extends FCTBase {
       name,
       app,
       by,
+      verifier,
       multisig: {
         ...parsedSessionID.multisig,
         externalSigners,
