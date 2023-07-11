@@ -1,6 +1,6 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "1.12.3",
+  "version": "1.12.4",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
@@ -100,9 +100,13 @@
     "lodash": "^4.17.21"
   },
   "resolutions": {
-    "@uniswap/sdk-core": "3.2.3"
+    "ethereum-cryptography": "2.0.0"
   },
   "overrides": {
-    "@uniswap/sdk-core": "3.2.3"
+    "@metamask/eth-sig-util": {
+      "@ethereumjs/util": {
+        "ethereum-cryptography": "2.0.0"
+      }
+    }
   }
 }
