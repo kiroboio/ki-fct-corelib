@@ -65,7 +65,7 @@ export class CallBase {
     this._call.options = _.merge({}, this._call.options, options);
   }
 
-  public updateCall(call: DeepPartial<IMSCallInput>) {
+  public update(call: DeepPartial<IMSCallInput>) {
     this._call = _.merge({}, this._call, call);
   }
 }

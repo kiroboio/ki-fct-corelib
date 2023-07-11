@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { Call } from "./Call";
 
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
@@ -14,10 +15,10 @@ describe("Call", () => {
     });
   });
 
-  it("Should do call", async () => {
+  it("Should add a call to FCT", async () => {
     const from = createRandomAddress();
     const to = createRandomAddress();
-    const Call = await FCT.add({
+    await FCT.add({
       nodeId: "transfer",
       from,
       to,
@@ -108,7 +109,7 @@ describe("Call", () => {
     });
   });
 
-  it("Should add a call", async () => {
+  it("Should add 2 calls", async () => {
     await FCT.create({
       nodeId: "node1",
       to: createRandomAddress(),
@@ -136,6 +137,8 @@ describe("Call", () => {
     });
 
     const fct = FCT.exportFCT();
+
+    expect(fct.mcall.length).to.eql(2);
   });
 
   it("Should update the call after it is made", async () => {
@@ -152,10 +155,42 @@ describe("Call", () => {
       value: "0",
     });
 
-    Call.updateCall({
+    Call.update({
       method: "swapFrom",
     });
 
     expect(Call.get().method).to.eql("swapFrom");
+  });
+
+  it("Should create a Call class, add it to FCT and add validation", async () => {
+    const CallClass = await Call.create({
+      FCT,
+      call: {
+        nodeId: "node1",
+        to: createRandomAddress(),
+        toENS: "@token.kiro.eth",
+        method: "transfer",
+        params: [
+          { name: "to", type: "address", value: createRandomAddress() },
+          { name: "token_amount", type: "uint256", value: "20" },
+        ],
+        from: createRandomAddress(),
+        value: "0",
+      },
+    });
+
+    await FCT.add(CallClass);
+
+    expect(FCT.calls.length).to.eql(1);
+    expect(FCT.calls[0].get().method).to.eql("transfer");
+
+    const validationVariable = CallClass.addValidation({
+      id: "validation1",
+      value1: "2000",
+      operator: "equal",
+      value2: CallClass.getOutputVariable(0),
+    });
+
+    expect(validationVariable).to.eql({ type: "validation", id: "validation1" });
   });
 });
