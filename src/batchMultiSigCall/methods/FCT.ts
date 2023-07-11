@@ -16,11 +16,14 @@ import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
 
-export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F) {
+// If F is Multicall, return multicall, else return Call
+type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
+
+export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F): Promise<CreateOutput<F>> {
   // If the input is already made Call class, we just add it to _calls.
   if (call instanceof Multicall || call instanceof Call) {
     this._calls.push(call);
-    return call;
+    return call as CreateOutput<F>;
   }
   // Else we create Call class from the input
   const newCall = await Call.create({
@@ -28,7 +31,7 @@ export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, ca
     call,
   });
   this._calls.push(newCall);
-  return newCall;
+  return newCall as CreateOutput<F>;
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTInputCall[]): Promise<FCTCall[]> {

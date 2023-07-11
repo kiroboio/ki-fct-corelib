@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
@@ -125,6 +126,10 @@ export class BatchMultiSigCall {
   // Variables
   public addComputed = (computed: Partial<IComputed>) => {
     return this.variables.addComputed(computed);
+  };
+
+  public addValidation = (validation: { nodeId: string; validation: IValidation }) => {
+    return this.validation.add(validation);
   };
 
   // Plugin functions
