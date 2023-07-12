@@ -1,58 +1,38 @@
+import { ethers } from "ethers";
+
 import { BatchMultiSigCall } from "../src";
+
+const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
   const FCT = new BatchMultiSigCall();
-
-  // const data = await FCT.create({
-  //   from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-  //   to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-  //   value: "10",
-  //   method: "balanceOf",
-  // } as const);
-  //
-  // data.value;
-
-  const data = await FCT.create({
-    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-    value: "10",
-    method: "balanceOf",
-  } as const);
-
-  const data = await FCT.create({
-    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-    to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-  } as const);
-
-  const options = FCT.setOptions({
-    name: "Test",
-  } as const);
-
-  const callDefaults = FCT.setCallDefaults({
-    from: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
-  } as const);
-
-  const params = [
-    [
-      [
-        {
-          name: "token",
-          value: "0x...",
-          type: "address",
-        },
-        {
-          name: "account",
-          value: "0x...",
-          type: "address",
-        },
-      ],
+  await FCT.create({
+    nodeId: "node1",
+    to: createRandomAddress(),
+    toENS: "@token.kiro.eth",
+    method: "transfer",
+    params: [
+      { name: "to", type: "address", value: createRandomAddress() },
+      { name: "token_amount", type: "uint256", value: "20" },
     ],
-    {
-      name: "randomAddress",
-      value: "0x...",
-      type: "address",
-    },
-  ];
+    from: createRandomAddress(),
+    value: "0",
+  });
+
+  await FCT.create({
+    nodeId: "node2",
+    to: createRandomAddress(),
+    method: "erc20Airdrop",
+    params: [
+      { name: "token", type: "address", value: createRandomAddress() },
+      { name: "from", type: "address", value: createRandomAddress() },
+      { name: "amount", type: "uint256", value: createRandomAddress() },
+      { name: "recipients", type: "address[]", value: [] },
+    ],
+    from: createRandomAddress(),
+  });
+
+  const FCTData = FCT.exportFCT();
 }
 
 main()

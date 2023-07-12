@@ -125,6 +125,7 @@ export class SessionID extends FCTBase {
       validFrom,
       expiresAt,
       maxGasPrice,
+      eip712: flags.eip712,
       dryRun: flags.dryRun,
       blockable: flags.blockable,
       purgeable: flags.purgeable,
