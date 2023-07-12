@@ -11,9 +11,6 @@ const getFixedArrayLength = (type: string): number => +type.slice(type.indexOf("
 const typeValue = (param: Param): number[] => {
   // If type is an array
   if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
-    // const value = param.value as Param[][];
-    // console.log(param);
-    // const countOfElements = value[0].length;
     const TYPE = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
 
     // If the type is an array of tuple/custom struct
@@ -34,8 +31,7 @@ const typeValue = (param: Param): number[] => {
     const insideType = typeValue(parameter);
 
     if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
-      const countOfElements = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
-      return [TYPE, getFixedArrayLength(param.type), countOfElements, ...insideType];
+      return [TYPE, getFixedArrayLength(param.type), ...insideType];
     }
 
     return [TYPE, ...insideType];

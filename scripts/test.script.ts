@@ -27,12 +27,14 @@ async function main() {
       { name: "token", type: "address", value: createRandomAddress() },
       { name: "from", type: "address", value: createRandomAddress() },
       { name: "amount", type: "uint256", value: createRandomAddress() },
-      { name: "recipients", type: "address[]", value: [] },
+      { name: "recipients", type: "address[1]", value: [createRandomAddress()] },
     ],
     from: createRandomAddress(),
   });
 
   const FCTData = FCT.exportFCT();
+
+  console.log(JSON.stringify(FCTData, null, 2));
 }
 
 main()
