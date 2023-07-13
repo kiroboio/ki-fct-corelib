@@ -3,6 +3,10 @@ import { ComputedOperators } from "./computedConstants";
 
 type IComputedOperator = (typeof ComputedOperators)[keyof typeof ComputedOperators];
 
+export type AddComputedResult<C extends Partial<IComputed>> = C["id"] extends string
+  ? { type: "computed"; id: C["id"] }
+  : { type: "computed"; id: string };
+
 export interface IComputed {
   id?: string;
   value1: string | Variable;

@@ -1,6 +1,11 @@
 import { ValidationOperator } from "../../../constants";
 import { Variable } from "../../../types";
 
+// If there is V['id'] then { type: "validation"; id: V["id"] } else ValidationVariable
+export type ValidationAddResult<V extends IValidation> = V["id"] extends string
+  ? { type: "validation"; id: V["id"] }
+  : ValidationVariable;
+
 export interface ValidationVariable {
   type: "validation";
   id: string;

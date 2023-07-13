@@ -108,7 +108,7 @@ export class BatchMultiSigCall {
 
   // Setters
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
-    return this._options.set(options);
+    return this._options.set(options) as RequiredFCTOptions & O;
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
@@ -124,12 +124,12 @@ export class BatchMultiSigCall {
   };
 
   // Variables
-  public addComputed = (computed: Partial<IComputed>) => {
-    return this.variables.addComputed(computed);
+  public addComputed = <C extends Partial<IComputed>>(computed: C) => {
+    return this.variables.addComputed<C>(computed);
   };
 
-  public addValidation = (validation: { nodeId: string; validation: IValidation }) => {
-    return this.validation.add(validation);
+  public addValidation = <V extends IValidation>(validation: { nodeId: string; validation: V }) => {
+    return this.validation.add<V>(validation);
   };
 
   // Plugin functions

@@ -25,7 +25,7 @@ describe("Validation", () => {
       method: "transfer",
     });
 
-    validations.add({
+    const res = validations.add({
       nodeId: "transfer",
       validation: {
         id: "compare",

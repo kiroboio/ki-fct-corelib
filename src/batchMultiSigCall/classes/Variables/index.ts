@@ -16,7 +16,7 @@ import { globalVariables, globalVariablesBytes } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 import { ComputedOperators } from "./computedConstants";
-import { IComputed, IComputedData, IComputedEIP712 } from "./types";
+import { AddComputedResult, IComputed, IComputedData, IComputedEIP712 } from "./types";
 
 export class Variables extends FCTBase {
   protected _computed: Required<IComputed>[] = [];
@@ -64,7 +64,7 @@ export class Variables extends FCTBase {
     }));
   }
 
-  public addComputed(computed: Partial<IComputed>): Variable & { type: "computed" } {
+  public addComputed<C extends Partial<IComputed>>(computed: C): AddComputedResult<C> {
     // Add the computed value to the batch call.
     const defaultValue = "0";
     const defaultOperator = ComputedOperators.ADD;
