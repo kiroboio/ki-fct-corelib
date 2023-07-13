@@ -46,14 +46,13 @@ export interface IFCT {
   validations: IValidationData[];
 }
 
-export type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "mcall">;
-
 export interface MSCallMandatory {
   nodeId?: string;
   from?: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
 }
+
 export type IMSCallInput = {
   to: string | Variable;
   params?: Param[];
@@ -84,8 +83,8 @@ export type IMSCallWithEncodedData = {
   to: string | Variable;
 } & MSCallMandatory;
 
-export type FCTInputCall = IMSCallInput | IWithPlugin | Multicall | Call;
 export type FCTCall = Call | Multicall;
+export type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
 
 export interface MSCall {
   typeHash: string;
@@ -101,7 +100,7 @@ export interface MSCall {
 }
 
 export interface IFCTOptions {
-  name?: string;
+  name: string;
   validFrom: string;
   expiresAt: string;
   maxGasPrice: string;
