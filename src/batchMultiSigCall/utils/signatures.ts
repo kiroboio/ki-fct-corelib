@@ -1,6 +1,5 @@
 import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
-import util from "util";
 
 import { BatchMultiSigCallTypedData } from "../types";
 
@@ -18,7 +17,6 @@ export const getAuthenticatorSignature = (typedData: BatchMultiSigCallTypedData)
     return splitSignature(signature);
   } catch (e) {
     console.log(e);
-    console.log(util.inspect(typedData, false, null, true /* enable colors */));
     throw new Error("Error signing typed data");
   }
 };

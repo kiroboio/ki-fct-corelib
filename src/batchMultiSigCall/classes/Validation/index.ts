@@ -3,7 +3,7 @@ import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
-import { IValidation, IValidationData, IValidationEIP712, ValidationVariable } from "./types";
+import { IValidation, IValidationData, IValidationEIP712, ValidationAddResult, ValidationVariable } from "./types";
 
 export class Validation extends FCTBase {
   protected _validations: Required<IValidation>[] = [];
@@ -39,7 +39,7 @@ export class Validation extends FCTBase {
     return index + 1;
   }
 
-  public add({ nodeId, validation }: { nodeId: string; validation: IValidation }): ValidationVariable {
+  public add<V extends IValidation>({ nodeId, validation }: { nodeId: string; validation: V }): ValidationAddResult<V> {
     const call = this.FCT.getCallByNodeId(nodeId);
     const id = validation.id || this._validations.length.toString();
 
