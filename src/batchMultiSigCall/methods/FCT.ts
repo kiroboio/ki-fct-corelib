@@ -208,6 +208,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   return this.calls;
 }
 
+// NOTE: For now not used - we have custom plugins that do the same thing
 export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
   const iface = Interfaces.FCT_BatchMultiSigCall;
   const chainId = this.chainId;
