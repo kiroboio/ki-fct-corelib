@@ -38,14 +38,14 @@ export const CALL_TYPE = {
   VIEW_ONLY: "1",
   LIBRARY: "2",
   LIBRARY_VIEW_ONLY: "3",
-};
+} as const;
 
 export const CALL_TYPE_MSG = {
   ACTION: "action",
   VIEW_ONLY: "view only",
   LIBRARY: "library: action",
   LIBRARY_VIEW_ONLY: "library: view only",
-};
+} as const;
 
 // Reverse Call Type MSG
 export const CALL_TYPE_MSG_REV = {

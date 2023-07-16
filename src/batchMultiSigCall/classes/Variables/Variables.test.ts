@@ -40,7 +40,7 @@ describe("Variables", () => {
         value1: Call.getOutputVariable(),
         operator1: "/",
         value2: "2",
-      });
+      } as const);
 
       await FCT.add({
         nodeId: "transfer",
