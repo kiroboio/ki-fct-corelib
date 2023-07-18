@@ -45,6 +45,16 @@ export const verifyParam = (param: Param) => {
         throw new Error(`Param ${param.name} (${param.type}) value is not an array of length ${length}`);
       }
     }
+
+    const type = param.type.slice(0, param.type.lastIndexOf("["));
+
+    (param.value as Exclude<typeof param.value, Param[]>).forEach((value, index) => {
+      verifyParam({
+        name: `${param.name}[${index}]`,
+        type,
+        value: value,
+      });
+    });
   }
 
   if (typeof param.value !== "string") {
@@ -75,6 +85,10 @@ export const verifyParam = (param: Param) => {
   if (param.type.startsWith("bytes") && !param.type.includes("[")) {
     if (!param.value.startsWith("0x")) {
       throw new Error(`Param ${param.name} is not a valid bytes value`);
+    }
+    // If bytes32, then check that the value is 66 characters long
+    if (param.type === "bytes32" && param.value.length !== 66) {
+      throw new Error(`Param ${param.name} is not a valid bytes32 value`);
     }
   }
   // If type is type[n], then check that the value is an array of length n

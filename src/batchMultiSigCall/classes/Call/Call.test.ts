@@ -193,4 +193,29 @@ describe("Call", () => {
 
     expect(validationVariable).to.eql({ type: "validation", id: "validation1" });
   });
+
+  describe("Param verifier", () => {
+    it("Should verify that address[] is valid", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        to: createRandomAddress(),
+        from: createRandomAddress(),
+        method: "methodName",
+        params: [{ name: "to", type: "address[]", value: [createRandomAddress(), createRandomAddress()] }],
+      });
+    });
+    it("Should revert if address[] is invalid", async () => {
+      try {
+        await FCT.add({
+          nodeId: "node1",
+          to: createRandomAddress(),
+          from: createRandomAddress(),
+          method: "methodName",
+          params: [{ name: "to", type: "address[]", value: [createRandomAddress(), "123"] }],
+        });
+      } catch (e) {
+        if (e instanceof Error) expect(e.message).to.eql("Param to[1] is not a valid address");
+      }
+    });
+  });
 });

@@ -7,10 +7,12 @@ export type Variable =
   | { type: "global"; id: GlobalVariable }
   | { type: "computed"; id: string };
 
+export type ParamValue = boolean | string | string[] | boolean[] | Param[] | Param[][] | Variable | ParamValue[];
+
 export interface Param {
   name: string;
   type: string;
-  value?: boolean | string | string[] | Param[] | Param[][] | Variable;
+  value?: ParamValue;
   customType?: boolean;
   hashed?: boolean;
 }
