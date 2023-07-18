@@ -632,5 +632,32 @@ describe("BatchMultiSigCall", () => {
 
       expect(fctData.mcall[0].types).to.deep.eq([4000, 1000, 4000, 1000]);
     });
+    it("Should create FCT where one of params is fixed length array", async () => {
+      const FCT = new BatchMultiSigCall({
+        chainId: "5",
+      });
+
+      const addresses = [createRandomAddress(), createRandomAddress(), createRandomAddress()];
+
+      await FCT.add({
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "methodName",
+        params: [
+          {
+            name: "recipientAddresses",
+            type: "address[3]",
+            value: addresses,
+          },
+        ],
+      });
+
+      const fctData = FCT.exportFCT();
+
+      expect(fctData.typedData.message["transaction_1"].call.method_interface).to.eq("methodName(address[3])");
+      expect(fctData.typedData.message["transaction_1"].recipientAddresses).to.deep.eq(addresses);
+
+      expect(fctData.mcall[0].types).to.deep.eq([5000, 3, 1000]);
+    });
   });
 });

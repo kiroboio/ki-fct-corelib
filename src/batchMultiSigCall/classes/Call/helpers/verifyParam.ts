@@ -27,6 +27,17 @@ export const verifyParam = (param: Param) => {
   if (!param.value) {
     throw new Error(`Param ${param.name} is missing a value`);
   }
+
+  // Check if value is an array and the type has "[" and "]" in it
+  if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
+    if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
+      const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
+      if (param.value.length !== length) {
+        throw new Error(`Param ${param.name} (${param.type}) value is not an array of length ${length}`);
+      }
+    }
+  }
+
   if (typeof param.value !== "string") {
     return;
   }
@@ -52,9 +63,10 @@ export const verifyParam = (param: Param) => {
     }
   }
   // bytes
-  if (param.type.startsWith("bytes")) {
+  if (param.type.startsWith("bytes") && !param.type.includes("[")) {
     if (!param.value.startsWith("0x")) {
       throw new Error(`Param ${param.name} is not a valid bytes value`);
     }
   }
+  // If type is type[n], then check that the value is an array of length n
 };
