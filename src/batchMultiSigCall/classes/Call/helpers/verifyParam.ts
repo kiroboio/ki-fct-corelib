@@ -1,5 +1,6 @@
 import { utils } from "ethers";
 
+import { InstanceOf } from "../../../../helpers";
 import { Param } from "../../../../types";
 
 export const isInteger = (value: string, key: string) => {
@@ -28,8 +29,16 @@ export const verifyParam = (param: Param) => {
     throw new Error(`Param ${param.name} is missing a value`);
   }
 
+  // Check if type boolean is a boolean value
+  if (param.type === "bool" && !InstanceOf.Variable(param.value)) {
+    if (typeof param.value !== "boolean") {
+      throw new Error(`Param ${param.name} is not a boolean`);
+    }
+  }
+
   // Check if value is an array and the type has "[" and "]" in it
   if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
+    // Here can all array checks be added
     if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
       const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
       if (param.value.length !== length) {

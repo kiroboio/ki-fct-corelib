@@ -337,8 +337,6 @@ describe("BatchMultiSigCall", () => {
 
       const FCT = batchMultiSigCall.exportFCT();
 
-      console.log(JSON.stringify(FCT, null, 2));
-
       expect(FCT).to.be.an("object");
 
       // parse SessionId
