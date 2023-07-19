@@ -88,83 +88,125 @@ export const FCTCreateCallErrors = () =>
         message: "Method is required when params are present",
       });
     });
-    it(`Should get error from "params"`, async () => {
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "amount",
-              type: "uint256",
-              value: "",
-            },
-          ],
-        }),
-        message: "Param amount is missing a value",
+    describe(`Param verification`, async () => {
+      it(`Should throw error - missing value`, async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "amount",
+                type: "uint256",
+                value: "",
+              },
+            ],
+          }),
+          message: "Param amount is missing a value",
+        });
       });
 
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "amount",
-              type: "uint256",
-              value: "-2",
-            },
-          ],
-        }),
-        message: "Param amount cannot be negative",
+      it("Should throw error - negative uint", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "amount",
+                type: "uint256",
+                value: "-2",
+              },
+            ],
+          }),
+          message: "Param amount cannot be negative",
+        });
       });
 
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "amount",
-              type: "uint256",
-              value: "0.2",
-            },
-          ],
-        }),
-        message: "Param amount cannot be a decimal",
+      it("Should throw error - decimal uint", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "amount",
+                type: "uint256",
+                value: "0.2",
+              },
+            ],
+          }),
+          message: "Param amount cannot be a decimal",
+        });
       });
 
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "intAmount",
-              type: "int128",
-              value: "0.2",
-            },
-          ],
-        }),
-        message: "Param intAmount cannot be a decimal",
+      it("Should throw error - decimal int", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "intAmount",
+                type: "int128",
+                value: "0.2",
+              },
+            ],
+          }),
+          message: "Param intAmount cannot be a decimal",
+        });
       });
 
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "addressValue",
-              type: "address",
-              value: "0x12",
-            },
-          ],
-        }),
-        message: "Param addressValue is not a valid address",
+      it("Should throw error - invalid address", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "addressValue",
+                type: "address",
+                value: "0x12",
+              },
+            ],
+          }),
+          message: "Param addressValue is not a valid address",
+        });
       });
 
-      await catchError({
-        call: getCall({
-          params: [
-            {
-              name: "bytesValue",
-              type: "bytes32",
-              value: "d0x12",
-            },
-          ],
-        }),
-        message: "Param bytesValue is not a valid bytes value",
+      it("Should throw error - invalid bytes value doesn't start with 0x", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "bytesValue",
+                type: "bytes32",
+                value: "d0x12",
+              },
+            ],
+          }),
+          message: "Param bytesValue is not a valid bytes value",
+        });
+      });
+
+      it("Should throw error - invalid bytes length", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "bytesValue",
+                type: "bytes3",
+                value: "0x1212122", // Should be 0x + 6 chars
+              },
+            ],
+          }),
+          message: "Param bytesValue is not a valid bytes3 value",
+        });
+      });
+
+      it("Should throw error - invalid address[] value", async () => {
+        await catchError({
+          call: getCall({
+            params: [
+              {
+                name: "addressArray",
+                type: "address[]",
+                value: ["0x12"],
+              },
+            ],
+          }),
+          message: "Param addressArray[0] is not a valid address",
+        });
       });
     });
   });

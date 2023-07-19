@@ -25,20 +25,12 @@ export const isAddress = (value: string, key: string) => {
 };
 
 export const verifyParam = (param: Param) => {
+  if (InstanceOf.Variable(param.value)) return;
   if (!param.value) {
     throw new Error(`Param ${param.name} is missing a value`);
   }
 
-  // Check if type boolean is a boolean value
-  if (param.type === "bool" && !InstanceOf.Variable(param.value)) {
-    if (typeof param.value !== "boolean") {
-      throw new Error(`Param ${param.name} is not a boolean`);
-    }
-  }
-
-  // Check if value is an array and the type has "[" and "]" in it
   if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
-    // Here can all array checks be added
     if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
       const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
       if (param.value.length !== length) {
@@ -55,6 +47,13 @@ export const verifyParam = (param: Param) => {
         value: value,
       });
     });
+  }
+
+  // Check if type boolean is a boolean value
+  if (param.type === "bool") {
+    if (typeof param.value !== "boolean") {
+      throw new Error(`Param ${param.name} is not a boolean`);
+    }
   }
 
   if (typeof param.value !== "string") {
@@ -82,14 +81,20 @@ export const verifyParam = (param: Param) => {
     }
   }
   // bytes
-  if (param.type.startsWith("bytes") && !param.type.includes("[")) {
+  if (param.type.startsWith("bytes")) {
     if (!param.value.startsWith("0x")) {
       throw new Error(`Param ${param.name} is not a valid bytes value`);
     }
-    // If bytes32, then check that the value is 66 characters long
-    if (param.type === "bytes32" && param.value.length !== 66) {
-      throw new Error(`Param ${param.name} is not a valid bytes32 value`);
+    // Check if type has a length
+    const length = param.type.match(/\d+/g);
+    if (!length) {
+      // If no length, then the type is `bytes`
+      return;
+    }
+
+    const requiredLength = +length[0] * 2 + 2;
+    if (param.value.length !== requiredLength) {
+      throw new Error(`Param ${param.name} is not a valid ${param.type} value`);
     }
   }
-  // If type is type[n], then check that the value is an array of length n
 };

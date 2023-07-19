@@ -622,8 +622,6 @@ describe("BatchMultiSigCall", () => {
 
       const fctData = FCT.exportFCT();
 
-      console.log(fctData.mcall[0].types);
-
       expect(fctData.typedData.message["transaction_1"].call.method_interface).to.eq("methodName(address[],uint256[])");
       expect(fctData.typedData.message["transaction_1"].recipientAddresses).to.deep.eq([]);
       expect(fctData.typedData.message["transaction_1"].amounts).to.deep.eq([]);
