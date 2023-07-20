@@ -1,22 +1,26 @@
+import { ERC20 } from "@kiroboio/fct-plugins";
 import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../src";
-import FailingFCT from "./Failing.json";
 
 async function main() {
-  const FCT = BatchMultiSigCall.from(FailingFCT);
+  const FCT = new BatchMultiSigCall();
 
-  const fctData = FCT.exportFCT();
-
-  const calldata = FCT.utils.getCalldataForActuator({
-    signatures: [],
-    activator: ethers.constants.AddressZero,
-    investor: ethers.constants.AddressZero,
-    purgedFCT: ethers.constants.HashZero,
+  await FCT.add({
+    from: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+    plugin: new ERC20.actions.Transfer({
+      chainId: "5",
+      initParams: {
+        to: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+        methodParams: {
+          amount: "200",
+          recipient: ethers.constants.AddressZero,
+        },
+      },
+    }),
   });
 
-  console.log(JSON.stringify(fctData, null, 2));
-  console.log(calldata);
+  const maxGas = FCT.utils.getMaxGas();
 }
 
 main()

@@ -374,10 +374,10 @@ export class FCTUtils extends FCTBase {
     return allPayers.map((payer) => {
       const { largest, smallest } = data.reduce((acc, pathData) => {
         const currentValues = acc;
-        const currentLargestValue = currentValues.largest?.kiroCost || 0n;
-        const currentSmallestValue = currentValues.smallest?.kiroCost;
+        const currentLargestValue = currentValues.largest?.ethCost || 0n;
+        const currentSmallestValue = currentValues.smallest?.ethCost;
 
-        const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
+        const value = pathData[payer as keyof typeof pathData]?.ethCost || 0n;
         if (value > currentLargestValue) {
           currentValues.largest = pathData[payer as keyof typeof pathData];
         }
@@ -401,6 +401,18 @@ export class FCTUtils extends FCTBase {
         },
       };
     });
+  };
+
+  public getMaxGas = () => {
+    const allPayers = this.getPaymentPerPayer({ ethPriceInKIRO: "0" });
+
+    return allPayers.reduce((acc, payer) => {
+      const largestGas = payer.largestPayment.gas;
+      if (BigInt(largestGas) > BigInt(acc)) {
+        return largestGas;
+      }
+      return acc;
+    }, "0" as string);
   };
 
   public getCallResults = async ({
