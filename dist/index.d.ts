@@ -666,6 +666,7 @@ declare class FCTUtils extends FCTBase {
             amountInETH: string;
         };
     }[];
+    getMaxGas: () => string;
     getCallResults: ({ rpcUrl, provider, txHash, }: {
         rpcUrl?: string | undefined;
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider | undefined;

@@ -5333,9 +5333,9 @@ class FCTUtils extends FCTBase {
         return allPayers.map((payer) => {
             const { largest, smallest } = data.reduce((acc, pathData) => {
                 const currentValues = acc;
-                const currentLargestValue = currentValues.largest?.kiroCost || 0n;
-                const currentSmallestValue = currentValues.smallest?.kiroCost;
-                const value = pathData[payer]?.kiroCost || 0n;
+                const currentLargestValue = currentValues.largest?.ethCost || 0n;
+                const currentSmallestValue = currentValues.smallest?.ethCost;
+                const value = pathData[payer]?.ethCost || 0n;
                 if (value > currentLargestValue) {
                     currentValues.largest = pathData[payer];
                 }
@@ -5358,6 +5358,16 @@ class FCTUtils extends FCTBase {
                 },
             };
         });
+    };
+    getMaxGas = () => {
+        const allPayers = this.getPaymentPerPayer({ ethPriceInKIRO: "0" });
+        return allPayers.reduce((acc, payer) => {
+            const largestGas = payer.largestPayment.gas;
+            if (BigInt(largestGas) > BigInt(acc)) {
+                return largestGas;
+            }
+            return acc;
+        }, "0");
     };
     getCallResults = async ({ rpcUrl, provider, txHash, }) => {
         if (!provider && !rpcUrl) {
