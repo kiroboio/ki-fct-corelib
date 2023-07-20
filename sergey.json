@@ -1,0 +1,249 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "Meta": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "builder",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "version",
+          "type": "bytes3"
+        },
+        {
+          "name": "random_id",
+          "type": "bytes3"
+        },
+        {
+          "name": "eip712",
+          "type": "bool"
+        },
+        {
+          "name": "auth_enabled",
+          "type": "bool"
+        }
+      ],
+      "Limits": [
+        {
+          "name": "valid_from",
+          "type": "uint40"
+        },
+        {
+          "name": "expires_at",
+          "type": "uint40"
+        },
+        {
+          "name": "gas_price_limit",
+          "type": "uint64"
+        },
+        {
+          "name": "purgeable",
+          "type": "bool"
+        },
+        {
+          "name": "blockable",
+          "type": "bool"
+        }
+      ],
+      "transaction1": [
+        {
+          "name": "call",
+          "type": "Call"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "BatchMultiSigCall": [
+        {
+          "name": "meta",
+          "type": "Meta"
+        },
+        {
+          "name": "limits",
+          "type": "Limits"
+        },
+        {
+          "name": "transaction_1",
+          "type": "transaction1"
+        }
+      ],
+      "Call": [
+        {
+          "name": "call_index",
+          "type": "uint16"
+        },
+        {
+          "name": "payer_index",
+          "type": "uint16"
+        },
+        {
+          "name": "call_type",
+          "type": "string"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "to_ens",
+          "type": "string"
+        },
+        {
+          "name": "eth_value",
+          "type": "uint256"
+        },
+        {
+          "name": "gas_limit",
+          "type": "uint32"
+        },
+        {
+          "name": "permissions",
+          "type": "uint16"
+        },
+        {
+          "name": "flow_control",
+          "type": "string"
+        },
+        {
+          "name": "returned_false_means_fail",
+          "type": "bool"
+        },
+        {
+          "name": "jump_on_success",
+          "type": "uint16"
+        },
+        {
+          "name": "jump_on_fail",
+          "type": "uint16"
+        },
+        {
+          "name": "method_interface",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+      "salt": "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7"
+    },
+    "message": {
+      "meta": {
+        "name": "test111",
+        "builder": "0x0000000000000000000000000000000000000000",
+        "selector": "0xf6407ddd",
+        "version": "0x010101",
+        "random_id": "0x6b93fb",
+        "eip712": true,
+        "auth_enabled": false
+      },
+      "limits": {
+        "valid_from": "1689773240",
+        "expires_at": "1690405199",
+        "gas_price_limit": "1146312908",
+        "purgeable": false,
+        "blockable": true
+      },
+      "transaction_1": {
+        "call": {
+          "call_index": 1,
+          "payer_index": 1,
+          "call_type": "action",
+          "from": "0x2dFf96721a29D532508863e168e8e9e8A3dE9ED2",
+          "to": "0x06f36c3f77973317bea50363a0f66646bced7319",
+          "to_ens": "",
+          "eth_value": "0",
+          "gas_limit": "181230",
+          "permissions": 0,
+          "flow_control": "stop on success, revert on fail",
+          "returned_false_means_fail": false,
+          "jump_on_success": 0,
+          "jump_on_fail": 0,
+          "method_interface": "safeTransferFrom(address,address,uint256)"
+        },
+        "from": "0xBAadCAe3C0a98b42efc3B206A4dd19eAB956E40D",
+        "to": "0x2dFf96721a29D532508863e168e8e9e8A3dE9ED2",
+        "tokenId": "251"
+      }
+    }
+  },
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x480228c0f43d5dcca7ada09e07a5c9d47661cb3a0785ca25062be6752551575d",
+  "sessionId": "0x6b93fb000101010000000000000064c1894f0064b7e4b800000000445358cc0c",
+  "nameHash": "0x853f4cecca66a761c9446750dff4866ac9e7d61d635f868ef1fb8a179f458b7a",
+  "mcall": [
+    {
+      "typeHash": "0x57594b80253d3f54c199ecb2b18eb619e473f3d02431a3c0ca40717d8beb9be9",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x42842e0eb38857a7775b4e7364b2775df7325074d088e7fb39590cd6281184ed",
+      "value": "0",
+      "callId": "0x0000000000000000000000000000000000000600000000000100010002c3ee00",
+      "from": "0x2dFf96721a29D532508863e168e8e9e8A3dE9ED2",
+      "to": "0x06f36c3f77973317bea50363a0f66646bced7319",
+      "data": "0x000000000000000000000000baadcae3c0a98b42efc3b206a4dd19eab956e40d0000000000000000000000002dff96721a29d532508863e168e8e9e8a3de9ed200000000000000000000000000000000000000000000000000000000000000fb",
+      "types": [],
+      "typedHashes": []
+    }
+  ],
+  "variables": [],
+  "externalSigners": [],
+  "signatures": [
+    {
+      "r": "0xf6a7abfbc5c49364884689a97418d532fb1b678cb6861e06b992ab207a42eadc",
+      "s": "0x60342ce5661278ce9436f4e17319ff533df7fe14cba3dad567cbb7e211bc1e32",
+      "_vs": "0x60342ce5661278ce9436f4e17319ff533df7fe14cba3dad567cbb7e211bc1e32",
+      "recoveryParam": 0,
+      "v": 27,
+      "yParityAndS": "0x60342ce5661278ce9436f4e17319ff533df7fe14cba3dad567cbb7e211bc1e32",
+      "compact": "0xf6a7abfbc5c49364884689a97418d532fb1b678cb6861e06b992ab207a42eadc60342ce5661278ce9436f4e17319ff533df7fe14cba3dad567cbb7e211bc1e32"
+    }
+  ],
+  "computed": []
+}

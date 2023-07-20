@@ -38,17 +38,6 @@ export const addresses = {
   },
 };
 
-export const EIP712_RECURRENCY = [
-  { name: "max_repeats", type: "uint16" },
-  { name: "chill_time", type: "uint32" },
-  { name: "accumetable", type: "bool" },
-];
-
-export const EIP712_MULTISIG = [
-  { name: "external_signers", type: "address[]" },
-  { name: "minimum_approvals", type: "uint8" },
-];
-
 export const NO_JUMP = "NO_JUMP";
 
 export const DEFAULT_CALL_OPTIONS: DeepRequired<Omit<CallOptions, "payerIndex">> = {
