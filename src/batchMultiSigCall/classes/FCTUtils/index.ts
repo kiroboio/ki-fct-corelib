@@ -330,6 +330,18 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getMaxGas = () => {
+    const allPayers = this.getPaymentPerPayer({ ethPriceInKIRO: "0" });
+
+    return allPayers.reduce((acc, payer) => {
+      const largestGas = payer.largestPayment.gas;
+      if (BigInt(largestGas) > BigInt(acc)) {
+        return largestGas;
+      }
+      return acc;
+    }, "0" as string);
+  };
+
   public getCallResults = async ({
     rpcUrl,
     provider,
