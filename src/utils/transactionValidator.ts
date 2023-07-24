@@ -13,6 +13,8 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
   const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
 
   if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+    const networkFeeInGwei = ethers.utils.parseUnits(gasPrice.maxFeePerGas.toString(), "gwei");
+    const fctMaxGasPriceInGwei = ethers.utils.parseUnits(maxGasPrice.toString(), "gwei");
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: 2 },
@@ -20,7 +22,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         gas: 0,
         gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
       },
-      error: "Max gas price set for the FCT is too high",
+      error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
     };
   }
 
