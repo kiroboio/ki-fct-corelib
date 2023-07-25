@@ -4,19 +4,19 @@ import { CallOptions, DeepRequired } from "../types";
 export const addresses = {
   1: {
     FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
-    FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
+    FCT_BatchMultiSig: "0xee261D709227e0Bf1037D3Cd5D45becD8B93f712",
     FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
-    FCT_Tokenomics: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
-    Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
-    ActuatorCore: "0x5E3189755Df3DBB0FD3FeCa3de168fEEDBA76a79",
+    FCT_Tokenomics: "0xB6E0d8DCc868061faAf38D3Bf00793592ff68484",
+    Actuator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
+    ActuatorCore: "0xde841c9344E3C770a59102C8E61AFF699D8c4585",
   },
   5: {
     FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
     FCT_BatchMultiSig: "0xf1E8Aca842bF40ee2f0bD70AfEbaA37b26a68fDD",
     FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
-    FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
-    Actuator: "0x2B1A8AD0A8d199E4bdaFEF16A09cfaD27eD7A4cA",
-    ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
+    FCT_Tokenomics: "0x47Fca35c6fAb9E90a1ccf2630941fF64866fD3d2",
+    Actuator: "0x862A8FB429195d735106c06C4e352E305d8c7B31",
+    ActuatorCore: "0x2301F7d5A833395733F92fdf68B8Eb15aC757dF9",
   },
   42161: {
     // TODO: All the contracts below are copied from Goerli, need to be changed
