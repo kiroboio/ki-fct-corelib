@@ -1,4 +1,4 @@
-import { Flow } from "../constants/flows";
+import { Flow } from "../constants";
 import { CallOptions, DeepRequired } from "../types";
 
 export const addresses = {
@@ -12,10 +12,10 @@ export const addresses = {
   },
   5: {
     FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
+    FCT_BatchMultiSig: "0xf1E8Aca842bF40ee2f0bD70AfEbaA37b26a68fDD",
     FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
     FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
-    Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
+    Actuator: "0x2B1A8AD0A8d199E4bdaFEF16A09cfaD27eD7A4cA",
     ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
   },
   42161: {
