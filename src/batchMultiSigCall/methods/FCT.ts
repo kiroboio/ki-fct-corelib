@@ -115,6 +115,7 @@ export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
   const fctOptions = this.options;
   this.setOptions({
     dryRun: true,
+    maxGasPrice: "0",
   });
   const fct = this.exportFCT();
   this.setOptions(fctOptions);
