@@ -50,7 +50,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
     if (err.reason === "processing response error") {
       throw err;
     }
-    if (dryRun && err.reason === "dry run success") {
+    if (dryRun && err.reason.includes("dry run success")) {
       return {
         isValid: true,
         txData: { gas: 0, ...gasPrice, type: 2 },
