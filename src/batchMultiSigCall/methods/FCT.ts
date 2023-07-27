@@ -1,4 +1,4 @@
-import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
+import { AllPlugins, ChainId, Erc20Approvals, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
@@ -47,6 +47,23 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTInputCal
     }
   }
   return callsCreated;
+}
+
+export async function addAtIndex(this: BatchMultiSigCall, call: FCTInputCall, index: number): Promise<FCTCall> {
+  if (index < 0 || index > this._calls.length) {
+    throw new Error("Index out of range");
+  }
+
+  if (call instanceof Multicall || call instanceof Call) {
+    this._calls.splice(index, 0, call);
+    return call;
+  }
+  const newCall = await Call.create({
+    FCT: this,
+    call,
+  });
+  this._calls.splice(index, 0, newCall);
+  return newCall;
 }
 
 export function createPlugin<T extends AllPlugins>(
@@ -109,6 +126,20 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     byHash: id(this.options.by),
     verifierHash: id(this.options.verifier),
   };
+}
+
+export async function exportFCTWithApprovals(this: BatchMultiSigCall): IFCT {
+  const FCT = BatchMultiSigCall.from(this.exportFCT());
+  const signers = FCT.utils.getSigners();
+  const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
+    (approval) => approval.protocol === "ERC20"
+  );
+  for (const signer of signers) {
+    const ERC20Approvals = new Erc20Approvals({
+      chainId: FCT.chainId,
+      vaultAddress: signer,
+    });
+  }
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {

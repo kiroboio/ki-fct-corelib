@@ -7,6 +7,7 @@ import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
+  addAtIndex,
   create,
   createMultiple,
   createPlugin,
@@ -143,6 +144,7 @@ export class BatchMultiSigCall {
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
+  private addAtIndex = addAtIndex;
 
   // Export FCT
   public exportFCT = exportFCT;
