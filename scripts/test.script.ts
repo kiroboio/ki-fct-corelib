@@ -1,18 +1,40 @@
 import { ethers } from "ethers";
 
-import { getGasPrices } from "../src/utils";
-import scriptData from "./scriptData";
+import { BatchMultiSigCall } from "../src";
 
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
-const chainId = 5;
 
 async function main() {
-  const gasPrices = await getGasPrices({
-    rpcUrl: scriptData[chainId].rpcUrl,
-    chainId: chainId,
+  const FCT = new BatchMultiSigCall();
+  await FCT.create({
+    nodeId: "node1",
+    to: createRandomAddress(),
+    toENS: "@token.kiro.eth",
+    method: "transfer",
+    params: [
+      { name: "to", type: "address", value: createRandomAddress() },
+      { name: "token_amount", type: "uint256", value: "20" },
+    ],
+    from: createRandomAddress(),
+    value: "0",
   });
 
-  console.log(gasPrices);
+  await FCT.create({
+    nodeId: "node2",
+    to: createRandomAddress(),
+    method: "erc20Airdrop",
+    params: [
+      { name: "token", type: "address", value: createRandomAddress() },
+      { name: "from", type: "address", value: createRandomAddress() },
+      { name: "amount", type: "uint256", value: createRandomAddress() },
+      { name: "recipients", type: "address[1]", value: [createRandomAddress()] },
+    ],
+    from: createRandomAddress(),
+  });
+
+  const FCTData = FCT.exportFCT();
+
+  console.log(JSON.stringify(FCTData, null, 2));
 }
 
 main()
