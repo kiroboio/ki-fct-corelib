@@ -2,6 +2,11 @@ import { ethers } from "ethers";
 
 import { EIP1559GasPrice } from "../types";
 
+const precentilesForNetworks = {
+  5: [2, 6, 15, 30],
+  1: [2, 5, 15, 25],
+};
+
 const gasPriceCalculationsByChains = {
   5: (maxFeePerGas: number) => {
     // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
@@ -20,6 +25,10 @@ const gasPriceCalculationsByChains = {
   },
   1: (maxFeePerGas: number) => maxFeePerGas,
 };
+function avg(arr: number[]) {
+  const sum = arr.reduce((a, v) => a + v);
+  return Math.round(sum / arr.length);
+}
 
 export const getGasPrices = async ({
   rpcUrl,
@@ -32,10 +41,6 @@ export const getGasPrices = async ({
   historicalBlocks?: number;
   tries?: number;
 }): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
-  function avg(arr: number[]) {
-    const sum = arr.reduce((a, v) => a + v);
-    return Math.round(sum / arr.length);
-  }
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
   let keepTrying = true;
@@ -54,7 +59,11 @@ export const getGasPrices = async ({
         return JSON.stringify({
           jsonrpc: "2.0",
           method: "eth_feeHistory",
-          params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 15, 25]],
+          params: [
+            historicalBlocks,
+            `0x${blockNumber.toString(16)}`,
+            precentilesForNetworks[chainId as keyof typeof precentilesForNetworks] || precentilesForNetworks[5],
+          ],
           id: 1,
         });
       };
