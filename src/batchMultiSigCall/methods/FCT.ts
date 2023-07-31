@@ -140,15 +140,20 @@ export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
 
     const ERC20Approvals = new Erc20Approvals({
       chainId: FCT.chainId,
-      vaultAddress: signer,
+    });
+
+    const ResetERC20Approvals = new Erc20Approvals({
+      chainId: FCT.chainId,
     });
 
     // Call ERC20Approvals.add approvals.length times
     for (let i = 1; i < approvals.length; i++) {
       ERC20Approvals.add();
+      ResetERC20Approvals.add();
     }
 
     const pluginInterface = ERC20Approvals.getInterface();
+    const resetPluginInterface = ResetERC20Approvals.getInterface();
 
     pluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
       const approval = approvals[+key.slice(-1)];
@@ -163,12 +168,34 @@ export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
       }
     });
 
+    resetPluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+      const approval = approvals[+key.slice(-1)];
+      if (key.includes("token")) {
+        param.setString({ value: approval.token });
+      }
+      if (key.includes("spender")) {
+        param.setString({ value: approval.params.spender });
+      }
+      if (key.includes("amount")) {
+        param.setString({ value: "0" });
+      }
+    });
+
     await FCT.addAtIndex(
       {
         from: signer,
         plugin: ERC20Approvals,
       },
       0
+    );
+
+    // Set reset approvals last
+    await FCT.addAtIndex(
+      {
+        from: signer,
+        plugin: ResetERC20Approvals,
+      },
+      FCT.calls.length
     );
   }
   return FCT.exportFCT();
