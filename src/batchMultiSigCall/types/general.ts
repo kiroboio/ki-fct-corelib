@@ -72,7 +72,7 @@ export interface DecodedCalls extends StrictMSCallInput {
 
 export type IWithPlugin = {
   plugin: {
-    create(): Promise<IPluginCall | undefined>;
+    create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
   };
 } & MSCallMandatory;
 

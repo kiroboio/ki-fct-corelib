@@ -6,7 +6,7 @@ import { hexlify, id } from "ethers/lib/utils";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { FCTInputCall, IFCT, Param } from "../../types";
+import { FCTInputCall, IFCT, IRequiredApproval, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData } from "../classes/Call/helpers";
@@ -128,18 +128,50 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   };
 }
 
-export async function exportFCTWithApprovals(this: BatchMultiSigCall): IFCT {
+export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
   const FCT = BatchMultiSigCall.from(this.exportFCT());
   const signers = FCT.utils.getSigners();
   const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
     (approval) => approval.protocol === "ERC20"
-  );
+  ) as (IRequiredApproval & { protocol: "ERC20" })[];
   for (const signer of signers) {
+    // Get all approvals for the signer
+    const approvals = requiredApprovals.filter((approval) => approval.from.toLowerCase() === signer.toLowerCase());
+
     const ERC20Approvals = new Erc20Approvals({
       chainId: FCT.chainId,
       vaultAddress: signer,
     });
+
+    // Call ERC20Approvals.add approvals.length times
+    for (let i = 1; i < approvals.length; i++) {
+      ERC20Approvals.add();
+    }
+
+    const pluginInterface = ERC20Approvals.getInterface();
+
+    pluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+      const approval = approvals[+key.slice(-1)];
+      if (key.includes("token")) {
+        param.setString({ value: approval.token });
+      }
+      if (key.includes("spender")) {
+        param.setString({ value: approval.params.spender });
+      }
+      if (key.includes("amount")) {
+        param.setString({ value: approval.params.amount });
+      }
+    });
+
+    await FCT.addAtIndex(
+      {
+        from: signer,
+        plugin: ERC20Approvals,
+      },
+      0
+    );
   }
+  return FCT.exportFCT();
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {

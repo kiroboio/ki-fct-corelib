@@ -1,4 +1,6 @@
+import { CompoundV3 } from "@kiroboio/fct-plugins";
 import { ethers } from "ethers";
+import util from "util";
 
 import { BatchMultiSigCall } from "../src";
 
@@ -6,35 +8,23 @@ const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
   const FCT = new BatchMultiSigCall();
-  await FCT.create({
-    nodeId: "node1",
-    to: createRandomAddress(),
-    toENS: "@token.kiro.eth",
-    method: "transfer",
-    params: [
-      { name: "to", type: "address", value: createRandomAddress() },
-      { name: "token_amount", type: "uint256", value: "20" },
-    ],
+
+  await FCT.add({
     from: createRandomAddress(),
-    value: "0",
+    plugin: new CompoundV3.actions.Supply({
+      chainId: "5",
+      initParams: {
+        methodParams: {
+          amount: "1000000000000000000",
+          asset: "0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e",
+        },
+      },
+    }),
   });
 
-  await FCT.create({
-    nodeId: "node2",
-    to: createRandomAddress(),
-    method: "erc20Airdrop",
-    params: [
-      { name: "token", type: "address", value: createRandomAddress() },
-      { name: "from", type: "address", value: createRandomAddress() },
-      { name: "amount", type: "uint256", value: createRandomAddress() },
-      { name: "recipients", type: "address[1]", value: [createRandomAddress()] },
-    ],
-    from: createRandomAddress(),
-  });
+  const data = await FCT.exportFCTWithApprovals();
 
-  const FCTData = FCT.exportFCT();
-
-  console.log(JSON.stringify(FCTData, null, 2));
+  console.log(util.inspect(data, false, null, true /* enable colors */));
 }
 
 main()
