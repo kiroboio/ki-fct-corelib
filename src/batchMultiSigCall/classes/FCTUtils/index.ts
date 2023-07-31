@@ -305,7 +305,7 @@ export class FCTUtils extends FCTBase {
         const currentSmallestValue = currentValues.smallest?.kiroCost;
 
         const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
-        if (value > currentLargestValue) {
+        if (!currentLargestValue || value > currentLargestValue) {
           currentValues.largest = pathData[payer as keyof typeof pathData];
         }
         if (!currentSmallestValue || value < currentSmallestValue) {
