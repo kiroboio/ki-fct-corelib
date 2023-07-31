@@ -38,7 +38,7 @@ export type TypedDataMessageTransaction = {
   call: {
     call_index: number;
     payer_index: number;
-    call_type: (typeof CALL_TYPE_MSG)[keyof typeof CALL_TYPE_MSG];
+    call_type: (typeof CALL_TYPE_MSG)[keyof typeof CALL_TYPE_MSG] | string;
     from: string;
     to: string;
     to_ens: string;
