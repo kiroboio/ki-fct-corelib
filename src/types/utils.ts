@@ -9,6 +9,6 @@ export interface ITxValidator {
 }
 
 export interface EIP1559GasPrice {
-  maxFeePerGas: number;
-  maxPriorityFeePerGas: number;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
 }
