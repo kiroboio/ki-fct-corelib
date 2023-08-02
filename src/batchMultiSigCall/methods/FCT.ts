@@ -6,7 +6,7 @@ import { hexlify, id } from "ethers/lib/utils";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { FCTInputCall, IFCT, Param } from "../../types";
+import { CallOptions, FCTInputCall, IFCT, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData } from "../classes/Call/helpers";
@@ -117,7 +117,21 @@ export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
     dryRun: true,
     maxGasPrice: "0",
   });
+  const callOptionsBefore: CallOptions[] = [];
+  // Update every call to have gasLimit 0 and save it to restore it later
+  this._calls.forEach((call) => {
+    callOptionsBefore.push(call.options);
+    call.setOptions({
+      gasLimit: "0",
+    });
+  });
+
   const fct = this.exportFCT();
+
+  // Restore the original options
+  this._calls.forEach((call, index) => {
+    call.setOptions(callOptionsBefore[index]);
+  });
   this.setOptions(fctOptions);
   return fct;
 }
