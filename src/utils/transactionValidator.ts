@@ -7,10 +7,12 @@ import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
+  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
+  let { gasPrice } = txVal;
 
   const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const { maxGasPrice, dryRun } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
+  gasPrice = dryRun ? { maxFeePerGas: "0", maxPriorityFeePerGas: "0" } : gasPrice;
 
   if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
     const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
@@ -47,9 +49,6 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
       error: null,
     };
   } catch (err: any) {
-    if (err.reason === "processing response error") {
-      throw err;
-    }
     if (dryRun && err.reason.includes("dry run success")) {
       return {
         isValid: true,
@@ -60,6 +59,9 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         },
         error: null,
       };
+    }
+    if (err.reason === "processing response error") {
+      throw err;
     }
     if (txVal.errorIsValid) {
       return {
