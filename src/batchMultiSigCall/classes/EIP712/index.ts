@@ -239,7 +239,7 @@ export class EIP712 extends FCTBase {
     const types: Record<string, { name: string; type: string }[]> = {};
 
     this.FCT.calls.forEach((call, index) => {
-      const { structTypes, callType } = call.generateEIP712Type();
+      const { structTypes, callType } = call.generateEIP712Type(index);
       structs = { ...structs, ...structTypes };
       types[`transaction${index + 1}`] = callType;
     });
