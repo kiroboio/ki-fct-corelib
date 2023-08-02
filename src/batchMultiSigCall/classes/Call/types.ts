@@ -13,12 +13,12 @@ export interface ICall {
   get(): StrictMSCallInput;
   getDecoded(): DecodedCalls;
   getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
-  generateEIP712Type(): {
+  generateEIP712Type(index: number): {
     structTypes: { [key: string]: { name: string; type: string }[] };
     callType: { name: string; type: string }[];
   };
   generateEIP712Message(index: number): TypedDataMessageTransaction;
-  getTypedHashes(): string[];
+  getTypedHashes(index: number): string[];
   getEncodedData(): string;
   getTypesArray(): number[];
   getFunctionSignature(): string;
