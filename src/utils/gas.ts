@@ -8,26 +8,27 @@ const precentilesForNetworks = {
 };
 
 const gasPriceCalculationsByChains = {
-  5: (maxFeePerGas: number) => {
+  5: (maxFeePerGas: bigint) => {
     // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
-    if (maxFeePerGas < 70_000_000_000) {
-      return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
+
+    if (maxFeePerGas < 70_000_000_000n) {
+      return (maxFeePerGas + (maxFeePerGas * 15n) / 100n).toString();
     }
     // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
     if (maxFeePerGas < 100_000_000_000) {
-      return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+      return (maxFeePerGas + (maxFeePerGas * 10n) / 100n).toString();
     }
     // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
     if (maxFeePerGas > 200_000_000_000) {
-      return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
+      return (maxFeePerGas + (maxFeePerGas * 5n) / 100n).toString();
     }
-    return maxFeePerGas;
+    return maxFeePerGas.toString();
   },
-  1: (maxFeePerGas: number) => maxFeePerGas,
+  1: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
 };
-function avg(arr: number[]) {
-  const sum = arr.reduce((a, v) => a + v);
-  return Math.round(sum / arr.length);
+function avg(arr: string[]) {
+  const sum = arr.reduce((a, v) => BigInt(a) + BigInt(v), 0n);
+  return sum / BigInt(arr.length);
 }
 
 export const getGasPrices = async ({
@@ -86,17 +87,17 @@ export const getGasPrices = async ({
       let index = 0;
       const blocks: {
         number: number;
-        baseFeePerGas: number;
-        gasUsedRatio: number;
-        priorityFeePerGas: number[];
+        baseFeePerGas: string;
+        gasUsedRatio: string;
+        priorityFeePerGas: string[];
       }[] = [];
 
       while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
         blocks.push({
           number: blockNum,
-          baseFeePerGas: Number(result.baseFeePerGas[index]),
-          gasUsedRatio: Number(result.gasUsedRatio[index]),
-          priorityFeePerGas: result.reward[index].map((x: string) => Number(x)),
+          baseFeePerGas: result.baseFeePerGas[index],
+          gasUsedRatio: result.gasUsedRatio[index],
+          priorityFeePerGas: result.reward[index],
         });
         blockNum += 1;
         index += 1;
@@ -107,7 +108,7 @@ export const getGasPrices = async ({
       // Add 5% to fast and fastest
       const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
       const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
-      const baseFeePerGas = Number(baseFee);
+      const baseFeePerGas = BigInt(baseFee);
 
       const gasPriceCalc =
         gasPriceCalculationsByChains[chainId as keyof typeof gasPriceCalculationsByChains] ||
@@ -115,20 +116,20 @@ export const getGasPrices = async ({
 
       returnValue = {
         slow: {
-          maxFeePerGas: slow + baseFeePerGas,
-          maxPriorityFeePerGas: slow,
+          maxFeePerGas: (slow + baseFeePerGas).toString(),
+          maxPriorityFeePerGas: slow.toString(),
         },
         average: {
-          maxFeePerGas: average + baseFeePerGas,
-          maxPriorityFeePerGas: average,
+          maxFeePerGas: (average + baseFeePerGas).toString(),
+          maxPriorityFeePerGas: average.toString(),
         },
         fast: {
           maxFeePerGas: gasPriceCalc(fast + baseFeePerGas),
-          maxPriorityFeePerGas: fast,
+          maxPriorityFeePerGas: fast.toString(),
         },
         fastest: {
           maxFeePerGas: gasPriceCalc(fastest + baseFeePerGas),
-          maxPriorityFeePerGas: fastest,
+          maxPriorityFeePerGas: fastest.toString(),
         },
       };
 

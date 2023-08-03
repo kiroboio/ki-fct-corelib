@@ -109,14 +109,14 @@ export class Call extends CallBase implements ICall {
       to: this.FCT.variables.getValue(call.to, "address"),
       data: this.getEncodedData(),
       types: this.getTypesArray(),
-      typedHashes: this.getTypedHashes(),
+      typedHashes: this.getTypedHashes(index),
     };
   }
 
   //
   // EIP 712 methods
   //
-  public generateEIP712Type() {
+  public generateEIP712Type(index: number) {
     const call = this.get();
     if (!call.params || (call.params && call.params.length === 0)) {
       return {
@@ -130,7 +130,7 @@ export class Call extends CallBase implements ICall {
     const callParameters = call.params.map((param: Param) => {
       const typeName = this.getStructType({
         param,
-        nodeId: call.nodeId,
+        nodeId: index.toString(),
         structTypes,
       });
 
@@ -175,8 +175,8 @@ export class Call extends CallBase implements ICall {
     };
   }
 
-  public getTypedHashes(): string[] {
-    const { structTypes, callType } = this.generateEIP712Type();
+  public getTypedHashes(index: number): string[] {
+    const { structTypes, callType } = this.generateEIP712Type(index);
 
     return this.getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
       return hexlify(TypedDataUtils.hashType(type, structTypes));
