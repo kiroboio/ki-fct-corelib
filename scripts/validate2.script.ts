@@ -70,7 +70,7 @@ const txValidator = async ({
   console.timeEnd("txValidator");
 };
 
-const FCT = BatchMultiSigCall.from(FCTData);
+const FCT = BatchMultiSigCall.from(FCTData as any);
 const calldata = FCT.utils.getCalldataForActuator({
   signatures: FCTData.signatures,
   activator: actuatorAddress,
