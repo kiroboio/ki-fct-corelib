@@ -128,7 +128,7 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   };
 }
 
-export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
+export async function exportWithApprovals(this: BatchMultiSigCall) {
   const FCT = BatchMultiSigCall.from(this.exportFCT());
   const signers = FCT.utils.getSigners();
   const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
@@ -137,7 +137,6 @@ export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
   for (const signer of signers) {
     // Get all approvals for the signer
     const approvals = requiredApprovals.filter((approval) => approval.from.toLowerCase() === signer.toLowerCase());
-    console.log(approvals);
 
     const ERC20Approvals = new Erc20Approvals({
       chainId: FCT.chainId,
@@ -199,7 +198,6 @@ export async function exportFCTWithApprovals(this: BatchMultiSigCall) {
       FCT.calls.length
     );
   }
-  console.log(JSON.stringify(FCT.callsAsObjects, null, 2));
   return FCT.exportFCT();
 }
 
