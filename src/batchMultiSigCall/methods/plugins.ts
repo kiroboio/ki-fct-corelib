@@ -1,4 +1,4 @@
-import { ChainId, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
+import { ChainId, getMulticallPlugin, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
 
 import { InstanceOf } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
@@ -13,23 +13,32 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
     throw new Error("To value cannot be a variable");
   }
 
-  const pluginData = getPluginProvider({
-    signature: call.getFunctionSignature(),
-    address: callData.to,
-    chainId: chainId as ChainId,
-  });
+  let PluginClass: PluginInstance;
 
-  if (!pluginData) {
-    throw new Error("Plugin not found");
+  if (callData.toENS === "@lib:multicall") {
+    const plugin = getMulticallPlugin({
+      signature: call.getFunctionSignature(),
+      chainId: chainId as ChainId,
+    });
+    if (!plugin) {
+      throw new Error("Multicall plugin not found");
+    }
+    PluginClass = plugin as unknown as PluginInstance;
+  } else {
+    const pluginData = getPluginProvider({
+      signature: call.getFunctionSignature(),
+      address: callData.to,
+      chainId: chainId as ChainId,
+    });
+    if (pluginData === null) {
+      throw new Error("Plugin not found");
+    }
+    PluginClass = new pluginData.plugin({
+      chainId: chainId.toString() as ChainId,
+    }) as unknown as PluginInstance;
   }
 
-  const pluginClass = pluginData.plugin as any;
-
-  const plugin = new pluginClass({
-    chainId: chainId.toString() as ChainId,
-  }) as PluginInstance;
-
-  plugin.input.set({
+  PluginClass.input.set({
     to: callData.to,
     value: callData.value as any, // TODO: Temporary fix, need to fix the type in plugins
     methodParams: callData.params
@@ -39,7 +48,7 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
       : {},
   });
 
-  return plugin;
+  return PluginClass;
 }
 
 export async function getPluginClass(
