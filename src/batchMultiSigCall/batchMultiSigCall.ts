@@ -7,11 +7,13 @@ import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
 import {
+  addAtIndex,
   create,
   createMultiple,
   createPlugin,
   exportFCT,
   exportNotificationFCT,
+  exportWithApprovals,
   getCall,
   getCallByNodeId,
   getIndexByNodeId,
@@ -143,10 +145,15 @@ export class BatchMultiSigCall {
   public addMultiple = createMultiple;
   public create = create;
   public createMultiple = createMultiple;
+  // Specific to BatchMultiSigCall
+  protected addAtIndex = addAtIndex;
 
   // Export FCT
+  public export = exportFCT;
   public exportFCT = exportFCT;
+  public exportNotification = exportNotificationFCT;
   public exportNotificationFCT = exportNotificationFCT;
+  public exportWithApprovals = exportWithApprovals;
 
   // Import FCT
   public importFCT = importFCT;
