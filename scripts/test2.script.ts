@@ -22,3 +22,20 @@ main()
     console.error(error);
     process.exitCode = 1;
   });
+
+const data = {
+  id: "EnoughFunds",
+  value1: {
+    id: "USDTValidation",
+    value1: { type: "output", id: { nodeId: "USDT_balanceof", innerIndex: 0 } },
+    operator: "greater equal than",
+    value2: "100" + "0".repeat(18),
+  },
+  operator: "or",
+  value2: {
+    id: "USDCValidation",
+    value1: { type: "output", id: { nodeId: "USDC_balanceof", innerIndex: 0 } },
+    operator: "greater equal than",
+    value2: "100" + "0".repeat(6),
+  },
+};

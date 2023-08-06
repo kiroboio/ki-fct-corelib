@@ -128,7 +128,7 @@ export class BatchMultiSigCall {
     return this.variables.addComputed<C>(computed);
   };
 
-  public addValidation = <V extends IValidation>(validation: { nodeId: string; validation: V }) => {
+  public addValidation = <V extends IValidation<true>>(validation: { nodeId: string; validation: V }) => {
     return this.validation.add<V>(validation);
   };
 

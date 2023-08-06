@@ -51,7 +51,7 @@ export class Call extends CallBase implements ICall {
     return this.get();
   }
 
-  public addValidation(validation: IValidation): ValidationVariable {
+  public addValidation(validation: IValidation<true>): ValidationVariable {
     const validationVariable = this.FCT.validation.add({
       validation,
       nodeId: this.nodeId,
