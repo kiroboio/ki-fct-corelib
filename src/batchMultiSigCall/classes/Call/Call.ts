@@ -37,6 +37,14 @@ export class Call extends CallBase implements ICall {
     this.FCT = FCT;
 
     this.verifyCall({ call: this.call });
+
+    // If validation, add it to the validation list
+    if (input.validation) {
+      this.FCT.validation.add({
+        validation: input.validation,
+        nodeId: this.nodeId,
+      });
+    }
   }
 
   //
@@ -51,7 +59,7 @@ export class Call extends CallBase implements ICall {
     return this.get();
   }
 
-  public addValidation(validation: IValidation): ValidationVariable {
+  public addValidation(validation: IValidation<true>): ValidationVariable {
     const validationVariable = this.FCT.validation.add({
       validation,
       nodeId: this.nodeId,
