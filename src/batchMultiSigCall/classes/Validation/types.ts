@@ -2,7 +2,7 @@ import { ValidationOperator } from "../../../constants";
 import { Variable } from "../../../types";
 
 // If there is V['id'] then { type: "validation"; id: V["id"] } else ValidationVariable
-export type ValidationAddResult<V extends IValidation> = V["id"] extends string
+export type ValidationAddResult<V extends IValidation<true>> = V["id"] extends string
   ? { type: "validation"; id: V["id"] }
   : ValidationVariable;
 
@@ -11,11 +11,16 @@ export interface ValidationVariable {
   id: string;
 }
 
-export interface IValidation {
+export type IValidationValue<WithIValidation extends boolean> = WithIValidation extends true
+  ? string | Variable | ValidationVariable | IValidation<WithIValidation>
+  : string | Variable | ValidationVariable;
+
+export interface IValidation<WithIValidation extends boolean> {
   id?: string;
-  value1: string | Variable | ValidationVariable;
+  // If WithoutIValidation is true, then value1 and value2 are string | Variable | ValidationVariable
+  value1: IValidationValue<WithIValidation>;
   operator: keyof typeof ValidationOperator;
-  value2: string | Variable | ValidationVariable;
+  value2: IValidationValue<WithIValidation>;
 }
 
 export interface IValidationData {

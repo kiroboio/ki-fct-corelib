@@ -47,6 +47,44 @@ describe("Validation", () => {
     expect(validation1.value2).to.equal("20");
   });
 
+  it("Should add a validation with a validation as value1", async () => {
+    await FCT.add({
+      nodeId: "transfer",
+      from: createRandomAddress(),
+      to: createRandomAddress(),
+      method: "balanceOf",
+    });
+
+    validations.add({
+      nodeId: "transfer",
+      validation: {
+        id: "eitherValue1OrValue2",
+        value1: {
+          id: "compare",
+          value1: { type: "output", id: { nodeId: "transfer", innerIndex: 0 } },
+          operator: "greater equal than",
+          value2: "10" + "0".repeat(18),
+        },
+        operator: "equal",
+        value2: {
+          id: "compare2",
+          value1: "30",
+          operator: "greater than",
+          value2: "10",
+        },
+      },
+    });
+
+    console.log(validations.get());
+
+    const fctData = FCT.exportFCT();
+
+    console.log(JSON.stringify(fctData, null, 2));
+
+    const fctValidations = fctData.validations;
+    expect(fctValidations.length).to.equal(3);
+  });
+
   it("Should expect an error when adding a validation with invalid value", async () => {
     await FCT.add({
       nodeId: "transfer",
