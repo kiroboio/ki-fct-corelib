@@ -1,4 +1,4 @@
-import { AllPlugins, ChainId, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
+import { AllPlugins, ChainId, Erc20Approvals, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { BigNumber, ethers, utils } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
@@ -6,7 +6,7 @@ import { hexlify, id } from "ethers/lib/utils";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { CallOptions, FCTInputCall, IFCT, Param } from "../../types";
+import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData } from "../classes/Call/helpers";
@@ -47,6 +47,23 @@ export async function createMultiple(this: BatchMultiSigCall, calls: FCTInputCal
     }
   }
   return callsCreated;
+}
+
+export async function addAtIndex(this: BatchMultiSigCall, call: FCTInputCall, index: number): Promise<FCTCall> {
+  if (index < 0 || index > this._calls.length) {
+    throw new Error("Index out of range");
+  }
+
+  if (call instanceof Multicall || call instanceof Call) {
+    this._calls.splice(index, 0, call);
+    return call;
+  }
+  const newCall = await Call.create({
+    FCT: this,
+    call,
+  });
+  this._calls.splice(index, 0, newCall);
+  return newCall;
 }
 
 export function createPlugin<T extends AllPlugins>(
@@ -109,6 +126,79 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     byHash: id(this.options.by),
     verifierHash: id(this.options.verifier),
   };
+}
+
+export async function exportWithApprovals(this: BatchMultiSigCall) {
+  const FCT = BatchMultiSigCall.from(this.exportFCT());
+  const signers = FCT.utils.getSigners();
+  const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
+    (approval) => approval.protocol === "ERC20"
+  ) as (IRequiredApproval & { protocol: "ERC20" })[];
+  for (const signer of signers) {
+    // Get all approvals for the signer
+    const approvals = requiredApprovals.filter((approval) => approval.from.toLowerCase() === signer.toLowerCase());
+
+    const ERC20Approvals = new Erc20Approvals({
+      chainId: FCT.chainId,
+    });
+
+    const ResetERC20Approvals = new Erc20Approvals({
+      chainId: FCT.chainId,
+    });
+
+    // Call ERC20Approvals.add approvals.length times
+    for (let i = 1; i < approvals.length; i++) {
+      ERC20Approvals.add();
+      ResetERC20Approvals.add();
+    }
+
+    const pluginInterface = ERC20Approvals.getInterface();
+    const resetPluginInterface = ResetERC20Approvals.getInterface();
+
+    pluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+      const approval = approvals[+key.slice(-1)];
+      if (key.includes("token")) {
+        param.setString({ value: approval.token });
+      }
+      if (key.includes("spender")) {
+        param.setString({ value: approval.params.spender });
+      }
+      if (key.includes("amount")) {
+        param.setString({ value: approval.params.amount });
+      }
+    });
+
+    resetPluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+      const approval = approvals[+key.slice(-1)];
+      if (key.includes("token")) {
+        param.setString({ value: approval.token });
+      }
+      if (key.includes("spender")) {
+        param.setString({ value: approval.params.spender });
+      }
+      if (key.includes("amount")) {
+        param.setString({ value: "0" });
+      }
+    });
+
+    await FCT.addAtIndex(
+      {
+        from: signer,
+        plugin: ERC20Approvals,
+      },
+      0
+    );
+
+    // Set reset approvals last
+    await FCT.addAtIndex(
+      {
+        from: signer,
+        plugin: ResetERC20Approvals,
+      },
+      FCT.calls.length
+    );
+  }
+  return FCT.exportFCT();
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
