@@ -1,0 +1,140 @@
+{
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        { "name": "name", "type": "string" },
+        { "name": "version", "type": "string" },
+        { "name": "chainId", "type": "uint256" },
+        { "name": "verifyingContract", "type": "address" },
+        { "name": "salt", "type": "bytes32" }
+      ],
+      "Meta": [
+        { "name": "name", "type": "string" },
+        { "name": "app", "type": "string" },
+        { "name": "by", "type": "string" },
+        { "name": "builder", "type": "address" },
+        { "name": "selector", "type": "bytes4" },
+        { "name": "version", "type": "bytes3" },
+        { "name": "random_id", "type": "bytes3" },
+        { "name": "eip712", "type": "bool" },
+        { "name": "verifier", "type": "string" },
+        { "name": "auth_enabled", "type": "bool" },
+        { "name": "dry_run", "type": "bool" }
+      ],
+      "Limits": [
+        { "name": "valid_from", "type": "uint40" },
+        { "name": "expires_at", "type": "uint40" },
+        { "name": "gas_price_limit", "type": "uint64" },
+        { "name": "purgeable", "type": "bool" },
+        { "name": "blockable", "type": "bool" }
+      ],
+      "Computed": [
+        { "name": "index", "type": "uint256" },
+        { "name": "value_1", "type": "uint256" },
+        { "name": "op_1", "type": "string" },
+        { "name": "value_2", "type": "uint256" },
+        { "name": "op_2", "type": "string" },
+        { "name": "value_3", "type": "uint256" },
+        { "name": "op_3", "type": "string" },
+        { "name": "value_4", "type": "uint256" },
+        { "name": "overflow_protection", "type": "bool" }
+      ],
+      "BatchMultiSigCall": [
+        { "name": "meta", "type": "Meta" },
+        { "name": "limits", "type": "Limits" },
+        { "name": "computed_1", "type": "Computed" }
+      ],
+      "Call": [
+        { "name": "call_index", "type": "uint16" },
+        { "name": "payer_index", "type": "uint16" },
+        { "name": "call_type", "type": "string" },
+        { "name": "from", "type": "address" },
+        { "name": "to", "type": "address" },
+        { "name": "to_ens", "type": "string" },
+        { "name": "value", "type": "uint256" },
+        { "name": "gas_limit", "type": "uint32" },
+        { "name": "permissions", "type": "uint16" },
+        { "name": "validation", "type": "uint16" },
+        { "name": "flow_control", "type": "string" },
+        { "name": "returned_false_means_fail", "type": "bool" },
+        { "name": "jump_on_success", "type": "uint16" },
+        { "name": "jump_on_fail", "type": "uint16" },
+        { "name": "method_interface", "type": "string" }
+      ]
+    },
+    "primaryType": "BatchMultiSigCall",
+    "domain": {
+      "name": "FCT Controller",
+      "version": "1",
+      "chainId": 5,
+      "verifyingContract": "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+      "salt": "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7"
+    },
+    "message": {
+      "meta": {
+        "name": "Untitled",
+        "app": "",
+        "by": "",
+        "builder": "0x0000000000000000000000000000000000000000",
+        "selector": "0x9b2542b3",
+        "version": "0x010201",
+        "random_id": "0x69aaea",
+        "eip712": true,
+        "verifier": "",
+        "auth_enabled": false,
+        "dry_run": false
+      },
+      "limits": {
+        "valid_from": "1691405504",
+        "expires_at": "1692046799",
+        "gas_price_limit": "153163906",
+        "purgeable": false,
+        "blockable": true
+      },
+      "computed_1": {
+        "index": "1",
+        "value_1": "12",
+        "op_1": "+",
+        "value_2": "3",
+        "op_2": "-",
+        "value_3": "2",
+        "op_3": "-",
+        "value_4": "2",
+        "overflow_protection": true
+      }
+    }
+  },
+  "builder": "0x0000000000000000000000000000000000000000",
+  "typeHash": "0x9bb6798f4206a77e988cf123f08de6ad1219f2a133c50d694b3e09445b9ee939",
+  "sessionId": "0x69aaea000102010000000000000064da95cf0064d0ccc000000000092118820c",
+  "nameHash": "0x7ba02b615fd7df64325b881de412f9011e8d599d6d26803faaf4e3b1ebb0da8a",
+  "mcall": [],
+  "variables": [],
+  "externalSigners": [],
+  "signatures": [
+    {
+      "r": "0xfe854892d3ff56d74363750e79e160f40bd41c9ff7c052157e0bae912987e8c5",
+      "s": "0x692796f9da3367b1e00d16723793815078a1ad113288223d721bbd7992c19725",
+      "_vs": "0xe92796f9da3367b1e00d16723793815078a1ad113288223d721bbd7992c19725",
+      "recoveryParam": 1,
+      "v": 28,
+      "yParityAndS": "0xe92796f9da3367b1e00d16723793815078a1ad113288223d721bbd7992c19725",
+      "compact": "0xfe854892d3ff56d74363750e79e160f40bd41c9ff7c052157e0bae912987e8c5e92796f9da3367b1e00d16723793815078a1ad113288223d721bbd7992c19725"
+    }
+  ],
+  "computed": [
+    {
+      "values": ["12", "3", "2", "2"],
+      "operators": [
+        "0x728b8dbbe730d9acd55e30e768e6a28a04bea0c61b88108287c2c87d79c98bb8",
+        "0xd3b8281179950f98149eefdb158d0e1acb56f56e8e343aa9fefafa7e36959561",
+        "0xd3b8281179950f98149eefdb158d0e1acb56f56e8e343aa9fefafa7e36959561"
+      ],
+      "overflowProtection": true
+    }
+  ],
+  "validations": [],
+  "appHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "byHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+  "verifierHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+}

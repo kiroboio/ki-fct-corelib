@@ -33,6 +33,6 @@ export interface IComputedEIP712 {
 
 export interface IComputedData {
   overflowProtection: boolean;
-  values: [string, string, string, string];
-  operators: [string, string, string];
+  values: string[];
+  operators: string[];
 }

@@ -42,7 +42,7 @@ export interface IFCT {
   signatures: SignatureLike[];
   variables: string[];
   externalSigners: string[];
-  computed: Omit<IComputedData, "index">[];
+  computed: IComputedData[];
   validations: IValidationData[];
 }
 
