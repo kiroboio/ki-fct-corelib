@@ -4,7 +4,7 @@ import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../../types
 
 const ParamType = ethers.utils.ParamType;
 
-const manageValue = (value: string | number | boolean | Variable) => {
+export const manageValue = (value: string | number | boolean | Variable) => {
   const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
 
   if (BigNumber.isBigNumber(value)) {
