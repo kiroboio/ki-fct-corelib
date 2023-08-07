@@ -57,7 +57,7 @@ export class Validation extends FCTBase {
     return { type: "validation", id };
   }
 
-  private addValidation(validation: IValidation<true>) {
+  public addValidation(validation: IValidation<true>) {
     if (this.isIValidation(validation.value1)) {
       const id = this.addValidation(validation.value1);
       validation.value1 = { type: "validation", id };

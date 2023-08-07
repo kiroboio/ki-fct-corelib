@@ -37,6 +37,8 @@ describe("Validation", () => {
 
     const fct = FCT.exportFCT();
 
+    console.log(JSON.stringify(fct, null, 2));
+
     expect(fct.typedData.types).to.contain.keys("Validation");
 
     expect(fct.typedData.message.transaction_1.call.validation).to.equal(1);
