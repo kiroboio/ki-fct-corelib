@@ -6,11 +6,12 @@ import { hexlify, id } from "ethers/lib/utils";
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { Interfaces } from "../../helpers/Interfaces";
-import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param } from "../../types";
+import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
-import { getParamsFromTypedData } from "../classes/Call/helpers";
+import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { Multicall } from "../classes/Call/Multicall/Multicall";
+import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
@@ -308,6 +309,29 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
     });
 
     this._calls.push(callClass);
+  }
+
+  // Get all computed variables names
+  const computedVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Computed").map(
+    (val) => val.name
+  );
+  // Get all computed variables from typedData.message
+  const computedVariables = computedVariableNames.map(
+    (name) => typedData.message[name as keyof typeof typedData.message]
+  ) as IComputedEIP712[];
+
+  for (const computedVariable of computedVariables) {
+    this.addComputed({
+      id: computedVariable.index,
+      value1: manageValue(computedVariable.value_1) as string | Variable,
+      operator1: computedVariable.op_1,
+      value2: manageValue(computedVariable.value_2) as string | Variable,
+      operator2: computedVariable.op_2,
+      value3: manageValue(computedVariable.value_3) as string | Variable,
+      operator3: computedVariable.op_3,
+      value4: manageValue(computedVariable.value_4) as string | Variable,
+      overflowProtection: computedVariable.overflow_protection,
+    });
   }
 
   return this.calls;
