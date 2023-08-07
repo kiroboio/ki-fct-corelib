@@ -11,6 +11,7 @@ import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { Multicall } from "../classes/Call/Multicall/Multicall";
+import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
@@ -300,6 +301,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
+        validation: meta.validation.toString(),
       },
     };
 
@@ -331,6 +333,23 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       operator3: computedVariable.op_3,
       value4: manageValue(computedVariable.value_4) as string | Variable,
       overflowProtection: computedVariable.overflow_protection,
+    });
+  }
+
+  const validationVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Validation").map(
+    (val) => val.name
+  );
+
+  const validaitonVariables = validationVariableNames.map(
+    (name) => typedData.message[name as keyof typeof typedData.message]
+  ) as unknown as IValidationEIP712[];
+
+  for (const validationVariable of validaitonVariables) {
+    this.validation.addValidation({
+      id: validationVariable.index,
+      value1: validationVariable.value_1,
+      operator: validationVariable.op,
+      value2: validationVariable.value_2,
     });
   }
 
