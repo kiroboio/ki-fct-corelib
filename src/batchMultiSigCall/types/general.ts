@@ -15,7 +15,7 @@ import {
 } from "../../types";
 import { Call } from "../classes";
 import { Multicall } from "../classes/Call/Multicall/Multicall";
-import { IValidationData } from "../classes/Validation/types";
+import { IValidation, IValidationData } from "../classes/Validation/types";
 import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
@@ -46,11 +46,12 @@ export interface IFCT {
   validations: IValidationData[];
 }
 
-export interface MSCallMandatory {
+export interface MSCallBase {
   nodeId?: string;
   from?: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
+  validation?: IValidation<true>;
 }
 
 export type IMSCallInput = {
@@ -58,7 +59,7 @@ export type IMSCallInput = {
   params?: Param[];
   method?: string;
   toENS?: string;
-} & MSCallMandatory;
+} & MSCallBase;
 
 export type FCTMCall = RequiredKeys<IMSCallInput, "nodeId">;
 
@@ -74,14 +75,14 @@ export type IWithPlugin = {
   plugin: {
     create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
   };
-} & MSCallMandatory;
+} & MSCallBase;
 
 export type IMSCallWithEncodedData = {
   nodeId?: string;
   abi: ReadonlyArray<ethers.utils.Fragment | JsonFragment> | string[];
   encodedData: string;
   to: string | Variable;
-} & MSCallMandatory;
+} & MSCallBase;
 
 export type FCTCall = Call | Multicall;
 export type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
@@ -163,6 +164,6 @@ export type IRequiredApproval = (
   token: string;
   from: string;
 };
-export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
+export type ICallDefaults = Omit<RequiredKeys<Partial<MSCallBase>, "value">, "nodeId"> & {
   options: DeepRequired<Omit<CallOptions, "payerIndex">>;
 };

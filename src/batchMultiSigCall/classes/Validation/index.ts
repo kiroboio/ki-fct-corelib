@@ -6,7 +6,7 @@ import { FCTBase } from "../FCTBase";
 import { IValidation, IValidationData, IValidationEIP712, ValidationAddResult, ValidationVariable } from "./types";
 
 export class Validation extends FCTBase {
-  protected _validations: Required<IValidation>[] = [];
+  protected _validations: Required<IValidation<false>>[] = [];
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
@@ -19,17 +19,17 @@ export class Validation extends FCTBase {
   public getForEIP712(): IValidationEIP712[] {
     return this._validations.map((c, i) => ({
       index: (i + 1).toString(),
-      value_1: this.handleVariable(c.value1, i),
+      value_1: this.handleVariable(c.value1),
       op: c.operator,
-      value_2: this.handleVariable(c.value2, i),
+      value_2: this.handleVariable(c.value2),
     }));
   }
 
   public getForData(): IValidationData[] {
-    return this._validations.map((c, i) => ({
-      value1: this.handleVariable(c.value1, i),
+    return this._validations.map((c) => ({
+      value1: this.handleVariable(c.value1),
       operator: ValidationOperator[c.operator],
-      value2: this.handleVariable(c.value2, i),
+      value2: this.handleVariable(c.value2),
     }));
   }
 
@@ -39,9 +39,39 @@ export class Validation extends FCTBase {
     return index + 1;
   }
 
-  public add<V extends IValidation>({ nodeId, validation }: { nodeId: string; validation: V }): ValidationAddResult<V> {
+  public add<V extends IValidation<true>>({
+    nodeId,
+    validation,
+  }: {
+    nodeId: string;
+    validation: V;
+  }): ValidationAddResult<V> {
     const call = this.FCT.getCallByNodeId(nodeId);
+
+    const id = this.addValidation(validation);
+
+    call.setOptions({
+      validation: id,
+    });
+
+    return { type: "validation", id };
+  }
+
+  private addValidation(validation: IValidation<true>) {
+    if (this.isIValidation(validation.value1)) {
+      const id = this.addValidation(validation.value1);
+      validation.value1 = { type: "validation", id };
+    }
+
+    if (this.isIValidation(validation.value2)) {
+      const id = this.addValidation(validation.value2);
+      validation.value2 = { type: "validation", id };
+    }
+
     const id = validation.id || this._validations.length.toString();
+
+    // Check if the validation id is already used
+    if (this._validations.some((v) => v.id === id)) throw new Error(`Validation with id ${id} already exists`);
 
     // if value1 or value2 is a string, check if it is a integer
     if (typeof validation.value1 === "string") {
@@ -52,20 +82,19 @@ export class Validation extends FCTBase {
     }
 
     this._validations.push({
-      ...validation,
+      value1: validation.value1,
+      operator: validation.operator,
+      value2: validation.value2,
       id,
-    });
+    } as Required<IValidation<false>>);
 
-    call.setOptions({
-      validation: id,
-    });
-
-    return { type: "validation", id };
+    return id;
   }
 
-  private handleVariable(value: string | Variable | ValidationVariable, index: number) {
+  private handleVariable(value: string | Variable | ValidationVariable) {
     if (InstanceOf.ValidationVariable(value)) {
-      const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+      const index = this.getIndex(value.id);
+      const outputIndexHex = index.toString(16).padStart(4, "0");
 
       return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
     }
@@ -73,5 +102,9 @@ export class Validation extends FCTBase {
       return this.FCT.variables.getVariable(value, "uint256");
     }
     return value;
+  }
+
+  private isIValidation(value: any): value is IValidation<true> {
+    return typeof value === "object" && value !== null && "value1" in value && "operator" in value && "value2" in value;
   }
 }
