@@ -32,6 +32,6 @@ export interface IValidationData {
 export interface IValidationEIP712 {
   index: string;
   value_1: string;
-  op: string;
+  op: keyof typeof ValidationOperator;
   value_2: string;
 }

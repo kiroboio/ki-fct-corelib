@@ -1,6 +1,7 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { CALL_TYPE_MSG } from "../../constants";
+import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCallParam } from "./general";
 
@@ -84,6 +85,7 @@ export type MessageLimits = Record<"limits", TypedDataLimits>;
 export type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 export type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
 export type MessageComputed = Record<`computed_${number}`, IComputedEIP712>;
+export type MessageValidation = Record<`validation_${number}`, IValidationEIP712>;
 
 export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
 export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
