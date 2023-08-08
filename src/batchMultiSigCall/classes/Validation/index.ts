@@ -34,6 +34,7 @@ export class Validation extends FCTBase {
   }
 
   public getIndex(id: string) {
+    if (id === "0") return 0;
     const index = this._validations.findIndex((v) => v.id === id);
     if (index === -1) throw new Error(`Validation with id ${id} not found`);
     return index + 1;
