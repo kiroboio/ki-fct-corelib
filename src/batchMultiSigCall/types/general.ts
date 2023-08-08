@@ -51,7 +51,7 @@ export interface MSCallBase {
   from?: string | Variable;
   value?: string | Variable;
   options?: CallOptions;
-  validation?: IValidation<true>;
+  addValidation?: IValidation<true>;
 }
 
 export type IMSCallInput = {
