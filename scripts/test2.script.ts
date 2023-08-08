@@ -7,15 +7,10 @@ const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
+
+  console.log("Import successful");
+  console.log(FCT.validations);
   const authenticatorSignature = FCT.utils.getAuthenticatorSignature();
-
-  FCT.addComputed({
-    id: "2",
-    value1: { type: "computed", id: "1" },
-    operator1: "+",
-    value2: "1",
-  });
-
   const exportFCT = FCT.exportFCT();
 
   console.log(JSON.stringify(exportFCT, null, 2));
