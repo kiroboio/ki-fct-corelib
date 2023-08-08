@@ -39,9 +39,9 @@ export class Call extends CallBase implements ICall {
     this.verifyCall({ call: this.call });
 
     // If validation, add it to the validation list
-    if (input.validation) {
+    if (input.addValidation) {
       this.FCT.validation.add({
-        validation: input.validation,
+        validation: input.addValidation,
         nodeId: this.nodeId,
       });
     }
