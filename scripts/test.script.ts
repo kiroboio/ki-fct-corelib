@@ -25,11 +25,6 @@ async function main() {
   });
 
   const withApprovals = await FCT.exportWithApprovals();
-
-  console.log(JSON.stringify(withApprovals, null, 2));
-
-  const FCTWithApprovals = BatchMultiSigCall.from(withApprovals);
-  const pluginData = await FCTWithApprovals.getPluginData(0);
 }
 
 main()
