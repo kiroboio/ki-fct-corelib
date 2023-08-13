@@ -131,7 +131,21 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
 }
 
 export async function exportWithApprovals(this: BatchMultiSigCall) {
-  const FCT = BatchMultiSigCall.from(this.exportFCT());
+  const FCTData = this.exportFCT();
+  const FCT = BatchMultiSigCall.from(FCTData);
+  // Check if the FCT calls contain 2 erc20approvals and are at index 0 and last index
+  const erc20Approvals = FCT.calls.filter((call, i) => {
+    const getCall = call.get();
+    return (
+      getCall.method === "erc20Approvals" &&
+      getCall.toENS === "@lib:multicall" &&
+      (i === 0 || i === FCT.calls.length - 1)
+    );
+  });
+  if (erc20Approvals.length !== 2) {
+    return FCTData;
+  }
+
   const signers = FCT.utils.getSigners();
   const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
     (approval) => approval.protocol === "ERC20"
@@ -183,6 +197,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
       }
     });
 
+    // Add approvals at the beginning
     await FCT.addAtIndex(
       {
         from: signer,
