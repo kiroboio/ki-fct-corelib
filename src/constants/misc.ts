@@ -25,12 +25,13 @@ export const ValidationBase = "0xE9000000000000000000000000000000000000000000000
 
 export const ValidationOperator = {
   equal: keccak256(toUtf8Bytes("equal")),
+  "not equal": keccak256(toUtf8Bytes("not equal")),
   "greater than": keccak256(toUtf8Bytes("greater than")),
   "greater equal than": keccak256(toUtf8Bytes("greater equal than")),
   or: keccak256(toUtf8Bytes("or")),
+  "or not": keccak256(toUtf8Bytes("or not")),
   and: keccak256(toUtf8Bytes("and")),
   "and not": keccak256(toUtf8Bytes("and not")),
-  "not equal": keccak256(toUtf8Bytes("not equal")),
 } as const;
 
 export const CALL_TYPE = {
