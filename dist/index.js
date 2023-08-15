@@ -1,4 +1,4 @@
-import { getPlugin as getPlugin$1 } from '@kiroboio/fct-plugins';
+import { getPlugin as getPlugin$1, Erc20Approvals, getMulticallPlugin } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import { ethers, BigNumber, utils as utils$1 } from 'ethers';
@@ -7,7 +7,6 @@ import _ from 'lodash';
 import { TypedDataUtils, signTypedData, SignTypedDataVersion, recoverTypedSignature } from '@metamask/eth-sig-util';
 import { defaultAbiCoder, toUtf8Bytes as toUtf8Bytes$1, hexlify, id } from 'ethers/lib/utils';
 import { Graph } from 'graphlib';
-import util from 'util';
 
 var Flow;
 (function (Flow) {
@@ -72,28 +71,32 @@ const ComputedBaseBytes = "0xFE0000000000000000000000000000000000000000000000000
 const ValidationBase = "0xE900000000000000000000000000000000000000000000000000000000000000";
 const ValidationOperator = {
     equal: keccak256(toUtf8Bytes("equal")),
+    "not equal": keccak256(toUtf8Bytes("not equal")),
     "greater than": keccak256(toUtf8Bytes("greater than")),
     "greater equal than": keccak256(toUtf8Bytes("greater equal than")),
     or: keccak256(toUtf8Bytes("or")),
+    "or not": keccak256(toUtf8Bytes("or not")),
     and: keccak256(toUtf8Bytes("and")),
     "and not": keccak256(toUtf8Bytes("and not")),
-    "not equal": keccak256(toUtf8Bytes("not equal")),
 };
 const CALL_TYPE = {
     ACTION: "0",
     VIEW_ONLY: "1",
     LIBRARY: "2",
+    LIBRARY_VIEW_ONLY: "3",
 };
 const CALL_TYPE_MSG = {
     ACTION: "action",
     VIEW_ONLY: "view only",
-    LIBRARY: "library",
+    LIBRARY: "library: action",
+    LIBRARY_VIEW_ONLY: "library: view only",
 };
 // Reverse Call Type MSG
 const CALL_TYPE_MSG_REV = {
     action: "ACTION",
     "view only": "VIEW_ONLY",
-    library: "LIBRARY",
+    "library: action": "LIBRARY",
+    "library: view only": "LIBRARY_VIEW_ONLY",
 };
 const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS";
 
@@ -1760,6 +1763,21 @@ var FCTBatchMultiSigCallABI = [
 						type: "bytes32"
 					},
 					{
+						internalType: "bytes32",
+						name: "appHash",
+						type: "bytes32"
+					},
+					{
+						internalType: "bytes32",
+						name: "byHash",
+						type: "bytes32"
+					},
+					{
+						internalType: "bytes32",
+						name: "verifierHash",
+						type: "bytes32"
+					},
+					{
 						internalType: "address",
 						name: "builder",
 						type: "address"
@@ -1856,43 +1874,45 @@ var FCTBatchMultiSigCallABI = [
 					{
 						components: [
 							{
-								internalType: "uint256",
-								name: "value",
-								type: "uint256"
+								internalType: "bool",
+								name: "overflowProtection",
+								type: "bool"
 							},
 							{
-								internalType: "uint256",
-								name: "add",
-								type: "uint256"
+								internalType: "uint256[4]",
+								name: "values",
+								type: "uint256[4]"
 							},
 							{
-								internalType: "uint256",
-								name: "sub",
-								type: "uint256"
-							},
-							{
-								internalType: "uint256",
-								name: "mul",
-								type: "uint256"
-							},
-							{
-								internalType: "uint256",
-								name: "pow",
-								type: "uint256"
-							},
-							{
-								internalType: "uint256",
-								name: "div",
-								type: "uint256"
-							},
-							{
-								internalType: "uint256",
-								name: "mod",
-								type: "uint256"
+								internalType: "bytes32[3]",
+								name: "operators",
+								type: "bytes32[3]"
 							}
 						],
 						internalType: "struct FCT_BatchMultiSig.Computed[]",
 						name: "computed",
+						type: "tuple[]"
+					},
+					{
+						components: [
+							{
+								internalType: "uint256",
+								name: "value1",
+								type: "uint256"
+							},
+							{
+								internalType: "bytes32",
+								name: "operator",
+								type: "bytes32"
+							},
+							{
+								internalType: "uint256",
+								name: "value2",
+								type: "uint256"
+							}
+						],
+						internalType: "struct FCT_BatchMultiSig.Validation[]",
+						name: "validations",
 						type: "tuple[]"
 					}
 				],
@@ -3315,29 +3335,33 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, chainId, multicallContr
     });
 };
 
+const precentilesForNetworks = {
+    5: [2, 6, 15, 30],
+    1: [2, 5, 15, 25],
+};
 const gasPriceCalculationsByChains = {
     5: (maxFeePerGas) => {
         // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
-        if (maxFeePerGas < 70_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.15);
+        if (maxFeePerGas < 70000000000n) {
+            return (maxFeePerGas + (maxFeePerGas * 15n) / 100n).toString();
         }
         // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
         if (maxFeePerGas < 100_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.1);
+            return (maxFeePerGas + (maxFeePerGas * 10n) / 100n).toString();
         }
         // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
         if (maxFeePerGas > 200_000_000_000) {
-            return Math.round(maxFeePerGas + maxFeePerGas * 0.05);
+            return (maxFeePerGas + (maxFeePerGas * 5n) / 100n).toString();
         }
-        return maxFeePerGas;
+        return maxFeePerGas.toString();
     },
-    1: (maxFeePerGas) => maxFeePerGas,
+    1: (maxFeePerGas) => maxFeePerGas.toString(),
 };
+function avg(arr) {
+    const sum = arr.reduce((a, v) => BigInt(a) + BigInt(v), 0n);
+    return sum / BigInt(arr.length);
+}
 const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40, }) => {
-    function avg(arr) {
-        const sum = arr.reduce((a, v) => a + v);
-        return Math.round(sum / arr.length);
-    }
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     let keepTrying = true;
     let returnValue;
@@ -3353,7 +3377,11 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
                 return JSON.stringify({
                     jsonrpc: "2.0",
                     method: "eth_feeHistory",
-                    params: [historicalBlocks, `0x${blockNumber.toString(16)}`, [2, 5, 15, 25]],
+                    params: [
+                        historicalBlocks,
+                        `0x${blockNumber.toString(16)}`,
+                        precentilesForNetworks[chainId] || precentilesForNetworks[5],
+                    ],
                     id: 1,
                 });
             };
@@ -3375,37 +3403,36 @@ const getGasPrices = async ({ rpcUrl, chainId, historicalBlocks = 10, tries = 40
             while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
                 blocks.push({
                     number: blockNum,
-                    baseFeePerGas: Number(result.baseFeePerGas[index]),
-                    gasUsedRatio: Number(result.gasUsedRatio[index]),
-                    priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+                    baseFeePerGas: result.baseFeePerGas[index],
+                    gasUsedRatio: result.gasUsedRatio[index],
+                    priorityFeePerGas: result.reward[index],
                 });
                 blockNum += 1;
                 index += 1;
             }
             const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
             const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
-            // Add 5% to fast and fastest
             const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
             const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
-            const baseFeePerGas = Number(baseFee);
+            const baseFeePerGas = BigInt(baseFee);
             const gasPriceCalc = gasPriceCalculationsByChains[chainId] ||
                 gasPriceCalculationsByChains[1];
             returnValue = {
                 slow: {
-                    maxFeePerGas: slow + baseFeePerGas,
-                    maxPriorityFeePerGas: slow,
+                    maxFeePerGas: (slow + baseFeePerGas).toString(),
+                    maxPriorityFeePerGas: slow.toString(),
                 },
                 average: {
-                    maxFeePerGas: average + baseFeePerGas,
-                    maxPriorityFeePerGas: average,
+                    maxFeePerGas: (average + baseFeePerGas).toString(),
+                    maxPriorityFeePerGas: average.toString(),
                 },
                 fast: {
                     maxFeePerGas: gasPriceCalc(fast + baseFeePerGas),
-                    maxPriorityFeePerGas: fast,
+                    maxPriorityFeePerGas: fast.toString(),
                 },
                 fastest: {
                     maxFeePerGas: gasPriceCalc(fastest + baseFeePerGas),
-                    maxPriorityFeePerGas: fastest,
+                    maxPriorityFeePerGas: fastest.toString(),
                 },
             };
             keepTrying = false;
@@ -3457,19 +3484,19 @@ function getDate(days = 0) {
 const addresses = {
     1: {
         FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
-        FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
+        FCT_BatchMultiSig: "0xee261D709227e0Bf1037D3Cd5D45becD8B93f712",
         FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
-        FCT_Tokenomics: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
-        Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
-        ActuatorCore: "0x5E3189755Df3DBB0FD3FeCa3de168fEEDBA76a79",
+        FCT_Tokenomics: "0xB6E0d8DCc868061faAf38D3Bf00793592ff68484",
+        Actuator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
+        ActuatorCore: "0xde841c9344E3C770a59102C8E61AFF699D8c4585",
     },
     5: {
         FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-        FCT_BatchMultiSig: "0xF7Fa1292f19abE979cE7d2EfF037a7F13F26F4cC",
+        FCT_BatchMultiSig: "0xf1E8Aca842bF40ee2f0bD70AfEbaA37b26a68fDD",
         FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
-        FCT_Tokenomics: "0xB09E0B70dffDe2968EBDa24855D05DC7a1663F5C",
-        Actuator: "0x905e7a9a0Bb9755938E73A0890d603682DC2cD9C",
-        ActuatorCore: "0xD33D02BF33EA0A3FA8eB75c4a23b19452cCcE106",
+        FCT_Tokenomics: "0x47Fca35c6fAb9E90a1ccf2630941fF64866fD3d2",
+        Actuator: "0x862A8FB429195d735106c06C4e352E305d8c7B31",
+        ActuatorCore: "0x2301F7d5A833395733F92fdf68B8Eb15aC757dF9",
     },
     42161: {
         // TODO: All the contracts below are copied from Goerli, need to be changed
@@ -3727,22 +3754,24 @@ const getFixedArrayLength = (type) => +type.slice(type.indexOf("[") + 1, type.in
 const typeValue = (param) => {
     // If type is an array
     if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
-        const value = param.value;
-        const countOfElements = value[0].length;
         const TYPE = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
         // If the type is an array of tuple/custom struct
         if (param.customType || param.type.includes("tuple")) {
+            const value = param.value;
             const typesArray = getTypesArray(value[0], false);
             if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
+                // Get countOfElements from type
+                const countOfElements = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
                 return [TYPE, getFixedArrayLength(param.type), countOfElements, ...typesArray];
             }
+            const countOfElements = value[0].length;
             return [TYPE, countOfElements, ...typesArray];
         }
         // Else it is an array with non-custom types
         const parameter = { ...param, type: param.type.slice(0, param.type.lastIndexOf("[")) };
         const insideType = typeValue(parameter);
         if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
-            return [TYPE, getFixedArrayLength(param.type), countOfElements, ...insideType];
+            return [TYPE, getFixedArrayLength(param.type), ...insideType];
         }
         return [TYPE, ...insideType];
     }
@@ -3796,8 +3825,32 @@ const isAddress$1 = (value, key) => {
     }
 };
 const verifyParam = (param) => {
+    if (InstanceOf.Variable(param.value))
+        return;
     if (!param.value) {
         throw new Error(`Param ${param.name} is missing a value`);
+    }
+    if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
+        if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
+            const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
+            if (param.value.length !== length) {
+                throw new Error(`Param ${param.name} (${param.type}) value is not an array of length ${length}`);
+            }
+        }
+        const type = param.type.slice(0, param.type.lastIndexOf("["));
+        param.value.forEach((value, index) => {
+            verifyParam({
+                name: `${param.name}[${index}]`,
+                type,
+                value: value,
+            });
+        });
+    }
+    // Check if type boolean is a boolean value
+    if (param.type === "bool") {
+        if (typeof param.value !== "boolean") {
+            throw new Error(`Param ${param.name} is not a boolean`);
+        }
     }
     if (typeof param.value !== "string") {
         return;
@@ -3827,6 +3880,16 @@ const verifyParam = (param) => {
     if (param.type.startsWith("bytes")) {
         if (!param.value.startsWith("0x")) {
             throw new Error(`Param ${param.name} is not a valid bytes value`);
+        }
+        // Check if type has a length
+        const length = param.type.match(/\d+/g);
+        if (!length) {
+            // If no length, then the type is `bytes`
+            return;
+        }
+        const requiredLength = +length[0] * 2 + 2;
+        if (param.value.length !== requiredLength) {
+            throw new Error(`Param ${param.name} is not a valid ${param.type} value`);
         }
     }
 };
@@ -3922,6 +3985,9 @@ class CallBase {
     get call() {
         return this._call;
     }
+    get nodeId() {
+        return this._call.nodeId;
+    }
     getOutputVariable(innerIndex = 0) {
         return {
             type: "output",
@@ -3953,7 +4019,7 @@ class CallBase {
     setOptions(options) {
         this._call.options = _.merge({}, this._call.options, options);
     }
-    setCall(call) {
+    update(call) {
         this._call = _.merge({}, this._call, call);
     }
 }
@@ -3963,34 +4029,65 @@ let Call$1 = class Call extends CallBase {
     constructor({ FCT, input }) {
         super(input);
         this.FCT = FCT;
-        this.verifyCall(this.call);
+        this.verifyCall({ call: this.call });
+        // If validation, add it to the validation list
+        if (input.addValidation) {
+            this.FCT.validation.add({
+                validation: input.addValidation,
+                nodeId: this.nodeId,
+            });
+        }
     }
-    get get() {
-        return _.merge({}, this.FCT.callDefault, this.call);
+    //
+    // Setter methods
+    //
+    update(call) {
+        const data = _.merge({}, this._call, call);
+        // Verify the call
+        this.verifyCall({ call: data, update: true });
+        this._call = data;
+        return this.get();
     }
+    addValidation(validation) {
+        const validationVariable = this.FCT.validation.add({
+            validation,
+            nodeId: this.nodeId,
+        });
+        this.setOptions({ validation: validationVariable.id });
+        return validationVariable;
+    }
+    //
+    // Getter methods
+    //
     get options() {
-        return this.get.options;
+        return this.get().options;
     }
-    get getDecoded() {
-        const params = this.get.params;
+    get() {
+        const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
+        return _.merge({}, this.FCT.callDefault, {
+            options: { payerIndex: payerIndex + 1 },
+        }, this.call);
+    }
+    getDecoded() {
+        const params = this.get().params;
         if (params && params.length > 0) {
             const parameters = this.decodeParams(params);
-            return { ...this.get, params: parameters };
+            return { ...this.get(), params: parameters };
         }
         return {
-            ...this.get,
+            ...this.get(),
             params: [],
         };
     }
     getAsMCall(typedData, index) {
-        const call = this.get;
+        const call = this.get();
         return {
             typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
             ensHash: id(call.toENS || ""),
             functionSignature: this.getFunctionSignature(),
             value: this.FCT.variables.getValue(call.value, "uint256", "0"),
             callId: CallID.asString({
-                calls: this.FCT.calls,
+                calls: this.FCT.callsAsObjects,
                 validation: this.FCT.validation,
                 call,
                 index,
@@ -3999,11 +4096,14 @@ let Call$1 = class Call extends CallBase {
             to: this.FCT.variables.getValue(call.to, "address"),
             data: this.getEncodedData(),
             types: this.getTypesArray(),
-            typedHashes: this.getTypedHashes(),
+            typedHashes: this.getTypedHashes(index),
         };
     }
-    generateEIP712Type() {
-        const call = this.get;
+    //
+    // EIP 712 methods
+    //
+    generateEIP712Type(index) {
+        const call = this.get();
         if (!call.params || (call.params && call.params.length === 0)) {
             return {
                 structTypes: {},
@@ -4014,7 +4114,7 @@ let Call$1 = class Call extends CallBase {
         const callParameters = call.params.map((param) => {
             const typeName = this.getStructType({
                 param,
-                nodeId: call.nodeId,
+                nodeId: index.toString(),
                 structTypes,
             });
             return {
@@ -4029,7 +4129,7 @@ let Call$1 = class Call extends CallBase {
     }
     generateEIP712Message(index) {
         const paramsData = this.getParamsEIP712();
-        const call = this.get;
+        const call = this.get();
         const options = this.options;
         const flow = flows[options.flow].text;
         const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
@@ -4054,16 +4154,18 @@ let Call$1 = class Call extends CallBase {
             ...paramsData,
         };
     }
-    getTypedHashes() {
-        const { structTypes, callType } = this.generateEIP712Type();
+    getTypedHashes(index) {
+        const { structTypes, callType } = this.generateEIP712Type(index);
         return this.getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
             return hexlify(TypedDataUtils.hashType(type, structTypes));
         });
     }
     getEncodedData() {
-        return getEncodedMethodParams(this.getDecoded);
+        return getEncodedMethodParams(this.getDecoded());
     }
+    //
     // Private methods
+    //
     getUsedStructTypes(typedData, mainType) {
         return mainType.reduce((acc, item) => {
             if (item.type.includes("Struct_")) {
@@ -4111,17 +4213,18 @@ let Call$1 = class Call extends CallBase {
         return typeName + (param.type.includes("[]") ? "[]" : "");
     }
     getParamsEIP712() {
-        if (!this.getDecoded.params) {
+        const decoded = this.getDecoded();
+        if (!decoded.params) {
             return {};
         }
         return {
-            ...getParams(this.getDecoded.params),
+            ...getParams(decoded.params),
         };
     }
     getJumps(index) {
         let jumpOnSuccess = 0;
         let jumpOnFail = 0;
-        const call = this.get;
+        const call = this.get();
         const options = call.options;
         if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
             const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
@@ -4167,7 +4270,7 @@ let Call$1 = class Call extends CallBase {
             return [...acc, param];
         }, []);
     }
-    verifyCall(call) {
+    verifyCall({ call, update = false }) {
         // To address validator
         if (!call.to) {
             throw new Error("To address is required");
@@ -4185,7 +4288,17 @@ let Call$1 = class Call extends CallBase {
         }
         // Node ID validator
         if (call.nodeId) {
-            const index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
+            let index;
+            if (update) {
+                // If it is an update, we need to ignore the current node ID
+                const currentCallIndex = this.FCT.getIndexByNodeId(this.nodeId);
+                // Ignore the current node ID from this.calls;
+                const calls = this.FCT.calls.filter((item, i) => i !== currentCallIndex);
+                index = calls.findIndex((item) => item.nodeId === call.nodeId);
+            }
+            else {
+                index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
+            }
             if (index > -1) {
                 throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
             }
@@ -4217,14 +4330,6 @@ let Call$1 = class Call extends CallBase {
         else {
             return this.createSimpleCall(FCT, call);
         }
-        // Remove createWithEncodedData, this is the full function
-        // if (instanceOfCallWithPlugin(call)) {
-        //   return await this.createWithPlugin(call);
-        // } else if (instanceOfCallWithEncodedData(call)) {
-        //   return this.createWithEncodedData(call);
-        // } else {
-        //   return this.createSimpleCall(call);
-        // }
     }
     static async createWithPlugin(FCT, callWithPlugin) {
         if (!callWithPlugin.plugin) {
@@ -4263,12 +4368,16 @@ const EIP712Domain = [
 ];
 const Meta = [
     { name: "name", type: "string" },
+    { name: "app", type: "string" },
+    { name: "by", type: "string" },
     { name: "builder", type: "address" },
     { name: "selector", type: "bytes4" },
     { name: "version", type: "bytes3" },
     { name: "random_id", type: "bytes3" },
     { name: "eip712", type: "bool" },
+    { name: "verifier", type: "string" },
     { name: "auth_enabled", type: "bool" },
+    { name: "dry_run", type: "bool" },
 ];
 const Limits = [
     { name: "valid_from", type: "uint40" },
@@ -4408,12 +4517,16 @@ class EIP712 extends FCTBase {
         return {
             meta: {
                 name: FCTOptions.name || "",
+                app: FCTOptions.app || "",
+                by: FCTOptions.by || "",
                 builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
                 selector: this.FCT.batchMultiSigSelector,
                 version: this.FCT.version,
                 random_id: `0x${this.FCT.randomId}`,
                 eip712: true,
+                verifier: FCTOptions.verifier,
                 auth_enabled: FCTOptions.authEnabled,
+                dry_run: FCTOptions.dryRun,
             },
             limits: {
                 valid_from: FCTOptions.validFrom,
@@ -4445,7 +4558,7 @@ class EIP712 extends FCTBase {
         if (this.FCT.computed.length > 0) {
             optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
         }
-        if (this.FCT.validation.get.length > 0) {
+        if (this.FCT.validation.get().length > 0) {
             optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
         }
         return {
@@ -4488,13 +4601,13 @@ class EIP712 extends FCTBase {
         }));
     }
     getValidationPrimaryType() {
-        return this.FCT.validation.get.map((_, index) => ({
+        return this.FCT.validation.get().map((_, index) => ({
             name: `validation_${index + 1}`,
             type: `Validation`,
         }));
     }
     getTransactionTypedDataMessage() {
-        return this.FCT.pureCalls.reduce((acc, call, index) => {
+        return this.FCT.calls.reduce((acc, call, index) => {
             return {
                 ...acc,
                 [`transaction_${index + 1}`]: call.generateEIP712Message(index),
@@ -4502,7 +4615,7 @@ class EIP712 extends FCTBase {
         }, {});
     }
     getValidationMessage() {
-        return this.FCT.validation.getForEIP712.reduce((acc, item, i) => {
+        return this.FCT.validation.getForEIP712().reduce((acc, item, i) => {
             return {
                 ...acc,
                 [`validation_${i + 1}`]: item,
@@ -4520,8 +4633,8 @@ class EIP712 extends FCTBase {
     getCallTypesAndStructs() {
         let structs = {};
         const types = {};
-        this.FCT.pureCalls.forEach((call, index) => {
-            const { structTypes, callType } = call.generateEIP712Type();
+        this.FCT.calls.forEach((call, index) => {
+            const { structTypes, callType } = call.generateEIP712Type(index);
             structs = { ...structs, ...structTypes };
             types[`transaction${index + 1}`] = callType;
         });
@@ -4552,7 +4665,6 @@ const getAuthenticatorSignature = (typedData) => {
     }
     catch (e) {
         console.log(e);
-        console.log(util.inspect(typedData, false, null, true /* enable colors */));
         throw new Error("Error signing typed data");
     }
 };
@@ -4570,7 +4682,7 @@ function getAllRequiredApprovals(FCT) {
         throw new Error("No chainId or provider has been set");
     }
     const chainId = FCT.chainId;
-    for (const [callIndex, call] of FCT.calls.entries()) {
+    for (const [callIndex, call] of FCT.callsAsObjects.entries()) {
         if (typeof call.to !== "string") {
             continue;
         }
@@ -4664,7 +4776,7 @@ function getAllRequiredApprovals(FCT) {
                     if (typeof call.from !== "string") {
                         return true;
                     }
-                    const isGoingToGetApproved = FCT.calls.some((fctCall, i) => {
+                    const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
                         if (i >= callIndex)
                             return false; // If the call is after the current call, we don't need to check
                         const { to, method, from } = fctCall;
@@ -4700,111 +4812,6 @@ function getAllRequiredApprovals(FCT) {
         }
     }
     return requiredApprovals;
-}
-
-const sessionIdFlag = {
-    accumetable: 0x1,
-    purgeable: 0x2,
-    blockable: 0x4,
-    eip712: 0x8,
-    authEnabled: 0x10,
-};
-const valueWithPadStart = (value, padStart) => {
-    return Number(value).toString(16).padStart(padStart, "0");
-};
-// Deconstructed sessionID
-// 6 - Salt
-// 2 - External signers
-// 6 - Version
-// 4 - Max Repeats
-// 8 - Chill time
-// 10 - After timestamp
-// 10 - Before timestamp
-// 16 - Gas price limit
-// 2 - Flags
-class SessionID extends FCTBase {
-    constructor(FCT) {
-        super(FCT);
-    }
-    asString() {
-        return SessionID.asString({
-            salt: this.FCT.randomId,
-            version: this.FCT.version,
-            options: this.FCT.options,
-        });
-    }
-    static asString({ salt, version, options }) {
-        const currentDate = new Date();
-        const { recurrency, multisig } = options;
-        if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
-            throw new Error("Expires at date cannot be in the past");
-        }
-        const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
-        const v = version.slice(2);
-        const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
-        const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
-            .toString(16)
-            .padStart(8, "0");
-        const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
-        const afterTimestamp = valueWithPadStart(options.validFrom || 0, 10);
-        const maxGasPrice = valueWithPadStart(options.maxGasPrice || 0, 16);
-        let flagValue = 0;
-        flagValue += sessionIdFlag.eip712; // EIP712 true by default
-        if (options.recurrency?.accumetable)
-            flagValue += sessionIdFlag.accumetable;
-        if (options.purgeable)
-            flagValue += sessionIdFlag.purgeable;
-        if (options.blockable)
-            flagValue += sessionIdFlag.blockable;
-        if (options.authEnabled)
-            flagValue += sessionIdFlag.authEnabled;
-        const flags = flagValue.toString(16).padStart(2, "0");
-        return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
-    }
-    static asOptions({ sessionId, builder, name, externalSigners = [], }) {
-        const parsedSessionID = SessionID.parse(sessionId);
-        return {
-            ...parsedSessionID,
-            builder,
-            name,
-            multisig: {
-                ...parsedSessionID.multisig,
-                externalSigners,
-            },
-        };
-    }
-    static parse(sessionId) {
-        const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
-        const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
-        const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
-        const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
-        const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
-        const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
-        const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
-        const flags = {
-            eip712: (flagsNumber & sessionIdFlag.eip712) !== 0,
-            accumetable: (flagsNumber & sessionIdFlag.accumetable) !== 0,
-            purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
-            blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
-            authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
-        };
-        return {
-            validFrom,
-            expiresAt,
-            maxGasPrice,
-            blockable: flags.blockable,
-            purgeable: flags.purgeable,
-            authEnabled: flags.authEnabled,
-            recurrency: {
-                accumetable: flags.accumetable,
-                chillTime,
-                maxRepeats,
-            },
-            multisig: {
-                minimumApprovals,
-            },
-        };
-    }
 }
 
 const WHOLE_IN_BPS = 10000n;
@@ -4949,24 +4956,6 @@ class FCTUtils extends FCTBase {
             return null;
         }
     }
-    getOptions() {
-        const parsedSessionID = SessionID.asOptions({
-            builder: this.FCTData.builder,
-            sessionId: this.FCTData.sessionId,
-            name: "",
-        });
-        return {
-            valid_from: parsedSessionID.validFrom,
-            expires_at: parsedSessionID.expiresAt,
-            gas_price_limit: parsedSessionID.maxGasPrice,
-            blockable: parsedSessionID.blockable,
-            purgeable: parsedSessionID.purgeable,
-            builder: parsedSessionID.builder,
-            recurrency: parsedSessionID.recurrency,
-            multisig: parsedSessionID.multisig,
-            authEnabled: parsedSessionID.authEnabled,
-        };
-    }
     getMessageHash() {
         return ethers.utils.hexlify(TypedDataUtils.eip712Hash(this.FCTData.typedData, SignTypedDataVersion.V4));
     }
@@ -5045,29 +5034,6 @@ class FCTUtils extends FCTBase {
         printAllPathsUtil(g, start, end, pathList);
         return allPaths;
     }
-    // TODO: Make this function deprecated. Use getPaymentPerPayer instead
-    getKIROPayment = ({ priceOfETHInKiro, gasPrice, gas, }) => {
-        const fct = this.FCTData;
-        const vault = fct.typedData.message["transaction_1"].call.from;
-        const gasInt = BigInt(gas);
-        const gasPriceFormatted = BigInt(gasPrice);
-        const limits = fct.typedData.message.limits;
-        const maxGasPrice = limits.gas_price_limit;
-        // 1000 - baseFee
-        // 5000 - bonusFee
-        const effectiveGasPrice = (gasPriceFormatted * BigInt(10000 + 1000) + (BigInt(maxGasPrice) - gasPriceFormatted) * BigInt(5000)) /
-            BigInt(10000);
-        const feeGasCost = gasInt * (effectiveGasPrice - gasPriceFormatted);
-        const baseGasCost = gasInt * gasPriceFormatted;
-        const totalCost = baseGasCost + feeGasCost;
-        const normalisedPriceOfETHInKiro = BigInt(priceOfETHInKiro);
-        const kiroCost = (totalCost * normalisedPriceOfETHInKiro) / BigInt(1e18);
-        return {
-            vault,
-            amountInKIRO: kiroCost.toString(),
-            amountInETH: totalCost.toString(),
-        };
-    };
     kiroPerPayerGas = ({ gas, gasPrice, penalty, ethPriceInKIRO, fees, }) => {
         const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
         const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
@@ -5147,7 +5113,7 @@ class FCTUtils extends FCTBase {
                 const currentLargestValue = currentValues.largest?.kiroCost || 0n;
                 const currentSmallestValue = currentValues.smallest?.kiroCost;
                 const value = pathData[payer]?.kiroCost || 0n;
-                if (value > currentLargestValue) {
+                if (!currentLargestValue || value > currentLargestValue) {
                     currentValues.largest = pathData[payer];
                 }
                 if (!currentSmallestValue || value < currentSmallestValue) {
@@ -5169,6 +5135,16 @@ class FCTUtils extends FCTBase {
                 },
             };
         });
+    };
+    getMaxGas = () => {
+        const allPayers = this.getPaymentPerPayer({ ethPriceInKIRO: "0" });
+        return allPayers.reduce((acc, payer) => {
+            const largestGas = payer.largestPayment.gas;
+            if (BigInt(largestGas) > BigInt(acc)) {
+                return largestGas;
+            }
+            return acc;
+        }, "0");
     };
     getCallResults = async ({ rpcUrl, provider, txHash, }) => {
         if (!provider && !rpcUrl) {
@@ -5294,6 +5270,7 @@ var helpers = /*#__PURE__*/Object.freeze({
 });
 
 const initOptions = {
+    name: "",
     maxGasPrice: "30000000000",
     validFrom: getDate(),
     expiresAt: getDate(7),
@@ -5301,6 +5278,10 @@ const initOptions = {
     blockable: true,
     builder: "0x0000000000000000000000000000000000000000",
     authEnabled: true,
+    dryRun: false,
+    app: "",
+    by: "",
+    verifier: "",
 };
 class Options {
     static helpers = helpers;
@@ -5370,59 +5351,202 @@ class Options {
     }
 }
 
+const sessionIdFlag = {
+    accumetable: 0x1,
+    purgeable: 0x2,
+    blockable: 0x4,
+    eip712: 0x8,
+    authEnabled: 0x10,
+    dryRun: 0x20,
+};
+const valueWithPadStart = (value, padStart) => {
+    return Number(value).toString(16).padStart(padStart, "0");
+};
+// Deconstructed sessionID
+// 6 - Salt
+// 2 - External signers
+// 6 - Version
+// 4 - Max Repeats
+// 8 - Chill time
+// 10 - After timestamp
+// 10 - Before timestamp
+// 16 - Gas price limit
+// 2 - Flags
+class SessionID extends FCTBase {
+    constructor(FCT) {
+        super(FCT);
+    }
+    asString() {
+        return SessionID.asString({
+            salt: this.FCT.randomId,
+            version: this.FCT.version,
+            options: this.FCT.options,
+        });
+    }
+    static asString({ salt, version, options }) {
+        const currentDate = new Date();
+        const { recurrency, multisig } = options;
+        if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
+            throw new Error("Expires at date cannot be in the past");
+        }
+        const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
+        const v = version.slice(2);
+        const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
+        const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
+            .toString(16)
+            .padStart(8, "0");
+        const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
+        const afterTimestamp = valueWithPadStart(options.validFrom || 0, 10);
+        const maxGasPrice = valueWithPadStart(options.maxGasPrice || 0, 16);
+        let flagValue = 0;
+        flagValue += sessionIdFlag.eip712; // EIP712 true by default
+        if (options.recurrency?.accumetable)
+            flagValue += sessionIdFlag.accumetable;
+        if (options.purgeable)
+            flagValue += sessionIdFlag.purgeable;
+        if (options.blockable)
+            flagValue += sessionIdFlag.blockable;
+        if (options.authEnabled)
+            flagValue += sessionIdFlag.authEnabled;
+        if (options.dryRun)
+            flagValue += sessionIdFlag.dryRun;
+        const flags = flagValue.toString(16).padStart(2, "0");
+        return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
+    }
+    static asOptions({ sessionId, builder, name, app, by, verifier, externalSigners = [], }) {
+        const parsedSessionID = SessionID.parse(sessionId);
+        return {
+            ...parsedSessionID,
+            builder,
+            name,
+            app,
+            by,
+            verifier,
+            multisig: {
+                ...parsedSessionID.multisig,
+                externalSigners,
+            },
+        };
+    }
+    static parse(sessionId) {
+        const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
+        const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
+        const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
+        const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
+        const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
+        const maxGasPrice = parseInt(sessionId.slice(48, 64), 16).toString();
+        const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
+        const flags = {
+            eip712: (flagsNumber & sessionIdFlag.eip712) !== 0,
+            accumetable: (flagsNumber & sessionIdFlag.accumetable) !== 0,
+            purgeable: (flagsNumber & sessionIdFlag.purgeable) !== 0,
+            blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
+            authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
+            dryRun: (flagsNumber & sessionIdFlag.dryRun) !== 0,
+        };
+        return {
+            validFrom,
+            expiresAt,
+            maxGasPrice,
+            // eip712: flags.eip712,
+            dryRun: flags.dryRun,
+            blockable: flags.blockable,
+            purgeable: flags.purgeable,
+            authEnabled: flags.authEnabled,
+            recurrency: {
+                accumetable: flags.accumetable,
+                chillTime,
+                maxRepeats,
+            },
+            multisig: {
+                minimumApprovals,
+            },
+        };
+    }
+}
+
 class Validation extends FCTBase {
     _validations = [];
     constructor(FCT) {
         super(FCT);
     }
-    get get() {
+    get() {
         return this._validations;
     }
-    get getForEIP712() {
+    getForEIP712() {
         return this._validations.map((c, i) => ({
             index: (i + 1).toString(),
-            value_1: this.handleVariable(c.value1, i),
+            value_1: this.handleVariable(c.value1),
             op: c.operator,
-            value_2: this.handleVariable(c.value2, i),
+            value_2: this.handleVariable(c.value2),
         }));
     }
-    get getForData() {
-        return this._validations.map((c, i) => ({
-            value1: this.handleVariable(c.value1, i),
+    getForData() {
+        return this._validations.map((c) => ({
+            value1: this.handleVariable(c.value1),
             operator: ValidationOperator[c.operator],
-            value2: this.handleVariable(c.value2, i),
+            value2: this.handleVariable(c.value2),
         }));
     }
     getIndex(id) {
+        if (id === "0")
+            return 0;
         const index = this._validations.findIndex((v) => v.id === id);
         if (index === -1)
             throw new Error(`Validation with id ${id} not found`);
         return index + 1;
     }
-    add(validation) {
-        const id = validation.id || this._validations.length.toString();
-        this._validations.push({
-            ...validation,
-            id,
+    add({ nodeId, validation, }) {
+        const call = this.FCT.getCallByNodeId(nodeId);
+        const id = this.addValidation(validation);
+        call.setOptions({
+            validation: id,
         });
         return { type: "validation", id };
     }
-    addAndSetForCall({ nodeId, validation }) {
-        const call = this.FCT.getCallByNodeId(nodeId);
-        const validationVariable = this.add(validation);
-        call.setOptions({
-            validation: validationVariable.id,
+    addValidation(validation) {
+        if (this.isIValidation(validation.value1)) {
+            const id = this.addValidation(validation.value1);
+            validation.value1 = { type: "validation", id };
+        }
+        if (this.isIValidation(validation.value2)) {
+            const id = this.addValidation(validation.value2);
+            validation.value2 = { type: "validation", id };
+        }
+        const id = validation.id || this._validations.length.toString();
+        // Check if the validation id is already used
+        if (this._validations.some((v) => v.id === id))
+            throw new Error(`Validation with id ${id} already exists`);
+        // if value1 or value2 is a string, check if it is a integer
+        if (typeof validation.value1 === "string") {
+            if (isNaN(parseInt(validation.value1, 10)))
+                throw new Error(`Invalid value1 for validation ${id}`);
+        }
+        if (typeof validation.value2 === "string") {
+            if (isNaN(parseInt(validation.value2, 10)))
+                throw new Error(`Invalid value2 for validation ${id}`);
+        }
+        this._validations.push({
+            value1: validation.value1,
+            operator: validation.operator,
+            value2: validation.value2,
+            id,
         });
+        return id;
     }
-    handleVariable(value, index) {
+    handleVariable(value) {
         if (InstanceOf.ValidationVariable(value)) {
-            const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+            const index = this.getIndex(value.id);
+            const outputIndexHex = index.toString(16).padStart(4, "0");
             return outputIndexHex.padStart(ValidationBase.length, ValidationBase);
         }
         if (InstanceOf.Variable(value)) {
             return this.FCT.variables.getVariable(value, "uint256");
         }
         return value;
+    }
+    isIValidation(value) {
+        return typeof value === "object" && value !== null && "value1" in value && "operator" in value && "value2" in value;
     }
 }
 
@@ -5434,16 +5558,24 @@ const ORIGIN_ADDRESS = "0xFA0B000000000000000000000000000000000000";
 const INVESTOR_ADDRESS = "0xFA0C000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0xFA0D000000000000000000000000000000000000";
 const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
+const CHAIN_ID = "0xFB0E000000000000000000000000000000000000";
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
 const globalVariables = {
     blockNumber: BLOCK_NUMBER,
     blockTimestamp: BLOCK_TIMESTAMP,
+    chainId: CHAIN_ID,
     gasPrice: GAS_PRICE,
     minerAddress: MINER_ADDRESS,
     originAddress: ORIGIN_ADDRESS,
     investorAddress: INVESTOR_ADDRESS,
     activatorAddress: ACTIVATOR_ADDRESS,
     engineAddress: ENGINE_ADDRESS,
+};
+const globalVariablesBytes = {
+    blockNumber: BLOCK_NUMBER.padEnd(66, "0"),
+    blockTimestamp: BLOCK_TIMESTAMP.padEnd(66, "0"),
+    chainId: CHAIN_ID.padEnd(66, "0"),
+    gasPrice: GAS_PRICE.padEnd(66, "0"),
 };
 const getBlockNumber = () => ({ type: "global", id: "blockNumber" });
 const getBlockTimestamp = () => ({ type: "global", id: "blockTimestamp" });
@@ -5453,18 +5585,21 @@ const getOriginAddress = () => ({ type: "global", id: "originAddress" });
 const getInvestorAddress = () => ({ type: "global", id: "investorAddress" });
 const getActivatorAddress = () => ({ type: "global", id: "activatorAddress" });
 const getEngineAddress = () => ({ type: "global", id: "engineAddress" });
+const getChainID = () => ({ type: "global", id: "chainId" });
 
 var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     getActivatorAddress: getActivatorAddress,
     getBlockNumber: getBlockNumber,
     getBlockTimestamp: getBlockTimestamp,
+    getChainID: getChainID,
     getEngineAddress: getEngineAddress,
     getGasPrice: getGasPrice,
     getInvestorAddress: getInvestorAddress,
     getMinerAddress: getMinerAddress,
     getOriginAddress: getOriginAddress,
-    globalVariables: globalVariables
+    globalVariables: globalVariables,
+    globalVariablesBytes: globalVariablesBytes
 });
 
 const ComputedOperators = {
@@ -5563,7 +5698,15 @@ class Variables extends FCTBase {
             });
         }
         if (variable.type === "global") {
-            const globalVariable = globalVariables[variable.id];
+            const id = variable.id;
+            if (type.includes("bytes")) {
+                // Check if id is in globalVariablesBytes
+                if (!(id in globalVariablesBytes)) {
+                    throw new Error("Global variable not found");
+                }
+                return globalVariablesBytes[id];
+            }
+            const globalVariable = globalVariables[id];
             if (!globalVariable) {
                 throw new Error("Global variable not found");
             }
@@ -5653,38 +5796,33 @@ class Multicall {
     _nodeId;
     _options = { callType: "LIBRARY" };
     _to;
+    _outputTypes;
     constructor(input) {
         this._from = input.from;
         this.FCT = input.FCT;
         this._options = _.merge({}, this._options, input.options);
         this._nodeId = input.nodeId || generateNodeId();
     }
+    get nodeId() {
+        return this._nodeId;
+    }
     get to() {
         if (this._to)
             return this._to;
         return FCT_MULTICALL_ADDRESS[this.FCT.chainId];
     }
-    //
     get toENS() {
         return "@lib:multicall";
     }
-    //
-    // get method() {
-    //   return "multicall";
-    // }
-    //
-    // get value() {
-    //   return "0"; // For now we only support multicalls with no value
-    // }
     get options() {
-        return _.merge({}, DEFAULT_CALL_OPTIONS, this._options);
+        return _.merge({}, DEFAULT_CALL_OPTIONS, { options: { payerIndex: this.FCT.getIndexByNodeId(this._nodeId) } }, this._options);
     }
-    get get() {
+    get() {
         if (!this._from)
             throw new Error("From address is required");
         return {
             to: this.to,
-            toENS: "@lib:multicall",
+            toENS: this.toENS,
             from: this._from,
             params: this.params,
             method: "multicall",
@@ -5693,17 +5831,72 @@ class Multicall {
             nodeId: this._nodeId,
         };
     }
-    get getDecoded() {
-        const params = this.get.params;
+    getDecoded() {
+        const params = this.get().params;
         if (params && params.length > 0) {
             const parameters = this.decodeParams(params);
-            return { ...this.get, params: parameters };
+            return { ...this.get(), params: parameters };
         }
         return {
-            ...this.get,
+            ...this.get(),
             params: [],
         };
     }
+    get outputs() {
+        return this._calls.reduce((acc, _, i) => {
+            return {
+                ...acc,
+                [`call${i}`]: { type: "output", id: { nodeId: this._nodeId, innerIndex: i + 3 } },
+            };
+        }, {});
+    }
+    add = (call) => {
+        if (this._calls.length > 0) {
+            const firstCall = this._calls[0];
+            if (firstCall.params.length !== call.params.length) {
+                throw new Error("All calls must have the same number of params");
+            }
+            firstCall.params.forEach((param, index) => {
+                if (param.type !== call.params[index].type) {
+                    throw new Error("All calls must have the same param types");
+                }
+            });
+        }
+        this._calls.push(call);
+        return this._calls;
+    };
+    addPlugin = async (plugin) => {
+        const call = await plugin.create();
+        if (!call) {
+            throw new Error("Error when creating call from plugin");
+        }
+        const callType = call.options?.callType && (call.options?.callType === "ACTION" || call.options?.callType === "VIEW_ONLY")
+            ? call.options?.callType
+            : "ACTION";
+        const data = {
+            target: call.to,
+            params: call.params,
+            method: call.method,
+            callType,
+        };
+        this.add(data);
+    };
+    setFrom = (from) => {
+        this._from = from;
+        return this._from;
+    };
+    setOutputType = (outputType) => {
+        this._outputTypes = outputType;
+        return this._outputTypes;
+    };
+    setOptions = (options) => {
+        this._options = _.merge({}, this._options, options);
+        return this._options;
+    };
+    setNodeId = (nodeId) => {
+        this._nodeId = nodeId;
+        return this._nodeId;
+    };
     get params() {
         return [
             {
@@ -5718,7 +5911,7 @@ class Multicall {
                             value: call.target,
                         },
                         {
-                            name: "ctype",
+                            name: "callType",
                             type: "bytes32",
                             value: call.callType,
                             hashed: true,
@@ -5746,9 +5939,9 @@ class Multicall {
             functionSignature: this.getFunctionSignature(),
             value: "0",
             callId: CallID.asString({
-                calls: this.FCT.calls,
+                calls: this.FCT.callsAsObjects,
                 validation: this.FCT.validation,
-                call: this.get,
+                call: this.get(),
                 index,
             }),
             from: this.FCT.variables.getValue(this._from, "address"),
@@ -5760,7 +5953,7 @@ class Multicall {
     };
     generateEIP712Message(index) {
         const paramsData = this.getParamsEIP712();
-        const call = this.get;
+        const call = this.get();
         const options = this.options;
         const flow = flows[options.flow].text;
         const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
@@ -5792,10 +5985,10 @@ class Multicall {
         return ethers.utils.id(this.getFunction());
     }
     getEncodedData() {
-        return getEncodedMethodParams(this.get);
+        return getEncodedMethodParams(this.get());
     }
     getTypesArray() {
-        const call = this.get;
+        const call = this.get();
         if (!call.params) {
             return [];
         }
@@ -5808,7 +6001,7 @@ class Multicall {
         });
     }
     generateEIP712Type() {
-        const call = this.get;
+        const call = this.get();
         if (!call.params || (call.params && call.params.length === 0)) {
             return {
                 structTypes: {},
@@ -5832,32 +6025,6 @@ class Multicall {
             callType: [{ name: "call", type: "Call" }, ...callParameters],
         };
     }
-    add = (call) => {
-        this._calls.push(call);
-        return this._calls;
-    };
-    // public addPlugin = async ({ plugin, from }: { plugin: PluginInstance; from: string | Variable }) => {
-    //   const call = await plugin.create();
-    //   if (!call) {
-    //     throw new Error("Error when creating call from plugin");
-    //   }
-    //
-    //   const data: IMulticall = {
-    //     callType: call.options.callType,
-    //   };
-    // };
-    setFrom = (from) => {
-        this._from = from;
-        return this._from;
-    };
-    setOptions = (options) => {
-        this._options = _.merge({}, this._options, options);
-        return this._options;
-    };
-    setNodeId = (nodeId) => {
-        this._nodeId = nodeId;
-        return this._nodeId;
-    };
     decodeParams(params) {
         return params.reduce((acc, param) => {
             if (param.type === "tuple" || param.customType) {
@@ -5923,17 +6090,18 @@ class Multicall {
         return typeName + (param.type.includes("[]") ? "[]" : "");
     }
     getParamsEIP712() {
-        if (!this.getDecoded.params) {
+        const decoded = this.getDecoded();
+        if (!decoded.params) {
             return {};
         }
         return {
-            ...getParams(this.getDecoded.params),
+            ...getParams(decoded.params),
         };
     }
     getJumps(index) {
         let jumpOnSuccess = 0;
         let jumpOnFail = 0;
-        const call = this.get;
+        const call = this.get();
         const options = call.options;
         if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
             const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
@@ -5962,12 +6130,14 @@ class Multicall {
     }
 }
 
-const AbiCoder = ethers.utils.AbiCoder;
+ethers.utils.AbiCoder;
 async function create(call) {
-    if (call instanceof Multicall) {
+    // If the input is already made Call class, we just add it to _calls.
+    if (call instanceof Multicall || call instanceof Call$1) {
         this._calls.push(call);
         return call;
     }
+    // Else we create Call class from the input
     const newCall = await Call$1.create({
         FCT: this,
         call,
@@ -5990,6 +6160,21 @@ async function createMultiple(calls) {
     }
     return callsCreated;
 }
+async function addAtIndex(call, index) {
+    if (index < 0 || index > this._calls.length) {
+        throw new Error("Index out of range");
+    }
+    if (call instanceof Multicall || call instanceof Call$1) {
+        this._calls.splice(index, 0, call);
+        return call;
+    }
+    const newCall = await Call$1.create({
+        FCT: this,
+        call,
+    });
+    this._calls.splice(index, 0, newCall);
+    return newCall;
+}
 function createPlugin({ plugin, initParams, }) {
     const Plugin = new plugin({
         chainId: this.chainId,
@@ -6009,11 +6194,14 @@ function getCall(index) {
     return this._calls[index];
 }
 function getCallByNodeId(nodeId) {
-    const call = this._calls.find((c) => c.get.nodeId === nodeId);
+    const call = this._calls.find((c) => c.nodeId === nodeId);
     if (!call) {
         throw new Error(`Call with nodeId ${nodeId} not found`);
     }
     return call;
+}
+function getIndexByNodeId(nodeId) {
+    return this._calls.findIndex((call) => call.nodeId === nodeId);
 }
 function exportFCT() {
     const typedData = new EIP712(this).getTypedData();
@@ -6023,15 +6211,108 @@ function exportFCT() {
         typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
         sessionId: new SessionID(this).asString(),
         nameHash: id(this.options.name),
-        mcall: this.pureCalls.map((call, index) => {
+        mcall: this.calls.map((call, index) => {
             return call.getAsMCall(typedData, index);
         }),
         variables: [],
         externalSigners: this.options.multisig.externalSigners,
         signatures: [this.utils.getAuthenticatorSignature()],
         computed: this.computedAsData,
-        validations: this.validation.getForData,
+        validations: this.validation.getForData(),
+        appHash: id(this.options.app),
+        byHash: id(this.options.by),
+        verifierHash: id(this.options.verifier),
     };
+}
+async function exportWithApprovals() {
+    const FCTData = this.exportFCT();
+    const FCT = BatchMultiSigCall.from(FCTData);
+    // Check if the FCT calls contain 2 erc20approvals and are at index 0 and last index
+    const erc20Approvals = FCT.calls.filter((call, i) => {
+        const getCall = call.get();
+        return (getCall.method === "erc20Approvals" &&
+            getCall.toENS === "@lib:multicall" &&
+            (i === 0 || i === FCT.calls.length - 1));
+    });
+    if (erc20Approvals.length !== 2) {
+        return FCTData;
+    }
+    const signers = FCT.utils.getSigners();
+    const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter((approval) => approval.protocol === "ERC20");
+    for (const signer of signers) {
+        // Get all approvals for the signer
+        const approvals = requiredApprovals.filter((approval) => approval.from.toLowerCase() === signer.toLowerCase());
+        const ERC20Approvals = new Erc20Approvals({
+            chainId: FCT.chainId,
+        });
+        const ResetERC20Approvals = new Erc20Approvals({
+            chainId: FCT.chainId,
+        });
+        // Call ERC20Approvals.add approvals.length times
+        for (let i = 1; i < approvals.length; i++) {
+            ERC20Approvals.add();
+            ResetERC20Approvals.add();
+        }
+        const pluginInterface = ERC20Approvals.getInterface();
+        const resetPluginInterface = ResetERC20Approvals.getInterface();
+        pluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+            const approval = approvals[+key.slice(-1)];
+            if (key.includes("token")) {
+                param.setString({ value: approval.token });
+            }
+            if (key.includes("spender")) {
+                param.setString({ value: approval.params.spender });
+            }
+            if (key.includes("amount")) {
+                param.setString({ value: approval.params.amount });
+            }
+        });
+        resetPluginInterface.instance.input.paramsList.forEach(({ param, key }) => {
+            const approval = approvals[+key.slice(-1)];
+            if (key.includes("token")) {
+                param.setString({ value: approval.token });
+            }
+            if (key.includes("spender")) {
+                param.setString({ value: approval.params.spender });
+            }
+            if (key.includes("amount")) {
+                param.setString({ value: "0" });
+            }
+        });
+        // Add approvals at the beginning
+        await FCT.addAtIndex({
+            from: signer,
+            plugin: ERC20Approvals,
+        }, 0);
+        // Set reset approvals last
+        await FCT.addAtIndex({
+            from: signer,
+            plugin: ResetERC20Approvals,
+        }, FCT.calls.length);
+    }
+    return FCT.exportFCT();
+}
+function exportNotificationFCT() {
+    const fctOptions = this.options;
+    this.setOptions({
+        dryRun: true,
+        maxGasPrice: "0",
+    });
+    const callOptionsBefore = [];
+    // Update every call to have gasLimit 0 and save it to restore it later
+    this._calls.forEach((call) => {
+        callOptionsBefore.push(call.options);
+        call.setOptions({
+            gasLimit: "0",
+        });
+    });
+    const fct = this.exportFCT();
+    // Restore the original options
+    this._calls.forEach((call, index) => {
+        call.setOptions(callOptionsBefore[index]);
+    });
+    this.setOptions(fctOptions);
+    return fct;
 }
 function importFCT(fct) {
     const typedData = fct.typedData;
@@ -6046,6 +6327,9 @@ function importFCT(fct) {
         sessionId: fct.sessionId,
         builder: fct.builder,
         externalSigners: fct.externalSigners,
+        app: typedData.message.meta.app,
+        by: typedData.message.meta.by,
+        verifier: typedData.message.meta.verifier,
         name: typedData.message.meta.name,
     }));
     const { types: typesObject } = typedData;
@@ -6092,6 +6376,7 @@ function importFCT(fct) {
                 callType: CALL_TYPE_MSG_REV[meta.call_type],
                 falseMeansFail: meta.returned_false_means_fail,
                 permissions: meta.permissions.toString(),
+                validation: meta.validation.toString(),
             },
         };
         const callClass = new Call$1({
@@ -6100,108 +6385,32 @@ function importFCT(fct) {
         });
         this._calls.push(callClass);
     }
-    return this.calls;
-}
-async function importEncodedFCT(calldata) {
-    const iface = Interfaces.FCT_BatchMultiSigCall;
-    const chainId = this.chainId;
-    const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
-    const arrayKeys = ["signatures", "mcall"];
-    const objectKeys = ["tr"];
-    const getFCT = (obj) => {
-        return Object.entries(obj).reduce((acc, [key, value]) => {
-            if (!isNaN(parseFloat(key))) {
-                return acc;
-            }
-            if (arrayKeys.includes(key)) {
-                return {
-                    ...acc,
-                    [key]: value.map((sign) => getFCT(sign)),
-                };
-            }
-            if (objectKeys.includes(key)) {
-                return {
-                    ...acc,
-                    [key]: getFCT(value),
-                };
-            }
-            if (key === "callId" || key === "sessionId") {
-                return {
-                    ...acc,
-                    [key]: "0x" + value.toHexString().slice(2).padStart(64, "0"),
-                };
-            }
-            if (key === "types") {
-                return {
-                    ...acc,
-                    [key]: value.map((type) => type.toString()),
-                };
-            }
-            return {
-                ...acc,
-                [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
-            };
-        }, {});
-    };
-    const decodedFCT = getFCT(decoded);
-    const FCTOptions = SessionID.asOptions({
-        sessionId: decodedFCT.tr.sessionId,
-        builder: decodedFCT.tr.builder,
-        name: "",
-        externalSigners: decodedFCT.tr.externalSigners,
-    });
-    this.setOptions(FCTOptions);
-    for (const [index, call] of decodedFCT.tr.mcall.entries()) {
-        try {
-            const pluginData = getPlugin$1({
-                address: call.to,
-                chainId,
-                signature: call.functionSignature,
-            });
-            if (!pluginData) {
-                throw new Error("Plugin not found");
-            }
-            const plugin = new pluginData.plugin({
-                chainId,
-            });
-            const params = plugin.methodParams;
-            const decodedParams = params.length > 0
-                ? new AbiCoder().decode(params.map((type) => `${type.type} ${type.name}`), call.data)
-                : [];
-            plugin.input.set({
-                to: call.to,
-                value: parseInt(call.value, 16).toString(),
-                methodParams: params.reduce((acc, param) => {
-                    const getValue = (value) => {
-                        const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-                        if (BigNumber.isBigNumber(value)) {
-                            const hexString = value.toHexString();
-                            if (variables.some((v) => hexString.startsWith(v))) {
-                                return hexString;
-                            }
-                            return value.toString();
-                        }
-                        return value;
-                    };
-                    const value = getValue(decodedParams[param.name]);
-                    return { ...acc, [param.name]: value };
-                }, {}),
-            });
-            const { options } = CallID.parse(call.callId);
-            const callInput = {
-                nodeId: `node${index + 1}`,
-                plugin,
-                from: call.from,
-                options: options,
-            };
-            await this.create(callInput);
-        }
-        catch (e) {
-            if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
-                throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
-            }
-            throw new Error(`Plugin not found for call at index ${index}`);
-        }
+    // Get all computed variables names
+    const computedVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Computed").map((val) => val.name);
+    // Get all computed variables from typedData.message
+    const computedVariables = computedVariableNames.map((name) => typedData.message[name]);
+    for (const computedVariable of computedVariables) {
+        this.addComputed({
+            id: computedVariable.index,
+            value1: manageValue(computedVariable.value_1),
+            operator1: computedVariable.op_1,
+            value2: manageValue(computedVariable.value_2),
+            operator2: computedVariable.op_2,
+            value3: manageValue(computedVariable.value_3),
+            operator3: computedVariable.op_3,
+            value4: manageValue(computedVariable.value_4),
+            overflowProtection: computedVariable.overflow_protection,
+        });
+    }
+    const validationVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Validation").map((val) => val.name);
+    const validaitonVariables = validationVariableNames.map((name) => typedData.message[name]);
+    for (const validationVariable of validaitonVariables) {
+        this.validation.addValidation({
+            id: validationVariable.index,
+            value1: validationVariable.value_1,
+            operator: validationVariable.op,
+            value2: validationVariable.value_2,
+        });
     }
     return this.calls;
 }
@@ -6209,23 +6418,35 @@ async function importEncodedFCT(calldata) {
 async function getPlugin(index) {
     const chainId = this.chainId;
     const call = this.getCall(index);
-    const callData = call.get;
+    const callData = call.get();
     if (InstanceOf.Variable(callData.to)) {
         throw new Error("To value cannot be a variable");
     }
-    const pluginData = getPlugin$1({
-        signature: call.getFunctionSignature(),
-        address: callData.to,
-        chainId: chainId,
-    });
-    if (!pluginData) {
-        throw new Error("Plugin not found");
+    let PluginClass;
+    if (callData.toENS === "@lib:multicall") {
+        const plugin = getMulticallPlugin({
+            signature: call.getFunctionSignature(),
+            chainId: chainId,
+        });
+        if (!plugin) {
+            throw new Error("Multicall plugin not found");
+        }
+        PluginClass = plugin;
     }
-    const pluginClass = pluginData.plugin;
-    const plugin = new pluginClass({
-        chainId: chainId.toString(),
-    });
-    plugin.input.set({
+    else {
+        const pluginData = getPlugin$1({
+            signature: call.getFunctionSignature(),
+            address: callData.to,
+            chainId: chainId,
+        });
+        if (pluginData === null) {
+            throw new Error("Plugin not found");
+        }
+        PluginClass = new pluginData.plugin({
+            chainId: chainId.toString(),
+        });
+    }
+    PluginClass.input.set({
         to: callData.to,
         value: callData.value,
         methodParams: callData.params
@@ -6234,12 +6455,12 @@ async function getPlugin(index) {
             }, {})
             : {},
     });
-    return plugin;
+    return PluginClass;
 }
 async function getPluginClass(index) {
     const chainId = this.chainId;
     const call = this.getCall(index);
-    const callData = call.get;
+    const callData = call.get();
     if (InstanceOf.Variable(callData.to)) {
         throw new Error("To value cannot be a variable");
     }
@@ -6253,7 +6474,7 @@ async function getPluginClass(index) {
 async function getPluginData(index) {
     const plugin = await this.getPlugin(index); // get the plugin from the index
     const call = this.getCall(index); // get the call from the index
-    const callData = call.get;
+    const callData = call.get();
     const input = {
         to: callData.to,
         value: callData.value,
@@ -6272,8 +6493,8 @@ async function getPluginData(index) {
 }
 
 class BatchMultiSigCall {
-    batchMultiSigSelector = "0x68a65119";
-    version = "0x010101";
+    batchMultiSigSelector = "0x9b2542b3";
+    version = "0x010201";
     chainId;
     domain;
     randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -6319,13 +6540,13 @@ class BatchMultiSigCall {
         return this._options.get();
     }
     get calls() {
-        return this._calls.map((call) => call.get);
-    }
-    get pureCalls() {
         return this._calls;
     }
+    get callsAsObjects() {
+        return this._calls.map((call) => call.get());
+    }
     get decodedCalls() {
-        return this._calls.map((call) => call.getDecoded);
+        return this._calls.map((call) => call.getDecoded());
     }
     get callDefault() {
         return this._callDefault;
@@ -6337,7 +6558,7 @@ class BatchMultiSigCall {
         return this.variables.computedAsData;
     }
     get validations() {
-        return this.validation.get;
+        return this.validation.get();
     }
     // Setters
     setOptions(options) {
@@ -6358,21 +6579,33 @@ class BatchMultiSigCall {
     addComputed = (computed) => {
         return this.variables.addComputed(computed);
     };
+    addValidation = (validation) => {
+        return this.validation.add(validation);
+    };
     // Plugin functions
     getPlugin = getPlugin;
     getPluginClass = getPluginClass;
     getPluginData = getPluginData;
     createPlugin = createPlugin;
-    // FCT Functions
+    // Add calls to FCT
     add = create;
     addMultiple = createMultiple;
     create = create;
     createMultiple = createMultiple;
+    // Specific to BatchMultiSigCall
+    addAtIndex = addAtIndex;
+    // Export FCT
+    export = exportFCT;
     exportFCT = exportFCT;
+    exportNotification = exportNotificationFCT;
+    exportNotificationFCT = exportNotificationFCT;
+    exportWithApprovals = exportWithApprovals;
+    // Import FCT
     importFCT = importFCT;
-    importEncodedFCT = importEncodedFCT;
+    // FCT Call getters
     getCall = getCall;
     getCallByNodeId = getCallByNodeId;
+    getIndexByNodeId = getIndexByNodeId;
     // Static functions
     static utils = utils;
     static from = (input) => {
@@ -6534,10 +6767,14 @@ const getKIROPrice = async ({ chainId, rpcUrl, provider, blockTimestamp, }) => {
 };
 
 const transactionValidator = async (txVal) => {
-    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree, gasPrice } = txVal;
+    const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
+    let { gasPrice } = txVal;
     const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
-    const { maxGasPrice } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
-    if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+    const { maxGasPrice, dryRun } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
+    gasPrice = dryRun ? { maxFeePerGas: "0", maxPriorityFeePerGas: "0" } : gasPrice;
+    if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+        const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
+        const fctMaxGasPriceInGwei = ethers.utils.formatUnits(maxGasPrice.toString(), "gwei");
         return {
             isValid: false,
             txData: { gas: 0, ...gasPrice, type: 2 },
@@ -6545,7 +6782,7 @@ const transactionValidator = async (txVal) => {
                 gas: 0,
                 gasPrice: gasPrice.maxFeePerGas,
             },
-            error: "Max gas price set for the FCT is too high",
+            error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
         };
     }
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
@@ -6563,6 +6800,17 @@ const transactionValidator = async (txVal) => {
         };
     }
     catch (err) {
+        if (dryRun && err.reason.includes("dry run success")) {
+            return {
+                isValid: true,
+                txData: { gas: 0, ...gasPrice, type: 2 },
+                prices: {
+                    gas: 0,
+                    gasPrice: gasPrice.maxFeePerGas,
+                },
+                error: null,
+            };
+        }
         if (err.reason === "processing response error") {
             throw err;
         }

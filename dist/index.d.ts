@@ -1,5 +1,5 @@
 import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
-import { AllPlugins, PluginInstance, getPlugin as getPlugin$1, ChainId } from '@kiroboio/fct-plugins';
+import { PluginInstance, AllPlugins, getPlugin as getPlugin$1, ChainId } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import { ethers } from 'ethers';
@@ -35,27 +35,31 @@ declare const ComputedBaseBytes = "0xFE00000000000000000000000000000000000000000
 declare const ValidationBase = "0xE900000000000000000000000000000000000000000000000000000000000000";
 declare const ValidationOperator: {
     readonly equal: string;
+    readonly "not equal": string;
     readonly "greater than": string;
     readonly "greater equal than": string;
     readonly or: string;
+    readonly "or not": string;
     readonly and: string;
     readonly "and not": string;
-    readonly "not equal": string;
 };
 declare const CALL_TYPE: {
-    ACTION: string;
-    VIEW_ONLY: string;
-    LIBRARY: string;
+    readonly ACTION: "0";
+    readonly VIEW_ONLY: "1";
+    readonly LIBRARY: "2";
+    readonly LIBRARY_VIEW_ONLY: "3";
 };
 declare const CALL_TYPE_MSG: {
-    ACTION: string;
-    VIEW_ONLY: string;
-    LIBRARY: string;
+    readonly ACTION: "action";
+    readonly VIEW_ONLY: "view only";
+    readonly LIBRARY: "library: action";
+    readonly LIBRARY_VIEW_ONLY: "library: view only";
 };
 declare const CALL_TYPE_MSG_REV: {
     readonly action: "ACTION";
     readonly "view only": "VIEW_ONLY";
-    readonly library: "LIBRARY";
+    readonly "library: action": "LIBRARY";
+    readonly "library: view only": "LIBRARY_VIEW_ONLY";
 };
 declare const FCT_VAULT_ADDRESS: "FCT_VAULT_ADDRESS";
 
@@ -99,15 +103,20 @@ declare namespace index$2 {
   };
 }
 
+type ValidationAddResult<V extends IValidation<true>> = V["id"] extends string ? {
+    type: "validation";
+    id: V["id"];
+} : ValidationVariable;
 interface ValidationVariable {
     type: "validation";
     id: string;
 }
-interface IValidation {
+type IValidationValue<WithIValidation extends boolean> = WithIValidation extends true ? string | Variable | ValidationVariable | IValidation<WithIValidation> : string | Variable | ValidationVariable;
+interface IValidation<WithIValidation extends boolean> {
     id?: string;
-    value1: string | Variable | ValidationVariable;
+    value1: IValidationValue<WithIValidation>;
     operator: keyof typeof ValidationOperator;
-    value2: string | Variable | ValidationVariable;
+    value2: IValidationValue<WithIValidation>;
 }
 interface IValidationData {
     value1: string;
@@ -117,7 +126,7 @@ interface IValidationData {
 interface IValidationEIP712 {
     index: string;
     value_1: string;
-    op: string;
+    op: keyof typeof ValidationOperator;
     value_2: string;
 }
 
@@ -141,6 +150,13 @@ declare const ComputedOperators: {
 };
 
 type IComputedOperator = (typeof ComputedOperators)[keyof typeof ComputedOperators];
+type AddComputedResult<C extends Partial<IComputed>> = C["id"] extends string ? {
+    type: "computed";
+    id: C["id"];
+} : {
+    type: "computed";
+    id: string;
+};
 interface IComputed {
     id?: string;
     value1: string | Variable;
@@ -165,16 +181,17 @@ interface IComputedEIP712 {
 }
 interface IComputedData {
     overflowProtection: boolean;
-    values: [string, string, string, string];
-    operators: [string, string, string];
+    values: string[];
+    operators: string[];
 }
 
 interface ICall {
-    get get(): StrictMSCallInput;
     get options(): DeepRequired<CallOptions>;
-    get getDecoded(): DecodedCalls;
+    get nodeId(): string;
+    get(): StrictMSCallInput;
+    getDecoded(): DecodedCalls;
     getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
-    generateEIP712Type(): {
+    generateEIP712Type(index: number): {
         structTypes: {
             [key: string]: {
                 name: string;
@@ -187,16 +204,20 @@ interface ICall {
         }[];
     };
     generateEIP712Message(index: number): TypedDataMessageTransaction;
-    getTypedHashes(): string[];
+    getTypedHashes(index: number): string[];
     getEncodedData(): string;
     getTypesArray(): number[];
     getFunctionSignature(): string;
     getFunction(): string;
 }
 
+declare const MULTICALL_TYPES: {
+    ACTION: string;
+    VIEW_ONLY: string;
+};
 interface IMulticall {
     target: string;
-    callType: "action" | "view only";
+    callType: keyof typeof MULTICALL_TYPES;
     method: string;
     params: Param[];
 }
@@ -206,6 +227,9 @@ interface IFCTMulticallConstructor {
     nodeId?: string;
     FCT: BatchMultiSigCall;
 }
+interface IMulticallOutput {
+    type: string;
+}
 declare class Multicall implements ICall {
     protected FCT: BatchMultiSigCall;
     private _calls;
@@ -213,11 +237,13 @@ declare class Multicall implements ICall {
     private _nodeId;
     private _options;
     private _to;
+    private _outputTypes;
     constructor(input: IFCTMulticallConstructor);
+    get nodeId(): string;
     get to(): string;
     get toENS(): string;
     get options(): DeepRequired<CallOptions>;
-    get get(): {
+    get(): {
         to: string;
         toENS: string;
         from: string | Variable;
@@ -231,12 +257,13 @@ declare class Multicall implements ICall {
             jumpOnSuccess: string;
             jumpOnFail: string;
             falseMeansFail: boolean;
-            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY";
+            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY" | "LIBRARY_VIEW_ONLY";
             validation: string;
+            payerIndex: number;
         };
         nodeId: string;
     };
-    get getDecoded(): {
+    getDecoded(): {
         params: ParamWithoutVariable<Param>[];
         to: string;
         toENS: string;
@@ -250,11 +277,27 @@ declare class Multicall implements ICall {
             jumpOnSuccess: string;
             jumpOnFail: string;
             falseMeansFail: boolean;
-            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY";
+            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY" | "LIBRARY_VIEW_ONLY";
             validation: string;
+            payerIndex: number;
         };
         nodeId: string;
     };
+    get outputs(): Record<string, {
+        type: "output";
+        id: {
+            nodeId: string;
+            innerIndex: number;
+        };
+    } & {
+        type: "output";
+    }>;
+    add: (call: IMulticall) => IMulticall[];
+    addPlugin: (plugin: PluginInstance) => Promise<void>;
+    setFrom: (from: string | Variable) => string | Variable;
+    setOutputType: (outputType: IMulticallOutput) => IMulticallOutput;
+    setOptions: (options: Omit<CallOptions, "callType">) => CallOptions;
+    setNodeId: (nodeId: string) => string;
     get params(): Param[];
     getAsMCall: (typedData: BatchMultiSigCallTypedData, index: number) => {
         typeHash: string;
@@ -286,10 +329,6 @@ declare class Multicall implements ICall {
             type: string;
         }[];
     };
-    add: (call: IMulticall) => IMulticall[];
-    setFrom: (from: string | Variable) => string | Variable;
-    setOptions: (options: Omit<CallOptions, "callType">) => CallOptions;
-    setNodeId: (nodeId: string) => string;
     private decodeParams;
     private getUsedStructTypes;
     private getStructType;
@@ -299,21 +338,28 @@ declare class Multicall implements ICall {
 
 type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
 
-declare function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F): Promise<Call | (F & Multicall)>;
+type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
+declare function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F): Promise<CreateOutput<F>>;
 declare function createMultiple(this: BatchMultiSigCall, calls: FCTInputCall[]): Promise<FCTCall[]>;
+declare function addAtIndex(this: BatchMultiSigCall, call: FCTInputCall, index: number): Promise<FCTCall>;
 declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { plugin, initParams, }: {
     plugin: T;
     initParams?: PluginParams<T>;
-}): _kiroboio_fct_plugins.NewPluginType<"ERC20", "GETTER", "name", string, {
+}): _kiroboio_fct_plugins.NewPluginType<"VALIDATION_VARIABLE", "VALIDATION_VARIABLE", "validate", "validate", {
     input: {
-        to: _kiroboio_fct_plugins.FctAddress;
-        methodParams: {};
+        nodeId: _kiroboio_fct_plugins.FctString;
+        methodParams: {
+            id: _kiroboio_fct_plugins.FctString;
+            value1: _kiroboio_fct_plugins.FctValue;
+            operator: _kiroboio_fct_plugins.FctString;
+            value2: _kiroboio_fct_plugins.FctValue;
+        };
     };
     output: {
-        name: _kiroboio_fct_plugins.FctString;
+        result: _kiroboio_fct_plugins.FctBoolean;
     };
 }, Partial<{
-    to: string | ({
+    nodeId: string | ({
         type: "output";
         id: {
             nodeId: string;
@@ -324,25 +370,1122 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
         id: number;
     } | {
         type: "global";
-        id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
+        id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
     } | {
-        type: "computed";
         id: string;
+        type: "computed";
+        value1: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        });
+        operator1: string;
+        value2: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        });
+        operator2: string;
+        value3: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        });
+        operator3: string;
+        value4: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        });
+        overflowProtection: boolean;
+    } | {
+        id: string;
+        type: "validation";
+        value1: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | any);
+        operator: string;
+        value2: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | any | any);
     }) | undefined;
-    methodParams: Partial<{}>;
+    methodParams: Partial<{
+        id: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | {
+            id: string;
+            type: "computed";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator1: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator2: string;
+            value3: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator3: string;
+            value4: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            overflowProtection: boolean;
+        } | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        }) | undefined;
+        value1: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | {
+            id: string;
+            type: "computed";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator1: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator2: string;
+            value3: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator3: string;
+            value4: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            overflowProtection: boolean;
+        } | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        }) | undefined;
+        operator: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | {
+            id: string;
+            type: "computed";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator1: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator2: string;
+            value3: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator3: string;
+            value4: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            overflowProtection: boolean;
+        } | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        }) | undefined;
+        value2: string | ({
+            type: "output";
+            id: {
+                nodeId: string;
+                innerIndex: number;
+            };
+        } | {
+            type: "external";
+            id: number;
+        } | {
+            type: "global";
+            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        } | {
+            id: string;
+            type: "computed";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator1: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator2: string;
+            value3: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            operator3: string;
+            value4: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | {
+                id: string;
+                type: "validation";
+                value1: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+                operator: string;
+                value2: string | ({
+                    type: "output";
+                    id: {
+                        nodeId: string;
+                        innerIndex: number;
+                    };
+                } | {
+                    type: "external";
+                    id: number;
+                } | {
+                    type: "global";
+                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                } | any | any);
+            });
+            overflowProtection: boolean;
+        } | {
+            id: string;
+            type: "validation";
+            value1: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+            operator: string;
+            value2: string | ({
+                type: "output";
+                id: {
+                    nodeId: string;
+                    innerIndex: number;
+                };
+            } | {
+                type: "external";
+                id: number;
+            } | {
+                type: "global";
+                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            } | any | any);
+        }) | undefined;
+    }>;
 }>>;
 declare function getCall(this: BatchMultiSigCall, index: number): FCTCall;
 declare function getCallByNodeId(this: BatchMultiSigCall, nodeId: string): FCTCall;
+declare function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): number;
 declare function exportFCT(this: BatchMultiSigCall): IFCT;
-declare function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT): StrictMSCallInput[];
-declare function importEncodedFCT(this: BatchMultiSigCall, calldata: string): Promise<StrictMSCallInput[]>;
+declare function exportWithApprovals(this: BatchMultiSigCall): Promise<IFCT>;
+declare function exportNotificationFCT(this: BatchMultiSigCall): IFCT;
+declare function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT): FCTCall[];
 
 declare function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance>;
 declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise<ReturnType<typeof getPlugin$1>>;
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
-    protocol: "SUSHISWAP" | "UNISWAP" | "ERC20" | "ERC721" | "ERC1155" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE" | "RADIANTV2" | "AaveV3";
-    type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE";
-    method: "" | "symbol" | "equal" | "name" | "approve" | "totalSupply" | "decimals" | "balanceOf" | "allowance" | "supportsInterface" | "add" | "sub" | "mul" | "div" | "mod" | "getAmountsOut" | "deposit" | "borrow" | "getUserAccountData" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "safeTransferFrom" | "setApprovalForAll" | "withdraw" | "repay" | "supply" | "swapBorrowRateMode" | "getAmountsIn" | "isApprovedForAll" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "lessThan" | "between" | "greaterThan" | "FLASHLOAN_PREMIUM_TOTAL" | "FLASHLOAN_PREMIUM_TO_PROTOCOL" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "burn" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "liquidationCall" | "mintToTreasury" | "rebalanceStableBorrowRate" | "repayWithATokens" | "setUserEMode" | "setUserUseReserveAsCollateral" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "mulAndDiv" | "betweenEqual" | "equalAddress" | "equalBytes32" | "greaterEqual" | "lessEqual" | "getEthBalance" | "getEModeCategoryData" | "getReserveNormalizedIncome" | "getReserveNormalizedVariableDebt" | "getUserEMode" | ("transferFrom" | "transfer");
+    protocol: "SUSHISWAP" | "UNISWAP" | "COMPUTED_VARIABLE" | "VALIDATION_VARIABLE" | "ERC20" | "ERC721" | "ERC1155" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE" | "RADIANTV2" | "ROCKETPOOL" | "LIDO" | "AaveV3";
+    type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE" | "COMPUTED_VARIABLE" | "VALIDATION_VARIABLE";
+    method: "" | "symbol" | "equal" | "name" | "approve" | "totalSupply" | "decimals" | "balanceOf" | "allowance" | "supportsInterface" | "add" | "sub" | "div" | "mul" | "mod" | "getAmountsOut" | "borrow" | "getUserAccountData" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "safeTransferFrom" | "setApprovalForAll" | "repay" | "swapBorrowRateMode" | "withdraw" | "supply" | "burn" | "getAmountsIn" | "isApprovedForAll" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "lessThan" | "between" | "greaterThan" | "FLASHLOAN_PREMIUM_TOTAL" | "FLASHLOAN_PREMIUM_TO_PROTOCOL" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "swapOnZeroXv4" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "liquidationCall" | "mintToTreasury" | "rebalanceStableBorrowRate" | "repayWithATokens" | "setUserEMode" | "setUserUseReserveAsCollateral" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "getEModeCategoryData" | "getReserveNormalizedIncome" | "getReserveNormalizedVariableDebt" | "getUserEMode" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "getSharesByPooledEth" | "getPooledEthByShares" | "sharesOf" | "getExchangeRate" | "getRethValue" | "getEthValue" | "getCollateralRate" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "mulAndDiv" | "betweenEqual" | "equalAddress" | "equalBytes32" | "greaterEqual" | "lessEqual" | "getEthBalance" | "compute" | "validate" | ("transferFrom" | "transfer");
     input: {
         to: string | Variable;
         value: string | Variable;
@@ -383,33 +1526,54 @@ declare class BatchMultiSigCall {
     protected _callDefault: ICallDefaults;
     constructor(input?: BatchMultiSigCallConstructor);
     get options(): RequiredFCTOptions;
-    get calls(): StrictMSCallInput[];
-    get pureCalls(): FCTCall[];
+    get calls(): FCTCall[];
+    get callsAsObjects(): StrictMSCallInput[];
     get decodedCalls(): DecodedCalls[];
     get callDefault(): ICallDefaults;
     get computed(): IComputed[];
     get computedAsData(): IComputedData[];
-    get validations(): Required<IValidation>[];
-    setOptions<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O;
-    setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
+    get validations(): Required<IValidation<false>>[];
+    setOptions<O extends DeepPartial<IFCTOptions>>(options: O): {
+        name: string;
+        validFrom: string;
+        expiresAt: string;
+        maxGasPrice: string;
+        blockable: boolean;
+        purgeable: boolean;
+        builder: string;
+        authEnabled: boolean;
+        dryRun: boolean;
+        app: string;
+        by: string;
+        verifier: string;
+        recurrency: {
+            maxRepeats: string;
+            chillTime: string;
+            accumetable: boolean;
+        };
+        multisig: {
+            externalSigners: string[];
+            minimumApprovals: string;
+        };
+    } & O;
+    setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): Omit<RequiredKeys<Partial<MSCallBase>, "value">, "nodeId"> & {
         options: {
+            validation: string;
             permissions: string;
             gasLimit: string;
             flow: Flow;
             jumpOnSuccess: string;
             jumpOnFail: string;
             falseMeansFail: boolean;
-            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY";
-            validation: string;
+            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY" | "LIBRARY_VIEW_ONLY";
         };
     } & C;
     changeChainId: (chainId: ChainId) => void;
-    addComputed: (computed: Partial<IComputed>) => {
-        type: "computed";
-        id: string;
-    } & {
-        type: "computed";
-    };
+    addComputed: <C extends Partial<IComputed>>(computed: C) => AddComputedResult<C>;
+    addValidation: <V extends IValidation<true>>(validation: {
+        nodeId: string;
+        validation: V;
+    }) => ValidationAddResult<V>;
     getPlugin: typeof getPlugin;
     getPluginClass: typeof getPluginClass;
     getPluginData: typeof getPluginData;
@@ -418,16 +1582,18 @@ declare class BatchMultiSigCall {
     addMultiple: typeof createMultiple;
     create: typeof create;
     createMultiple: typeof createMultiple;
+    protected addAtIndex: typeof addAtIndex;
+    export: typeof exportFCT;
     exportFCT: typeof exportFCT;
+    exportNotification: typeof exportNotificationFCT;
+    exportNotificationFCT: typeof exportNotificationFCT;
+    exportWithApprovals: typeof exportWithApprovals;
     importFCT: typeof importFCT;
-    importEncodedFCT: typeof importEncodedFCT;
     getCall: typeof getCall;
     getCallByNodeId: typeof getCallByNodeId;
+    getIndexByNodeId: typeof getIndexByNodeId;
     static utils: typeof utils;
-    static from: (input: IFCT & {
-        validations?: [
-        ];
-    }) => BatchMultiSigCall;
+    static from: (input: IFCT) => BatchMultiSigCall;
 }
 
 declare class CallBase {
@@ -438,6 +1604,7 @@ declare class CallBase {
     get call(): IMSCallInput & {
         nodeId: string;
     };
+    get nodeId(): string;
     getOutputVariable(innerIndex?: number): Variable & {
         type: "output";
     };
@@ -445,7 +1612,7 @@ declare class CallBase {
     getFunctionSignature(): string;
     getFunction(): string;
     setOptions(options: DeepPartial<CallOptions>): void;
-    setCall(call: DeepPartial<IMSCallInput>): void;
+    update(call: DeepPartial<IMSCallInput>): void;
 }
 
 declare class Call extends CallBase implements ICall {
@@ -454,11 +1621,13 @@ declare class Call extends CallBase implements ICall {
         FCT: BatchMultiSigCall;
         input: IMSCallInput;
     });
-    get get(): StrictMSCallInput;
+    update(call: DeepPartial<IMSCallInput>): StrictMSCallInput;
+    addValidation(validation: IValidation<true>): ValidationVariable;
     get options(): DeepRequired<CallOptions>;
-    get getDecoded(): DecodedCalls;
+    get(): StrictMSCallInput;
+    getDecoded(): DecodedCalls;
     getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
-    generateEIP712Type(): {
+    generateEIP712Type(index: number): {
         structTypes: {
             [key: string]: {
                 name: string;
@@ -471,7 +1640,7 @@ declare class Call extends CallBase implements ICall {
         }[];
     };
     generateEIP712Message(index: number): TypedDataMessageTransaction;
-    getTypedHashes(): string[];
+    getTypedHashes(index: number): string[];
     getEncodedData(): string;
     private getUsedStructTypes;
     private getStructType;
@@ -493,18 +1662,19 @@ declare class FCTBase {
 }
 
 declare class Validation extends FCTBase {
-    protected _validations: Required<IValidation>[];
+    protected _validations: Required<IValidation<false>>[];
     constructor(FCT: BatchMultiSigCall);
-    get get(): Required<IValidation>[];
-    get getForEIP712(): IValidationEIP712[];
-    get getForData(): IValidationData[];
+    get(): Required<IValidation<false>>[];
+    getForEIP712(): IValidationEIP712[];
+    getForData(): IValidationData[];
     getIndex(id: string): number;
-    add(validation: IValidation): ValidationVariable;
-    addAndSetForCall({ nodeId, validation }: {
+    add<V extends IValidation<true>>({ nodeId, validation, }: {
         nodeId: string;
-        validation: IValidation;
-    }): void;
+        validation: V;
+    }): ValidationAddResult<V>;
+    addValidation(validation: IValidation<true>): string;
     private handleVariable;
+    private isIValidation;
 }
 
 declare class FCTUtils extends FCTBase {
@@ -520,37 +1690,10 @@ declare class FCTUtils extends FCTBase {
     }): string;
     getAuthenticatorSignature(): SignatureLike;
     recoverAddress(signature: SignatureLike): string | null;
-    getOptions(): {
-        valid_from: string;
-        expires_at: string;
-        gas_price_limit: string;
-        blockable: boolean;
-        purgeable: boolean;
-        builder: string;
-        recurrency: {
-            accumetable: boolean;
-            chillTime: string;
-            maxRepeats: string;
-        };
-        multisig: {
-            externalSigners: string[];
-            minimumApprovals: string;
-        };
-        authEnabled: boolean;
-    };
     getMessageHash(): string;
     isValid(softValidation?: boolean): boolean | Error;
     getSigners(): string[];
     getAllPaths(): string[][];
-    getKIROPayment: ({ priceOfETHInKiro, gasPrice, gas, }: {
-        priceOfETHInKiro: string;
-        gasPrice: number;
-        gas: number;
-    }) => {
-        vault: string;
-        amountInKIRO: string;
-        amountInETH: string;
-    };
     kiroPerPayerGas: ({ gas, gasPrice, penalty, ethPriceInKIRO, fees, }: {
         gas: string | bigint;
         gasPrice: string | bigint;
@@ -587,6 +1730,7 @@ declare class FCTUtils extends FCTBase {
             amountInETH: string;
         };
     }[];
+    getMaxGas: () => string;
     getCallResults: ({ rpcUrl, provider, txHash, }: {
         rpcUrl?: string | undefined;
         provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider | undefined;
@@ -633,9 +1777,7 @@ declare class Variables extends FCTBase {
     get computed(): Required<IComputed>[];
     get computedAsData(): IComputedData[];
     get computedForEIP712(): IComputedEIP712[];
-    addComputed(computed: Partial<IComputed>): Variable & {
-        type: "computed";
-    };
+    addComputed<C extends Partial<IComputed>>(computed: C): AddComputedResult<C>;
     getVariable(variable: Variable, type: string): string;
     private getOutputVariable;
     private getExternalVariable;
@@ -677,7 +1819,7 @@ type TypedDataMessageTransaction = {
     call: {
         call_index: number;
         payer_index: number;
-        call_type: (typeof CALL_TYPE_MSG)[keyof typeof CALL_TYPE_MSG];
+        call_type: (typeof CALL_TYPE_MSG)[keyof typeof CALL_TYPE_MSG] | string;
         from: string;
         to: string;
         to_ens: string;
@@ -703,19 +1845,24 @@ interface TypedDataLimits {
 }
 interface TypedDataMeta {
     name: string;
+    app: string;
+    by: string;
     builder: string;
     selector: string;
     version: string;
     random_id: string;
     eip712: boolean;
+    verifier: string;
     auth_enabled: boolean;
+    dry_run: boolean;
 }
 type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 type MessageMeta = Record<"meta", TypedDataMeta>;
 type MessageLimits = Record<"limits", TypedDataLimits>;
 type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
-type MessageComputed = Record<`computed_${number}`, IComputedData>;
+type MessageComputed = Record<`computed_${number}`, IComputedEIP712>;
+type MessageValidation = Record<`validation_${number}`, IValidationEIP712>;
 type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
 type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
@@ -737,31 +1884,34 @@ interface BatchMultiSigCallConstructor {
     version?: `0x${string}`;
 }
 interface IFCT {
-    typeHash: string;
     typedData: BatchMultiSigCallTypedData;
+    typeHash: string;
     sessionId: string;
     nameHash: string;
-    mcall: MSCall[];
+    appHash: string;
+    byHash: string;
+    verifierHash: string;
     builder: string;
+    mcall: MSCall[];
+    signatures: SignatureLike[];
     variables: string[];
     externalSigners: string[];
-    computed: Omit<IComputedData, "index">[];
-    signatures: SignatureLike[];
+    computed: IComputedData[];
     validations: IValidationData[];
 }
-type PartialBatchMultiSigCall = Pick<IFCT, "typedData" | "signatures" | "mcall">;
-interface MSCallMandatory {
+interface MSCallBase {
     nodeId?: string;
     from?: string | Variable;
     value?: string | Variable;
     options?: CallOptions;
+    addValidation?: IValidation<true>;
 }
 type IMSCallInput = {
     to: string | Variable;
     params?: Param[];
     method?: string;
     toENS?: string;
-} & MSCallMandatory;
+} & MSCallBase;
 type FCTMCall = RequiredKeys<IMSCallInput, "nodeId">;
 type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" | "options"> & {
     options: DeepRequired<CallOptions>;
@@ -771,17 +1921,17 @@ interface DecodedCalls extends StrictMSCallInput {
 }
 type IWithPlugin = {
     plugin: {
-        create(): Promise<IPluginCall | undefined>;
+        create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
     };
-} & MSCallMandatory;
+} & MSCallBase;
 type IMSCallWithEncodedData = {
     nodeId?: string;
     abi: ReadonlyArray<ethers.utils.Fragment | JsonFragment> | string[];
     encodedData: string;
     to: string | Variable;
-} & MSCallMandatory;
-type FCTInputCall = IMSCallInput | IWithPlugin | IMSCallWithEncodedData | Multicall;
+} & MSCallBase;
 type FCTCall = Call | Multicall;
+type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
 interface MSCall {
     typeHash: string;
     ensHash: string;
@@ -795,7 +1945,7 @@ interface MSCall {
     typedHashes: string[];
 }
 interface IFCTOptions {
-    name?: string;
+    name: string;
     validFrom: string;
     expiresAt: string;
     maxGasPrice: string;
@@ -803,6 +1953,10 @@ interface IFCTOptions {
     purgeable: boolean;
     builder: string;
     authEnabled: boolean;
+    dryRun: boolean;
+    app: string;
+    by: string;
+    verifier: string;
     recurrency?: {
         maxRepeats: string;
         chillTime: string;
@@ -847,20 +2001,27 @@ type IRequiredApproval = ({
     token: string;
     from: string;
 };
-type ICallDefaults = Omit<RequiredKeys<Partial<MSCallMandatory>, "value">, "nodeId"> & {
-    options: DeepRequired<CallOptions>;
+type ICallDefaults = Omit<RequiredKeys<Partial<MSCallBase>, "value">, "nodeId"> & {
+    options: DeepRequired<Omit<CallOptions, "payerIndex">>;
 };
 
-type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
+type GlobalVariable = "blockNumber" | "blockTimestamp" | "gasPrice" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
 declare const globalVariables: {
     blockNumber: string;
     blockTimestamp: string;
+    chainId: string;
     gasPrice: string;
     minerAddress: string;
     originAddress: string;
     investorAddress: string;
     activatorAddress: string;
     engineAddress: string;
+};
+declare const globalVariablesBytes: {
+    blockNumber: string;
+    blockTimestamp: string;
+    chainId: string;
+    gasPrice: string;
 };
 declare const getBlockNumber: () => Variable;
 declare const getBlockTimestamp: () => Variable;
@@ -870,29 +2031,34 @@ declare const getOriginAddress: () => Variable;
 declare const getInvestorAddress: () => Variable;
 declare const getActivatorAddress: () => Variable;
 declare const getEngineAddress: () => Variable;
+declare const getChainID: () => Variable;
 
 type index$1_GlobalVariable = GlobalVariable;
 declare const index$1_getActivatorAddress: typeof getActivatorAddress;
 declare const index$1_getBlockNumber: typeof getBlockNumber;
 declare const index$1_getBlockTimestamp: typeof getBlockTimestamp;
+declare const index$1_getChainID: typeof getChainID;
 declare const index$1_getEngineAddress: typeof getEngineAddress;
 declare const index$1_getGasPrice: typeof getGasPrice;
 declare const index$1_getInvestorAddress: typeof getInvestorAddress;
 declare const index$1_getMinerAddress: typeof getMinerAddress;
 declare const index$1_getOriginAddress: typeof getOriginAddress;
 declare const index$1_globalVariables: typeof globalVariables;
+declare const index$1_globalVariablesBytes: typeof globalVariablesBytes;
 declare namespace index$1 {
   export {
     index$1_GlobalVariable as GlobalVariable,
     index$1_getActivatorAddress as getActivatorAddress,
     index$1_getBlockNumber as getBlockNumber,
     index$1_getBlockTimestamp as getBlockTimestamp,
+    index$1_getChainID as getChainID,
     index$1_getEngineAddress as getEngineAddress,
     index$1_getGasPrice as getGasPrice,
     index$1_getInvestorAddress as getInvestorAddress,
     index$1_getMinerAddress as getMinerAddress,
     index$1_getOriginAddress as getOriginAddress,
     index$1_globalVariables as globalVariables,
+    index$1_globalVariablesBytes as globalVariablesBytes,
   };
 }
 
@@ -911,11 +2077,15 @@ type Variable = {
 } | {
     type: "computed";
     id: string;
+} | {
+    type: "validation";
+    id: string;
 };
+type ParamValue = boolean | string | string[] | boolean[] | Param[] | Param[][] | Variable | ParamValue[];
 interface Param {
     name: string;
     type: string;
-    value?: boolean | string | string[] | Param[] | Param[][] | Variable;
+    value?: ParamValue;
     customType?: boolean;
     hashed?: boolean;
 }
@@ -937,6 +2107,7 @@ interface CallOptions {
     falseMeansFail?: boolean;
     callType?: CallType;
     validation?: string;
+    payerIndex?: number;
 }
 interface IPluginCall {
     value?: string | Variable;
@@ -964,8 +2135,8 @@ interface ITxValidator {
     errorIsValid?: boolean;
 }
 interface EIP1559GasPrice {
-    maxFeePerGas: number;
-    maxPriorityFeePerGas: number;
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
 }
 
 interface FetchUtilConstructor {
@@ -1016,7 +2187,7 @@ interface TransactionValidatorSuccess {
     } & EIP1559GasPrice;
     prices: {
         gas: number;
-        gasPrice: number;
+        gasPrice: string;
     };
     error: null;
 }
@@ -1028,7 +2199,7 @@ interface TransactionValidatorError {
     } & EIP1559GasPrice;
     prices: {
         gas: number;
-        gasPrice: number;
+        gasPrice: string;
     };
     error: string;
 }
@@ -1052,4 +2223,4 @@ declare namespace index {
   };
 }
 
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallMandatory, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamWithoutVariable, PartialBatchMultiSigCall, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallBase, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MessageValidation, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamValue, ParamWithoutVariable, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
