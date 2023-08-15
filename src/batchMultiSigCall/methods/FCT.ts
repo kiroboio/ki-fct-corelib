@@ -300,8 +300,10 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       return Flow[flow[0] as keyof typeof Flow];
     };
 
+    const callIndex = index + 1;
+
     const callInput: IMSCallInput = {
-      nodeId: `node${index + 1}`,
+      nodeId: `node${callIndex}`,
       to: call.to,
       from: call.from,
       value: call.value,
@@ -310,8 +312,8 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       toENS: meta.to_ens,
       options: {
         gasLimit: meta.gas_limit,
-        jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${index + meta.jump_on_success}`,
-        jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${index + meta.jump_on_fail}`,
+        jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + meta.jump_on_success}`,
+        jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + meta.jump_on_fail}`,
         flow: getFlow(),
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
