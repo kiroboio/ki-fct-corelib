@@ -60,7 +60,7 @@ export class BatchMultiSigCall {
     if (input.chainId) {
       this.chainId = input.chainId;
     } else {
-      this.chainId = "5"; // @todo This should be changed to mainnet in the future. For now we use Goerli
+      this.chainId = "1";
     }
     if (input.domain) {
       this.domain = input.domain;
