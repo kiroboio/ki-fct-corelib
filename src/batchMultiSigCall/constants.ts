@@ -19,7 +19,6 @@ export const addresses = {
     ActuatorCore: "0x2301F7d5A833395733F92fdf68B8Eb15aC757dF9",
   },
   42161: {
-    // TODO: All the contracts below are copied from Goerli, need to be changed
     FCT_Controller: "0x7A45405D953974998fc447C196Fb015DC41C0650",
     FCT_BatchMultiSig: "0x2174679B326bE7B0888b54CaAdE1FE644DCfd309",
     FCT_EnsManager: "0xa51b9A359A87dB485Fcb87C358C58b123C2f9688",
@@ -28,7 +27,6 @@ export const addresses = {
     ActuatorCore: "0x27C133a452303195b237fe920442891FeF609c54",
   },
   421613: {
-    // TODO: All the contracts below are copied from Goerli, need to be changed
     FCT_Controller: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
     FCT_BatchMultiSig: "0x3628BE9E0BEfE4406cDFCA72E51d40d3902B9a22",
     FCT_EnsManager: "0x40b3dA447BE499e0D8165b314EB77e2356d0a92f",

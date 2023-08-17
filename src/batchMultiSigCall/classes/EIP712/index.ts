@@ -28,21 +28,19 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   },
   "42161": {
     // Arbitrum
-    // TODO: Update this when the testnet is live
     name: "FCT Controller",
     version: "1",
     chainId: 42161,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+    verifyingContract: "0x7A45405D953974998fc447C196Fb015DC41C0650",
+    salt: "0x0100af89b3a0314c9a2f00007a45405d953974998fc447c196fb015dc41c0650",
   },
   "421613": {
     // Arbitrum Testnet
-    // TODO: Update this when the testnet is live
     name: "FCT Controller",
     version: "1",
     chainId: 421613,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+    verifyingContract: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
+    salt: "0x0100df6d107dcaba91640000574f4cdab7ec20e3a37bde025260f0a2359503d6",
   },
 };
 
