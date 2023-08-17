@@ -12,7 +12,7 @@ async function main() {
 
   const FCTData = FCT.export();
 
-  console.log(FCTData);
+  console.log(JSON.stringify(FCTData, null, 2));
 }
 
 main()

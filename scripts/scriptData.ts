@@ -32,6 +32,9 @@ export const scriptData = {
   42161: {
     rpcUrl: "https://rpc.ankr.com/arbitrum",
   },
+  421613: {
+    rpcUrl: "https://arbitrum-goerli.publicnode.com",
+  },
 };
 
 export default scriptData;
