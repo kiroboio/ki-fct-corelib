@@ -4,8 +4,6 @@ import { ethers } from "ethers";
 import { BatchMultiSigCall } from "../src";
 import scriptData from "./scriptData";
 
-type ExtractPropsFromArray<T> = Omit<T, keyof Array<unknown> | `${number}`>;
-
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
@@ -30,7 +28,7 @@ async function main() {
     provider: new ethers.providers.JsonRpcProvider(scriptData[1].rpcUrl),
   });
 
-  console.log(Swap.functions.swapExactTokensForTokens);
+  console.log(Swap.inputs);
 
   const routeData = await Swap.create();
   if (!routeData) throw new Error("Failed to generate client side quote");
