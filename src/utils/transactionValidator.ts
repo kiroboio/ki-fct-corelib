@@ -12,21 +12,27 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
 
   const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const { maxGasPrice, dryRun } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
-  gasPrice = dryRun ? { maxFeePerGas: "0", maxPriorityFeePerGas: "0" } : gasPrice;
-
-  if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
-    const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
-    const fctMaxGasPriceInGwei = ethers.utils.formatUnits(maxGasPrice.toString(), "gwei");
-    return {
-      isValid: false,
-      txData: { gas: 0, ...gasPrice, type: 2 },
-      prices: {
-        gas: 0,
-        gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
-      },
-      error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
-    };
+  if (dryRun) {
+    gasPrice = { maxFeePerGas: "0", maxPriorityFeePerGas: "0" };
+  } else {
+    if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+      gasPrice = { maxFeePerGas: maxGasPrice.toString(), maxPriorityFeePerGas: "0" };
+    }
   }
+
+  // if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+  //   const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
+  //   const fctMaxGasPriceInGwei = ethers.utils.formatUnits(maxGasPrice.toString(), "gwei");
+  //   return {
+  //     isValid: false,
+  //     txData: { gas: 0, ...gasPrice, type: 2 },
+  //     prices: {
+  //       gas: 0,
+  //       gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
+  //     },
+  //     error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
+  //   };
+  // }
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   const signer = new ethers.Wallet(actuatorPrivateKey, provider);

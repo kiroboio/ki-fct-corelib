@@ -5,6 +5,8 @@ import { EIP1559GasPrice } from "../types";
 const precentilesForNetworks = {
   5: [2, 6, 15, 30],
   1: [2, 5, 15, 25],
+  42161: [2, 5, 15, 25],
+  421613: [2, 6, 15, 30],
 };
 
 const gasPriceCalculationsByChains = {
