@@ -1,39 +1,74 @@
-class Parameter<N extends string = string, T extends string = string> {
-  readonly name: N;
-  readonly type: T;
-
-  constructor(args: { name: N; type: T }) {
-    this.name = args.name;
-    this.type = args.type;
-  }
+export interface JsonFragmentType {
+  /**
+   *  The parameter name.
+   */
+  readonly name: string;
+  /**
+   *  If the parameter is indexed.
+   */
+  readonly indexed?: boolean;
+  /**
+   *  The type of the parameter.
+   */
+  readonly type: string;
+  /**
+   *  The internal Solidity type.
+   */
+  readonly internalType?: string;
+  /**
+   *  The components for a tuple.
+   */
+  readonly components?: ReadonlyArray<JsonFragmentType>;
 }
 
-class PluginInput<P extends Parameter> {
-  public readonly parameters: readonly P[] = [];
-  public readonly data: Record<string, unknown> = {};
-
-  constructor(args: { parameters: readonly P[] }) {
-    this.parameters = args.parameters;
-  }
-
-  public set(key: (typeof this.parameters)[number]["name"], value: unknown): void {
-    this.data[key] = value;
-  }
+export interface JsonFragment {
+  /**
+   *  The name of the error, event, function, etc.
+   */
+  readonly name: string;
+  /**
+   *  The type of the fragment (e.g. ``event``, ``"function"``, etc.)
+   */
+  readonly type?: string;
+  /**
+   *  If the event is anonymous.
+   */
+  readonly anonymous?: boolean;
+  /**
+   *  If the function is payable.
+   */
+  readonly payable?: boolean;
+  /**
+   *  If the function is constant.
+   */
+  readonly constant?: boolean;
+  /**
+   *  The mutability state of the function.
+   */
+  readonly stateMutability?: string;
+  /**
+   *  The input parameters.
+   */
+  readonly inputs?: ReadonlyArray<JsonFragmentType>;
+  /**
+   *  The output parameters.
+   */
+  readonly outputs?: ReadonlyArray<JsonFragmentType>;
+  /**
+   *  The gas limit to use when sending a transaction for this function.
+   */
+  readonly gas?: string;
 }
 
-const parameters = [
-  new Parameter({
-    name: "foo",
-    type: "bar",
-  }),
-  new Parameter({
-    name: "foo2",
-    type: "bar2",
-  }),
-];
+type Outputs<
+  T extends readonly JsonFragmentType[] | undefined,
+  N extends string
+> = T extends readonly JsonFragmentType[]
+  ? {
+      [key: number]: { type: "output"; id: { nodeId: N } };
+    }
+  : never;
 
-const pluginInput = new PluginInput({
-  parameters,
-});
+const data = [{ internalType: "uint256", name: "", type: "uint256" }] as const;
 
-pluginInput.set("foo", "bar");
+type T = Outputs<typeof data>;

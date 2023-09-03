@@ -1,46 +1,29 @@
-import { UniswapSwapPlugin } from "@kiroboio/fct-plugins";
+import { ERC20 } from "@kiroboio/flow-plugins";
 import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../src";
-import scriptData from "./scriptData";
 
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
   const FCT = new BatchMultiSigCall({ chainId: "1" });
-  const Swap = new UniswapSwapPlugin({
-    chainId: "1",
-    input: {
-      from: {
-        address: ethers.constants.AddressZero,
-        // address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        decimals: 18,
-      },
-      to: {
-        address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        decimals: 6,
-      },
-      amount: "100" + "0".repeat(6),
-      slippage: "100",
-      swapType: "exactOut",
-      recipient: createRandomAddress(),
-    },
-    provider: new ethers.providers.JsonRpcProvider(scriptData[1].rpcUrl),
+
+  const Transfer = new ERC20.transfer({ chainId: "1" });
+  Transfer.setContractAddress("0x6b175474e89094c44da98b954eedeac495271d0f");
+  Transfer.set({
+    _to: createRandomAddress(),
+    _value: "1000000000000000000",
   });
-
-  console.log(Swap.inputs);
-
-  const routeData = await Swap.create();
-  if (!routeData) throw new Error("Failed to generate client side quote");
-
-  console.log(JSON.stringify(routeData, null, 2));
 
   await FCT.add({
     from: createRandomAddress(),
-    plugin: Swap as any,
+    plugin: Transfer as any,
   });
-}
 
+  const FCTData = FCT.export();
+
+  console.log(JSON.stringify(FCTData, null, 2));
+}
 main()
   .then(() => process.exit(0))
   .catch((error) => {
