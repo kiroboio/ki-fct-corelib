@@ -5,6 +5,8 @@ const { keccak256, toUtf8Bytes } = ethers.utils;
 export const multicallContracts = {
   1: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
   5: "0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e",
+  42161: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
+  421613: "0x961E16D26D3f1fc042F192a2e5054120938c1CD5",
 };
 
 export const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
