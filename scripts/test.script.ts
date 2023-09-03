@@ -6,13 +6,9 @@ import fctJson from "./FailingFCT.json";
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
 async function main() {
-  const FCT = BatchMultiSigCall.from(fctJson);
+  const FCT = await BatchMultiSigCall.from(fctJson).utils.getAllRequiredApprovals();
 
-  console.log(FCT.callsAsObjects);
-
-  const FCTData = FCT.export();
-
-  console.log(JSON.stringify(FCTData, null, 2));
+  console.log(FCT);
 }
 
 main()
