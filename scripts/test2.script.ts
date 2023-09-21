@@ -87,8 +87,6 @@ async function main() {
     onBehalfOf: "0x...",
     referralCode: "0",
   });
-
-  const SmartPluginsAave = new SmartPlugins.AaveV2.Deposit();
 }
 main()
   .then(() => process.exit(0))
@@ -96,46 +94,3 @@ main()
     console.error(error);
     process.exitCode = 1;
   });
-
-// Tenderly simulation:
-// USDC Whale 0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503
-
-// const calls = [
-//   {
-//     from: "0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503",
-//     to: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-//     data: Interfaces.ERC20.encodeFunctionData("approve", [
-//       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-//       "2000" + "0".repeat(6),
-//     ]),
-//   },
-//   {
-//     from: "0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503",
-//     to: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-//     data: UniInterface.encodeFunctionData(
-//       create.method,
-//       create.params.map((param) => param.value)
-//     ),
-//   },
-// ];
-
-// const res = await fetch("https://mainnet.gateway.tenderly.co/19XD817c4zNXz6xBFYnyLb", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-//   body: JSON.stringify({
-//     id: 0,
-//     jsonrpc: "2.0",
-//     method: "tenderly_simulateBundle",
-//     params: [calls, "latest"],
-//   }),
-// });
-// const data = await res.json();
-
-// const tuple: Result = [];
-// tuple[0] = "something";
-// tuple["something"] = "something";
-
-// tuple[1] = "else";
-// tuple["else"] = "else";
