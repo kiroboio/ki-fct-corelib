@@ -1,14 +1,13 @@
-import { ethers } from "ethers";
+import { writeFileSync } from "fs";
 
 import { BatchMultiSigCall } from "../src";
-import fctJson from "./FailingFCT.json";
-
-const createRandomAddress = () => ethers.Wallet.createRandom().address;
+import FCTData from "./FailingFCT.json";
 
 async function main() {
-  const FCT = await BatchMultiSigCall.from(fctJson).utils.getAllRequiredApprovals();
+  const FCT = BatchMultiSigCall.from(FCTData);
 
-  console.log(FCT);
+  const exported = FCT.export();
+  writeFileSync("./scripts/FailingFCTExport.json", JSON.stringify(exported, null, 2));
 }
 
 main()
