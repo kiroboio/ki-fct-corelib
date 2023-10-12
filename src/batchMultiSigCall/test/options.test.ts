@@ -20,7 +20,7 @@ export const FCTOptionsErrors = () =>
   describe("FCT Options Errors", () => {
     it("Should get error when setting builder", () => {
       catchError({
-        param: { builder: "0x-" },
+        param: { builder: { address: "0x-" } },
         message: "Options: builder is not a valid address",
       });
     });

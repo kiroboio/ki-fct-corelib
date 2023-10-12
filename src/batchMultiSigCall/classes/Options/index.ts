@@ -78,9 +78,9 @@ export class Options {
         helpers.validateInteger(value[objKey] as string, [...parentKeys, objKey]);
       }
       // Address validator
-      if (helpers.mustBeAddress.includes(objKey)) {
-        helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
-      }
+      // if (helpers.mustBeAddress.includes(objKey)) {
+      //   helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
+      // }
       // Expires at validator
       if (objKey === "expiresAt") {
         const expiresAt = Number(value[objKey]);

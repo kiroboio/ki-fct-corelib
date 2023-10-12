@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { ethers } from "ethers";
 
 import { Options } from ".";
 
@@ -18,11 +17,16 @@ describe("BatchMultiSigCall Options", () => {
       maxGasPrice: "100" + "0".repeat(9), // 100 Gwei
       blockable: false,
       purgeable: true,
-      builder: ethers.constants.AddressZero,
       authEnabled: true,
       dryRun: false,
-      by: "",
-      app: "",
+      app: {
+        name: "Test",
+        version: "",
+      },
+      builder: {
+        name: "",
+        address: "",
+      },
       verifier: "",
       recurrency: {
         maxRepeats: "100",
