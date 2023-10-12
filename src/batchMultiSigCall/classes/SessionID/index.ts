@@ -70,37 +70,22 @@ export class SessionID extends FCTBase {
     return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
   }
 
-  static asOptions({
-    sessionId,
-    builder,
-    name,
-    app,
-    by,
-    verifier,
-    externalSigners = [],
-  }: {
-    sessionId: string;
-    builder: string;
-    name: string;
-    app: string;
-    by: string;
-    verifier: string;
-    externalSigners?: string[];
-  }) {
-    const parsedSessionID = SessionID.parse(sessionId);
+  static asOptions(sessionId: string) {
+    return SessionID.parse(sessionId);
+    // const parsedSessionID = SessionID.parse(sessionId);
 
-    return {
-      ...parsedSessionID,
-      builder,
-      name,
-      app,
-      by,
-      verifier,
-      multisig: {
-        ...parsedSessionID.multisig,
-        externalSigners,
-      },
-    };
+    // return {
+    //   ...parsedSessionID,
+    //   builder,
+    //   name,
+    //   app,
+    //   by,
+    //   verifier,
+    //   multisig: {
+    //     ...parsedSessionID.multisig,
+    //     externalSigners,
+    //   },
+    // };
   }
 
   static parse(sessionId: string) {
@@ -125,7 +110,6 @@ export class SessionID extends FCTBase {
       validFrom,
       expiresAt,
       maxGasPrice,
-      // eip712: flags.eip712,
       dryRun: flags.dryRun,
       blockable: flags.blockable,
       purgeable: flags.purgeable,

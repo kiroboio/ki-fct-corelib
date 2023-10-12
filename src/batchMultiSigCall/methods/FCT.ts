@@ -13,7 +13,7 @@ import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { Multicall } from "../classes/Call/Multicall/Multicall";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
-import { FCTCall, IMSCallInput, TypedDataMessageTransaction } from "../types";
+import { FCTCall, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 const AbiCoder = ethers.utils.AbiCoder;
@@ -248,24 +248,36 @@ export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
 export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
-  const { meta } = typedData.message;
-  this.batchMultiSigSelector = meta.selector;
-  this.version = meta.version;
+  const { meta, engine } = typedData.message;
+  this.batchMultiSigSelector = engine.selector;
+  this.version = engine.version;
   this.chainId = domain.chainId.toString() as ChainId;
   this.domain = domain;
-  this.randomId = meta.random_id.slice(2);
+  this.randomId = engine.random_id.slice(2);
 
-  this.setOptions(
-    SessionID.asOptions({
-      sessionId: fct.sessionId,
-      builder: fct.builder,
+  const sessionIDOptions = SessionID.asOptions(fct.sessionId);
+
+  const options: IFCTOptions = {
+    ...SessionID.asOptions(fct.sessionId),
+    authEnabled: engine.auth_enabled,
+    domain: meta.domain,
+    name: meta.name,
+    verifier: engine.verifier,
+    builder: {
+      address: fct.builderAddress,
+      name: meta.builder,
+    },
+    app: {
+      name: meta.app,
+      version: meta.app_version,
+    },
+    multisig: {
       externalSigners: fct.externalSigners,
-      app: typedData.message.meta.app,
-      by: typedData.message.meta.by,
-      verifier: typedData.message.meta.verifier,
-      name: typedData.message.meta.name,
-    })
-  );
+      minimumApprovals: sessionIDOptions.multisig.minimumApprovals,
+    },
+  };
+
+  this.setOptions(options);
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {
@@ -433,15 +445,7 @@ export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string
     activator: string;
   } = getFCT(decoded);
 
-  const FCTOptions = SessionID.asOptions({
-    sessionId: decodedFCT.tr.sessionId,
-    builder: decodedFCT.tr.builder,
-    name: "",
-    app: "",
-    by: "",
-    verifier: "",
-    externalSigners: decodedFCT.tr.externalSigners,
-  });
+  const FCTOptions = SessionID.asOptions(decodedFCT.tr.sessionId);
   this.setOptions(FCTOptions);
 
   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
