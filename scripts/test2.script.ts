@@ -36,7 +36,7 @@ async function main() {
       decimals: "18",
     },
     amount: "1" + "0".repeat(18),
-    isExactIn: true, // isAmountIn
+    isAmountIn: true,
     recipient: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
     slippage: "500",
   });
