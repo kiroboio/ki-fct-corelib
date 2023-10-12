@@ -81,7 +81,7 @@ export class FCTUtils extends FCTBase {
     this.validateFCTKeys(keys);
 
     const limits = this.FCTData.typedData.message.limits;
-    const fctData = this.FCTData.typedData.message.meta;
+    const engine = this.FCTData.typedData.message.engine;
 
     const currentDate = new Date().getTime() / 1000;
     const validFrom = parseInt(limits.valid_from);
@@ -100,7 +100,7 @@ export class FCTUtils extends FCTBase {
       throw new Error(`FCT gas price limit cannot be 0`);
     }
 
-    if (!fctData.eip712) {
+    if (!engine.eip712) {
       throw new Error(`FCT must be type EIP712`);
     }
 

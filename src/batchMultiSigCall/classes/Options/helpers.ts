@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 const isAddress = ethers.utils.isAddress;
 
 export const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
-export const mustBeAddress = ["builder"];
+// export const mustBeAddress = ["builder"];
 
 // Validate Integer values in options
 export const validateInteger = (value: string, keys: string[]) => {

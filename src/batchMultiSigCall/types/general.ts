@@ -35,9 +35,11 @@ export interface IFCT {
   sessionId: string;
   nameHash: string;
   appHash: string;
-  byHash: string;
+  appVersionHash: string;
+  builderHash: string;
+  domainHash: string;
   verifierHash: string;
-  builder: string;
+  builderAddress: string;
   mcall: MSCall[];
   signatures: SignatureLike[];
   variables: string[];
@@ -107,12 +109,18 @@ export interface IFCTOptions {
   maxGasPrice: string;
   blockable: boolean;
   purgeable: boolean;
-  builder: string;
   authEnabled: boolean;
   dryRun: boolean;
-  app: string;
-  by: string;
   verifier: string;
+  domain: string;
+  app: {
+    name: string;
+    version: string;
+  };
+  builder: {
+    name: string;
+    address: string;
+  };
   recurrency?: {
     maxRepeats: string;
     chillTime: string;
