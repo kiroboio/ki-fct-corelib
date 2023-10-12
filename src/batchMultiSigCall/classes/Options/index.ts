@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import _ from "lodash";
 
 import { getDate } from "../../../helpers";
@@ -11,12 +12,18 @@ const initOptions = {
   expiresAt: getDate(7), // Expires after 7 days
   purgeable: false,
   blockable: true,
-  builder: "0x0000000000000000000000000000000000000000",
   authEnabled: true,
   dryRun: false,
-  app: "",
-  by: "",
   verifier: "",
+  domain: "",
+  builder: {
+    name: "",
+    address: ethers.constants.AddressZero,
+  },
+  app: {
+    name: "",
+    version: "",
+  },
 };
 
 export class Options {
@@ -71,9 +78,9 @@ export class Options {
         helpers.validateInteger(value[objKey] as string, [...parentKeys, objKey]);
       }
       // Address validator
-      if (helpers.mustBeAddress.includes(objKey)) {
-        helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
-      }
+      // if (helpers.mustBeAddress.includes(objKey)) {
+      //   helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
+      // }
       // Expires at validator
       if (objKey === "expiresAt") {
         const expiresAt = Number(value[objKey]);

@@ -8,11 +8,18 @@ export const EIP712Domain: MessageTypeProperty[] = [
   { name: "salt", type: "bytes32" },
 ];
 
+// Meta(string name,string app,string app_version,string builder,address builder_address,string domain)
 export const Meta: MessageTypeProperty[] = [
   { name: "name", type: "string" },
   { name: "app", type: "string" },
-  { name: "by", type: "string" },
+  { name: "app_version", type: "string" },
   { name: "builder", type: "address" },
+  { name: "builder_address", type: "address" },
+  { name: "domain", type: "string" },
+];
+
+// Engine(bytes4 selector,bytes3 version,bytes3 random_id,bool eip712,string verifier,bool auth_enabled,bool dry_run)
+export const Engine: MessageTypeProperty[] = [
   { name: "selector", type: "bytes4" },
   { name: "version", type: "bytes3" },
   { name: "random_id", type: "bytes3" },

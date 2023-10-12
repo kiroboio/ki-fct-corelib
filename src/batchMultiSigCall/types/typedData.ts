@@ -68,8 +68,13 @@ export interface TypedDataLimits {
 export interface TypedDataMeta {
   name: string;
   app: string;
-  by: string;
+  app_version: string;
   builder: string;
+  builder_address: string;
+  domain: string;
+}
+
+export interface TypedDataEngine {
   selector: string;
   version: string;
   random_id: string;
@@ -81,13 +86,14 @@ export interface TypedDataMeta {
 
 export type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 export type MessageMeta = Record<"meta", TypedDataMeta>;
+export type MessageEngine = Record<"engine", TypedDataEngine>;
 export type MessageLimits = Record<"limits", TypedDataLimits>;
 export type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 export type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
 export type MessageComputed = Record<`computed_${number}`, IComputedEIP712>;
 export type MessageValidation = Record<`validation_${number}`, IValidationEIP712>;
 
-export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
+export type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageEngine & MessageLimits;
 export type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 
 export type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
