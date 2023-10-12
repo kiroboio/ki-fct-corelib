@@ -103,11 +103,11 @@ export class EIP712 extends FCTBase {
     return {
       meta: {
         name: FCTOptions.name || "",
-        app: FCTOptions.app || "",
-        app_version: "",
-        builder: FCTOptions.builder || "",
-        builder_address: "",
-        domain: "",
+        app: FCTOptions.app.name || "",
+        app_version: FCTOptions.app.version || "",
+        builder: FCTOptions.builder.name || "",
+        builder_address: FCTOptions.builder.address || "",
+        domain: FCTOptions.domain || "",
         // by: FCTOptions.by || "",
         // builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
         // selector: this.FCT.batchMultiSigSelector,

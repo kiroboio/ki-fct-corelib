@@ -112,21 +112,23 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   const typedData = new EIP712(this).getTypedData();
   return {
     typedData,
-    builder: this.options.builder,
     typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
     sessionId: new SessionID(this).asString(),
     nameHash: id(this.options.name),
+    appHash: id(this.options.app.name),
+    appVersionHash: id(this.options.app.version),
+    builderHash: id(this.options.builder.name),
+    builderAddress: this.options.builder.address,
+    domainHash: id(this.options.domain),
+    verifierHash: id(this.options.verifier),
     mcall: this.calls.map((call, index) => {
       return call.getAsMCall(typedData, index);
     }),
-    variables: [],
     externalSigners: this.options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
     validations: this.validation.getForData(),
-    appHash: id(this.options.app),
-    byHash: id(this.options.by),
-    verifierHash: id(this.options.verifier),
+    variables: [],
   };
 }
 
