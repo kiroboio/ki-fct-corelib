@@ -19,6 +19,8 @@ describe("BatchMultiSigCall Options", () => {
       purgeable: true,
       authEnabled: true,
       dryRun: false,
+      verifier: "",
+      domain: "",
       app: {
         name: "Test",
         version: "",
@@ -27,7 +29,6 @@ describe("BatchMultiSigCall Options", () => {
         name: "",
         address: "",
       },
-      verifier: "",
       recurrency: {
         maxRepeats: "100",
         chillTime: "5",

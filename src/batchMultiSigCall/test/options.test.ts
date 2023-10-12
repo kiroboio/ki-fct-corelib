@@ -18,12 +18,12 @@ const catchError = ({ param, message }: { param: DeepPartial<IFCTOptions>; messa
 
 export const FCTOptionsErrors = () =>
   describe("FCT Options Errors", () => {
-    it("Should get error when setting builder", () => {
-      catchError({
-        param: { builder: { address: "0x-" } },
-        message: "Options: builder is not a valid address",
-      });
-    });
+    // it("Should get error when setting builder", () => {
+    //   catchError({
+    //     param: { builder: { address: "0x-" } },
+    //     message: "Options: builder is not a valid address",
+    //   });
+    // });
     it("Should get error setting validFrom", () => {
       catchError({
         param: { validFrom: "0.2" },

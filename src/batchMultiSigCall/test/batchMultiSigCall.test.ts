@@ -39,7 +39,7 @@ describe("BatchMultiSigCall", () => {
       };
 
       expect(batchMultiSigCall.setOptions(validSettings)).to.be.an("object");
-      expect(batchMultiSigCall.options.builder).to.be.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
+      expect(batchMultiSigCall.options.builder.address).to.be.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
       expect(batchMultiSigCall.options.maxGasPrice).to.be.eq("100000000000");
       expect(batchMultiSigCall.options.expiresAt).to.be.eq(expiresAt);
       expect(batchMultiSigCall.options.purgeable).to.be.eq(true);
