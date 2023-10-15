@@ -1771,7 +1771,17 @@ var FCTBatchMultiSigCallABI = [
 					},
 					{
 						internalType: "bytes32",
-						name: "byHash",
+						name: "appVersionHash",
+						type: "bytes32"
+					},
+					{
+						internalType: "bytes32",
+						name: "builderHash",
+						type: "bytes32"
+					},
+					{
+						internalType: "bytes32",
+						name: "domainHash",
 						type: "bytes32"
 					},
 					{
@@ -1781,7 +1791,7 @@ var FCTBatchMultiSigCallABI = [
 					},
 					{
 						internalType: "address",
-						name: "builder",
+						name: "builderAddress",
 						type: "address"
 					},
 					{
@@ -1942,12 +1952,12 @@ var FCTBatchMultiSigCallABI = [
 		outputs: [
 			{
 				internalType: "bytes32",
-				name: "name",
+				name: "builderHash",
 				type: "bytes32"
 			},
 			{
 				internalType: "address",
-				name: "builder",
+				name: "builderAddress",
 				type: "address"
 			},
 			{
@@ -5246,7 +5256,7 @@ class FCTUtils extends FCTBase {
             "sessionId",
             "nameHash",
             "mcall",
-            "builder",
+            "builderAddress",
             "variables",
             "externalSigners",
             "computed",
