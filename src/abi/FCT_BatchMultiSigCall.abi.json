@@ -194,7 +194,17 @@
           },
           {
             "internalType": "bytes32",
-            "name": "byHash",
+            "name": "appVersionHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "builderHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "domainHash",
             "type": "bytes32"
           },
           {
@@ -204,7 +214,7 @@
           },
           {
             "internalType": "address",
-            "name": "builder",
+            "name": "builderAddress",
             "type": "address"
           },
           {
@@ -365,12 +375,12 @@
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "name",
+        "name": "builderHash",
         "type": "bytes32"
       },
       {
         "internalType": "address",
-        "name": "builder",
+        "name": "builderAddress",
         "type": "address"
       },
       {
