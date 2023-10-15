@@ -7,7 +7,7 @@ import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDat
 import { FCTBase } from "../FCTBase";
 import { IValidationEIP712 } from "../Validation/types";
 import { IComputedEIP712 } from "../Variables/types";
-import { Call, Computed, EIP712Domain, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
+import { Call, Computed, EIP712Domain, Engine, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
 const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
   "1": {
@@ -47,6 +47,7 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
 const types = {
   domain: EIP712Domain,
   meta: Meta,
+  engine: Engine,
   limits: Limits,
   computed: Computed,
   call: Call,
@@ -169,6 +170,7 @@ export class EIP712 extends FCTBase {
     return {
       EIP712Domain: EIP712.types.domain,
       Meta: EIP712.types.meta,
+      Engine: EIP712.types.engine,
       Limits: EIP712.types.limits,
       ...optionalTypes,
       ...transactionTypes,
@@ -189,6 +191,7 @@ export class EIP712 extends FCTBase {
   private getPrimaryTypeTypes(additionalTypes: MessageTypeProperty[]) {
     return [
       { name: "meta", type: "Meta" },
+      { name: "engine", type: "Engine" },
       { name: "limits", type: "Limits" },
       ...additionalTypes,
       ...this.getComputedPrimaryType(),

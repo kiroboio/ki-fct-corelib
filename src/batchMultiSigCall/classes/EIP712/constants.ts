@@ -13,7 +13,7 @@ export const Meta: MessageTypeProperty[] = [
   { name: "name", type: "string" },
   { name: "app", type: "string" },
   { name: "app_version", type: "string" },
-  { name: "builder", type: "address" },
+  { name: "builder", type: "string" },
   { name: "builder_address", type: "address" },
   { name: "domain", type: "string" },
 ];

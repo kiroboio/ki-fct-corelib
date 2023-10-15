@@ -4372,9 +4372,19 @@ const Meta = [
     { name: "name", type: "string" },
     { name: "app", type: "string" },
     { name: "app_version", type: "string" },
-    { name: "builder", type: "address" },
+    { name: "builder", type: "string" },
     { name: "builder_address", type: "address" },
     { name: "domain", type: "string" },
+];
+// Engine(bytes4 selector,bytes3 version,bytes3 random_id,bool eip712,string verifier,bool auth_enabled,bool dry_run)
+const Engine = [
+    { name: "selector", type: "bytes4" },
+    { name: "version", type: "bytes3" },
+    { name: "random_id", type: "bytes3" },
+    { name: "eip712", type: "bool" },
+    { name: "verifier", type: "string" },
+    { name: "auth_enabled", type: "bool" },
+    { name: "dry_run", type: "bool" },
 ];
 const Limits = [
     { name: "valid_from", type: "uint40" },
@@ -4464,6 +4474,7 @@ const TYPED_DATA_DOMAIN = {
 const types = {
     domain: EIP712Domain,
     meta: Meta,
+    engine: Engine,
     limits: Limits,
     computed: Computed,
     call: Call,
@@ -4572,6 +4583,7 @@ class EIP712 extends FCTBase {
         return {
             EIP712Domain: EIP712.types.domain,
             Meta: EIP712.types.meta,
+            Engine: EIP712.types.engine,
             Limits: EIP712.types.limits,
             ...optionalTypes,
             ...transactionTypes,
@@ -4589,6 +4601,7 @@ class EIP712 extends FCTBase {
     getPrimaryTypeTypes(additionalTypes) {
         return [
             { name: "meta", type: "Meta" },
+            { name: "engine", type: "Engine" },
             { name: "limits", type: "Limits" },
             ...additionalTypes,
             ...this.getComputedPrimaryType(),
