@@ -58,6 +58,8 @@ const { keccak256, toUtf8Bytes } = ethers.utils;
 const multicallContracts = {
     1: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
     5: "0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e",
+    42161: "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
+    421613: "0x961E16D26D3f1fc042F192a2e5054120938c1CD5",
 };
 const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 const FCBase = "0xFC00000000000000000000000000000000000000";
@@ -3338,6 +3340,8 @@ const fetchCurrentApprovals = async ({ rpcUrl, provider, chainId, multicallContr
 const precentilesForNetworks = {
     5: [2, 6, 15, 30],
     1: [2, 5, 15, 25],
+    42161: [2, 5, 15, 25],
+    421613: [2, 6, 15, 30],
 };
 const gasPriceCalculationsByChains = {
     5: (maxFeePerGas) => {
@@ -3499,7 +3503,6 @@ const addresses = {
         ActuatorCore: "0x2301F7d5A833395733F92fdf68B8Eb15aC757dF9",
     },
     42161: {
-        // TODO: All the contracts below are copied from Goerli, need to be changed
         FCT_Controller: "0x7A45405D953974998fc447C196Fb015DC41C0650",
         FCT_BatchMultiSig: "0x2174679B326bE7B0888b54CaAdE1FE644DCfd309",
         FCT_EnsManager: "0xa51b9A359A87dB485Fcb87C358C58b123C2f9688",
@@ -3508,7 +3511,6 @@ const addresses = {
         ActuatorCore: "0x27C133a452303195b237fe920442891FeF609c54",
     },
     421613: {
-        // TODO: All the contracts below are copied from Goerli, need to be changed
         FCT_Controller: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
         FCT_BatchMultiSig: "0x3628BE9E0BEfE4406cDFCA72E51d40d3902B9a22",
         FCT_EnsManager: "0x40b3dA447BE499e0D8165b314EB77e2356d0a92f",
@@ -4366,18 +4368,14 @@ const EIP712Domain = [
     { name: "verifyingContract", type: "address" },
     { name: "salt", type: "bytes32" },
 ];
+// Meta(string name,string app,string app_version,string builder,address builder_address,string domain)
 const Meta = [
     { name: "name", type: "string" },
     { name: "app", type: "string" },
-    { name: "by", type: "string" },
+    { name: "app_version", type: "string" },
     { name: "builder", type: "address" },
-    { name: "selector", type: "bytes4" },
-    { name: "version", type: "bytes3" },
-    { name: "random_id", type: "bytes3" },
-    { name: "eip712", type: "bool" },
-    { name: "verifier", type: "string" },
-    { name: "auth_enabled", type: "bool" },
-    { name: "dry_run", type: "bool" },
+    { name: "builder_address", type: "address" },
+    { name: "domain", type: "string" },
 ];
 const Limits = [
     { name: "valid_from", type: "uint40" },
@@ -4449,21 +4447,19 @@ const TYPED_DATA_DOMAIN = {
     },
     "42161": {
         // Arbitrum
-        // TODO: Update this when the testnet is live
         name: "FCT Controller",
         version: "1",
         chainId: 42161,
-        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-        salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+        verifyingContract: "0x7A45405D953974998fc447C196Fb015DC41C0650",
+        salt: "0x0100af89b3a0314c9a2f00007a45405d953974998fc447c196fb015dc41c0650",
     },
     "421613": {
         // Arbitrum Testnet
-        // TODO: Update this when the testnet is live
         name: "FCT Controller",
         version: "1",
         chainId: 421613,
-        verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-        salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+        verifyingContract: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
+        salt: "0x0100df6d107dcaba91640000574f4cdab7ec20e3a37bde025260f0a2359503d6",
     },
 };
 const types = {
@@ -4517,9 +4513,22 @@ class EIP712 extends FCTBase {
         return {
             meta: {
                 name: FCTOptions.name || "",
-                app: FCTOptions.app || "",
-                by: FCTOptions.by || "",
-                builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
+                app: FCTOptions.app.name || "",
+                app_version: FCTOptions.app.version || "",
+                builder: FCTOptions.builder.name || "",
+                builder_address: FCTOptions.builder.address || "",
+                domain: FCTOptions.domain || "",
+                // by: FCTOptions.by || "",
+                // builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
+                // selector: this.FCT.batchMultiSigSelector,
+                // version: this.FCT.version,
+                // random_id: `0x${this.FCT.randomId}`,
+                // eip712: true,
+                // verifier: FCTOptions.verifier,
+                // auth_enabled: FCTOptions.authEnabled,
+                // dry_run: FCTOptions.dryRun,
+            },
+            engine: {
                 selector: this.FCT.batchMultiSigSelector,
                 version: this.FCT.version,
                 random_id: `0x${this.FCT.randomId}`,
@@ -4963,7 +4972,7 @@ class FCTUtils extends FCTBase {
         const keys = Object.keys(this.FCTData);
         this.validateFCTKeys(keys);
         const limits = this.FCTData.typedData.message.limits;
-        const fctData = this.FCTData.typedData.message.meta;
+        const engine = this.FCTData.typedData.message.engine;
         const currentDate = new Date().getTime() / 1000;
         const validFrom = parseInt(limits.valid_from);
         const expiresAt = parseInt(limits.expires_at);
@@ -4977,7 +4986,7 @@ class FCTUtils extends FCTBase {
         if (gasPriceLimit === "0") {
             throw new Error(`FCT gas price limit cannot be 0`);
         }
-        if (!fctData.eip712) {
+        if (!engine.eip712) {
             throw new Error(`FCT must be type EIP712`);
         }
         return true;
@@ -5240,7 +5249,7 @@ class FCTUtils extends FCTBase {
 
 const isAddress = ethers.utils.isAddress;
 const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
-const mustBeAddress = ["builder"];
+// export const mustBeAddress = ["builder"];
 // Validate Integer values in options
 const validateInteger = (value, keys) => {
     const currentKey = keys[keys.length - 1];
@@ -5263,7 +5272,6 @@ const validateAddress = (value, keys) => {
 
 var helpers = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    mustBeAddress: mustBeAddress,
     mustBeInteger: mustBeInteger,
     validateAddress: validateAddress,
     validateInteger: validateInteger
@@ -5276,12 +5284,18 @@ const initOptions = {
     expiresAt: getDate(7),
     purgeable: false,
     blockable: true,
-    builder: "0x0000000000000000000000000000000000000000",
     authEnabled: true,
     dryRun: false,
-    app: "",
-    by: "",
     verifier: "",
+    domain: "",
+    builder: {
+        name: "",
+        address: ethers.constants.AddressZero,
+    },
+    app: {
+        name: "",
+        version: "",
+    },
 };
 class Options {
     static helpers = helpers;
@@ -5327,9 +5341,9 @@ class Options {
                 validateInteger(value[objKey], [...parentKeys, objKey]);
             }
             // Address validator
-            if (mustBeAddress.includes(objKey)) {
-                validateAddress(value[objKey], [...parentKeys, objKey]);
-            }
+            // if (helpers.mustBeAddress.includes(objKey)) {
+            //   helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
+            // }
             // Expires at validator
             if (objKey === "expiresAt") {
                 const expiresAt = Number(value[objKey]);
@@ -5413,20 +5427,21 @@ class SessionID extends FCTBase {
         const flags = flagValue.toString(16).padStart(2, "0");
         return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
     }
-    static asOptions({ sessionId, builder, name, app, by, verifier, externalSigners = [], }) {
-        const parsedSessionID = SessionID.parse(sessionId);
-        return {
-            ...parsedSessionID,
-            builder,
-            name,
-            app,
-            by,
-            verifier,
-            multisig: {
-                ...parsedSessionID.multisig,
-                externalSigners,
-            },
-        };
+    static asOptions(sessionId) {
+        return SessionID.parse(sessionId);
+        // const parsedSessionID = SessionID.parse(sessionId);
+        // return {
+        //   ...parsedSessionID,
+        //   builder,
+        //   name,
+        //   app,
+        //   by,
+        //   verifier,
+        //   multisig: {
+        //     ...parsedSessionID.multisig,
+        //     externalSigners,
+        //   },
+        // };
     }
     static parse(sessionId) {
         const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
@@ -5448,7 +5463,6 @@ class SessionID extends FCTBase {
             validFrom,
             expiresAt,
             maxGasPrice,
-            // eip712: flags.eip712,
             dryRun: flags.dryRun,
             blockable: flags.blockable,
             purgeable: flags.purgeable,
@@ -6207,21 +6221,23 @@ function exportFCT() {
     const typedData = new EIP712(this).getTypedData();
     return {
         typedData,
-        builder: this.options.builder,
         typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType, typedData.types)),
         sessionId: new SessionID(this).asString(),
         nameHash: id(this.options.name),
+        appHash: id(this.options.app.name),
+        appVersionHash: id(this.options.app.version),
+        builderHash: id(this.options.builder.name),
+        builderAddress: this.options.builder.address,
+        domainHash: id(this.options.domain),
+        verifierHash: id(this.options.verifier),
         mcall: this.calls.map((call, index) => {
             return call.getAsMCall(typedData, index);
         }),
-        variables: [],
         externalSigners: this.options.multisig.externalSigners,
         signatures: [this.utils.getAuthenticatorSignature()],
         computed: this.computedAsData,
         validations: this.validation.getForData(),
-        appHash: id(this.options.app),
-        byHash: id(this.options.by),
-        verifierHash: id(this.options.verifier),
+        variables: [],
     };
 }
 async function exportWithApprovals() {
@@ -6317,21 +6333,33 @@ function exportNotificationFCT() {
 function importFCT(fct) {
     const typedData = fct.typedData;
     const domain = typedData.domain;
-    const { meta } = typedData.message;
-    this.batchMultiSigSelector = meta.selector;
-    this.version = meta.version;
+    const { meta, engine } = typedData.message;
+    this.batchMultiSigSelector = engine.selector;
+    this.version = engine.version;
     this.chainId = domain.chainId.toString();
     this.domain = domain;
-    this.randomId = meta.random_id.slice(2);
-    this.setOptions(SessionID.asOptions({
-        sessionId: fct.sessionId,
-        builder: fct.builder,
-        externalSigners: fct.externalSigners,
-        app: typedData.message.meta.app,
-        by: typedData.message.meta.by,
-        verifier: typedData.message.meta.verifier,
-        name: typedData.message.meta.name,
-    }));
+    this.randomId = engine.random_id.slice(2);
+    const sessionIDOptions = SessionID.asOptions(fct.sessionId);
+    const options = {
+        ...SessionID.asOptions(fct.sessionId),
+        authEnabled: engine.auth_enabled,
+        domain: meta.domain,
+        name: meta.name,
+        verifier: engine.verifier,
+        builder: {
+            address: fct.builderAddress,
+            name: meta.builder,
+        },
+        app: {
+            name: meta.app,
+            version: meta.app_version,
+        },
+        multisig: {
+            externalSigners: fct.externalSigners,
+            minimumApprovals: sessionIDOptions.multisig.minimumApprovals,
+        },
+    };
+    this.setOptions(options);
     const { types: typesObject } = typedData;
     for (const [index, call] of fct.mcall.entries()) {
         // Slice the first element because it is the call type
@@ -6371,8 +6399,8 @@ function importFCT(fct) {
             toENS: meta.to_ens,
             options: {
                 gasLimit: meta.gas_limit,
-                jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + meta.jump_on_success}`,
-                jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + meta.jump_on_fail}`,
+                jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + 1 + meta.jump_on_success}`,
+                jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + 1 + meta.jump_on_fail}`,
                 flow: getFlow(),
                 callType: CALL_TYPE_MSG_REV[meta.call_type],
                 falseMeansFail: meta.returned_false_means_fail,
@@ -6494,8 +6522,8 @@ async function getPluginData(index) {
 }
 
 class BatchMultiSigCall {
-    batchMultiSigSelector = "0x9b2542b3";
-    version = "0x010201";
+    batchMultiSigSelector = "0x7d971612";
+    version = "0x020101";
     chainId;
     domain;
     randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -6772,20 +6800,27 @@ const transactionValidator = async (txVal) => {
     let { gasPrice } = txVal;
     const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
     const { maxGasPrice, dryRun } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
-    gasPrice = dryRun ? { maxFeePerGas: "0", maxPriorityFeePerGas: "0" } : gasPrice;
-    if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
-        const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
-        const fctMaxGasPriceInGwei = ethers.utils.formatUnits(maxGasPrice.toString(), "gwei");
-        return {
-            isValid: false,
-            txData: { gas: 0, ...gasPrice, type: 2 },
-            prices: {
-                gas: 0,
-                gasPrice: gasPrice.maxFeePerGas,
-            },
-            error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
-        };
+    if (dryRun) {
+        gasPrice = { maxFeePerGas: "0", maxPriorityFeePerGas: "0" };
     }
+    else {
+        if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+            gasPrice = { maxFeePerGas: maxGasPrice.toString(), maxPriorityFeePerGas: "0" };
+        }
+    }
+    // if (!dryRun && BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+    //   const networkFeeInGwei = ethers.utils.formatUnits(gasPrice.maxFeePerGas.toString(), "gwei");
+    //   const fctMaxGasPriceInGwei = ethers.utils.formatUnits(maxGasPrice.toString(), "gwei");
+    //   return {
+    //     isValid: false,
+    //     txData: { gas: 0, ...gasPrice, type: 2 },
+    //     prices: {
+    //       gas: 0,
+    //       gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
+    //     },
+    //     error: `Network gas price (${networkFeeInGwei} Gwei) is higher than FCT max gas price (${fctMaxGasPriceInGwei} Gwei)`,
+    //   };
+    // }
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const signer = new ethers.Wallet(actuatorPrivateKey, provider);
     const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);

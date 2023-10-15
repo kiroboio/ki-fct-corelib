@@ -22,6 +22,8 @@ declare enum Flow {
 declare const multicallContracts: {
     1: string;
     5: string;
+    42161: string;
+    421613: string;
 };
 declare const nullValue = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 declare const FCBase = "0xFC00000000000000000000000000000000000000";
@@ -1540,12 +1542,18 @@ declare class BatchMultiSigCall {
         maxGasPrice: string;
         blockable: boolean;
         purgeable: boolean;
-        builder: string;
         authEnabled: boolean;
         dryRun: boolean;
-        app: string;
-        by: string;
         verifier: string;
+        domain: string;
+        app: {
+            name: string;
+            version: string;
+        };
+        builder: {
+            name: string;
+            address: string;
+        };
         recurrency: {
             maxRepeats: string;
             chillTime: string;
@@ -1743,17 +1751,14 @@ declare class FCTUtils extends FCTBase {
 }
 
 declare const mustBeInteger: string[];
-declare const mustBeAddress: string[];
 declare const validateInteger: (value: string, keys: string[]) => void;
 declare const validateAddress: (value: string, keys: string[]) => void;
 
-declare const helpers_mustBeAddress: typeof mustBeAddress;
 declare const helpers_mustBeInteger: typeof mustBeInteger;
 declare const helpers_validateAddress: typeof validateAddress;
 declare const helpers_validateInteger: typeof validateInteger;
 declare namespace helpers {
   export {
-    helpers_mustBeAddress as mustBeAddress,
     helpers_mustBeInteger as mustBeInteger,
     helpers_validateAddress as validateAddress,
     helpers_validateInteger as validateInteger,
@@ -1846,8 +1851,12 @@ interface TypedDataLimits {
 interface TypedDataMeta {
     name: string;
     app: string;
-    by: string;
+    app_version: string;
     builder: string;
+    builder_address: string;
+    domain: string;
+}
+interface TypedDataEngine {
     selector: string;
     version: string;
     random_id: string;
@@ -1858,12 +1867,13 @@ interface TypedDataMeta {
 }
 type MessageTransaction = Record<`transaction_${number}`, TypedDataMessageTransaction>;
 type MessageMeta = Record<"meta", TypedDataMeta>;
+type MessageEngine = Record<"engine", TypedDataEngine>;
 type MessageLimits = Record<"limits", TypedDataLimits>;
 type MessageRecurrency = Record<"recurrency", TypedDataRecurrency>;
 type MessageMultiSig = Record<"multisig", TypedDataMultiSig>;
 type MessageComputed = Record<`computed_${number}`, IComputedEIP712>;
 type MessageValidation = Record<`validation_${number}`, IValidationEIP712>;
-type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageLimits;
+type MandatoryTypedDataMessage = MessageTransaction & MessageMeta & MessageEngine & MessageLimits;
 type OptionalTypedDataMessage = MessageRecurrency & MessageMultiSig & MessageComputed;
 type TypedDataMessage = MandatoryTypedDataMessage & Partial<OptionalTypedDataMessage>;
 interface BatchMultiSigCallTypedData {
@@ -1889,9 +1899,11 @@ interface IFCT {
     sessionId: string;
     nameHash: string;
     appHash: string;
-    byHash: string;
+    appVersionHash: string;
+    builderHash: string;
+    domainHash: string;
     verifierHash: string;
-    builder: string;
+    builderAddress: string;
     mcall: MSCall[];
     signatures: SignatureLike[];
     variables: string[];
@@ -1951,12 +1963,18 @@ interface IFCTOptions {
     maxGasPrice: string;
     blockable: boolean;
     purgeable: boolean;
-    builder: string;
     authEnabled: boolean;
     dryRun: boolean;
-    app: string;
-    by: string;
     verifier: string;
+    domain: string;
+    app: {
+        name: string;
+        version: string;
+    };
+    builder: {
+        name: string;
+        address: string;
+    };
     recurrency?: {
         maxRepeats: string;
         chillTime: string;
@@ -2223,4 +2241,4 @@ declare namespace index {
   };
 }
 
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallBase, MandatoryTypedDataMessage, MessageComputed, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MessageValidation, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamValue, ParamWithoutVariable, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallBase, MandatoryTypedDataMessage, MessageComputed, MessageEngine, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MessageValidation, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamValue, ParamWithoutVariable, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataEngine, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
