@@ -432,7 +432,7 @@ export class FCTUtils extends FCTBase {
       "sessionId",
       "nameHash",
       "mcall",
-      "builder",
+      "builderAddress",
       "variables",
       "externalSigners",
       "computed",
