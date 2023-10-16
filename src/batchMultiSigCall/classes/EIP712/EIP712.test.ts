@@ -77,6 +77,7 @@ describe("BatchMultiSigCall EIP712", () => {
     expect(Limits).to.deep.equal(EIP712.types.limits);
     expect(BatchMultiSigCall).to.deep.equal([
       { name: "meta", type: "Meta" },
+      { name: "engine", type: "Engine" },
       { name: "limits", type: "Limits" },
       { name: "computed_1", type: "Computed" },
       { name: "transaction_1", type: "transaction1" },

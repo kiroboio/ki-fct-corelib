@@ -5,7 +5,7 @@ import { getDate } from "../../../helpers";
 import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 import * as helpers from "./helpers";
 
-const initOptions = {
+const initOptions: IFCTOptions = {
   name: "",
   maxGasPrice: "30000000000", // 30 Gwei as default
   validFrom: getDate(), // Valid from now
@@ -23,6 +23,15 @@ const initOptions = {
   app: {
     name: "",
     version: "",
+  },
+  recurrency: {
+    maxRepeats: "0",
+    chillTime: "0",
+    accumetable: false,
+  },
+  multisig: {
+    externalSigners: [],
+    minimumApprovals: "0",
   },
 };
 
@@ -69,18 +78,35 @@ export class Options {
       return;
     }
     Object.keys(value).forEach((key) => {
+      const keyId = [...parentKeys, key].join(".");
       const objKey = key as keyof typeof value;
-      if (typeof value[objKey] === "object") {
-        this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+      if (helpers.mustBeObject.includes(keyId)) {
+        if (typeof value[objKey] === "object") {
+          this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+        } else {
+          throw new Error(`Options: ${keyId} must be an object`);
+        }
       }
+
+      if (helpers.mustBeBoolean.includes(keyId)) {
+        if (typeof value[objKey] !== "boolean") {
+          throw new Error(`Options: ${keyId} must be a boolean`);
+        }
+      }
+
+      // Else this must be a string. If it is not a string, throw an error
+      if (typeof value[objKey] !== "string") {
+        throw new Error(`Options: ${keyId} must be a string`);
+      }
+
       // Integer validator
-      if (helpers.mustBeInteger.includes(objKey)) {
-        helpers.validateInteger(value[objKey] as string, [...parentKeys, objKey]);
+      if (helpers.mustBeInteger.includes(keyId)) {
+        helpers.validateInteger(value[objKey] as string, keyId);
       }
       // Address validator
-      // if (helpers.mustBeAddress.includes(objKey)) {
-      //   helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
-      // }
+      if (helpers.mustBeAddress.includes(keyId)) {
+        helpers.validateAddress(value[objKey] as string, keyId);
+      }
       // Expires at validator
       if (objKey === "expiresAt") {
         const expiresAt = Number(value[objKey]);
