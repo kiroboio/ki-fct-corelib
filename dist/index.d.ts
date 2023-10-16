@@ -1729,13 +1729,17 @@ declare class FCTUtils extends FCTBase {
         payer: string;
         largestPayment: {
             gas: string;
-            amount: string;
-            amountInETH: string;
+            tokenAmountInWei: string;
+            nativeAmountInWei: string;
+            tokenAmount: string;
+            nativeAmount: string;
         };
         smallestPayment: {
             gas: string;
-            amount: string;
-            amountInETH: string;
+            tokenAmountInWei: string;
+            nativeAmountInWei: string;
+            tokenAmount: string;
+            nativeAmount: string;
         };
     }[];
     getMaxGas: () => string;
