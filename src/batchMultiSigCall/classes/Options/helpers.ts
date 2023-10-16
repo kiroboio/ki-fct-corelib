@@ -2,31 +2,37 @@ import { ethers } from "ethers";
 
 const isAddress = ethers.utils.isAddress;
 
-export const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
-// export const mustBeAddress = ["builder"];
+export const mustBeInteger = [
+  "validFrom",
+  "expiresAt",
+  "maxGasPrice",
+  "recurrency.maxRepeats",
+  "recurrency.chillTime",
+  "multisig.minimumApprovals",
+];
+export const mustBeAddress = ["builder.address"];
+export const mustBeBoolean = ["purgeable", "blockable", "authEnabled", "dryRun", "recurrency.accumetable"];
+
+export const mustBeObject = ["app", "builder", "recurrency", "multisig"];
 
 // Validate Integer values in options
-export const validateInteger = (value: string, keys: string[]) => {
-  const currentKey = keys[keys.length - 1];
-
+export const validateInteger = (value: string, id: string) => {
   if (value.includes(".")) {
-    throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
+    throw new Error(`Options: ${id} cannot be a decimal`);
   }
   if (value.startsWith("-")) {
-    throw new Error(`Options: ${keys.join(".")} cannot be negative`);
+    throw new Error(`Options: ${id} cannot be negative`);
   }
-  if (currentKey === "maxRepeats" && Number(value) < 0) {
+  if (id === "recurrency.maxRepeats" && +value < 0) {
     throw new Error(
-      `Options: ${keys.join(
-        "."
-      )} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`
+      `Options: ${id} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`
     );
   }
 };
 
 // Validate address values in options
-export const validateAddress = (value: string, keys: string[]) => {
+export const validateAddress = (value: string, id: string) => {
   if (!isAddress(value)) {
-    throw new Error(`Options: ${keys.join(".")} is not a valid address`);
+    throw new Error(`Options: ${id} is not a valid address`);
   }
 };

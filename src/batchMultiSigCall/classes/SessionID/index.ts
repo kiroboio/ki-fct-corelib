@@ -50,7 +50,7 @@ export class SessionID extends FCTBase {
     const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
     const v = version.slice(2);
     const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
-    const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
+    const chillTime = Number(+recurrency.maxRepeats > 1 ? +options.recurrency.chillTime : 0)
       .toString(16)
       .padStart(8, "0");
     const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
