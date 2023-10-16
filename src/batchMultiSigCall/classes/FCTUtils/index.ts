@@ -318,13 +318,17 @@ export class FCTUtils extends FCTBase {
         payer,
         largestPayment: {
           gas: largest.gas.toString(),
-          amount: largest.kiroCost.toString(),
-          amountInETH: largest.ethCost.toString(),
+          kiroAmountInWei: largest.kiroCost.toString(),
+          ethAmountInWei: largest.ethCost.toString(),
+          kiroAmount: utils.formatEther(largest.kiroCost.toString()),
+          ethAmount: utils.formatEther(largest.ethCost.toString()),
         },
         smallestPayment: {
           gas: smallest.gas.toString(),
-          amount: smallest.kiroCost.toString(),
-          amountInETH: smallest.ethCost.toString(),
+          kiroAmountInWei: smallest.kiroCost.toString(),
+          ethAmountInWei: smallest.ethCost.toString(),
+          kiroAmount: utils.formatEther(smallest.kiroCost.toString()),
+          ethAmount: utils.formatEther(smallest.ethCost.toString()),
         },
       };
     });
