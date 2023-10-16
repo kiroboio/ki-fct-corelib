@@ -109,6 +109,9 @@ export function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): numbe
 }
 
 export function exportFCT(this: BatchMultiSigCall): IFCT {
+  if (this.calls.length === 0) {
+    throw new Error("No calls added to FCT");
+  }
   const typedData = new EIP712(this).getTypedData();
   return {
     typedData,
