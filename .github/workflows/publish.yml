@@ -17,6 +17,6 @@ jobs:
         with:
           node-version: "18.x"
           registry-url: "https://registry.npmjs.org"
-      - run: export NODE_ENV=production&&yarn install --production=false&&npm publish
+      - run: export NODE_ENV=production&&npm install --production=false&&npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
