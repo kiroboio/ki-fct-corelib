@@ -1,3 +1,4 @@
+import { AllPlugins } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 import _ from "lodash";
@@ -31,12 +32,25 @@ import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;
+  public readonly plugin: InstanceType<AllPlugins> | undefined;
 
-  constructor({ FCT, input }: { FCT: BatchMultiSigCall; input: IMSCallInput }) {
+  constructor({
+    FCT,
+    input,
+    plugin,
+  }: {
+    FCT: BatchMultiSigCall;
+    input: IMSCallInput;
+    plugin?: InstanceType<AllPlugins>;
+  }) {
     super(input);
     this.FCT = FCT;
 
     this.verifyCall({ call: this.call });
+
+    if (plugin) {
+      this.plugin = plugin;
+    }
 
     // If validation, add it to the validation list
     if (input.addValidation) {
@@ -414,7 +428,7 @@ export class Call extends CallBase implements ICall {
       options: { ...pluginCall.options, ...callWithPlugin.options },
       nodeId: callWithPlugin.nodeId || generateNodeId(),
     };
-    return new Call({ FCT, input: data });
+    return new Call({ FCT, input: data, plugin: callWithPlugin.plugin as InstanceType<AllPlugins> });
   }
 
   private static createSimpleCall<C extends IMSCallInput>(FCT: BatchMultiSigCall, call: C): Call {

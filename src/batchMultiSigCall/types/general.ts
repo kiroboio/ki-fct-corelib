@@ -14,7 +14,6 @@ import {
   Variable,
 } from "../../types";
 import { Call } from "../classes";
-import { Multicall } from "../classes/Call/Multicall/Multicall";
 import { IValidation, IValidationData } from "../classes/Validation/types";
 import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
@@ -73,10 +72,12 @@ export interface DecodedCalls extends StrictMSCallInput {
   params?: ParamWithoutVariable<Param>[];
 }
 
+export interface IPlugin {
+  create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
+}
+
 export type IWithPlugin = {
-  plugin: {
-    create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
-  };
+  plugin: IPlugin;
 } & MSCallBase;
 
 export type IMSCallWithEncodedData = {
@@ -86,7 +87,7 @@ export type IMSCallWithEncodedData = {
   to: string | Variable;
 } & MSCallBase;
 
-export type FCTCall = Call | Multicall;
+export type FCTCall = Call;
 export type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
 
 export interface MSCall {

@@ -10,7 +10,6 @@ import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param, Variable } f
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, CallID, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
-import { Multicall } from "../classes/Call/Multicall/Multicall";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCall, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
@@ -19,13 +18,13 @@ import { PluginParams } from "./types";
 const AbiCoder = ethers.utils.AbiCoder;
 
 // If F is Multicall, return multicall, else return Call
-type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
+// type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
 
-export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F): Promise<CreateOutput<F>> {
+export async function create(this: BatchMultiSigCall, call: FCTInputCall) {
   // If the input is already made Call class, we just add it to _calls.
-  if (call instanceof Multicall || call instanceof Call) {
+  if (call instanceof Call) {
     this._calls.push(call);
-    return call as CreateOutput<F>;
+    return call;
   }
   // Else we create Call class from the input
   const newCall = await Call.create({
@@ -33,7 +32,7 @@ export async function create<F extends FCTInputCall>(this: BatchMultiSigCall, ca
     call,
   });
   this._calls.push(newCall);
-  return newCall as CreateOutput<F>;
+  return newCall;
 }
 
 export async function createMultiple(this: BatchMultiSigCall, calls: FCTInputCall[]): Promise<FCTCall[]> {
@@ -56,7 +55,7 @@ export async function addAtIndex(this: BatchMultiSigCall, call: FCTInputCall, in
     throw new Error("Index out of range");
   }
 
-  if (call instanceof Multicall || call instanceof Call) {
+  if (call instanceof Call) {
     this._calls.splice(index, 0, call);
     return call;
   }
