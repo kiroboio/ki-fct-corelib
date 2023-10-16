@@ -83,6 +83,7 @@ export class Options {
       if (helpers.mustBeObject.includes(keyId)) {
         if (typeof value[objKey] === "object") {
           this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+          return;
         } else {
           throw new Error(`Options: ${keyId} must be an object`);
         }
@@ -92,11 +93,14 @@ export class Options {
         if (typeof value[objKey] !== "boolean") {
           throw new Error(`Options: ${keyId} must be a boolean`);
         }
+        return;
       }
 
       // Else this must be a string. If it is not a string, throw an error
-      if (typeof value[objKey] !== "string") {
-        throw new Error(`Options: ${keyId} must be a string`);
+      // Get value from keyId
+      const realVal = _.get(initOptions, keyId);
+      if (typeof value[objKey] !== typeof realVal) {
+        throw new Error(`Options: ${keyId} must be a ${typeof realVal}`);
       }
 
       // Integer validator
