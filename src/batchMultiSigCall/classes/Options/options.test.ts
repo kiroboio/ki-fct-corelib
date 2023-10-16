@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { ethers } from "ethers";
 
 import { Options } from ".";
 
@@ -27,7 +28,7 @@ describe("BatchMultiSigCall Options", () => {
       },
       builder: {
         name: "",
-        address: "",
+        address: ethers.constants.AddressZero,
       },
       recurrency: {
         maxRepeats: "100",

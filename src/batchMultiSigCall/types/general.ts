@@ -121,12 +121,12 @@ export interface IFCTOptions {
     name: string;
     address: string;
   };
-  recurrency?: {
+  recurrency: {
     maxRepeats: string;
     chillTime: string;
     accumetable: boolean;
   };
-  multisig?: {
+  multisig: {
     externalSigners?: string[];
     minimumApprovals?: string;
   };
