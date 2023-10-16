@@ -1,4 +1,4 @@
-import { getPlugin } from "@kiroboio/fct-plugins";
+import { getPlugin, RequiredApprovalInterface } from "@kiroboio/fct-plugins";
 import { utils } from "ethers";
 
 import { InstanceOf } from "../../helpers";
@@ -16,6 +16,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
   }
 
   const chainId = FCT.chainId;
+  const calls = FCT.calls;
 
   for (const [callIndex, call] of FCT.callsAsObjects.entries()) {
     if (typeof call.to !== "string") {
@@ -23,147 +24,156 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
     }
 
     const callClass = new CallBase(call);
+    let approvals: RequiredApprovalInterface[] = [];
 
-    const pluginData = getPlugin({
-      signature: callClass.getFunctionSignature(),
-      address: call.to,
-      chainId,
-    });
+    const mainCallData = calls[callIndex];
 
-    if (pluginData) {
-      const initPlugin = new pluginData.plugin({
+    if (mainCallData.plugin) {
+      const plugin = mainCallData.plugin;
+      const pluginApprovals = plugin.getRequiredApprovals();
+      approvals = pluginApprovals;
+    } else {
+      const pluginData = getPlugin({
+        signature: callClass.getFunctionSignature(),
+        address: call.to,
         chainId,
-        vaultAddress: typeof call.from === "string" ? call.from : "",
       });
 
-      const methodParams = call.params
-        ? call.params.reduce((acc, param) => {
-            acc[param.name] = param.value;
-            return acc;
-          }, {} as { [key: string]: Param["value"] })
-        : {};
+      if (pluginData) {
+        const initPlugin = new pluginData.plugin({
+          chainId,
+          vaultAddress: typeof call.from === "string" ? call.from : "",
+        });
 
-      initPlugin.input.set({
-        to: call.to,
-        methodParams,
-      });
+        const methodParams = call.params
+          ? call.params.reduce((acc, param) => {
+              acc[param.name] = param.value;
+              return acc;
+            }, {} as { [key: string]: Param["value"] })
+          : {};
 
-      const approvals = initPlugin.getRequiredApprovals();
+        initPlugin.input.set({
+          to: call.to,
+          methodParams,
+        });
 
-      if (approvals.length > 0 && typeof call.from === "string") {
-        const manageValue = (value: string | Variable | undefined) => {
-          if (InstanceOf.Variable(value) || !value) {
-            return "";
-          }
+        approvals = initPlugin.getRequiredApprovals();
+      }
+    }
 
-          return value;
-        };
+    if (approvals.length > 0 && typeof call.from === "string") {
+      const manageValue = (value: string | Variable | undefined) => {
+        if (InstanceOf.Variable(value) || !value) {
+          return "";
+        }
 
-        const requiredApprovalsWithFrom = approvals
-          .map((approval): IRequiredApproval => {
-            if (approval.method === "approve") {
-              const data = {
-                token: manageValue(approval.to),
-                method: approval.method,
-                from: manageValue(approval.from || call.from),
-              };
-              if (approval.protocol === "ERC20") {
-                return {
-                  ...data,
-                  protocol: approval.protocol,
-                  params: {
-                    spender: manageValue(approval.params[0] as string),
-                    amount: approval.params[1] as string,
-                  },
-                };
-              } else if (approval.protocol === "ERC721") {
-                return {
-                  ...data,
-                  protocol: approval.protocol,
-                  params: {
-                    spender: manageValue(approval.params[0] as string),
-                    tokenId: approval.params[1] as string,
-                  },
-                };
-              }
-            }
-            if (
-              approval.method === "setApprovalForAll" &&
-              (approval.protocol === "ERC721" || approval.protocol === "ERC1155")
-            ) {
+        return value;
+      };
+
+      const requiredApprovalsWithFrom = approvals
+        .map((approval): IRequiredApproval => {
+          if (approval.method === "approve") {
+            const data = {
+              token: manageValue(approval.to),
+              method: approval.method,
+              from: manageValue(approval.from || call.from),
+            };
+            if (approval.protocol === "ERC20") {
               return {
+                ...data,
                 protocol: approval.protocol,
-                token: manageValue(approval.to),
-                method: approval.method,
                 params: {
-                  spender: manageValue(approval.params[0] as string), // Who is going to spend
-                  approved: approval.params[1] as boolean,
-                  ids: approval.params[2] as string[],
-                },
-                from: manageValue(approval.from || call.from), // Who needs to approve
-              };
-            }
-
-            if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
-              return {
-                protocol: approval.protocol,
-                token: manageValue(approval.to),
-                method: approval.method,
-                params: {
-                  delegatee: manageValue(approval.params[0] as string), // Who is going to spend
+                  spender: manageValue(approval.params[0] as string),
                   amount: approval.params[1] as string,
                 },
-                from: manageValue(approval.from || call.from), // Who needs to approve
+              };
+            } else if (approval.protocol === "ERC721") {
+              return {
+                ...data,
+                protocol: approval.protocol,
+                params: {
+                  spender: manageValue(approval.params[0] as string),
+                  tokenId: approval.params[1] as string,
+                },
               };
             }
+          }
+          if (
+            approval.method === "setApprovalForAll" &&
+            (approval.protocol === "ERC721" || approval.protocol === "ERC1155")
+          ) {
+            return {
+              protocol: approval.protocol,
+              token: manageValue(approval.to),
+              method: approval.method,
+              params: {
+                spender: manageValue(approval.params[0] as string), // Who is going to spend
+                approved: approval.params[1] as boolean,
+                ids: approval.params[2] as string[],
+              },
+              from: manageValue(approval.from || call.from), // Who needs to approve
+            };
+          }
 
-            throw new Error("Unknown method for plugin");
-          })
-          .filter((approval) => {
-            if (typeof call.from !== "string") {
-              return true;
-            }
-            const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
-              if (i >= callIndex) return false; // If the call is after the current call, we don't need to check
-              const { to, method, from } = fctCall;
-              if (typeof to !== "string" || typeof from !== "string") return false; // If the call doesn't have a to or from, we don't need to check
+          if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
+            return {
+              protocol: approval.protocol,
+              token: manageValue(approval.to),
+              method: approval.method,
+              params: {
+                delegatee: manageValue(approval.params[0] as string), // Who is going to spend
+                amount: approval.params[1] as string,
+              },
+              from: manageValue(approval.from || call.from), // Who needs to approve
+            };
+          }
 
-              // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
-              return (
-                to.toLowerCase() === approval.token.toLowerCase() &&
-                method === approval.method &&
-                from.toLowerCase() === approval.from.toLowerCase()
-              );
-            });
-
-            if (isGoingToGetApproved) return false;
-
-            const caller = getAddress(call.from);
-            // If the protocol is AAVE, we check if the caller is the spender and the approver
-            if (approval.protocol === "AAVE") {
-              const whoIsApproving = getAddress(approval.from);
-              const whoIsSpending = getAddress(approval.params.delegatee);
-
-              // If the caller is the spender and the approver - no need to approve
-              return !(caller === whoIsSpending && caller === whoIsApproving);
-            }
-
-            // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
-            if (
-              approval.protocol === "ERC721" &&
-              (call.method === "safeTransferFrom" || call.method === "transferFrom")
-            ) {
-              const whoIsSending = getAddress(approval.from);
-              const whoIsSpending = getAddress(approval.params.spender);
-
-              // If the caller and spender is the same, no need to approve
-              return !(whoIsSending === whoIsSpending);
-            }
+          throw new Error("Unknown method for plugin");
+        })
+        .filter((approval) => {
+          if (typeof call.from !== "string") {
             return true;
+          }
+          const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
+            if (i >= callIndex) return false; // If the call is after the current call, we don't need to check
+            const { to, method, from } = fctCall;
+            if (typeof to !== "string" || typeof from !== "string") return false; // If the call doesn't have a to or from, we don't need to check
+
+            // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
+            return (
+              to.toLowerCase() === approval.token.toLowerCase() &&
+              method === approval.method &&
+              from.toLowerCase() === approval.from.toLowerCase()
+            );
           });
 
-        requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
-      }
+          if (isGoingToGetApproved) return false;
+
+          const caller = getAddress(call.from);
+          // If the protocol is AAVE, we check if the caller is the spender and the approver
+          if (approval.protocol === "AAVE") {
+            const whoIsApproving = getAddress(approval.from);
+            const whoIsSpending = getAddress(approval.params.delegatee);
+
+            // If the caller is the spender and the approver - no need to approve
+            return !(caller === whoIsSpending && caller === whoIsApproving);
+          }
+
+          // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
+          if (
+            approval.protocol === "ERC721" &&
+            (call.method === "safeTransferFrom" || call.method === "transferFrom")
+          ) {
+            const whoIsSending = getAddress(approval.from);
+            const whoIsSpending = getAddress(approval.params.spender);
+
+            // If the caller and spender is the same, no need to approve
+            return !(whoIsSending === whoIsSpending);
+          }
+          return true;
+        });
+
+      requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
     }
   }
 
