@@ -6,6 +6,7 @@ import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 import * as helpers from "./helpers";
 
 const initOptions: IFCTOptions = {
+  id: "",
   name: "",
   maxGasPrice: "30000000000", // 30 Gwei as default
   validFrom: getDate(), // Valid from now
@@ -40,7 +41,7 @@ export class Options {
   private _options: IFCTOptions = initOptions;
 
   public set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O {
-    const mergedOptions = _.merge({}, this._options, options);
+    const mergedOptions = _.merge(this._options, options);
     Options.verify(mergedOptions);
     this._options = mergedOptions;
     return this._options as IFCTOptions & O;
@@ -80,6 +81,11 @@ export class Options {
     Object.keys(value).forEach((key) => {
       const keyId = [...parentKeys, key].join(".");
       const objKey = key as keyof typeof value;
+      // If value is undefined, skip it
+      if (value[objKey] === undefined) {
+        return;
+      }
+
       if (helpers.mustBeObject.includes(keyId)) {
         if (typeof value[objKey] === "object") {
           this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);

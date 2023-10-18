@@ -104,6 +104,7 @@ export interface MSCall {
 }
 
 export interface IFCTOptions {
+  id: string;
   name: string;
   validFrom: string;
   expiresAt: string;
