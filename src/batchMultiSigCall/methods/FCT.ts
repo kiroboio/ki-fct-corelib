@@ -260,6 +260,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   const sessionIDOptions = SessionID.asOptions(fct.sessionId);
 
   const options: IFCTOptions = {
+    id: "",
     ...SessionID.asOptions(fct.sessionId),
     authEnabled: engine.auth_enabled,
     domain: meta.domain,

@@ -1,5 +1,5 @@
 import * as _kiroboio_fct_plugins from '@kiroboio/fct-plugins';
-import { PluginInstance, AllPlugins, getPlugin as getPlugin$1, ChainId } from '@kiroboio/fct-plugins';
+import { AllPlugins, PluginInstance, getPlugin as getPlugin$1, ChainId } from '@kiroboio/fct-plugins';
 export * from '@kiroboio/fct-plugins';
 export { utils as pluginUtils } from '@kiroboio/fct-plugins';
 import { ethers } from 'ethers';
@@ -187,161 +187,9 @@ interface IComputedData {
     operators: string[];
 }
 
-interface ICall {
-    get options(): DeepRequired<CallOptions>;
-    get nodeId(): string;
-    get(): StrictMSCallInput;
-    getDecoded(): DecodedCalls;
-    getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
-    generateEIP712Type(index: number): {
-        structTypes: {
-            [key: string]: {
-                name: string;
-                type: string;
-            }[];
-        };
-        callType: {
-            name: string;
-            type: string;
-        }[];
-    };
-    generateEIP712Message(index: number): TypedDataMessageTransaction;
-    getTypedHashes(index: number): string[];
-    getEncodedData(): string;
-    getTypesArray(): number[];
-    getFunctionSignature(): string;
-    getFunction(): string;
-}
-
-declare const MULTICALL_TYPES: {
-    ACTION: string;
-    VIEW_ONLY: string;
-};
-interface IMulticall {
-    target: string;
-    callType: keyof typeof MULTICALL_TYPES;
-    method: string;
-    params: Param[];
-}
-interface IFCTMulticallConstructor {
-    from: string | Variable;
-    options?: Omit<CallOptions, "callType">;
-    nodeId?: string;
-    FCT: BatchMultiSigCall;
-}
-interface IMulticallOutput {
-    type: string;
-}
-declare class Multicall implements ICall {
-    protected FCT: BatchMultiSigCall;
-    private _calls;
-    private _from;
-    private _nodeId;
-    private _options;
-    private _to;
-    private _outputTypes;
-    constructor(input: IFCTMulticallConstructor);
-    get nodeId(): string;
-    get to(): string;
-    get toENS(): string;
-    get options(): DeepRequired<CallOptions>;
-    get(): {
-        to: string;
-        toENS: string;
-        from: string | Variable;
-        params: Param[];
-        method: string;
-        value: string;
-        options: {
-            permissions: string;
-            gasLimit: string;
-            flow: Flow;
-            jumpOnSuccess: string;
-            jumpOnFail: string;
-            falseMeansFail: boolean;
-            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY" | "LIBRARY_VIEW_ONLY";
-            validation: string;
-            payerIndex: number;
-        };
-        nodeId: string;
-    };
-    getDecoded(): {
-        params: ParamWithoutVariable<Param>[];
-        to: string;
-        toENS: string;
-        from: string | Variable;
-        method: string;
-        value: string;
-        options: {
-            permissions: string;
-            gasLimit: string;
-            flow: Flow;
-            jumpOnSuccess: string;
-            jumpOnFail: string;
-            falseMeansFail: boolean;
-            callType: "ACTION" | "VIEW_ONLY" | "LIBRARY" | "LIBRARY_VIEW_ONLY";
-            validation: string;
-            payerIndex: number;
-        };
-        nodeId: string;
-    };
-    get outputs(): Record<string, {
-        type: "output";
-        id: {
-            nodeId: string;
-            innerIndex: number;
-        };
-    } & {
-        type: "output";
-    }>;
-    add: (call: IMulticall) => IMulticall[];
-    addPlugin: (plugin: PluginInstance) => Promise<void>;
-    setFrom: (from: string | Variable) => string | Variable;
-    setOutputType: (outputType: IMulticallOutput) => IMulticallOutput;
-    setOptions: (options: Omit<CallOptions, "callType">) => CallOptions;
-    setNodeId: (nodeId: string) => string;
-    get params(): Param[];
-    getAsMCall: (typedData: BatchMultiSigCallTypedData, index: number) => {
-        typeHash: string;
-        ensHash: string;
-        functionSignature: string;
-        value: string;
-        callId: string;
-        from: string;
-        to: string;
-        data: string;
-        types: number[];
-        typedHashes: string[];
-    };
-    generateEIP712Message(index: number): TypedDataMessageTransaction;
-    getFunction(): string;
-    getFunctionSignature(): string;
-    getEncodedData(): string;
-    getTypesArray(): number[];
-    getTypedHashes(): string[];
-    generateEIP712Type(): {
-        structTypes: {
-            [key: string]: {
-                name: string;
-                type: string;
-            }[];
-        };
-        callType: {
-            name: string;
-            type: string;
-        }[];
-    };
-    private decodeParams;
-    private getUsedStructTypes;
-    private getStructType;
-    private getParamsEIP712;
-    private getJumps;
-}
-
 type PluginParams<T extends AllPlugins> = ConstructorParameters<T>[0]["initParams"];
 
-type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
-declare function create<F extends FCTInputCall>(this: BatchMultiSigCall, call: F): Promise<CreateOutput<F>>;
+declare function create(this: BatchMultiSigCall, call: FCTInputCall): Promise<Call>;
 declare function createMultiple(this: BatchMultiSigCall, calls: FCTInputCall[]): Promise<FCTCall[]>;
 declare function addAtIndex(this: BatchMultiSigCall, call: FCTInputCall, index: number): Promise<FCTCall>;
 declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { plugin, initParams, }: {
@@ -372,7 +220,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
         id: number;
     } | {
         type: "global";
-        id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+        id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
     } | {
         id: string;
         type: "computed";
@@ -387,7 +235,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | {
             id: string;
             type: "validation";
@@ -402,7 +250,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -416,7 +264,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         });
         operator1: string;
@@ -431,7 +279,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | {
             id: string;
             type: "validation";
@@ -446,7 +294,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -460,7 +308,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         });
         operator2: string;
@@ -475,7 +323,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | {
             id: string;
             type: "validation";
@@ -490,7 +338,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -504,7 +352,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         });
         operator3: string;
@@ -519,7 +367,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | {
             id: string;
             type: "validation";
@@ -534,7 +382,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -548,7 +396,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         });
         overflowProtection: boolean;
@@ -566,7 +414,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | any);
         operator: string;
         value2: string | ({
@@ -580,7 +428,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | any | any);
     }) | undefined;
     methodParams: Partial<{
@@ -595,7 +443,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             id: string;
             type: "computed";
@@ -610,7 +458,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -625,7 +473,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -639,7 +487,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator1: string;
@@ -654,7 +502,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -669,7 +517,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -683,7 +531,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator2: string;
@@ -698,7 +546,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -713,7 +561,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -727,7 +575,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator3: string;
@@ -742,7 +590,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -757,7 +605,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -771,7 +619,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             overflowProtection: boolean;
@@ -789,7 +637,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -803,7 +651,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         }) | undefined;
         value1: string | ({
@@ -817,7 +665,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             id: string;
             type: "computed";
@@ -832,7 +680,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -847,7 +695,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -861,7 +709,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator1: string;
@@ -876,7 +724,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -891,7 +739,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -905,7 +753,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator2: string;
@@ -920,7 +768,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -935,7 +783,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -949,7 +797,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator3: string;
@@ -964,7 +812,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -979,7 +827,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -993,7 +841,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             overflowProtection: boolean;
@@ -1011,7 +859,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -1025,7 +873,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         }) | undefined;
         operator: string | ({
@@ -1039,7 +887,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             id: string;
             type: "computed";
@@ -1054,7 +902,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1069,7 +917,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1083,7 +931,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator1: string;
@@ -1098,7 +946,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1113,7 +961,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1127,7 +975,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator2: string;
@@ -1142,7 +990,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1157,7 +1005,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1171,7 +1019,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator3: string;
@@ -1186,7 +1034,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1201,7 +1049,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1215,7 +1063,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             overflowProtection: boolean;
@@ -1233,7 +1081,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -1247,7 +1095,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         }) | undefined;
         value2: string | ({
@@ -1261,7 +1109,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
             id: number;
         } | {
             type: "global";
-            id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+            id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
         } | {
             id: string;
             type: "computed";
@@ -1276,7 +1124,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1291,7 +1139,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1305,7 +1153,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator1: string;
@@ -1320,7 +1168,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1335,7 +1183,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1349,7 +1197,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator2: string;
@@ -1364,7 +1212,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1379,7 +1227,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1393,7 +1241,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             operator3: string;
@@ -1408,7 +1256,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | {
                 id: string;
                 type: "validation";
@@ -1423,7 +1271,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
                 operator: string;
                 value2: string | ({
@@ -1437,7 +1285,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                     id: number;
                 } | {
                     type: "global";
-                    id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                    id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
                 } | any | any);
             });
             overflowProtection: boolean;
@@ -1455,7 +1303,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
             operator: string;
             value2: string | ({
@@ -1469,7 +1317,7 @@ declare function createPlugin<T extends AllPlugins>(this: BatchMultiSigCall, { p
                 id: number;
             } | {
                 type: "global";
-                id: "gasPrice" | "blockNumber" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress" | "chainId";
+                id: "gasPrice" | "blockNumber" | "chainId" | "blockTimestamp" | "minerAddress" | "originAddress" | "investorAddress" | "activatorAddress" | "engineAddress";
             } | any | any);
         }) | undefined;
     }>;
@@ -1480,14 +1328,14 @@ declare function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): numb
 declare function exportFCT(this: BatchMultiSigCall): IFCT;
 declare function exportWithApprovals(this: BatchMultiSigCall): Promise<IFCT>;
 declare function exportNotificationFCT(this: BatchMultiSigCall): IFCT;
-declare function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT): FCTCall[];
+declare function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT): Call[];
 
 declare function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance>;
 declare function getPluginClass(this: BatchMultiSigCall, index: number): Promise<ReturnType<typeof getPlugin$1>>;
 declare function getPluginData(this: BatchMultiSigCall, index: number): Promise<{
     protocol: "SUSHISWAP" | "UNISWAP" | "COMPUTED_VARIABLE" | "VALIDATION_VARIABLE" | "ERC20" | "ERC721" | "ERC1155" | "TOKEN_MATH" | "TOKEN_VALIDATOR" | "UTILITY" | "PARASWAP" | "YEARN" | "COMPOUND_V2" | "COMPOUND_V3" | "1INCH" | "CURVE" | "CHAINLINK" | "UNISWAP_V3" | "SECURE_STORAGE" | "RADIANTV2" | "ROCKETPOOL" | "LIDO" | "AaveV3";
     type: "ACTION" | "LIBRARY" | "GETTER" | "VALIDATOR" | "CALCULATOR" | "ORACLE" | "COMPUTED_VARIABLE" | "VALIDATION_VARIABLE";
-    method: "" | "symbol" | "equal" | "name" | "approve" | "totalSupply" | "decimals" | "balanceOf" | "allowance" | "supportsInterface" | "add" | "sub" | "div" | "mul" | "mod" | "getAmountsOut" | "borrow" | "getUserAccountData" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "safeTransferFrom" | "setApprovalForAll" | "repay" | "swapBorrowRateMode" | "withdraw" | "supply" | "burn" | "getAmountsIn" | "isApprovedForAll" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "lessThan" | "between" | "greaterThan" | "FLASHLOAN_PREMIUM_TOTAL" | "FLASHLOAN_PREMIUM_TO_PROTOCOL" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "swapOnZeroXv4" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "liquidationCall" | "mintToTreasury" | "rebalanceStableBorrowRate" | "repayWithATokens" | "setUserEMode" | "setUserUseReserveAsCollateral" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "getEModeCategoryData" | "getReserveNormalizedIncome" | "getReserveNormalizedVariableDebt" | "getUserEMode" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "getSharesByPooledEth" | "getPooledEthByShares" | "sharesOf" | "getExchangeRate" | "getRethValue" | "getEthValue" | "getCollateralRate" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "mulAndDiv" | "betweenEqual" | "equalAddress" | "equalBytes32" | "greaterEqual" | "lessEqual" | "getEthBalance" | "compute" | "validate" | ("transferFrom" | "transfer");
+    method: "" | "symbol" | "equal" | "name" | "approve" | "totalSupply" | "decimals" | "balanceOf" | "allowance" | "supportsInterface" | "add" | "sub" | "div" | "mul" | "mod" | "getAmountsOut" | "borrow" | "getUserAccountData" | "deposit" | "simpleSwap" | "swap" | "addLiquidityETH" | "removeLiquidityETH" | "safeTransferFrom" | "setApprovalForAll" | "repay" | "swapBorrowRateMode" | "withdraw" | "supply" | "burn" | "getAmountsIn" | "isApprovedForAll" | "getReserveData" | "getUserReserveData" | "getReserveConfigurationData" | "getReserveTokensAddresses" | "getAssetPrice" | "lessThan" | "between" | "greaterThan" | "FLASHLOAN_PREMIUM_TOTAL" | "FLASHLOAN_PREMIUM_TO_PROTOCOL" | "add_liquidity" | "remove_liquidity" | "swapExactTokensForTokens" | "swapExactETHForTokens" | "swapExactTokensForETH" | "swapTokensForExactTokens" | "swapTokensForExactETH" | "swapETHForExactTokens" | "simpleRemoveLiquidity" | "exactInput" | "exactInputSingle" | "exactOutput" | "exactOutputSingle" | "mint" | "increaseLiquidity" | "decreaseLiquidity" | "collect" | "uniswapV3SwapTo" | "uniswapV3Swap" | "uniswapV3SwapToWithPermit" | "unoswap" | "buyOnUniswapV2Fork" | "megaSwap" | "multiSwap" | "simpleBuy" | "swapOnUniswapV2Fork" | "exchange" | "swapOnZeroXv4" | "safeBatchTransferFrom" | "swapTo_noSlippageProtection" | "swap_noSlippageProtection" | "addLiquidity_noMinProtection" | "addLiquidityTo_noMinProtection" | "liquidationCall" | "mintToTreasury" | "rebalanceStableBorrowRate" | "repayWithATokens" | "setUserEMode" | "setUserUseReserveAsCollateral" | "redeem" | "repayBorrow" | "enterMarkets" | "exitMarket" | "claimComp" | "supplyFrom" | "supplyTo" | "withdrawFrom" | "withdrawTo" | "exchange_with_best_rate" | "remove_liquidity_one_coin" | "create_lock" | "increase_amount" | "increase_unlock_time" | "write_bytes" | "write_bytes32" | "write_fct_bytes" | "write_fct_bytes32" | "write_fct_uint256" | "write_uint256" | "getReserves" | "positions" | "protocolFees" | "slot0" | "ticks" | "getApproved" | "ownerOf" | "tokenURI" | "uri" | "simulateSwap" | "getEModeCategoryData" | "getReserveNormalizedIncome" | "getReserveNormalizedVariableDebt" | "getUserEMode" | "latestRoundData" | "getAccountLiquidity" | "markets" | "borrowBalanceCurrent" | "collateralBalanceOf" | "isBorrowCollateralized" | "userBasic" | "borrowBalanceOf" | "getAssetInfoByAddress" | "getPrice" | "get_best_rate" | "get_exchange_amount" | "calc_token_amount" | "get_dy" | "locked" | "getSharesByPooledEth" | "getPooledEthByShares" | "sharesOf" | "getExchangeRate" | "getRethValue" | "getEthValue" | "getCollateralRate" | "read_bytes" | "read_bytes32" | "read_fct_bytes" | "read_fct_bytes32" | "read_fct_uint256" | "read_uint256" | "mulAndDiv" | "betweenEqual" | "equalAddress" | "equalBytes32" | "greaterEqual" | "lessEqual" | "getEthBalance" | "compute" | "validate" | ("transferFrom" | "transfer");
     input: {
         to: string | Variable;
         value: string | Variable;
@@ -1536,6 +1384,7 @@ declare class BatchMultiSigCall {
     get computedAsData(): IComputedData[];
     get validations(): Required<IValidation<false>>[];
     setOptions<O extends DeepPartial<IFCTOptions>>(options: O): {
+        id: string;
         name: string;
         validFrom: string;
         expiresAt: string;
@@ -1623,11 +1472,39 @@ declare class CallBase {
     update(call: DeepPartial<IMSCallInput>): void;
 }
 
+interface ICall {
+    get options(): DeepRequired<CallOptions>;
+    get nodeId(): string;
+    get(): StrictMSCallInput;
+    getDecoded(): DecodedCalls;
+    getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
+    generateEIP712Type(index: number): {
+        structTypes: {
+            [key: string]: {
+                name: string;
+                type: string;
+            }[];
+        };
+        callType: {
+            name: string;
+            type: string;
+        }[];
+    };
+    generateEIP712Message(index: number): TypedDataMessageTransaction;
+    getTypedHashes(index: number): string[];
+    getEncodedData(): string;
+    getTypesArray(): number[];
+    getFunctionSignature(): string;
+    getFunction(): string;
+}
+
 declare class Call extends CallBase implements ICall {
     protected FCT: BatchMultiSigCall;
-    constructor({ FCT, input }: {
+    readonly plugin: InstanceType<AllPlugins> | undefined;
+    constructor({ FCT, input, plugin, }: {
         FCT: BatchMultiSigCall;
         input: IMSCallInput;
+        plugin?: InstanceType<AllPlugins>;
     });
     update(call: DeepPartial<IMSCallInput>): StrictMSCallInput;
     addValidation(validation: IValidation<true>): ValidationVariable;
@@ -1755,15 +1632,24 @@ declare class FCTUtils extends FCTBase {
 }
 
 declare const mustBeInteger: string[];
-declare const validateInteger: (value: string, keys: string[]) => void;
-declare const validateAddress: (value: string, keys: string[]) => void;
+declare const mustBeAddress: string[];
+declare const mustBeBoolean: string[];
+declare const mustBeObject: string[];
+declare const validateInteger: (value: string, id: string) => void;
+declare const validateAddress: (value: string, id: string) => void;
 
+declare const helpers_mustBeAddress: typeof mustBeAddress;
+declare const helpers_mustBeBoolean: typeof mustBeBoolean;
 declare const helpers_mustBeInteger: typeof mustBeInteger;
+declare const helpers_mustBeObject: typeof mustBeObject;
 declare const helpers_validateAddress: typeof validateAddress;
 declare const helpers_validateInteger: typeof validateInteger;
 declare namespace helpers {
   export {
+    helpers_mustBeAddress as mustBeAddress,
+    helpers_mustBeBoolean as mustBeBoolean,
     helpers_mustBeInteger as mustBeInteger,
+    helpers_mustBeObject as mustBeObject,
     helpers_validateAddress as validateAddress,
     helpers_validateInteger as validateInteger,
   };
@@ -1935,10 +1821,11 @@ type StrictMSCallInput = RequiredKeys<IMSCallInput, "from" | "value" | "nodeId" 
 interface DecodedCalls extends StrictMSCallInput {
     params?: ParamWithoutVariable<Param>[];
 }
+interface IPlugin {
+    create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
+}
 type IWithPlugin = {
-    plugin: {
-        create(): Promise<IPluginCall | undefined> | (IPluginCall | undefined);
-    };
+    plugin: IPlugin;
 } & MSCallBase;
 type IMSCallWithEncodedData = {
     nodeId?: string;
@@ -1946,7 +1833,7 @@ type IMSCallWithEncodedData = {
     encodedData: string;
     to: string | Variable;
 } & MSCallBase;
-type FCTCall = Call | Multicall;
+type FCTCall = Call;
 type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
 interface MSCall {
     typeHash: string;
@@ -1961,6 +1848,7 @@ interface MSCall {
     typedHashes: string[];
 }
 interface IFCTOptions {
+    id: string;
     name: string;
     validFrom: string;
     expiresAt: string;
@@ -1979,12 +1867,12 @@ interface IFCTOptions {
         name: string;
         address: string;
     };
-    recurrency?: {
+    recurrency: {
         maxRepeats: string;
         chillTime: string;
         accumetable: boolean;
     };
-    multisig?: {
+    multisig: {
         externalSigners?: string[];
         minimumApprovals?: string;
     };
@@ -2245,4 +2133,4 @@ declare namespace index {
   };
 }
 
-export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallBase, MandatoryTypedDataMessage, MessageComputed, MessageEngine, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MessageValidation, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamValue, ParamWithoutVariable, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataEngine, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };
+export { BatchMultiSigCall, BatchMultiSigCallConstructor, BatchMultiSigCallTypedData, CallOptions, CallType, DecodedCalls, DeepPartial, DeepRequired, EIP1559GasPrice, FCTCall, FCTCallParam, FCTInputCall, FCTMCall, ICallDefaults, IFCT, IFCTOptions, IMSCallInput, IMSCallWithEncodedData, IPlugin, IPluginCall, IRequiredApproval, ITxValidator, IWithPlugin, MSCall, MSCallBase, MandatoryTypedDataMessage, MessageComputed, MessageEngine, MessageLimits, MessageMeta, MessageMultiSig, MessageRecurrency, MessageTransaction, MessageValidation, MethodParamsInterface, OptionalTypedDataMessage, Param, ParamValue, ParamWithoutVariable, RequiredFCTOptions, RequiredKeys, StrictMSCallInput, TypedDataDomain, TypedDataEngine, TypedDataLimits, TypedDataMessage, TypedDataMessageTransaction, TypedDataMeta, TypedDataMultiSig, TypedDataRecurrency, TypedDataTypes, Variable, index$2 as constants, index as utils, index$1 as variables };

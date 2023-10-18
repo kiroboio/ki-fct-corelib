@@ -4037,10 +4037,14 @@ class CallBase {
 
 let Call$1 = class Call extends CallBase {
     FCT;
-    constructor({ FCT, input }) {
+    plugin;
+    constructor({ FCT, input, plugin, }) {
         super(input);
         this.FCT = FCT;
         this.verifyCall({ call: this.call });
+        if (plugin) {
+            this.plugin = plugin;
+        }
         // If validation, add it to the validation list
         if (input.addValidation) {
             this.FCT.validation.add({
@@ -4356,7 +4360,7 @@ let Call$1 = class Call extends CallBase {
             options: { ...pluginCall.options, ...callWithPlugin.options },
             nodeId: callWithPlugin.nodeId || generateNodeId(),
         };
-        return new Call({ FCT, input: data });
+        return new Call({ FCT, input: data, plugin: callWithPlugin.plugin });
     }
     static createSimpleCall(FCT, call) {
         return new Call({ FCT, input: call });
@@ -4713,133 +4717,143 @@ function getAllRequiredApprovals(FCT) {
         throw new Error("No chainId or provider has been set");
     }
     const chainId = FCT.chainId;
+    const calls = FCT.calls;
     for (const [callIndex, call] of FCT.callsAsObjects.entries()) {
         if (typeof call.to !== "string") {
             continue;
         }
         const callClass = new CallBase(call);
-        const pluginData = fctPlugins.getPlugin({
-            signature: callClass.getFunctionSignature(),
-            address: call.to,
-            chainId,
-        });
-        if (pluginData) {
-            const initPlugin = new pluginData.plugin({
+        let approvals = [];
+        const mainCallData = calls[callIndex];
+        if (mainCallData.plugin) {
+            const plugin = mainCallData.plugin;
+            const pluginApprovals = plugin.getRequiredApprovals();
+            approvals = pluginApprovals;
+        }
+        else {
+            const pluginData = fctPlugins.getPlugin({
+                signature: callClass.getFunctionSignature(),
+                address: call.to,
                 chainId,
-                vaultAddress: typeof call.from === "string" ? call.from : "",
             });
-            const methodParams = call.params
-                ? call.params.reduce((acc, param) => {
-                    acc[param.name] = param.value;
-                    return acc;
-                }, {})
-                : {};
-            initPlugin.input.set({
-                to: call.to,
-                methodParams,
-            });
-            const approvals = initPlugin.getRequiredApprovals();
-            if (approvals.length > 0 && typeof call.from === "string") {
-                const manageValue = (value) => {
-                    if (InstanceOf.Variable(value) || !value) {
-                        return "";
-                    }
-                    return value;
-                };
-                const requiredApprovalsWithFrom = approvals
-                    .map((approval) => {
-                    if (approval.method === "approve") {
-                        const data = {
-                            token: manageValue(approval.to),
-                            method: approval.method,
-                            from: manageValue(approval.from || call.from),
-                        };
-                        if (approval.protocol === "ERC20") {
-                            return {
-                                ...data,
-                                protocol: approval.protocol,
-                                params: {
-                                    spender: manageValue(approval.params[0]),
-                                    amount: approval.params[1],
-                                },
-                            };
-                        }
-                        else if (approval.protocol === "ERC721") {
-                            return {
-                                ...data,
-                                protocol: approval.protocol,
-                                params: {
-                                    spender: manageValue(approval.params[0]),
-                                    tokenId: approval.params[1],
-                                },
-                            };
-                        }
-                    }
-                    if (approval.method === "setApprovalForAll" &&
-                        (approval.protocol === "ERC721" || approval.protocol === "ERC1155")) {
+            if (pluginData) {
+                const initPlugin = new pluginData.plugin({
+                    chainId,
+                    vaultAddress: typeof call.from === "string" ? call.from : "",
+                });
+                const methodParams = call.params
+                    ? call.params.reduce((acc, param) => {
+                        acc[param.name] = param.value;
+                        return acc;
+                    }, {})
+                    : {};
+                initPlugin.input.set({
+                    to: call.to,
+                    methodParams,
+                });
+                approvals = initPlugin.getRequiredApprovals();
+            }
+        }
+        if (approvals.length > 0 && typeof call.from === "string") {
+            const manageValue = (value) => {
+                if (InstanceOf.Variable(value) || !value) {
+                    return "";
+                }
+                return value;
+            };
+            const requiredApprovalsWithFrom = approvals
+                .map((approval) => {
+                if (approval.method === "approve") {
+                    const data = {
+                        token: manageValue(approval.to),
+                        method: approval.method,
+                        from: manageValue(approval.from || call.from),
+                    };
+                    if (approval.protocol === "ERC20") {
                         return {
+                            ...data,
                             protocol: approval.protocol,
-                            token: manageValue(approval.to),
-                            method: approval.method,
                             params: {
                                 spender: manageValue(approval.params[0]),
-                                approved: approval.params[1],
-                                ids: approval.params[2],
-                            },
-                            from: manageValue(approval.from || call.from), // Who needs to approve
-                        };
-                    }
-                    if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
-                        return {
-                            protocol: approval.protocol,
-                            token: manageValue(approval.to),
-                            method: approval.method,
-                            params: {
-                                delegatee: manageValue(approval.params[0]),
                                 amount: approval.params[1],
                             },
-                            from: manageValue(approval.from || call.from), // Who needs to approve
                         };
                     }
-                    throw new Error("Unknown method for plugin");
-                })
-                    .filter((approval) => {
-                    if (typeof call.from !== "string") {
-                        return true;
+                    else if (approval.protocol === "ERC721") {
+                        return {
+                            ...data,
+                            protocol: approval.protocol,
+                            params: {
+                                spender: manageValue(approval.params[0]),
+                                tokenId: approval.params[1],
+                            },
+                        };
                     }
-                    const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
-                        if (i >= callIndex)
-                            return false; // If the call is after the current call, we don't need to check
-                        const { to, method, from } = fctCall;
-                        if (typeof to !== "string" || typeof from !== "string")
-                            return false; // If the call doesn't have a to or from, we don't need to check
-                        // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
-                        return (to.toLowerCase() === approval.token.toLowerCase() &&
-                            method === approval.method &&
-                            from.toLowerCase() === approval.from.toLowerCase());
-                    });
-                    if (isGoingToGetApproved)
-                        return false;
-                    const caller = getAddress(call.from);
-                    // If the protocol is AAVE, we check if the caller is the spender and the approver
-                    if (approval.protocol === "AAVE") {
-                        const whoIsApproving = getAddress(approval.from);
-                        const whoIsSpending = getAddress(approval.params.delegatee);
-                        // If the caller is the spender and the approver - no need to approve
-                        return !(caller === whoIsSpending && caller === whoIsApproving);
-                    }
-                    // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
-                    if (approval.protocol === "ERC721" &&
-                        (call.method === "safeTransferFrom" || call.method === "transferFrom")) {
-                        const whoIsSending = getAddress(approval.from);
-                        const whoIsSpending = getAddress(approval.params.spender);
-                        // If the caller and spender is the same, no need to approve
-                        return !(whoIsSending === whoIsSpending);
-                    }
+                }
+                if (approval.method === "setApprovalForAll" &&
+                    (approval.protocol === "ERC721" || approval.protocol === "ERC1155")) {
+                    return {
+                        protocol: approval.protocol,
+                        token: manageValue(approval.to),
+                        method: approval.method,
+                        params: {
+                            spender: manageValue(approval.params[0]),
+                            approved: approval.params[1],
+                            ids: approval.params[2],
+                        },
+                        from: manageValue(approval.from || call.from), // Who needs to approve
+                    };
+                }
+                if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
+                    return {
+                        protocol: approval.protocol,
+                        token: manageValue(approval.to),
+                        method: approval.method,
+                        params: {
+                            delegatee: manageValue(approval.params[0]),
+                            amount: approval.params[1],
+                        },
+                        from: manageValue(approval.from || call.from), // Who needs to approve
+                    };
+                }
+                throw new Error("Unknown method for plugin");
+            })
+                .filter((approval) => {
+                if (typeof call.from !== "string") {
                     return true;
+                }
+                const isGoingToGetApproved = FCT.callsAsObjects.some((fctCall, i) => {
+                    if (i >= callIndex)
+                        return false; // If the call is after the current call, we don't need to check
+                    const { to, method, from } = fctCall;
+                    if (typeof to !== "string" || typeof from !== "string")
+                        return false; // If the call doesn't have a to or from, we don't need to check
+                    // Check if there is the same call inside FCT and BEFORE this call. If there is, we don't need to approve again
+                    return (to.toLowerCase() === approval.token.toLowerCase() &&
+                        method === approval.method &&
+                        from.toLowerCase() === approval.from.toLowerCase());
                 });
-                requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
-            }
+                if (isGoingToGetApproved)
+                    return false;
+                const caller = getAddress(call.from);
+                // If the protocol is AAVE, we check if the caller is the spender and the approver
+                if (approval.protocol === "AAVE") {
+                    const whoIsApproving = getAddress(approval.from);
+                    const whoIsSpending = getAddress(approval.params.delegatee);
+                    // If the caller is the spender and the approver - no need to approve
+                    return !(caller === whoIsSpending && caller === whoIsApproving);
+                }
+                // If the protocol is ERC721 and the call method is safeTransferFrom or transferFrom
+                if (approval.protocol === "ERC721" &&
+                    (call.method === "safeTransferFrom" || call.method === "transferFrom")) {
+                    const whoIsSending = getAddress(approval.from);
+                    const whoIsSpending = getAddress(approval.params.spender);
+                    // If the caller and spender is the same, no need to approve
+                    return !(whoIsSending === whoIsSpending);
+                }
+                return true;
+            });
+            requiredApprovals = [...requiredApprovals, ...requiredApprovalsWithFrom];
         }
     }
     return requiredApprovals;
@@ -5274,36 +5288,48 @@ class FCTUtils extends FCTBase {
 }
 
 const isAddress = ethers.ethers.utils.isAddress;
-const mustBeInteger = ["validFrom", "expiresAt", "maxGasPrice", "maxRepeats", "chillTime", "minimumApprovals"];
-// export const mustBeAddress = ["builder"];
+const mustBeInteger = [
+    "validFrom",
+    "expiresAt",
+    "maxGasPrice",
+    "recurrency.maxRepeats",
+    "recurrency.chillTime",
+    "multisig.minimumApprovals",
+];
+const mustBeAddress = ["builder.address"];
+const mustBeBoolean = ["purgeable", "blockable", "authEnabled", "dryRun", "recurrency.accumetable"];
+const mustBeObject = ["app", "builder", "recurrency", "multisig"];
 // Validate Integer values in options
-const validateInteger = (value, keys) => {
-    const currentKey = keys[keys.length - 1];
+const validateInteger = (value, id) => {
     if (value.includes(".")) {
-        throw new Error(`Options: ${keys.join(".")} cannot be a decimal`);
+        throw new Error(`Options: ${id} cannot be a decimal`);
     }
     if (value.startsWith("-")) {
-        throw new Error(`Options: ${keys.join(".")} cannot be negative`);
+        throw new Error(`Options: ${id} cannot be negative`);
     }
-    if (currentKey === "maxRepeats" && Number(value) < 0) {
-        throw new Error(`Options: ${keys.join(".")} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`);
+    if (id === "recurrency.maxRepeats" && +value < 0) {
+        throw new Error(`Options: ${id} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`);
     }
 };
 // Validate address values in options
-const validateAddress = (value, keys) => {
+const validateAddress = (value, id) => {
     if (!isAddress(value)) {
-        throw new Error(`Options: ${keys.join(".")} is not a valid address`);
+        throw new Error(`Options: ${id} is not a valid address`);
     }
 };
 
 var helpers = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    mustBeAddress: mustBeAddress,
+    mustBeBoolean: mustBeBoolean,
     mustBeInteger: mustBeInteger,
+    mustBeObject: mustBeObject,
     validateAddress: validateAddress,
     validateInteger: validateInteger
 });
 
 const initOptions = {
+    id: "",
     name: "",
     maxGasPrice: "30000000000",
     validFrom: getDate(),
@@ -5322,12 +5348,21 @@ const initOptions = {
         name: "",
         version: "",
     },
+    recurrency: {
+        maxRepeats: "0",
+        chillTime: "0",
+        accumetable: false,
+    },
+    multisig: {
+        externalSigners: [],
+        minimumApprovals: "0",
+    },
 };
 class Options {
     static helpers = helpers;
     _options = initOptions;
     set(options) {
-        const mergedOptions = _.merge({}, this._options, options);
+        const mergedOptions = _.merge(this._options, options);
         Options.verify(mergedOptions);
         this._options = mergedOptions;
         return this._options;
@@ -5358,18 +5393,41 @@ class Options {
             return;
         }
         Object.keys(value).forEach((key) => {
+            const keyId = [...parentKeys, key].join(".");
             const objKey = key;
-            if (typeof value[objKey] === "object") {
-                this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+            // If value is undefined, skip it
+            if (value[objKey] === undefined) {
+                return;
+            }
+            if (mustBeObject.includes(keyId)) {
+                if (typeof value[objKey] === "object") {
+                    this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
+                    return;
+                }
+                else {
+                    throw new Error(`Options: ${keyId} must be an object`);
+                }
+            }
+            if (mustBeBoolean.includes(keyId)) {
+                if (typeof value[objKey] !== "boolean") {
+                    throw new Error(`Options: ${keyId} must be a boolean`);
+                }
+                return;
+            }
+            // Else this must be a string. If it is not a string, throw an error
+            // Get value from keyId
+            const realVal = _.get(initOptions, keyId);
+            if (typeof value[objKey] !== typeof realVal) {
+                throw new Error(`Options: ${keyId} must be a ${typeof realVal}`);
             }
             // Integer validator
-            if (mustBeInteger.includes(objKey)) {
-                validateInteger(value[objKey], [...parentKeys, objKey]);
+            if (mustBeInteger.includes(keyId)) {
+                validateInteger(value[objKey], keyId);
             }
             // Address validator
-            // if (helpers.mustBeAddress.includes(objKey)) {
-            //   helpers.validateAddress(value[objKey] as string, [...parentKeys, objKey]);
-            // }
+            if (mustBeAddress.includes(keyId)) {
+                validateAddress(value[objKey], keyId);
+            }
             // Expires at validator
             if (objKey === "expiresAt") {
                 const expiresAt = Number(value[objKey]);
@@ -5432,7 +5490,7 @@ class SessionID extends FCTBase {
         const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
         const v = version.slice(2);
         const maxRepeats = valueWithPadStart(recurrency.maxRepeats, 4);
-        const chillTime = Number(Number(recurrency.maxRepeats) > 1 ? options.recurrency.chillTime : 0)
+        const chillTime = Number(+recurrency.maxRepeats > 1 ? +options.recurrency.chillTime : 0)
             .toString(16)
             .padStart(8, "0");
         const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
@@ -5822,358 +5880,12 @@ class Variables extends FCTBase {
     };
 }
 
-const FCT_MULTICALL_ADDRESS = {
-    1: "0x1Ee38d535d541c55C9dae27B12edf090C608E6Fb",
-    5: "0x1Ee38d535d541c55C9dae27B12edf090C608E6Fb",
-    42161: "0x1Ee38d535d541c55C9dae27B12edf090C608E6Fb",
-    421613: "0x1Ee38d535d541c55C9dae27B12edf090C608E6Fb",
-};
-
-class Multicall {
-    FCT;
-    _calls = [];
-    _from;
-    _nodeId;
-    _options = { callType: "LIBRARY" };
-    _to;
-    _outputTypes;
-    constructor(input) {
-        this._from = input.from;
-        this.FCT = input.FCT;
-        this._options = _.merge({}, this._options, input.options);
-        this._nodeId = input.nodeId || generateNodeId();
-    }
-    get nodeId() {
-        return this._nodeId;
-    }
-    get to() {
-        if (this._to)
-            return this._to;
-        return FCT_MULTICALL_ADDRESS[this.FCT.chainId];
-    }
-    get toENS() {
-        return "@lib:multicall";
-    }
-    get options() {
-        return _.merge({}, DEFAULT_CALL_OPTIONS, { options: { payerIndex: this.FCT.getIndexByNodeId(this._nodeId) } }, this._options);
-    }
-    get() {
-        if (!this._from)
-            throw new Error("From address is required");
-        return {
-            to: this.to,
-            toENS: this.toENS,
-            from: this._from,
-            params: this.params,
-            method: "multicall",
-            value: "0",
-            options: this.options,
-            nodeId: this._nodeId,
-        };
-    }
-    getDecoded() {
-        const params = this.get().params;
-        if (params && params.length > 0) {
-            const parameters = this.decodeParams(params);
-            return { ...this.get(), params: parameters };
-        }
-        return {
-            ...this.get(),
-            params: [],
-        };
-    }
-    get outputs() {
-        return this._calls.reduce((acc, _, i) => {
-            return {
-                ...acc,
-                [`call${i}`]: { type: "output", id: { nodeId: this._nodeId, innerIndex: i + 3 } },
-            };
-        }, {});
-    }
-    add = (call) => {
-        if (this._calls.length > 0) {
-            const firstCall = this._calls[0];
-            if (firstCall.params.length !== call.params.length) {
-                throw new Error("All calls must have the same number of params");
-            }
-            firstCall.params.forEach((param, index) => {
-                if (param.type !== call.params[index].type) {
-                    throw new Error("All calls must have the same param types");
-                }
-            });
-        }
-        this._calls.push(call);
-        return this._calls;
-    };
-    addPlugin = async (plugin) => {
-        const call = await plugin.create();
-        if (!call) {
-            throw new Error("Error when creating call from plugin");
-        }
-        const callType = call.options?.callType && (call.options?.callType === "ACTION" || call.options?.callType === "VIEW_ONLY")
-            ? call.options?.callType
-            : "ACTION";
-        const data = {
-            target: call.to,
-            params: call.params,
-            method: call.method,
-            callType,
-        };
-        this.add(data);
-    };
-    setFrom = (from) => {
-        this._from = from;
-        return this._from;
-    };
-    setOutputType = (outputType) => {
-        this._outputTypes = outputType;
-        return this._outputTypes;
-    };
-    setOptions = (options) => {
-        this._options = _.merge({}, this._options, options);
-        return this._options;
-    };
-    setNodeId = (nodeId) => {
-        this._nodeId = nodeId;
-        return this._nodeId;
-    };
-    get params() {
-        return [
-            {
-                name: "calls",
-                type: "Multicall[]",
-                customType: true,
-                value: this._calls.map((call) => {
-                    return [
-                        {
-                            name: "target",
-                            type: "address",
-                            value: call.target,
-                        },
-                        {
-                            name: "callType",
-                            type: "bytes32",
-                            value: call.callType,
-                            hashed: true,
-                        },
-                        {
-                            name: "method",
-                            type: "bytes32",
-                            value: call.method,
-                            hashed: true,
-                        },
-                        {
-                            name: "data",
-                            type: "bytes",
-                            value: getEncodedMethodParams(call),
-                        },
-                    ];
-                }),
-            },
-        ];
-    }
-    getAsMCall = (typedData, index) => {
-        return {
-            typeHash: utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-            ensHash: utils$1.id(this.toENS),
-            functionSignature: this.getFunctionSignature(),
-            value: "0",
-            callId: CallID.asString({
-                calls: this.FCT.callsAsObjects,
-                validation: this.FCT.validation,
-                call: this.get(),
-                index,
-            }),
-            from: this.FCT.variables.getValue(this._from, "address"),
-            to: this.to,
-            data: this.getEncodedData(),
-            types: this.getTypesArray(),
-            typedHashes: this.getTypedHashes(),
-        };
-    };
-    generateEIP712Message(index) {
-        const paramsData = this.getParamsEIP712();
-        const call = this.get();
-        const options = this.options;
-        const flow = flows[options.flow].text;
-        const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
-        return {
-            call: {
-                call_index: index + 1,
-                payer_index: index + 1,
-                call_type: CALL_TYPE_MSG[call.options.callType],
-                from: this.FCT.variables.getValue(call.from, "address"),
-                to: this.FCT.variables.getValue(call.to, "address"),
-                to_ens: call.toENS || "",
-                value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-                gas_limit: options.gasLimit,
-                permissions: 0,
-                validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
-                flow_control: flow,
-                returned_false_means_fail: options.falseMeansFail,
-                jump_on_success: jumpOnSuccess,
-                jump_on_fail: jumpOnFail,
-                method_interface: this.getFunction(),
-            },
-            ...paramsData,
-        };
-    }
-    getFunction() {
-        return "multicall((address,bytes32,bytes32,bytes)[])";
-    }
-    getFunctionSignature() {
-        return ethers.ethers.utils.id(this.getFunction());
-    }
-    getEncodedData() {
-        return getEncodedMethodParams(this.get());
-    }
-    getTypesArray() {
-        const call = this.get();
-        if (!call.params) {
-            return [];
-        }
-        return getTypesArray(call.params);
-    }
-    getTypedHashes() {
-        const { structTypes, callType } = this.generateEIP712Type();
-        return this.getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
-            return utils$1.hexlify(ethSigUtil.TypedDataUtils.hashType(type, structTypes));
-        });
-    }
-    generateEIP712Type() {
-        const call = this.get();
-        if (!call.params || (call.params && call.params.length === 0)) {
-            return {
-                structTypes: {},
-                callType: [{ name: "call", type: "Call" }],
-            };
-        }
-        const structTypes = {};
-        const callParameters = call.params.map((param) => {
-            const typeName = this.getStructType({
-                param,
-                nodeId: call.nodeId,
-                structTypes,
-            });
-            return {
-                name: param.name,
-                type: typeName,
-            };
-        });
-        return {
-            structTypes,
-            callType: [{ name: "call", type: "Call" }, ...callParameters],
-        };
-    }
-    decodeParams(params) {
-        return params.reduce((acc, param) => {
-            if (param.type === "tuple" || param.customType) {
-                if (param.type.lastIndexOf("[") > 0) {
-                    const value = param.value;
-                    const decodedValue = value.map((tuple) => this.decodeParams(tuple));
-                    return [...acc, { ...param, value: decodedValue }];
-                }
-                const value = this.decodeParams(param.value);
-                return [...acc, { ...param, value }];
-            }
-            if (InstanceOf.Variable(param.value)) {
-                const value = this.FCT.variables.getVariable(param.value, param.type);
-                const updatedParam = { ...param, value };
-                return [...acc, updatedParam];
-            }
-            return [...acc, param];
-        }, []);
-    }
-    getUsedStructTypes(typedData, mainType) {
-        return mainType.reduce((acc, item) => {
-            if (item.type.includes("Struct_")) {
-                const type = item.type.replace("[]", "");
-                return [...acc, type, ...this.getUsedStructTypes(typedData, typedData[type])];
-            }
-            return acc;
-        }, []);
-    }
-    getStructType({ param, nodeId, structTypes = {}, }) {
-        if (!param.customType && !param.type.includes("tuple")) {
-            return param.type;
-        }
-        let paramValue;
-        if (InstanceOf.TupleArray(param.value, param)) {
-            paramValue = param.value[0];
-        }
-        else if (InstanceOf.Tuple(param.value, param)) {
-            paramValue = param.value;
-        }
-        else {
-            throw new Error(`Invalid param value: ${param.value} for param: ${param.name}`);
-        }
-        const generalType = paramValue.map((item) => {
-            if (item.customType || item.type.includes("tuple")) {
-                const typeName = this.getStructType({
-                    param: item,
-                    nodeId,
-                    structTypes,
-                });
-                return {
-                    name: item.name,
-                    type: typeName,
-                };
-            }
-            return {
-                name: item.name,
-                type: item.hashed ? "string" : item.type,
-            };
-        });
-        // If param type is array, we need to add [] to the end of the type
-        const typeName = `Struct_${nodeId}_${Object.keys(structTypes).length}`;
-        structTypes[typeName] = generalType;
-        return typeName + (param.type.includes("[]") ? "[]" : "");
-    }
-    getParamsEIP712() {
-        const decoded = this.getDecoded();
-        if (!decoded.params) {
-            return {};
-        }
-        return {
-            ...getParams(decoded.params),
-        };
-    }
-    getJumps(index) {
-        let jumpOnSuccess = 0;
-        let jumpOnFail = 0;
-        const call = this.get();
-        const options = call.options;
-        if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-            const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-            if (jumpOnSuccessIndex === -1) {
-                throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-            }
-            if (jumpOnSuccessIndex <= index) {
-                throw new Error(`Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`);
-            }
-            jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-        }
-        if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-            const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-            if (jumpOnFailIndex === -1) {
-                throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-            }
-            if (jumpOnFailIndex <= index) {
-                throw new Error(`Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`);
-            }
-            jumpOnFail = jumpOnFailIndex - index - 1;
-        }
-        return {
-            jumpOnSuccess,
-            jumpOnFail,
-        };
-    }
-}
-
 ethers.ethers.utils.AbiCoder;
+// If F is Multicall, return multicall, else return Call
+// type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
 async function create(call) {
     // If the input is already made Call class, we just add it to _calls.
-    if (call instanceof Multicall || call instanceof Call$1) {
+    if (call instanceof Call$1) {
         this._calls.push(call);
         return call;
     }
@@ -6204,7 +5916,7 @@ async function addAtIndex(call, index) {
     if (index < 0 || index > this._calls.length) {
         throw new Error("Index out of range");
     }
-    if (call instanceof Multicall || call instanceof Call$1) {
+    if (call instanceof Call$1) {
         this._calls.splice(index, 0, call);
         return call;
     }
@@ -6244,6 +5956,9 @@ function getIndexByNodeId(nodeId) {
     return this._calls.findIndex((call) => call.nodeId === nodeId);
 }
 function exportFCT() {
+    if (this.calls.length === 0) {
+        throw new Error("No calls added to FCT");
+    }
     const typedData = new EIP712(this).getTypedData();
     return {
         typedData,
@@ -6367,6 +6082,7 @@ function importFCT(fct) {
     this.randomId = engine.random_id.slice(2);
     const sessionIDOptions = SessionID.asOptions(fct.sessionId);
     const options = {
+        id: "",
         ...SessionID.asOptions(fct.sessionId),
         authEnabled: engine.auth_enabled,
         domain: meta.domain,
