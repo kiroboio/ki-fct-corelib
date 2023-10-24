@@ -108,7 +108,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
               method: approval.method,
               params: {
                 spender: manageValue(approval.params[0] as string), // Who is going to spend
-                approved: approval.params[1] as boolean,
+                approved: approval.params[1] === "true",
                 ids: approval.params[2] as string[],
               },
               from: manageValue(approval.from || call.from), // Who needs to approve
