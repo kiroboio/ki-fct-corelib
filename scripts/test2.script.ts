@@ -1,4 +1,4 @@
-import { AaveV2, SmartPlugins } from "@kiroboio/flow-plugins";
+import { ERC20, SmartPlugins } from "@kiroboio/flow-plugins";
 import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../src";
@@ -16,40 +16,49 @@ export interface Result extends Array<any> {
 }
 
 async function main() {
-  console.log("Starting");
-  console.time("init");
   const FCT = new BatchMultiSigCall({ chainId: "1" });
 
-  const plugin = new SmartPlugins.UniswapV2.Swap({
+  const plugin = new SmartPlugins.UniswapV3.Swap({
     chainId: "1",
     provider: new ethers.providers.JsonRpcProvider(scriptData[1].rpcUrl),
-    vaultAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+    vaultAddress: createRandomAddress(),
   });
 
   plugin.set({
-    from: {
-      address: ethers.constants.AddressZero,
+    fromToken: {
+      address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
       decimals: "18",
     },
-    to: {
-      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-      decimals: "18",
+    toToken: {
+      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      decimals: "6",
     },
     amount: "1" + "0".repeat(18),
-    isAmountIn: true,
-    recipient: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-    slippage: "500",
+    isAmountIn: false,
+    recipient: createRandomAddress(),
+    slippage: "500", // 10000 = 100%, 500 = 5%
   });
 
-  await FCT.add({
+  const amountOut = plugin.outputs.amountOut.getOutputVariable("0");
+
+  const transfer = new ERC20.transfer({
+    chainId: "1",
+    input: {
+      value: amountOut,
+    },
+  });
+
+  const call = await FCT.add({
+    nodeId: "0",
     plugin,
     from: createRandomAddress(),
   });
 
+  call.getOutputVariable;
+
   const FCTData = FCT.export();
 
   console.log(FCTData.typedData.message);
-  console.timeEnd("init");
 
   // transaction_1: {
   //   call: {
@@ -78,15 +87,6 @@ async function main() {
   //   deadline: '1695025653'
   // }
   // init: 5.347s
-
-  const AaveDeposit = new AaveV2.deposit({ chainId: "1" });
-
-  AaveDeposit.set({
-    amount: "10",
-    asset: "0x...",
-    onBehalfOf: "0x...",
-    referralCode: "0",
-  });
 }
 main()
   .then(() => process.exit(0))

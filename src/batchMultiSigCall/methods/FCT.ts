@@ -1,21 +1,18 @@
-import { AllPlugins, ChainId, Erc20Approvals, getPlugin as getPluginProvider } from "@kiroboio/fct-plugins";
+import { AllPlugins, ChainId, Erc20Approvals } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { BigNumber, ethers, utils } from "ethers";
+import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
-import { Interfaces } from "../../helpers/Interfaces";
 import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { Call, CallID, EIP712, SessionID } from "../classes";
+import { Call, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCall, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
-
-const AbiCoder = ethers.utils.AbiCoder;
 
 // If F is Multicall, return multicall, else return Call
 // type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
@@ -391,133 +388,133 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
 }
 
 // NOTE: For now not used - we have custom plugins that do the same thing
-export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
-  const iface = Interfaces.FCT_BatchMultiSigCall;
-  const chainId = this.chainId;
-  const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
+// export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
+//   const iface = Interfaces.FCT_BatchMultiSigCall;
+//   const chainId = this.chainId;
+//   const decoded = iface.decodeFunctionData("batchMultiSigCall", calldata);
 
-  const arrayKeys = ["signatures", "mcall"];
-  const objectKeys = ["tr"];
+//   const arrayKeys = ["signatures", "mcall"];
+//   const objectKeys = ["tr"];
 
-  const getFCT = (obj: object): Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any> => {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
-      if (!isNaN(parseFloat(key))) {
-        return acc;
-      }
+//   const getFCT = (obj: object): Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any> => {
+//     return Object.entries(obj).reduce((acc, [key, value]) => {
+//       if (!isNaN(parseFloat(key))) {
+//         return acc;
+//       }
 
-      if (arrayKeys.includes(key)) {
-        return {
-          ...acc,
-          [key]: (value as object[]).map((sign) => getFCT(sign)),
-        };
-      }
+//       if (arrayKeys.includes(key)) {
+//         return {
+//           ...acc,
+//           [key]: (value as object[]).map((sign) => getFCT(sign)),
+//         };
+//       }
 
-      if (objectKeys.includes(key)) {
-        return {
-          ...acc,
-          [key]: getFCT(value),
-        };
-      }
+//       if (objectKeys.includes(key)) {
+//         return {
+//           ...acc,
+//           [key]: getFCT(value),
+//         };
+//       }
 
-      if (key === "callId" || key === "sessionId") {
-        return {
-          ...acc,
-          [key]: "0x" + value.toHexString().slice(2).padStart(64, "0"),
-        };
-      }
+//       if (key === "callId" || key === "sessionId") {
+//         return {
+//           ...acc,
+//           [key]: "0x" + value.toHexString().slice(2).padStart(64, "0"),
+//         };
+//       }
 
-      if (key === "types") {
-        return {
-          ...acc,
-          [key]: (value as BigNumber[]).map((type) => type.toString()),
-        };
-      }
+//       if (key === "types") {
+//         return {
+//           ...acc,
+//           [key]: (value as BigNumber[]).map((type) => type.toString()),
+//         };
+//       }
 
-      return {
-        ...acc,
-        [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
-      };
-    }, {} as Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any>);
-  };
+//       return {
+//         ...acc,
+//         [key]: BigNumber.isBigNumber(value) ? value.toHexString() : value,
+//       };
+//     }, {} as Record<"version" | "tr" | "purgeFCT" | "investor" | "activator", any>);
+//   };
 
-  const decodedFCT: {
-    version: string;
-    tr: Omit<IFCT, "typedData">;
-    purgeFCT: string;
-    investor: string;
-    activator: string;
-  } = getFCT(decoded);
+//   const decodedFCT: {
+//     version: string;
+//     tr: Omit<IFCT, "typedData">;
+//     purgeFCT: string;
+//     investor: string;
+//     activator: string;
+//   } = getFCT(decoded);
 
-  const FCTOptions = SessionID.asOptions(decodedFCT.tr.sessionId);
-  this.setOptions(FCTOptions);
+//   const FCTOptions = SessionID.asOptions(decodedFCT.tr.sessionId);
+//   this.setOptions(FCTOptions);
 
-  for (const [index, call] of decodedFCT.tr.mcall.entries()) {
-    try {
-      const pluginData = getPluginProvider({
-        address: call.to,
-        chainId,
-        signature: call.functionSignature,
-      });
+//   for (const [index, call] of decodedFCT.tr.mcall.entries()) {
+//     try {
+//       const pluginData = getPluginProvider({
+//         address: call.to,
+//         chainId,
+//         signature: call.functionSignature,
+//       });
 
-      if (!pluginData) {
-        throw new Error("Plugin not found");
-      }
+//       if (!pluginData) {
+//         throw new Error("Plugin not found");
+//       }
 
-      const plugin = new pluginData.plugin({
-        chainId,
-      });
+//       const plugin = new pluginData.plugin({
+//         chainId,
+//       });
 
-      const params = plugin.methodParams;
+//       const params = plugin.methodParams;
 
-      const decodedParams =
-        params.length > 0
-          ? new AbiCoder().decode(
-              params.map((type) => `${type.type} ${type.name}`),
-              call.data
-            )
-          : [];
+//       const decodedParams =
+//         params.length > 0
+//           ? new AbiCoder().decode(
+//               params.map((type) => `${type.type} ${type.name}`),
+//               call.data
+//             )
+//           : [];
 
-      plugin.input.set({
-        to: call.to,
-        value: parseInt(call.value, 16).toString(),
-        methodParams: params.reduce((acc, param) => {
-          const getValue = (value: utils.Result) => {
-            const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
-            if (BigNumber.isBigNumber(value)) {
-              const hexString = value.toHexString();
-              if (variables.some((v) => hexString.startsWith(v))) {
-                return hexString;
-              }
+//       plugin.input.set({
+//         to: call.to,
+//         value: parseInt(call.value, 16).toString(),
+//         methodParams: params.reduce((acc, param) => {
+//           const getValue = (value: utils.Result) => {
+//             const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+//             if (BigNumber.isBigNumber(value)) {
+//               const hexString = value.toHexString();
+//               if (variables.some((v) => hexString.startsWith(v))) {
+//                 return hexString;
+//               }
 
-              return value.toString();
-            }
+//               return value.toString();
+//             }
 
-            return value;
-          };
+//             return value;
+//           };
 
-          const value = getValue((decodedParams as ethers.utils.Result)[param.name]);
+//           const value = getValue((decodedParams as ethers.utils.Result)[param.name]);
 
-          return { ...acc, [param.name]: value };
-        }, {}),
-      });
+//           return { ...acc, [param.name]: value };
+//         }, {}),
+//       });
 
-      const { options } = CallID.parse(call.callId);
+//       const { options } = CallID.parse(call.callId);
 
-      const callInput = {
-        nodeId: `node${index + 1}`,
-        plugin,
-        from: call.from,
-        options: options as any,
-      };
+//       const callInput = {
+//         nodeId: `node${index + 1}`,
+//         plugin,
+//         from: call.from,
+//         options: options as any,
+//       };
 
-      await this.create(callInput);
-    } catch (e: any) {
-      if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
-        throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
-      }
-      throw new Error(`Plugin not found for call at index ${index}`);
-    }
-  }
+//       await this.create(callInput);
+//     } catch (e: any) {
+//       if (e.message !== "Multiple plugins found for the same signature, can't determine which one to use") {
+//         throw new Error(`Plugin error for call at index ${index} - ${e.message}`);
+//       }
+//       throw new Error(`Plugin not found for call at index ${index}`);
+//     }
+//   }
 
-  return this.calls;
-}
+//   return this.calls;
+// }
