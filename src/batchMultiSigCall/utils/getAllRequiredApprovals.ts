@@ -33,11 +33,16 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
       const pluginApprovals = plugin.getRequiredApprovals();
       approvals = pluginApprovals;
     } else {
-      const pluginData = getPlugin({
-        signature: callClass.getFunctionSignature(),
-        address: call.to,
-        chainId,
-      });
+      let pluginData;
+      try {
+        pluginData = getPlugin({
+          signature: callClass.getFunctionSignature(),
+          address: call.to,
+          chainId,
+        });
+      } catch (error) {
+        continue;
+      }
 
       if (pluginData) {
         const initPlugin = new pluginData.plugin({
