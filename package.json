@@ -24,6 +24,11 @@
   "files": [
     "dist"
   ],
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
   "scripts": {
     "commit": "cz",
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
@@ -38,7 +43,8 @@
     "fct": "ts-node scripts/fct.script.ts",
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
-    "lint:fix": "eslint --fix --ext .js,.ts ."
+    "lint:fix": "eslint --fix --ext .js,.ts .",
+    "semantic-release": "semantic-release"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -65,7 +71,8 @@
     "rollup": "^4.1.5",
     "rollup-plugin-dts": "^6.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "semantic-release": "^22.0.5"
   },
   "dependencies": {
     "@kiroboio/fct-plugins": "latest",
