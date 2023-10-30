@@ -7,10 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      # Run npm install and build
       - name: Install and Build
         run: yarn install --frozen-lockfile && yarn build
-      # Setup .npmrc file to publish to npm
       - name: Release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
