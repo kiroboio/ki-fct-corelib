@@ -3,9 +3,14 @@ import { expect } from "chai";
 import { ethers } from "ethers";
 
 import { Flow } from "../../constants";
+import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
+import { CallOptions } from "../../types";
 import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
+import { IMSCallInput } from "../types";
+import { FCTCreateCallErrors } from "./call.test";
+import { FCTOptionsErrors } from "./options.test";
 // Create a function that creates a random address
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
 
@@ -13,15 +18,13 @@ describe("BatchMultiSigCall", () => {
   let batchMultiSigCall: BatchMultiSigCall;
 
   beforeEach(() => {
-    console.log("Run");
     batchMultiSigCall = new BatchMultiSigCall({
       chainId: "5",
     });
-    console.log(batchMultiSigCall.options);
   });
 
   describe("Settings", () => {
-    // FCTOptionsErrors();
+    FCTOptionsErrors();
 
     it("Should set settings", async () => {
       const expiresAt = getDate(1);
@@ -52,7 +55,7 @@ describe("BatchMultiSigCall", () => {
 
     it("Should expect error if chainId is not supported", () => {
       expect(() => batchMultiSigCall.changeChainId("100" as ChainId)).to.throw(
-        "ChainId 100 is not supported. Please provide a custom EIP712 domain."
+        "ChainId 100 is not supported. Please provide a custom EIP712 domain.",
       );
     });
 
@@ -68,129 +71,129 @@ describe("BatchMultiSigCall", () => {
     });
   });
 
-  // describe("Calls", () => {
-  //   FCTCreateCallErrors();
-  // });
+  describe("Calls", () => {
+    FCTCreateCallErrors();
+  });
 
-  // describe("Flow", () => {
-  //   const from = createRandomAddress();
-  //   const to = createRandomAddress();
+  describe("Flow", () => {
+    const from = createRandomAddress();
+    const to = createRandomAddress();
 
-  //   const getFlowFromCallID = (callID: string) => {
-  //     const callId = CallID.parse(callID);
-  //     return callId.options.flow;
-  //   };
+    const getFlowFromCallID = (callID: string) => {
+      const callId = CallID.parse(callID);
+      return callId.options.flow;
+    };
 
-  //   // Regular ETH Transfer
-  //   const call: IMSCallInput = {
-  //     to,
-  //     from,
-  //     value: ethers.utils.parseEther("1").toString(),
-  //   };
+    // Regular ETH Transfer
+    const call: IMSCallInput = {
+      to,
+      from,
+      value: ethers.utils.parseEther("1").toString(),
+    };
 
-  //   const getFCT = async (options: CallOptions) => {
-  //     const callWithOptions = {
-  //       ...call,
-  //       options,
-  //     };
+    const getFCT = async (options: CallOptions) => {
+      const callWithOptions = {
+        ...call,
+        options,
+      };
 
-  //     await batchMultiSigCall.create(callWithOptions);
-  //     const FCT = batchMultiSigCall.exportFCT();
+      await batchMultiSigCall.create(callWithOptions);
+      const FCT = batchMultiSigCall.exportFCT();
 
-  //     return {
-  //       FCT,
-  //       callID: getFlowFromCallID(FCT.mcall[0].callId),
-  //     };
-  //   };
+      return {
+        FCT,
+        callID: getFlowFromCallID(FCT.mcall[0].callId),
+      };
+    };
 
-  //   it("Should create a call with OK_CONT_FAIL_REVERT", async () => {
-  //     const flow = flows.OK_CONT_FAIL_REVERT;
+    it("Should create a call with OK_CONT_FAIL_REVERT", async () => {
+      const flow = flows.OK_CONT_FAIL_REVERT;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_CONT_FAIL_REVERT,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_CONT_FAIL_REVERT,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_CONT_FAIL_REVERT);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_CONT_FAIL_REVERT);
+    });
 
-  //   it("Should create a call with OK_CONT_FAIL_STOP", async () => {
-  //     const flow = flows.OK_CONT_FAIL_STOP;
+    it("Should create a call with OK_CONT_FAIL_STOP", async () => {
+      const flow = flows.OK_CONT_FAIL_STOP;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_CONT_FAIL_STOP,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_CONT_FAIL_STOP,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_CONT_FAIL_STOP);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_CONT_FAIL_STOP);
+    });
 
-  //   it("Should create a call with OK_CONT_FAIL_CONT", async () => {
-  //     const flow = flows.OK_CONT_FAIL_CONT;
+    it("Should create a call with OK_CONT_FAIL_CONT", async () => {
+      const flow = flows.OK_CONT_FAIL_CONT;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_CONT_FAIL_CONT,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_CONT_FAIL_CONT,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_CONT_FAIL_CONT);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_CONT_FAIL_CONT);
+    });
 
-  //   it("Should create a call with OK_REVERT_FAIL_CONT", async () => {
-  //     const flow = flows.OK_REVERT_FAIL_CONT;
+    it("Should create a call with OK_REVERT_FAIL_CONT", async () => {
+      const flow = flows.OK_REVERT_FAIL_CONT;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_REVERT_FAIL_CONT,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_REVERT_FAIL_CONT,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_REVERT_FAIL_CONT);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_REVERT_FAIL_CONT);
+    });
 
-  //   it("Should create a call with OK_REVERT_FAIL_STOP", async () => {
-  //     const flow = flows.OK_REVERT_FAIL_STOP;
+    it("Should create a call with OK_REVERT_FAIL_STOP", async () => {
+      const flow = flows.OK_REVERT_FAIL_STOP;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_REVERT_FAIL_STOP,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_REVERT_FAIL_STOP,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_REVERT_FAIL_STOP);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_REVERT_FAIL_STOP);
+    });
 
-  //   it("Should create a call with OK_STOP_FAIL_CONT", async () => {
-  //     const flow = flows.OK_STOP_FAIL_CONT;
+    it("Should create a call with OK_STOP_FAIL_CONT", async () => {
+      const flow = flows.OK_STOP_FAIL_CONT;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_STOP_FAIL_CONT,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_STOP_FAIL_CONT,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_STOP_FAIL_CONT);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_STOP_FAIL_CONT);
+    });
 
-  //   it("Should create a call with OK_STOP_FAIL_REVERT", async () => {
-  //     const flow = flows.OK_STOP_FAIL_REVERT;
+    it("Should create a call with OK_STOP_FAIL_REVERT", async () => {
+      const flow = flows.OK_STOP_FAIL_REVERT;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_STOP_FAIL_REVERT,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_STOP_FAIL_REVERT,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_STOP_FAIL_REVERT);
-  //   });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_STOP_FAIL_REVERT);
+    });
 
-  //   it("Should create a call with OK_STOP_FAIL_STOP", async () => {
-  //     const flow = flows.OK_STOP_FAIL_STOP;
+    it("Should create a call with OK_STOP_FAIL_STOP", async () => {
+      const flow = flows.OK_STOP_FAIL_STOP;
 
-  //     const { FCT, callID } = await getFCT({
-  //       flow: Flow.OK_STOP_FAIL_STOP,
-  //     });
+      const { FCT, callID } = await getFCT({
+        flow: Flow.OK_STOP_FAIL_STOP,
+      });
 
-  //     expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
-  //     expect(callID).to.eq(Flow.OK_STOP_FAIL_STOP);
-  //   });
-  // });
+      expect(FCT.typedData.message["transaction_1"].call.flow_control).to.eq(flow.text);
+      expect(callID).to.eq(Flow.OK_STOP_FAIL_STOP);
+    });
+  });
 
   describe("Complex FCTs", () => {
     beforeEach(() => {
@@ -199,7 +202,6 @@ describe("BatchMultiSigCall", () => {
       });
     });
     it("Should create an FCT with 1 plugin call", async () => {
-      console.log("I am here", batchMultiSigCall.options);
       const transfer = new ERC20.actions.Transfer({
         chainId: "5",
         initParams: {
@@ -582,7 +584,7 @@ describe("BatchMultiSigCall", () => {
       const fctData = FCT.exportFCT();
 
       expect(fctData.typedData.message["transaction_1"].call.method_interface).to.eq(
-        "multicall((address,uint256,bool)[])"
+        "multicall((address,uint256,bool)[])",
       );
 
       expect(fctData.typedData.message["transaction_1"].data).to.deep.eq([
