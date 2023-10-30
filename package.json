@@ -100,15 +100,5 @@
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8",
     "lodash": "^4.17.21"
-  },
-  "resolutions": {
-    "ethereum-cryptography": "2.0.0"
-  },
-  "overrides": {
-    "@metamask/eth-sig-util": {
-      "@ethereumjs/util": {
-        "ethereum-cryptography": "2.0.0"
-      }
-    }
   }
 }

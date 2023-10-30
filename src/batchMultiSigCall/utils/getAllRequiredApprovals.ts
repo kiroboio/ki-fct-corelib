@@ -7,7 +7,7 @@ import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { CallBase } from "../classes";
 import { IRequiredApproval } from "../types";
 
-const { getAddress } = utils;
+const { getAddress, id } = utils;
 
 export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApproval[] {
   let requiredApprovals: IRequiredApproval[] = [];
@@ -26,8 +26,35 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
     const callClass = new CallBase(call);
     let approvals: RequiredApprovalInterface[] = [];
 
-    const mainCallData = calls[callIndex];
+    const funcitonSignature = callClass.getFunctionSignature();
 
+    // If the functionSignature is id("transferFrom(address,address,uint256)")
+    // This is a bypass for an edge case where transferFrom is for ERC20 and ERC721
+    if (funcitonSignature.toLowerCase() === id("transferFrom(address,address,uint256)").toLowerCase()) {
+      const whoNeedsToApprove = call.params ? call.params[0].value : "";
+      const amount = call.params ? call.params[2].value : "";
+      const from = call.from;
+      if (
+        typeof whoNeedsToApprove === "string" &&
+        typeof amount === "string" &&
+        typeof from === "string" &&
+        from.toLowerCase() !== whoNeedsToApprove.toLowerCase()
+      ) {
+        requiredApprovals.push({
+          protocol: "ERC20",
+          from: whoNeedsToApprove,
+          method: "approve",
+          token: call.to,
+          params: {
+            spender: from,
+            amount: amount,
+          },
+        });
+      }
+      continue;
+    }
+
+    const mainCallData = calls[callIndex];
     if (mainCallData.plugin) {
       const plugin = mainCallData.plugin;
       const pluginApprovals = plugin.getRequiredApprovals();
