@@ -73,9 +73,41 @@
       ],
       "transaction2": [
         { "name": "call", "type": "Call" },
-        { "name": "amount", "type": "uint256" },
-        { "name": "method", "type": "string" },
-        { "name": "path", "type": "address[]" }
+        {
+          "name": "params",
+          "type": "Struct_1_0"
+        }
+      ],
+      "Struct_1_0": [
+        {
+          "name": "tokenIn",
+          "type": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address"
+        },
+        { "name": "fee", "type": "uint24" },
+        {
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256"
+        },
+        {
+          "name": "amountOutMinimum",
+          "type": "uint256"
+        },
+        {
+          "name": "sqrtPriceLimitX96",
+          "type": "uint160"
+        }
       ],
       "BatchMultiSigCall": [
         { "name": "meta", "type": "Meta" },
@@ -151,7 +183,7 @@
     },
     "message": {
       "meta": {
-        "name": "approvals3",
+        "name": "approvals-test1",
         "app": "visual builder",
         "app_version": "0.3.0",
         "builder": "",
@@ -161,16 +193,16 @@
       "engine": {
         "selector": "0x7d971612",
         "version": "0x020101",
-        "random_id": "0xfb3bde",
+        "random_id": "0x0aab17",
         "eip712": true,
         "verifier": "",
         "auth_enabled": false,
         "dry_run": false
       },
       "limits": {
-        "valid_from": "1698592934",
+        "valid_from": "1698587208",
         "expires_at": "1699221599",
-        "gas_price_limit": "373553209",
+        "gas_price_limit": "896942171",
         "purgeable": false,
         "blockable": true
       },
@@ -180,7 +212,7 @@
           "payer_index": 1,
           "call_type": "action",
           "from": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
-          "to": "0x326c977e6efc84e512bb9c30f76e30c160ed06fb",
+          "to": "0x8869dfd060c682675c2a8ae5b21f2cf738a0e3ce",
           "to_ens": "",
           "value": "0",
           "gas_limit": "0",
@@ -194,39 +226,42 @@
         },
         "from": "0x37f8cf234e6f629a681def0692d25c6857d8ecbf",
         "to": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
-        "amount": "10000000000000000000"
+        "amount": "10000000"
       },
       "transaction_2": {
         "call": {
           "call_index": 2,
           "payer_index": 2,
-          "call_type": "library: action",
+          "call_type": "action",
           "from": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
-          "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
-          "to_ens": "@lib:uniswap_v2",
+          "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+          "to_ens": "",
           "value": "0",
-          "gas_limit": "400000",
+          "gas_limit": "0",
           "permissions": 0,
           "validation": 0,
           "flow_control": "stop on success, revert on fail",
           "returned_false_means_fail": false,
           "jump_on_success": 0,
           "jump_on_fail": 0,
-          "method_interface": "swap_noSlippageProtection(uint256,bytes32,address[])"
+          "method_interface": "exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))"
         },
-        "amount": "10000000000000000000",
-        "method": "swap <amount> Tokens for <X> Tokens",
-        "path": [
-          "0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
-          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0x75Ab5AB1Eef154C0352Fc31D2428Cef80C7F8B33"
-        ]
+        "params": {
+          "tokenIn": "0x8869DFd060c682675c2A8aE5B21F2cF738A0E3CE",
+          "tokenOut": "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C",
+          "fee": "10000",
+          "recipient": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
+          "deadline": "0xFB0B000000000000000000000000000000000000",
+          "amountIn": "10000000",
+          "amountOutMinimum": "0",
+          "sqrtPriceLimitX96": "0"
+        }
       }
     }
   },
-  "typeHash": "0x8a08193d553fc598130bbf5412b5eb263ccbe74f0230d9d5eb06242d659011f9",
-  "sessionId": "0xfb3bde00020101000000000000006548105f00653e78a6000000001643f8390c",
-  "nameHash": "0x58ebda37e2150eb3a4994c4c41cf5fdd7ab3e561649d0874a698711253f99c4b",
+  "typeHash": "0x1dad64c777a1c4dd383f640909e6bab75e9132674361439e88d2eac987c8cb58",
+  "sessionId": "0x0aab1700020101000000000000006548105f00653e6248000000003576405b0c",
+  "nameHash": "0x65a8d4d7f117455124e248fd47ade13a42146002d91bcad2c9394bd245bd5a2b",
   "appHash": "0x9a9661f35444be43c97445d6a5402bafe26eefbabded6a15389dcae7dd06f78a",
   "appVersionHash": "0x831db8657ab7ff15c62e55404c7cff05a6121dc231070ffe5977eb8f59f547e2",
   "builderHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
@@ -241,34 +276,34 @@
       "value": "0",
       "callId": "0x0000000000000000000000000000000000000000000000000100010000000004",
       "from": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
-      "to": "0x326c977e6efc84e512bb9c30f76e30c160ed06fb",
-      "data": "0x00000000000000000000000037f8cf234e6f629a681def0692d25c6857d8ecbf000000000000000000000000d8246f9c6cc0f006de446ab90a787942ceaead740000000000000000000000000000000000000000000000008ac7230489e80000",
+      "to": "0x8869dfd060c682675c2a8ae5b21f2cf738a0e3ce",
+      "data": "0x00000000000000000000000037f8cf234e6f629a681def0692d25c6857d8ecbf000000000000000000000000d8246f9c6cc0f006de446ab90a787942ceaead740000000000000000000000000000000000000000000000000000000000989680",
       "types": [],
       "typedHashes": []
     },
     {
-      "typeHash": "0xc575c5b14efb747b2ce17299c6c25d3aa9a3ca1cbc2c2841d325270613588292",
-      "ensHash": "0x7ca009b601db9e76f36541b80a69739c7ec25e0965b26d7682509a2fcb7dcccb",
-      "functionSignature": "0xba619610583d7cd8206b41ecd63f30575006cf2516356822d6f70c67bdf5f3cb",
+      "typeHash": "0x9e7c76633b0f4c4d67eaa79ecdf2ae40a617e5bd491549cd11664bbb86589301",
+      "ensHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+      "functionSignature": "0x414bf389314e949f7d65d58dd6b67d69018994750e6fdc230761f1010efe4993",
       "value": "0",
-      "callId": "0x00000000000000000000000000000000000006000000000002000200061a8022",
+      "callId": "0x0000000000000000000000000000000000000600000000000200020000000000",
       "from": "0xd8246F9C6cc0F006DE446aB90a787942cEaeAd74",
-      "to": "0xf0464C50e35f437fa18d19338246106a0f962d97",
-      "data": "0x0000000000000000000000000000000000000000000000008ac7230489e8000087553fac71f49f68d60c206941e24a4072378db84d66aacd8c8b551375320e0400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000003000000000000000000000000326c977e6efc84e512bb9c30f76e30c160ed06fb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d600000000000000000000000075ab5ab1eef154c0352fc31d2428cef80c7f8b33",
-      "types": [1000, 1000, 4000, 1000],
-      "typedHashes": []
+      "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+      "data": "0x0000000000000000000000008869dfd060c682675c2a8ae5b21f2cf738a0e3ce000000000000000000000000d87ba7a50b2e7e660f678a895e4b72e7cb4ccd9c0000000000000000000000000000000000000000000000000000000000002710000000000000000000000000d8246f9c6cc0f006de446ab90a787942ceaead74000000000000000000000000fb0b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000098968000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "types": [8, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000],
+      "typedHashes": ["0x464b596da397f77ca2847df493a489237a87fb4ba307cb16d011f4518174659d"]
     }
   ],
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0x8594a9f659cbc3064636db471138e5ee2c490416ba923fe7fd655a6fc6ffa5f5",
-      "s": "0x24625c573d1db9a2a637111f557c074e07107d5b27ad24cec0aca583b5f18944",
-      "_vs": "0x24625c573d1db9a2a637111f557c074e07107d5b27ad24cec0aca583b5f18944",
-      "recoveryParam": 0,
-      "v": 27,
-      "yParityAndS": "0x24625c573d1db9a2a637111f557c074e07107d5b27ad24cec0aca583b5f18944",
-      "compact": "0x8594a9f659cbc3064636db471138e5ee2c490416ba923fe7fd655a6fc6ffa5f524625c573d1db9a2a637111f557c074e07107d5b27ad24cec0aca583b5f18944"
+      "r": "0xfd9e3a20cf1aeecf365f0dcddff73dbc5ba257c61c9f8cdfa5248e3a33cf778f",
+      "s": "0x2b916706c065037056c5118b667ae951e11b26518f95793d6f7573df93e7eeac",
+      "_vs": "0xab916706c065037056c5118b667ae951e11b26518f95793d6f7573df93e7eeac",
+      "recoveryParam": 1,
+      "v": 28,
+      "yParityAndS": "0xab916706c065037056c5118b667ae951e11b26518f95793d6f7573df93e7eeac",
+      "compact": "0xfd9e3a20cf1aeecf365f0dcddff73dbc5ba257c61c9f8cdfa5248e3a33cf778fab916706c065037056c5118b667ae951e11b26518f95793d6f7573df93e7eeac"
     }
   ],
   "computed": [],
