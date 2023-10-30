@@ -10,8 +10,8 @@ jobs:
       # Run npm install and build
       - name: Install and Build
         run: |
-          npm install
-          npm run build
+          yarn install
+          yarn build
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
         with:
