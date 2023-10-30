@@ -55,7 +55,7 @@ describe("BatchMultiSigCall", () => {
 
     it("Should expect error if chainId is not supported", () => {
       expect(() => batchMultiSigCall.changeChainId("100" as ChainId)).to.throw(
-        "ChainId 100 is not supported. Please provide a custom EIP712 domain."
+        "ChainId 100 is not supported. Please provide a custom EIP712 domain.",
       );
     });
 
@@ -584,7 +584,7 @@ describe("BatchMultiSigCall", () => {
       const fctData = FCT.exportFCT();
 
       expect(fctData.typedData.message["transaction_1"].call.method_interface).to.eq(
-        "multicall((address,uint256,bool)[])"
+        "multicall((address,uint256,bool)[])",
       );
 
       expect(fctData.typedData.message["transaction_1"].data).to.deep.eq([
