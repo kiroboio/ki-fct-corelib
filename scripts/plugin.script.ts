@@ -15,10 +15,6 @@ const createRandomAddress = () => ethers.Wallet.createRandom().address;
 //   0001f4
 //   dac17f958d2ee523a2206206994597c13d831ec7
 
-export interface Result extends Array<any> {
-  [key: string]: any;
-}
-
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/<key>");
   console.log(provider.connection.url);
