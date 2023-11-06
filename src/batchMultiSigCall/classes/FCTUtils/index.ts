@@ -71,8 +71,8 @@ export class FCTUtils extends FCTBase {
     return ethers.utils.hexlify(
       TypedDataUtils.eip712Hash(
         this.FCTData.typedData as unknown as TypedMessage<TypedDataTypes>,
-        SignTypedDataVersion.V4
-      )
+        SignTypedDataVersion.V4,
+      ),
     );
   }
 
@@ -203,7 +203,7 @@ export class FCTUtils extends FCTBase {
         maxGasPrice,
         baseFeeBPS,
         bonusFeeBPS,
-      })
+      }),
     );
 
     const base = gasBigInt * gasPriceBigInt;
@@ -252,7 +252,7 @@ export class FCTUtils extends FCTBase {
         maxGasPrice,
         baseFeeBPS,
         bonusFeeBPS,
-      })
+      }),
     );
     fct.signatures = signatures || [];
 
@@ -270,21 +270,24 @@ export class FCTUtils extends FCTBase {
         pathIndexes: path,
       });
 
-      return payers.reduce((acc, payer) => {
-        const base = payer.gas * txGasPrice;
-        const fee = payer.gas * (effectiveGasPrice - txGasPrice);
-        const ethCost = base + fee;
+      return payers.reduce(
+        (acc, payer) => {
+          const base = payer.gas * txGasPrice;
+          const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+          const ethCost = base + fee;
 
-        const kiroCost = (ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n;
-        return {
-          ...acc,
-          [payer.payer]: {
-            ...payer,
-            ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
-            kiroCost,
-          },
-        };
-      }, {} as Record<string, PayerPayment>);
+          const kiroCost = (ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n;
+          return {
+            ...acc,
+            [payer.payer]: {
+              ...payer,
+              ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
+              kiroCost,
+            },
+          };
+        },
+        {} as Record<string, PayerPayment>,
+      );
     });
 
     const allPayers = [
@@ -294,25 +297,28 @@ export class FCTUtils extends FCTBase {
           if (payerIndex === 0) return ethers.constants.AddressZero;
           const payer = fct.mcall[payerIndex - 1].from;
           return payer;
-        })
+        }),
       ),
     ];
 
     return allPayers.map((payer) => {
-      const { largest, smallest } = data.reduce((acc, pathData) => {
-        const currentValues = acc;
-        const currentLargestValue = currentValues.largest?.kiroCost || 0n;
-        const currentSmallestValue = currentValues.smallest?.kiroCost;
+      const { largest, smallest } = data.reduce(
+        (acc, pathData) => {
+          const currentValues = acc;
+          const currentLargestValue = currentValues.largest?.kiroCost || 0n;
+          const currentSmallestValue = currentValues.smallest?.kiroCost;
 
-        const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
-        if (!currentLargestValue || value > currentLargestValue) {
-          currentValues.largest = pathData[payer as keyof typeof pathData];
-        }
-        if (!currentSmallestValue || value < currentSmallestValue) {
-          currentValues.smallest = pathData[payer as keyof typeof pathData];
-        }
-        return currentValues;
-      }, {} as { largest: PayerPayment; smallest: PayerPayment });
+          const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
+          if (!currentLargestValue || value > currentLargestValue) {
+            currentValues.largest = pathData[payer as keyof typeof pathData];
+          }
+          if (!currentSmallestValue || value < currentSmallestValue) {
+            currentValues.smallest = pathData[payer as keyof typeof pathData];
+          }
+          return currentValues;
+        },
+        {} as { largest: PayerPayment; smallest: PayerPayment },
+      );
 
       return {
         payer,
