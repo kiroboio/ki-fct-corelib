@@ -1,7 +1,7 @@
 export interface ITxValidator {
   rpcUrl: string;
   callData: string;
-  actuatorPrivateKey: string;
+  activator: string;
   actuatorContractAddress: string;
   activateForFree: boolean;
   gasPrice: EIP1559GasPrice;

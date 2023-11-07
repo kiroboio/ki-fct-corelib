@@ -150,15 +150,15 @@
       "engine": {
         "selector": "0x7d971612",
         "version": "0x020101",
-        "random_id": "0x105987",
+        "random_id": "0x651f9c",
         "eip712": true,
         "verifier": "",
         "auth_enabled": false,
         "dry_run": false
       },
       "limits": {
-        "valid_from": "1699280726",
-        "expires_at": "1699912799",
+        "valid_from": "1699362511",
+        "expires_at": "1699999199",
         "gas_price_limit": "20000000000000",
         "purgeable": false,
         "blockable": true
@@ -187,7 +187,7 @@
     }
   },
   "typeHash": "0xc24174393d3e5c1b778b81abc45fdf8788d239764b196587c3c2f35aa9393620",
-  "sessionId": "0x105987000201010000000000000065529c5f006548f756000012309ce540000c",
+  "sessionId": "0x651f9c00020101000000000000006553eddf00654a36cf000012309ce540000c",
   "nameHash": "0x7ba02b615fd7df64325b881de412f9011e8d599d6d26803faaf4e3b1ebb0da8a",
   "appHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
   "appVersionHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
@@ -212,13 +212,9 @@
   "externalSigners": [],
   "signatures": [
     {
-      "r": "0xa5246857000090bf932585727e03359cfc17bffe00cae0b239bea06632dfaa5c",
-      "s": "0x5f33ba610a7f40dda337837c84b9dcd8f7ff0f83c5eb244167bc14da08ac8734",
-      "_vs": "0xdf33ba610a7f40dda337837c84b9dcd8f7ff0f83c5eb244167bc14da08ac8734",
-      "recoveryParam": 1,
-      "v": 28,
-      "yParityAndS": "0xdf33ba610a7f40dda337837c84b9dcd8f7ff0f83c5eb244167bc14da08ac8734",
-      "compact": "0xa5246857000090bf932585727e03359cfc17bffe00cae0b239bea06632dfaa5cdf33ba610a7f40dda337837c84b9dcd8f7ff0f83c5eb244167bc14da08ac8734"
+      "r": "0xe445c4c72b6f843b0e9b26ed199552021c37b5fabe1ce71498c5cbf156c6a9e6",
+      "s": "0x213066e0db3d40e3249005a0aae3fa4e451b1cd24a2df378346401a4c9ab8886",
+      "v": 28
     }
   ],
   "computed": [],

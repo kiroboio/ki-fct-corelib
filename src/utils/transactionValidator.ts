@@ -7,7 +7,7 @@ import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
-  const { callData, actuatorContractAddress, actuatorPrivateKey, rpcUrl, activateForFree } = txVal;
+  const { callData, actuatorContractAddress, activator, rpcUrl, activateForFree } = txVal;
   let { gasPrice } = txVal;
 
   const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
@@ -35,15 +35,25 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
   // }
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const signer = new ethers.Wallet(actuatorPrivateKey, provider);
-  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, signer);
+  // const signer = new ethers.Wallet(actuatorPrivateKey, provider);
+  const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, provider);
 
   try {
-    const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](
-      callData,
-      signer.address,
-      { ...gasPrice },
-    );
+    // const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](
+    //   callData,
+    //   "0x19B272A2f2C5B4673057397390909757a0033633",
+    //   { ...gasPrice },
+    // );
+
+    const gas = await provider.estimateGas({
+      to: actuatorContractAddress,
+      data: actuatorContract.interface.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [
+        callData,
+        activator,
+      ]),
+      ...gasPrice,
+      from: activator,
+    });
 
     if (gas.lt(40000)) {
       throw new Error("Unknown error - FCT execution finalized too quickly. Is there enough power for user?");
