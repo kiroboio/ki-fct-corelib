@@ -81,6 +81,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
       };
     }
     if (err.reason === "processing response error") {
+      console.log("here");
       throw err;
     }
     if (txVal.errorIsValid) {
@@ -94,17 +95,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         error: null,
       };
     }
-    if (err instanceof Error) {
-      return {
-        isValid: false,
-        txData: { gas: 0, ...gasPrice, type: 2 },
-        prices: {
-          gas: 0,
-          gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
-        },
-        error: err.message,
-      };
-    }
+
     return {
       isValid: false,
       txData: { gas: 0, ...gasPrice, type: 2 },
@@ -112,7 +103,7 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         gas: 0,
         gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
       },
-      error: err.reason,
+      error: err.reason ? err.reason : err.message,
     };
   }
 };
