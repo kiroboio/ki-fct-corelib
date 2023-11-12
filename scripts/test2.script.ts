@@ -54,7 +54,7 @@ async function main() {
     from: createRandomAddress(),
   });
 
-  call.getOutputVariable;
+  // call.getOutputVariable;
 
   const FCTData = FCT.export();
 

@@ -92,29 +92,35 @@ export function getPayersForRoute({
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
   const commonGasPerCall = commonGas / BigInt(payers.length);
 
-  const gasForFCTCall = pathIndexes.reduce((acc, path, index) => {
-    const call = calls[Number(path)];
-    const { payerIndex, options } = CallID.parse(call.callId);
-    const payer = calls[payerIndex - 1].from;
-    const overhead = index === 0 ? fees.mcallOverheadFirstCall : fees.mcallOverheadOtherCalls;
-    const gas = BigInt(options.gasLimit) || 50_000n;
-    const amount = gas + overhead + commonGasPerCall;
-    if (acc[payer]) {
-      acc[payer] += amount;
-    } else {
-      acc[payer] = amount;
-    }
-    return acc;
-  }, {} as Record<string, bigint>);
+  const gasForFCTCall = pathIndexes.reduce(
+    (acc, path, index) => {
+      const call = calls[Number(path)];
+      const { payerIndex, options } = CallID.parse(call.callId);
+      const payer = calls[payerIndex - 1].from;
+      const overhead = index === 0 ? fees.mcallOverheadFirstCall : fees.mcallOverheadOtherCalls;
+      const gas = BigInt(options.gasLimit) || 50_000n;
+      const amount = gas + overhead + commonGasPerCall;
+      if (acc[payer]) {
+        acc[payer] += amount;
+      } else {
+        acc[payer] = amount;
+      }
+      return acc;
+    },
+    {} as Record<string, bigint>,
+  );
 
-  const gasForPaymentApprovals = payers.reduce((acc, address) => {
-    if (acc[address]) {
-      acc[address] += fees.paymentApproval;
-    } else {
-      acc[address] = fees.paymentApproval;
-    }
-    return acc;
-  }, {} as Record<string, bigint>);
+  const gasForPaymentApprovals = payers.reduce(
+    (acc, address) => {
+      if (acc[address]) {
+        acc[address] += fees.paymentApproval;
+      } else {
+        acc[address] = fees.paymentApproval;
+      }
+      return acc;
+    },
+    {} as Record<string, bigint>,
+  );
 
   return allSenders.map((payer) => {
     const gas = gasForFCTCall[payer] + gasForPaymentApprovals[payer];
@@ -137,7 +143,7 @@ export function getEffectiveGasPrice({
   bonusFeeBPS: bigint;
 }) {
   return (
-    (BigInt(gasPrice) * WHOLE_IN_BPS + baseFeeBPS + (BigInt(maxGasPrice) - BigInt(gasPrice)) * bonusFeeBPS) /
+    (BigInt(gasPrice) * (WHOLE_IN_BPS + baseFeeBPS) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * bonusFeeBPS) /
     WHOLE_IN_BPS
   ).toString();
 }

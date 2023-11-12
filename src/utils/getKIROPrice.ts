@@ -30,7 +30,7 @@ const getMulticallContract = (chainId: number, provider: ethers.providers.Provid
     [
       "function aggregate((address target, bytes callData)[] calls) external view returns (uint256 blockNumber, bytes[] returnData)",
     ],
-    provider
+    provider,
   );
 };
 

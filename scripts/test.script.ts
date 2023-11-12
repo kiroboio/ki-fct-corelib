@@ -1,11 +1,8 @@
 // Init dotenv
 import * as dotenv from "dotenv";
-import { writeFileSync } from "fs";
 
-import { BatchMultiSigCall, ethers } from "../src";
-import { transactionValidator } from "../src/utils";
+import { BatchMultiSigCall } from "../src";
 import FCTData from "./Failing.json";
-import { scriptData } from "./scriptData";
 
 dotenv.config();
 
@@ -14,33 +11,43 @@ const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  writeFileSync("./Failing2.json", JSON.stringify(FCT.export(), null, 2));
-
-  const txValidator = await transactionValidator({
-    callData: FCT.utils.getCalldataForActuator({
-      activator: activator,
-      investor: ethers.constants.AddressZero,
-      purgedFCT: ethers.constants.HashZero,
-      signatures: [
-        FCT.utils.getAuthenticatorSignature(),
-        {
-          r: "0xe445c4c72b6f843b0e9b26ed199552021c37b5fabe1ce71498c5cbf156c6a9e6",
-          s: "0x213066e0db3d40e3249005a0aae3fa4e451b1cd24a2df378346401a4c9ab8886",
-          v: 28,
-        },
-      ],
+  console.log(
+    FCT.utils.getPaymentPerPayer({
+      ethPriceInKIRO: "1" + "0".repeat(18),
+      penalty: "40000",
+      // ethPriceInKIRO: "1" + "0".repeat(18),
+      // gasPrice: ethers.utils.parseUnits("0.120750016", "gwei").toString(),
+      gasPrice: "13",
     }),
-    activateForFree: false,
-    actuatorContractAddress: "0x862a8fb429195d735106c06c4e352e305d8c7b31",
-    activator: activator,
-    rpcUrl: scriptData[5].rpcUrl,
-    gasPrice: {
-      maxFeePerGas: ethers.utils.parseUnits("13", "gwei").toString(),
-      maxPriorityFeePerGas: ethers.utils.parseUnits("0.004", "gwei").toString(),
-    },
-  });
+  );
 
-  console.log(txValidator);
+  // const txValidator = await transactionValidator({
+  //   callData: FCT.utils.getCalldataForActuator({
+  //     activator: activator,
+  //     investor: ethers.constants.AddressZero,
+  //     purgedFCT: ethers.constants.HashZero,
+  //     signatures: [
+  //       FCT.utils.getAuthenticatorSignature(),
+  //       {
+  //         r: "0xe445c4c72b6f843b0e9b26ed199552021c37b5fabe1ce71498c5cbf156c6a9e6",
+  //         s: "0x213066e0db3d40e3249005a0aae3fa4e451b1cd24a2df378346401a4c9ab8886",
+  //         v: 28,
+  //       },
+  //     ],
+  //   }),
+  //   activateForFree: false,
+  //   actuatorContractAddress: "0x862a8fb429195d735106c06c4e352e305d8c7b31",
+  //   activator: activator,
+  //   rpcUrl: scriptData[5].rpcUrl,
+  //   gasPrice: {
+  //     // maxFeePerGas: ethers.utils.parseUnits("13", "gwei").toString(),
+  //     // maxPriorityFeePerGas: ethers.utils.parseUnits("0.004", "gwei").toString(),
+  //     maxFeePerGas: "14",
+  //     maxPriorityFeePerGas: "2",
+  //   },
+  // });
+
+  // console.log(txValidator);
 }
 
 main()

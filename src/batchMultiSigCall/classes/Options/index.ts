@@ -73,7 +73,7 @@ export class Options {
 
   static validateOptionsValues = (
     value: Partial<IFCTOptions> | IFCTOptions["recurrency"] | IFCTOptions["multisig"],
-    parentKeys: string[] = []
+    parentKeys: string[] = [],
   ) => {
     if (!value) {
       return;
@@ -128,6 +128,12 @@ export class Options {
         }
         if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
           throw new Error(`Options: expiresAt must be greater than validFrom`);
+        }
+      }
+      if (objKey === "maxGasPrice") {
+        // Max gas price cannot be 0
+        if (BigInt(value[objKey]) <= BigInt(0)) {
+          throw new Error(`Options: maxGasPrice must be greater than 0`);
         }
       }
     });
