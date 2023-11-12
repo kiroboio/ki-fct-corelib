@@ -273,11 +273,8 @@ export class FCTUtils extends FCTBase {
 
       return payers.reduce(
         (acc, payer) => {
-          console.log(payer.gas, txGasPrice);
           const base = payer.gas * txGasPrice;
-          console.log(base);
           const fee = payer.gas * (effectiveGasPrice - txGasPrice);
-          console.log(fee, effectiveGasPrice);
           const ethCost = base + fee;
 
           const kiroCost = (ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n;
