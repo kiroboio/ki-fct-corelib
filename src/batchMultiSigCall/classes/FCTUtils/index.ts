@@ -265,6 +265,7 @@ export class FCTUtils extends FCTBase {
 
     const data = allPaths.map((path) => {
       const payers = getPayersForRoute({
+        chainId: this.FCT.chainId,
         calldata,
         calls: fct.mcall,
         pathIndexes: path,

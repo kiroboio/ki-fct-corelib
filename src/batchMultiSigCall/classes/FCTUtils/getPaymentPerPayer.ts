@@ -21,19 +21,31 @@ const fees = {
   estimateExtraCommmonGasCost: 4000n,
 } as const;
 
-const getEncodingMcallCost = (callCount: number) => {
+// Arbitrum fees are 13x higher than Ethereum fees. Multiply all fees by 13.
+const arbitrumFees = Object.fromEntries(
+  Object.entries(fees).map(([key, value]) => [key, BigInt(value) * 13n]),
+) as Record<keyof typeof fees, bigint>;
+
+function getFee(key: keyof typeof fees, chainId: string) {
+  if (chainId === "42161" || chainId === "421613") {
+    return arbitrumFees[key];
+  }
+  return fees[key];
+}
+
+const getEncodingMcallCost = (callCount: number, chainId: string) => {
   return (
-    BigInt(callCount) * fees.gasForEncodingCall +
-    (BigInt(callCount) * BigInt(callCount - 1) * fees.additionalGasForEncodingCall) / 2n
+    BigInt(callCount) * getFee("gasForEncodingCall", chainId) +
+    (BigInt(callCount) * BigInt(callCount - 1) * getFee("additionalGasForEncodingCall", chainId)) / 2n
   );
 };
 
-const getSignatureRecoveryCost = (signatureCount: number) => {
-  return BigInt(signatureCount) * fees.signatureRecovery;
+const getSignatureRecoveryCost = (signatureCount: number, chainId: string) => {
+  return BigInt(signatureCount) * getFee("signatureRecovery", chainId);
 };
 
-const getPaymentsOutCost = (callCount: number) => {
-  return fees.paymentsOutBase + BigInt(callCount) * fees.paymentsOutPerPayment;
+const getPaymentsOutCost = (callCount: number, chainId: string) => {
+  return getFee("paymentsOutBase", chainId) + BigInt(callCount) * getFee("paymentsOutPerPayment", chainId);
 };
 
 const getExtraCommonGas = (payersCount: number, msgDataLength: number) => {
@@ -64,10 +76,12 @@ const getAllSenders = (calls: MSCall[]) => {
 };
 
 export function getPayersForRoute({
+  chainId,
   calls,
   pathIndexes,
   calldata,
 }: {
+  chainId: string;
   calls: MSCall[];
   pathIndexes: string[];
   calldata: string;
@@ -75,19 +89,19 @@ export function getPayersForRoute({
   const payers = getPayers(calls, pathIndexes);
   const allSenders = getAllSenders(calls);
   const batchMultiSigCallOverhead =
-    fees.FCTControllerOverhead +
-    fees.gasBeforeEncodedLoop +
-    getEncodingMcallCost(calls.length) +
-    fees.FCTControllerRegisterCall +
-    getSignatureRecoveryCost(allSenders.length + 1) + // +1 because verification signature
-    fees.miscGasBeforeMcallLoop;
+    getFee("FCTControllerOverhead", chainId) +
+    getFee("gasBeforeEncodedLoop", chainId) +
+    getEncodingMcallCost(calls.length, chainId) +
+    getFee("FCTControllerRegisterCall", chainId) +
+    getSignatureRecoveryCost(allSenders.length + 1, chainId) + // +1 because verification signature
+    getFee("miscGasBeforeMcallLoop", chainId);
 
   const overhead =
-    fees.beforeCallingBatchMultiSigCall +
+    getFee("beforeCallingBatchMultiSigCall", chainId) +
     batchMultiSigCallOverhead +
-    getPaymentsOutCost(calls.length) +
-    fees.totalCallsChecker +
-    fees.estimateExtraCommmonGasCost;
+    getPaymentsOutCost(calls.length, chainId) +
+    getFee("totalCallsChecker", chainId) +
+    getFee("estimateExtraCommmonGasCost", chainId);
 
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
   const commonGasPerCall = commonGas / BigInt(payers.length);
@@ -97,7 +111,8 @@ export function getPayersForRoute({
       const call = calls[Number(path)];
       const { payerIndex, options } = CallID.parse(call.callId);
       const payer = calls[payerIndex - 1].from;
-      const overhead = index === 0 ? fees.mcallOverheadFirstCall : fees.mcallOverheadOtherCalls;
+      const overhead =
+        index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId);
       const gas = BigInt(options.gasLimit) || 50_000n;
       const amount = gas + overhead + commonGasPerCall;
       if (acc[payer]) {
@@ -112,10 +127,11 @@ export function getPayersForRoute({
 
   const gasForPaymentApprovals = payers.reduce(
     (acc, address) => {
+      const fee = getFee("paymentApproval", chainId);
       if (acc[address]) {
-        acc[address] += fees.paymentApproval;
+        acc[address] += fee;
       } else {
-        acc[address] = fees.paymentApproval;
+        acc[address] = fee;
       }
       return acc;
     },

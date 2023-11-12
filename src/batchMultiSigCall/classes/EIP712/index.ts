@@ -231,21 +231,27 @@ export class EIP712 extends FCTBase {
   }
 
   private getValidationMessage() {
-    return this.FCT.validation.getForEIP712().reduce((acc, item, i) => {
-      return {
-        ...acc,
-        [`validation_${i + 1}`]: item,
-      };
-    }, {} as Record<`validation_${number}`, IValidationEIP712>);
+    return this.FCT.validation.getForEIP712().reduce(
+      (acc, item, i) => {
+        return {
+          ...acc,
+          [`validation_${i + 1}`]: item,
+        };
+      },
+      {} as Record<`validation_${number}`, IValidationEIP712>,
+    );
   }
 
   private getComputedVariableMessage = () => {
-    return this.FCT.variables.computedForEIP712.reduce((acc, item, i) => {
-      return {
-        ...acc,
-        [`computed_${i + 1}`]: item,
-      };
-    }, {} as Record<`computed_${number}`, IComputedEIP712>);
+    return this.FCT.variables.computedForEIP712.reduce(
+      (acc, item, i) => {
+        return {
+          ...acc,
+          [`computed_${i + 1}`]: item,
+        };
+      },
+      {} as Record<`computed_${number}`, IComputedEIP712>,
+    );
   };
 
   private getCallTypesAndStructs() {
