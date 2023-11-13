@@ -42,7 +42,6 @@ export class FCTUtils extends FCTBase {
     activator: string;
   }) {
     return getCalldataForActuator({
-      // signedFCT: _.merge({}, this.FCTData, { signatures }),
       signedFCT: deepMerge(this.FCTData, { signatures }),
       purgedFCT,
       investor,
