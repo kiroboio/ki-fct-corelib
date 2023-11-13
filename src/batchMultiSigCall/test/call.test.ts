@@ -1,6 +1,6 @@
 import { assert } from "chai";
-import _ from "lodash";
 
+import { deepMerge } from "../../helpers/deepMerge";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { IMSCallInput } from "../types";
 
@@ -23,7 +23,7 @@ const defaultCall: IMSCallInput = {
   ],
 };
 
-const getCall = (call: Partial<IMSCallInput>) => _.merge({}, defaultCall, call);
+const getCall = (call: Partial<IMSCallInput>) => deepMerge(defaultCall, call);
 
 const catchError = async ({ call, message }: { call: IMSCallInput; message: string }) => {
   try {

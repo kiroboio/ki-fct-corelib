@@ -2,8 +2,8 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
-import _ from "lodash";
 
+import { deepMerge } from "../../../helpers/deepMerge";
 import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { TypedDataLimits, TypedDataTypes } from "../../types";
@@ -42,7 +42,8 @@ export class FCTUtils extends FCTBase {
     activator: string;
   }) {
     return getCalldataForActuator({
-      signedFCT: _.merge({}, this.FCTData, { signatures }),
+      // signedFCT: _.merge({}, this.FCTData, { signatures }),
+      signedFCT: deepMerge(this.FCTData, { signatures }),
       purgedFCT,
       investor,
       activator,

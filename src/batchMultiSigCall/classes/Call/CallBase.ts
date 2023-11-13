@@ -1,7 +1,7 @@
 import { utils } from "ethers";
-import _ from "lodash";
 
 import { nullValue } from "../../../constants";
+import { deepMerge } from "../../../helpers/deepMerge";
 import { CallOptions, DeepPartial, Variable } from "../../../types";
 import { IMSCallInput } from "../../types";
 import { generateNodeId, getTypesArray } from "./helpers";
@@ -62,10 +62,10 @@ export class CallBase {
   }
 
   public setOptions(options: DeepPartial<CallOptions>) {
-    this._call.options = _.merge({}, this._call.options, options);
+    this._call.options = deepMerge(this._call.options, options);
   }
 
   public update(call: DeepPartial<IMSCallInput>) {
-    this._call = _.merge({}, this._call, call);
+    this._call = deepMerge(this._call, call);
   }
 }

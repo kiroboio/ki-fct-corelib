@@ -75,11 +75,7 @@ describe("Validation", () => {
       },
     });
 
-    console.log(validations.get());
-
     const fctData = FCT.exportFCT();
-
-    console.log(JSON.stringify(fctData, null, 2));
 
     const fctValidations = fctData.validations;
     expect(fctValidations.length).to.equal(3);

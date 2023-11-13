@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strictBindCallApply": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitAny": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist/**/*"]

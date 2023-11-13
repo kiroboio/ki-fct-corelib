@@ -1,7 +1,7 @@
 import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
-import _ from "lodash";
 
+import { deepMerge } from "../../../helpers/deepMerge";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { FCTBase } from "../FCTBase";
@@ -83,7 +83,7 @@ export class EIP712 extends FCTBase {
     let optionalMessage = {};
 
     if (Number(recurrency.maxRepeats) > 1) {
-      optionalMessage = _.merge(optionalMessage, {
+      optionalMessage = deepMerge(optionalMessage, {
         recurrency: {
           max_repeats: recurrency.maxRepeats,
           chill_time: recurrency.chillTime,
@@ -93,7 +93,7 @@ export class EIP712 extends FCTBase {
     }
 
     if (multisig.externalSigners.length > 0) {
-      optionalMessage = _.merge(optionalMessage, {
+      optionalMessage = deepMerge(optionalMessage, {
         multisig: {
           external_signers: multisig.externalSigners,
           minimum_approvals: multisig.minimumApprovals || "2",
@@ -109,15 +109,6 @@ export class EIP712 extends FCTBase {
         builder: FCTOptions.builder.name || "",
         builder_address: FCTOptions.builder.address || "",
         domain: FCTOptions.domain || "",
-        // by: FCTOptions.by || "",
-        // builder: FCTOptions.builder || "0x0000000000000000000000000000000000000000",
-        // selector: this.FCT.batchMultiSigSelector,
-        // version: this.FCT.version,
-        // random_id: `0x${this.FCT.randomId}`,
-        // eip712: true,
-        // verifier: FCTOptions.verifier,
-        // auth_enabled: FCTOptions.authEnabled,
-        // dry_run: FCTOptions.dryRun,
       },
       engine: {
         selector: this.FCT.batchMultiSigSelector,
@@ -151,21 +142,21 @@ export class EIP712 extends FCTBase {
     const additionalTypesInPrimary: MessageTypeProperty[] = [];
 
     if (Number(recurrency.maxRepeats) > 1) {
-      optionalTypes = _.merge(optionalTypes, { Recurrency: EIP712.types.recurrency });
+      optionalTypes = deepMerge(optionalTypes, { Recurrency: EIP712.types.recurrency });
       additionalTypesInPrimary.push({ name: "recurrency", type: "Recurrency" });
     }
 
     if (multisig.externalSigners.length > 0) {
-      optionalTypes = _.merge(optionalTypes, { Multisig: EIP712.types.multisig });
+      optionalTypes = deepMerge(optionalTypes, { Multisig: EIP712.types.multisig });
       additionalTypesInPrimary.push({ name: "multisig", type: "Multisig" });
     }
 
     if (this.FCT.computed.length > 0) {
-      optionalTypes = _.merge(optionalTypes, { Computed: EIP712.types.computed });
+      optionalTypes = deepMerge(optionalTypes, { Computed: EIP712.types.computed });
     }
 
     if (this.FCT.validation.get().length > 0) {
-      optionalTypes = _.merge(optionalTypes, { Validation: EIP712.types.validation });
+      optionalTypes = deepMerge(optionalTypes, { Validation: EIP712.types.validation });
     }
     return {
       EIP712Domain: EIP712.types.domain,

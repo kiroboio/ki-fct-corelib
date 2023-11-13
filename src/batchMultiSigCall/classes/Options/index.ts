@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import _ from "lodash";
 
 import { getDate } from "../../../helpers";
+import { deepMerge } from "../../../helpers/deepMerge";
 import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 import * as helpers from "./helpers";
 
@@ -41,7 +42,7 @@ export class Options {
   private _options: IFCTOptions = initOptions;
 
   public set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O {
-    const mergedOptions = _.merge({}, this._options, options);
+    const mergedOptions = deepMerge(this._options, options);
     Options.verify(mergedOptions);
     this._options = mergedOptions;
     return this._options as IFCTOptions & O;

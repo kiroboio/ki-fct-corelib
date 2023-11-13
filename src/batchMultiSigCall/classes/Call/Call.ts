@@ -1,11 +1,11 @@
 import { AllPlugins } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
-import _ from "lodash";
 
 import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { InstanceOf } from "../../../helpers";
+import { deepMerge } from "../../../helpers/deepMerge";
 import {
   BatchMultiSigCallTypedData,
   CallOptions,
@@ -66,7 +66,7 @@ export class Call extends CallBase implements ICall {
   //
 
   public update(call: DeepPartial<IMSCallInput>) {
-    const data = _.merge({}, this._call, call);
+    const data = deepMerge(this._call, call);
     // Verify the call
     this.verifyCall({ call: data, update: true });
     this._call = data as IMSCallInput & { nodeId: string };
@@ -92,14 +92,7 @@ export class Call extends CallBase implements ICall {
 
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
-    return _.merge(
-      {},
-      this.FCT.callDefault,
-      {
-        options: { payerIndex: payerIndex + 1 },
-      },
-      this.call
-    ) as StrictMSCallInput;
+    return deepMerge(this.FCT.callDefault, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
   }
 
   public getDecoded(): DecodedCalls {
@@ -214,7 +207,7 @@ export class Call extends CallBase implements ICall {
   //
   private getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
-    mainType: { name: string; type: string }[]
+    mainType: { name: string; type: string }[],
   ): string[] {
     return mainType.reduce((acc, item) => {
       if (item.type.includes("Struct_")) {
@@ -298,7 +291,7 @@ export class Call extends CallBase implements ICall {
 
       if (jumpOnSuccessIndex <= index) {
         throw new Error(
-          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
+          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`,
         );
       }
 
@@ -314,7 +307,7 @@ export class Call extends CallBase implements ICall {
 
       if (jumpOnFailIndex <= index) {
         throw new Error(
-          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
+          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`,
         );
       }
 

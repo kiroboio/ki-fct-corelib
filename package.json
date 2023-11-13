@@ -78,8 +78,7 @@
     "@kiroboio/fct-plugins": "latest",
     "@metamask/eth-sig-util": "^5.1.0",
     "ethers": "^5.7.2",
-    "graphlib": "^2.1.8",
-    "lodash": "^4.17.21"
+    "graphlib": "^2.1.8"
   },
   "config": {
     "commitizen": {

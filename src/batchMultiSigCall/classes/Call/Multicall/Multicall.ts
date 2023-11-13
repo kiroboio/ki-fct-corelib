@@ -2,11 +2,11 @@ import { PluginInstance } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
-import _ from "lodash";
 
 import { CALL_TYPE_MSG } from "../../../../constants";
 import { flows } from "../../../../constants/flows";
 import { InstanceOf } from "../../../../helpers";
+import { deepMerge } from "../../../../helpers/deepMerge";
 import {
   BatchMultiSigCallTypedData,
   CallOptions,
@@ -60,7 +60,7 @@ export class Multicall implements ICall {
   constructor(input: IFCTMulticallConstructor) {
     this._from = input.from;
     this.FCT = input.FCT;
-    this._options = _.merge({}, this._options, input.options);
+    this._options = deepMerge(this._options, input.options);
     this._nodeId = input.nodeId || generateNodeId();
   }
 
@@ -78,11 +78,10 @@ export class Multicall implements ICall {
   }
 
   get options(): DeepRequired<CallOptions> {
-    return _.merge(
-      {},
+    return deepMerge(
       DEFAULT_CALL_OPTIONS,
       { options: { payerIndex: this.FCT.getIndexByNodeId(this._nodeId) } },
-      this._options
+      this._options,
     ) as DeepRequired<CallOptions>;
   }
 
@@ -169,7 +168,7 @@ export class Multicall implements ICall {
   };
 
   public setOptions = (options: Omit<CallOptions, "callType">) => {
-    this._options = _.merge({}, this._options, options);
+    this._options = deepMerge(this._options, options);
     return this._options;
   };
 
@@ -345,7 +344,7 @@ export class Multicall implements ICall {
 
   private getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
-    mainType: { name: string; type: string }[]
+    mainType: { name: string; type: string }[],
   ): string[] {
     return mainType.reduce((acc, item) => {
       if (item.type.includes("Struct_")) {
@@ -428,7 +427,7 @@ export class Multicall implements ICall {
 
       if (jumpOnSuccessIndex <= index) {
         throw new Error(
-          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`
+          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`,
         );
       }
 
@@ -444,7 +443,7 @@ export class Multicall implements ICall {
 
       if (jumpOnFailIndex <= index) {
         throw new Error(
-          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`
+          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`,
         );
       }
 

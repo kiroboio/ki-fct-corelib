@@ -72,7 +72,7 @@ export function createPlugin<T extends AllPlugins>(
   }: {
     plugin: T;
     initParams?: PluginParams<T>;
-  }
+  },
 ) {
   const Plugin = new plugin({
     chainId: this.chainId,
@@ -149,7 +149,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
 
   const signers = FCT.utils.getSigners();
   const requiredApprovals = (await FCT.utils.getAllRequiredApprovals()).filter(
-    (approval) => approval.protocol === "ERC20"
+    (approval) => approval.protocol === "ERC20",
   ) as (IRequiredApproval & { protocol: "ERC20" })[];
   for (const signer of signers) {
     // Get all approvals for the signer
@@ -204,7 +204,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
         from: signer,
         plugin: ERC20Approvals,
       },
-      0
+      0,
     );
 
     // Set reset approvals last
@@ -213,7 +213,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
         from: signer,
         plugin: ResetERC20Approvals,
       },
-      FCT.calls.length
+      FCT.calls.length,
     );
   }
   return FCT.exportFCT();
@@ -346,11 +346,11 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
 
   // Get all computed variables names
   const computedVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Computed").map(
-    (val) => val.name
+    (val) => val.name,
   );
   // Get all computed variables from typedData.message
   const computedVariables = computedVariableNames.map(
-    (name) => typedData.message[name as keyof typeof typedData.message]
+    (name) => typedData.message[name as keyof typeof typedData.message],
   ) as IComputedEIP712[];
 
   for (const computedVariable of computedVariables) {
@@ -368,11 +368,11 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
   }
 
   const validationVariableNames = typedData.types.BatchMultiSigCall.filter((val) => val.type === "Validation").map(
-    (val) => val.name
+    (val) => val.name,
   );
 
   const validaitonVariables = validationVariableNames.map(
-    (name) => typedData.message[name as keyof typeof typedData.message]
+    (name) => typedData.message[name as keyof typeof typedData.message],
   ) as unknown as IValidationEIP712[];
 
   for (const validationVariable of validaitonVariables) {

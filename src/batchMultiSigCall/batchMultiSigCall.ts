@@ -1,6 +1,6 @@
 import { ChainId } from "@kiroboio/fct-plugins";
-import _ from "lodash";
 
+import { deepMerge } from "../helpers/deepMerge";
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
@@ -114,7 +114,7 @@ export class BatchMultiSigCall {
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
-    this._callDefault = _.merge({}, this._callDefault, callDefault);
+    this._callDefault = deepMerge(this._callDefault, callDefault);
     return this._callDefault as ICallDefaults & C;
   }
 
