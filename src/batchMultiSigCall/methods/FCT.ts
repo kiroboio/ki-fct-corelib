@@ -120,9 +120,7 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     builderAddress: this.options.builder.address,
     domainHash: id(this.options.domain),
     verifierHash: id(this.options.verifier),
-    mcall: this.calls.map((call, index) => {
-      return call.getAsMCall(typedData, index);
-    }),
+    mcall: this.calls.map((call, index) => call.getAsMCall(typedData, index)),
     externalSigners: this.options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,

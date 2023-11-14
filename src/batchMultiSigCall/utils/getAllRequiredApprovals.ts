@@ -78,10 +78,13 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
         });
 
         const methodParams = call.params
-          ? call.params.reduce((acc, param) => {
-              acc[param.name] = param.value;
-              return acc;
-            }, {} as { [key: string]: Param["value"] })
+          ? call.params.reduce(
+              (acc, param) => {
+                acc[param.name] = param.value;
+                return acc;
+              },
+              {} as { [key: string]: Param["value"] },
+            )
           : {};
 
         initPlugin.input.set({

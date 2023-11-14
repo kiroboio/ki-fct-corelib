@@ -53,7 +53,7 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
 
 export async function getPluginClass(
   this: BatchMultiSigCall,
-  index: number
+  index: number,
 ): Promise<ReturnType<typeof getPluginProvider>> {
   const chainId = this.chainId;
   const call = this.getCall(index);
