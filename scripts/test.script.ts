@@ -2,52 +2,35 @@
 import * as dotenv from "dotenv";
 
 import { BatchMultiSigCall } from "../src";
-import FCTData from "./Failing.json";
 
 dotenv.config();
 
 const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
 
 async function main() {
-  const FCT = BatchMultiSigCall.from(FCTData);
+  const FCT = new BatchMultiSigCall({});
 
-  console.log(
-    FCT.utils.getPaymentPerPayer({
-      ethPriceInKIRO: "1" + "0".repeat(18),
-      penalty: "40000",
-      // ethPriceInKIRO: "1" + "0".repeat(18),
-      // gasPrice: ethers.utils.parseUnits("0.120750016", "gwei").toString(),
-      gasPrice: "13",
-    }),
-  );
+  await FCT.add({
+    to: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
+    from: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
+    method: "activate",
+    params: [
+      {
+        name: "targets",
+        type: "address[]",
+        value: [activator, { type: "global", id: "activatorAddress" }, { type: "global", id: "activatorAddress" }],
+      },
+      {
+        name: "values",
+        type: "uint256[]",
+        value: ["30", "40", { type: "global", id: "gasPrice" }],
+      },
+    ],
+  });
 
-  // const txValidator = await transactionValidator({
-  //   callData: FCT.utils.getCalldataForActuator({
-  //     activator: activator,
-  //     investor: ethers.constants.AddressZero,
-  //     purgedFCT: ethers.constants.HashZero,
-  //     signatures: [
-  //       FCT.utils.getAuthenticatorSignature(),
-  //       {
-  //         r: "0xe445c4c72b6f843b0e9b26ed199552021c37b5fabe1ce71498c5cbf156c6a9e6",
-  //         s: "0x213066e0db3d40e3249005a0aae3fa4e451b1cd24a2df378346401a4c9ab8886",
-  //         v: 28,
-  //       },
-  //     ],
-  //   }),
-  //   activateForFree: false,
-  //   actuatorContractAddress: "0x862a8fb429195d735106c06c4e352e305d8c7b31",
-  //   activator: activator,
-  //   rpcUrl: scriptData[5].rpcUrl,
-  //   gasPrice: {
-  //     // maxFeePerGas: ethers.utils.parseUnits("13", "gwei").toString(),
-  //     // maxPriorityFeePerGas: ethers.utils.parseUnits("0.004", "gwei").toString(),
-  //     maxFeePerGas: "14",
-  //     maxPriorityFeePerGas: "2",
-  //   },
-  // });
+  const data = FCT.export();
 
-  // console.log(txValidator);
+  console.log(JSON.stringify(data, null, 2));
 }
 
 main()

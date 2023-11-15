@@ -267,12 +267,11 @@ export class Call extends CallBase implements ICall {
 
   private getParamsEIP712(): Record<string, FCTCallParam> {
     const decoded = this.getDecoded();
-    if (!decoded.params) {
-      return {};
-    }
-    return {
-      ...getParams(decoded.params),
-    };
+    return decoded.params
+      ? {
+          ...getParams(decoded.params),
+        }
+      : {};
   }
 
   private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
@@ -331,6 +330,24 @@ export class Call extends CallBase implements ICall {
         const value = this.decodeParams(param.value as Param[]);
         return [...acc, { ...param, value }];
       }
+      // If param type is any of the arrays, we need to decode each item
+      if (param.type.includes("[")) {
+        const type = param.type.slice(0, param.type.lastIndexOf("["));
+        const value = param.value as any;
+        return [
+          ...acc,
+          {
+            ...param,
+            value: value.map((item: any) => {
+              if (InstanceOf.Variable(item)) {
+                return this.FCT.variables.getVariable(item, type);
+              }
+              return item;
+            }),
+          },
+        ];
+      }
+
       if (InstanceOf.Variable(param.value)) {
         const value = this.FCT.variables.getVariable(param.value, param.type);
         const updatedParam = { ...param, value };

@@ -81,7 +81,6 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
       };
     }
     if (err.reason === "processing response error") {
-      console.log("here");
       throw err;
     }
     if (txVal.errorIsValid) {
