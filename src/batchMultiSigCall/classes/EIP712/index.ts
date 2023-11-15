@@ -158,6 +158,7 @@ export class EIP712 extends FCTBase {
     if (this.FCT.validation.get().length > 0) {
       optionalTypes = deepMerge(optionalTypes, { Validation: EIP712.types.validation });
     }
+
     return {
       EIP712Domain: EIP712.types.domain,
       Meta: EIP712.types.meta,

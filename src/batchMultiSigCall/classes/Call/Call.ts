@@ -133,6 +133,7 @@ export class Call extends CallBase implements ICall {
   //
   public generateEIP712Type(index: number) {
     const call = this.get();
+
     if (!call.params || (call.params && call.params.length === 0)) {
       return {
         structTypes: {},
