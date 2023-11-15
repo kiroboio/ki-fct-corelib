@@ -25,12 +25,15 @@ export const isAddress = (value: string, key: string) => {
 };
 
 export const verifyParam = (param: Param) => {
-  if (InstanceOf.Variable(param.value)) return;
   if (!param.value) {
     throw new Error(`Param ${param.name} is missing a value`);
   }
 
   if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
+    if (InstanceOf.Variable(param.value)) {
+      throw new Error(`Param ${param.name} (${param.type}) - arrays cannot be set as Variables`);
+    }
+
     if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
       const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
       if (param.value.length !== length) {
@@ -48,6 +51,8 @@ export const verifyParam = (param: Param) => {
       });
     });
   }
+
+  if (InstanceOf.Variable(param.value)) return;
 
   // Check if type boolean is a boolean value
   if (param.type === "bool") {
@@ -89,6 +94,9 @@ export const verifyParam = (param: Param) => {
     const length = param.type.match(/\d+/g);
     if (!length) {
       // If no length, then the type is `bytes`
+      if (InstanceOf.Variable(param.value)) {
+        throw new Error(`Param ${param.name} (${param.type}) - bytes cannot be set as Variables`);
+      }
       return;
     }
 

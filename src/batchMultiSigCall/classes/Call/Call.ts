@@ -248,7 +248,6 @@ export class Call extends CallBase implements ICall {
           nodeId,
           structTypes,
         });
-        // structTypes = { ...structTypes, ...newStructTypes };
         return {
           name: item.name,
           type: typeName,
@@ -394,6 +393,7 @@ export class Call extends CallBase implements ICall {
       if (!call.method) {
         throw new Error("Method is required when params are present");
       }
+
       call.params.map(verifyParam);
     }
   }
