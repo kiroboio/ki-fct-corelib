@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-import { addresses } from "../batchMultiSigCall";
+import { addresses } from "../constants";
 import { multicallContracts } from "../constants";
 import { Interfaces } from "../helpers/Interfaces";
 

@@ -88,7 +88,7 @@ export const fetchCurrentApprovals = async ({
   });
 
   const [, returnData]: [string, string[]] = await multicallContract.callStatic.aggregate(
-    calls.map((call) => call.dataForMulticall)
+    calls.map((call) => call.dataForMulticall),
   );
 
   return returnData.map((res, index) => {

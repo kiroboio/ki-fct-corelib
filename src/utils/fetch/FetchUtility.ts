@@ -37,7 +37,7 @@ export class FetchUtility {
     this.multicallContract = new ethers.Contract(
       multicallContracts[Number(chainId) as keyof typeof multicallContracts],
       Interfaces.Multicall,
-      provider
+      provider,
     );
   }
 
@@ -67,12 +67,15 @@ export class FetchUtility {
 
     const [, returnData]: [string, string[]] = await this.multicallContract.callStatic.aggregate(calls);
 
-    return returnData.reduce((acc, res, index) => {
-      const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
+    return returnData.reduce(
+      (acc, res, index) => {
+        const decoded = ERC20Interface.decodeFunctionResult("totalSupply", res);
 
-      acc[calls[index].target] = (decoded[0] as BigNumber).toString();
+        acc[calls[index].target] = (decoded[0] as BigNumber).toString();
 
-      return acc;
-    }, {} as Record<string, string>);
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
   }
 }
