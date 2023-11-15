@@ -72,20 +72,6 @@ export class SessionID extends FCTBase {
 
   static asOptions(sessionId: string) {
     return SessionID.parse(sessionId);
-    // const parsedSessionID = SessionID.parse(sessionId);
-
-    // return {
-    //   ...parsedSessionID,
-    //   builder,
-    //   name,
-    //   app,
-    //   by,
-    //   verifier,
-    //   multisig: {
-    //     ...parsedSessionID.multisig,
-    //     externalSigners,
-    //   },
-    // };
   }
 
   static parse(sessionId: string) {

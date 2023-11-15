@@ -111,7 +111,7 @@ export const getParamsFromTypedData = ({
   const getParams = (
     realInputParams: ethers.utils.ParamType[],
     eip712InputTypes: ethers.utils.ParamType[],
-    parameters: Record<string, FCTCallParam>
+    parameters: Record<string, FCTCallParam>,
   ) => {
     return eip712InputTypes.map((input, i): Param => {
       const realInput = realInputParams[i];
@@ -123,7 +123,7 @@ export const getParamsFromTypedData = ({
           value: getParams(
             realInput.components,
             input.components,
-            parameters[realInput.name] as Record<string, FCTCallParam>
+            parameters[realInput.name] as Record<string, FCTCallParam>,
           ),
         };
       }
@@ -133,7 +133,7 @@ export const getParamsFromTypedData = ({
           type: input.type,
           customType: true,
           value: (parameters[realInput.name] as Record<string, FCTCallParam>[]).map((tuple) =>
-            getParams(realInput.components, input.components, tuple)
+            getParams(realInput.components, input.components, tuple),
           ),
         };
       }

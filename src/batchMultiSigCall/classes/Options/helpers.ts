@@ -25,7 +25,7 @@ export const validateInteger = (value: string, id: string) => {
   }
   if (id === "recurrency.maxRepeats" && +value < 0) {
     throw new Error(
-      `Options: ${id} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`
+      `Options: ${id} should be at least 0. If value is 0 or 1, recurrency will not be enabled in order to save gas`,
     );
   }
 };

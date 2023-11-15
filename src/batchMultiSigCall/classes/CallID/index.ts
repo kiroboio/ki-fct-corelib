@@ -35,7 +35,7 @@ export class CallID {
     const permissions = "0000";
     const validationIndex = valueWithPadStart(
       call.options.validation ? validation.getIndex(call.options.validation) : 0,
-      4
+      4,
     );
     const flow = valueWithPadStart(flows[call.options.flow].value, 2);
     const payerIndex = valueWithPadStart(index + 1, 4);
@@ -75,7 +75,7 @@ export class CallID {
       "0x" +
       `${validationIndex}${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(
         64,
-        "0"
+        "0",
       )
     );
   }
