@@ -108,6 +108,17 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   if (this.calls.length === 0) {
     throw new Error("No calls added to FCT");
   }
+  // Check if every computed variable is used in a call
+  const computedVariables = this.computed;
+  for (const computedVariable of computedVariables) {
+    const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string));
+    if (!isUsed) {
+      throw new Error(
+        `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
+      );
+    }
+  }
+
   const typedData = new EIP712(this).getTypedData();
   return {
     typedData,

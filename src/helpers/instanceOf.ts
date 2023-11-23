@@ -29,4 +29,8 @@ export class InstanceOf {
   static ParamArray = (data: any): data is Param[][] => {
     return Array.isArray(data) && InstanceOf.Param(data[0]);
   };
+
+  static ComputedVariable = (object: any): object is { type: "computed"; id: string } => {
+    return typeof object === "object" && "type" in object && object.type === "computed" && "id" in object;
+  };
 }

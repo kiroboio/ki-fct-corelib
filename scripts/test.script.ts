@@ -8,133 +8,57 @@ dotenv.config();
 const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
 
 async function main() {
-  const FCT = new BatchMultiSigCall({});
+  const FCT = new BatchMultiSigCall({
+    chainId: "1",
+  });
+
+  FCT.addComputed({
+    id: "32",
+    type: "computed",
+    value1: "1",
+    operator1: "+",
+    value2: "12",
+    operator2: "+",
+    value3: "0",
+    operator3: "/",
+    value4: "1000",
+    overflowProtection: true,
+  });
 
   await FCT.add({
-    from: activator,
+    nodeId: "966b50af-b432-43af-aae3-f9f1014c7900",
     to: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
-    nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-    method: "balanceOf",
+    from: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
+    method: "activate",
     params: [
       {
-        name: "account",
-        type: "address",
-        value: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
-        customType: false,
-        hashed: false,
-      },
-    ],
-  });
-
-  console.log("Adding 2nd");
-
-  await FCT.add({
-    value: {
-      type: "output",
-      id: {
-        innerIndex: 0,
-        nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-      },
-    },
-    to: "0xA96A65c051bF88B4095Ee1f2451C2A9d43F53Ae2",
-    method: "add_liquidity",
-    params: [
-      {
-        name: "amounts",
-        type: "uint256[2]",
-        value: [
-          {
-            type: "output",
-            id: {
-              innerIndex: 0,
-              nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-            },
-          },
-          {
-            type: "output",
-            id: {
-              innerIndex: 0,
-              nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-            },
-          },
-        ],
-        customType: false,
-        hashed: false,
-      },
-      {
-        name: "minMintAmount",
+        value: { type: "computed", id: "32" },
         type: "uint256",
-        value: "0",
-        customType: false,
-        hashed: false,
+        name: "amount",
       },
     ],
   });
 
-  console.log("Both addded. Now exporting");
+  // FCT.addComputed({
+  //   id: "0d286110-3ea4-4f65-a69e-a1afb3b71585",
+  //   type: "computed",
+  //   value1: "1047390746235513469810",
+  //   operator1: "/(10**X)",
+  //   value2: "12",
+  //   operator2: "+",
+  //   value3: {
+  //     type: "output",
+  //     id: {
+  //       innerIndex: 1,
+  //       nodeId: "966b50af-b432-43af-aae3-f9f1014c7900",
+  //     },
+  //   },
+  //   operator3: "/",
+  //   value4: "1000",
+  //   overflowProtection: true,
+  // });
 
   const data = FCT.export();
-
-  console.log(JSON.stringify(data, null, 2));
-
-  // const callDefault = {
-  //   value: "0",
-  //   options: {
-  //     permissions: "0000",
-  //     gasLimit: "0",
-  //     flow: "OK_CONT_FAIL_REVERT",
-  //     jumpOnSuccess: "NO_JUMP",
-  //     jumpOnFail: "NO_JUMP",
-  //     falseMeansFail: false,
-  //     callType: "ACTION",
-  //     validation: "",
-  //   },
-  // };
-
-  // const options = { options: { payerIndex: 2 } };
-
-  // const data = {
-  //   value: {
-  //     type: "output",
-  //     id: { innerIndex: 0, nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0" },
-  //   },
-  //   to: "0xA96A65c051bF88B4095Ee1f2451C2A9d43F53Ae2",
-  //   method: "add_liquidity",
-  //   params: [
-  //     {
-  //       name: "amounts",
-  //       type: "uint256[2]",
-  //       value: [
-  //         {
-  //           type: "output",
-  //           id: {
-  //             innerIndex: 0,
-  //             nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-  //           },
-  //         },
-  //         {
-  //           type: "output",
-  //           id: {
-  //             innerIndex: 0,
-  //             nodeId: "bd44c4ef-7165-4027-af33-dd05d24c8ab0",
-  //           },
-  //         },
-  //       ],
-  //       customType: false,
-  //       hashed: false,
-  //     },
-  //     {
-  //       name: "minMintAmount",
-  //       type: "uint256",
-  //       value: "0",
-  //       customType: false,
-  //       hashed: false,
-  //     },
-  //   ],
-  //   nodeId: "6afbb8fab415cb8ad430",
-  // };
-
-  // deepMerge(callDefault, options, data);
 }
 
 main()

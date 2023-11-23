@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 
-import { FCTCallParam, Param, TypedDataTypes, Variable } from "../../../../types";
+import { FCTCallParam, Param, ParamValue, TypedDataTypes, Variable } from "../../../../types";
 
 const ParamType = ethers.utils.ParamType;
 
@@ -154,4 +154,21 @@ export const getParamsFromTypedData = ({
   const realInputParams = generateRealInputParams(types, primaryType);
 
   return getParams(realInputParams, methodInterfaceParams, parameters);
+};
+
+export const getAllSimpleParams = (params: Param[]): ParamValue[] => {
+  return params.reduce((acc, param) => {
+    if (param.customType || param.type.lastIndexOf("[") > 0) {
+      if (param.type.lastIndexOf("[") > 0) {
+        const valueArray = param.value as Param[][];
+        const data = valueArray.map((item) => getAllSimpleParams(item)).flat();
+        return [...acc, ...data];
+      } else {
+        const valueArray = param.value as Param[];
+        return [...acc, ...getAllSimpleParams(valueArray)];
+      }
+    } else {
+      return [...acc, param.value as ParamValue];
+    }
+  }, [] as ParamValue[]);
 };

@@ -26,7 +26,7 @@ import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
-import { generateNodeId, getParams, isAddress, isInteger, verifyParam } from "./helpers";
+import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
@@ -46,7 +46,7 @@ export class Call extends CallBase implements ICall {
     super(input);
     this.FCT = FCT;
 
-    this.verifyCall({ call: this.call });
+    this._verifyCall({ call: this.call });
 
     if (plugin) {
       this.plugin = plugin;
@@ -68,7 +68,7 @@ export class Call extends CallBase implements ICall {
   public update(call: DeepPartial<IMSCallInput>) {
     const data = deepMerge(this._call, call);
     // Verify the call
-    this.verifyCall({ call: data, update: true });
+    this._verifyCall({ call: data, update: true });
     this._call = data as IMSCallInput & { nodeId: string };
     return this.get();
   }
@@ -90,6 +90,20 @@ export class Call extends CallBase implements ICall {
     return this.get().options;
   }
 
+  public isComputedUsed(id: string) {
+    // Computed Variable can be used as value, to, from, param values.
+    // We need to check all of them
+    const call = this.get();
+    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+
+    return checks.some((item) => {
+      if (InstanceOf.Variable(item)) {
+        return item.id === id;
+      }
+      return false;
+    });
+  }
+
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     return deepMerge(this.FCT.callDefault, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
@@ -98,7 +112,7 @@ export class Call extends CallBase implements ICall {
   public getDecoded(): DecodedCalls {
     const params = this.get().params;
     if (params && params.length > 0) {
-      const parameters = this.decodeParams(params);
+      const parameters = this._decodeParams(params);
       return { ...this.get(), params: parameters };
     }
     return {
@@ -144,7 +158,7 @@ export class Call extends CallBase implements ICall {
     const structTypes: { [key: string]: { name: string; type: string }[] } = {};
 
     const callParameters = call.params.map((param: Param) => {
-      const typeName = this.getStructType({
+      const typeName = this._getStructType({
         param,
         nodeId: index.toString(),
         structTypes,
@@ -162,12 +176,12 @@ export class Call extends CallBase implements ICall {
   }
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
-    const paramsData = this.getParamsEIP712();
+    const paramsData = this._getParamsEIP712();
     const call = this.get();
     const options = this.options;
     const flow = flows[options.flow].text;
 
-    const { jumpOnSuccess, jumpOnFail } = this.getJumps(index);
+    const { jumpOnSuccess, jumpOnFail } = this._getJumps(index);
 
     return {
       call: {
@@ -194,7 +208,7 @@ export class Call extends CallBase implements ICall {
   public getTypedHashes(index: number): string[] {
     const { structTypes, callType } = this.generateEIP712Type(index);
 
-    return this.getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
+    return this._getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
       return hexlify(TypedDataUtils.hashType(type, structTypes));
     });
   }
@@ -206,20 +220,20 @@ export class Call extends CallBase implements ICall {
   //
   // Private methods
   //
-  private getUsedStructTypes(
+  private _getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
     mainType: { name: string; type: string }[],
   ): string[] {
     return mainType.reduce((acc, item) => {
       if (item.type.includes("Struct_")) {
         const type = item.type.replace("[]", "");
-        return [...acc, type, ...this.getUsedStructTypes(typedData, typedData[type])];
+        return [...acc, type, ...this._getUsedStructTypes(typedData, typedData[type])];
       }
       return acc;
     }, [] as string[]);
   }
 
-  private getStructType({
+  private _getStructType({
     param,
     nodeId,
     structTypes = {},
@@ -244,7 +258,7 @@ export class Call extends CallBase implements ICall {
 
     const generalType = paramValue.map((item) => {
       if (item.customType || item.type.includes("tuple")) {
-        const typeName = this.getStructType({
+        const typeName = this._getStructType({
           param: item,
           nodeId,
           structTypes,
@@ -266,7 +280,7 @@ export class Call extends CallBase implements ICall {
     return typeName + (param.type.includes("[]") ? "[]" : "");
   }
 
-  private getParamsEIP712(): Record<string, FCTCallParam> {
+  private _getParamsEIP712(): Record<string, FCTCallParam> {
     const decoded = this.getDecoded();
     return decoded.params
       ? {
@@ -275,7 +289,7 @@ export class Call extends CallBase implements ICall {
       : {};
   }
 
-  private getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
+  private _getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
     let jumpOnSuccess = 0;
     let jumpOnFail = 0;
     const call = this.get();
@@ -319,16 +333,16 @@ export class Call extends CallBase implements ICall {
     };
   }
 
-  private decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
+  private _decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
     return params.reduce((acc, param) => {
       if (param.type === "tuple" || param.customType) {
         if (param.type.lastIndexOf("[") > 0) {
           const value = param.value as Param[][];
-          const decodedValue = value.map((tuple) => this.decodeParams(tuple));
+          const decodedValue = value.map((tuple) => this._decodeParams(tuple));
           return [...acc, { ...param, value: decodedValue }];
         }
 
-        const value = this.decodeParams(param.value as Param[]);
+        const value = this._decodeParams(param.value as Param[]);
         return [...acc, { ...param, value }];
       }
       // If param type is any of the arrays, we need to decode each item
@@ -358,7 +372,7 @@ export class Call extends CallBase implements ICall {
     }, [] as ParamWithoutVariable<P>[]);
   }
 
-  private verifyCall({ call, update = false }: { call: IMSCallInput; update?: boolean }) {
+  private _verifyCall({ call, update = false }: { call: IMSCallInput; update?: boolean }) {
     // To address validator
     if (!call.to) {
       throw new Error("To address is required");
@@ -417,13 +431,13 @@ export class Call extends CallBase implements ICall {
   }
   static async create({ call, FCT }: { call: IMSCallInput | IWithPlugin; FCT: BatchMultiSigCall }) {
     if (InstanceOf.CallWithPlugin(call)) {
-      return await this.createWithPlugin(FCT, call);
+      return await this._createWithPlugin(FCT, call);
     } else {
-      return this.createSimpleCall(FCT, call);
+      return this._createSimpleCall(FCT, call);
     }
   }
 
-  private static async createWithPlugin(FCT: BatchMultiSigCall, callWithPlugin: IWithPlugin): Promise<Call> {
+  private static async _createWithPlugin(FCT: BatchMultiSigCall, callWithPlugin: IWithPlugin): Promise<Call> {
     if (!callWithPlugin.plugin) {
       throw new Error("Plugin is required to create a call with plugin.");
     }
@@ -442,7 +456,7 @@ export class Call extends CallBase implements ICall {
     return new Call({ FCT, input: data, plugin: callWithPlugin.plugin as InstanceType<AllPlugins> });
   }
 
-  private static createSimpleCall<C extends IMSCallInput>(FCT: BatchMultiSigCall, call: C): Call {
+  private static _createSimpleCall<C extends IMSCallInput>(FCT: BatchMultiSigCall, call: C): Call {
     return new Call({ FCT, input: call });
   }
 }
