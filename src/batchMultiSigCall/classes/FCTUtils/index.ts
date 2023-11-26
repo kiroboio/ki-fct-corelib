@@ -171,6 +171,34 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
+  public getAssetFlow() {
+    const allPaths = this.getAllPaths();
+
+    // Now for every path we need to get the asset flow.
+    // We get that data from call only if the call has plugin.
+
+    const allCalls = this.FCT.calls;
+
+    const assetFlow = allPaths.map((path) => {
+      const calls = path.map((index) => allCalls[Number(index)]);
+
+      const assetFlow = calls.map((call) => {
+        const plugin = call.plugin;
+        if (!plugin) {
+          return [];
+        }
+        return plugin.getAssetFlow();
+      });
+
+      return {
+        path,
+        assetFlow,
+      };
+    });
+
+    return assetFlow;
+  }
+
   public kiroPerPayerGas = ({
     gas,
     gasPrice,
