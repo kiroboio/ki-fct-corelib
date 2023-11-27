@@ -172,6 +172,8 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
       chainId: FCT.chainId,
     });
 
+    ResetERC20Approvals.create();
+
     // Call ERC20Approvals.add approvals.length times
     for (let i = 1; i < approvals.length; i++) {
       ERC20Approvals.add();

@@ -8,7 +8,8 @@ export type Variable =
   | { type: "computed"; id: string }
   | { type: "validation"; id: string };
 
-export type ParamValue = boolean | string | string[] | boolean[] | Param[] | Param[][] | Variable | ParamValue[];
+// export type ParamValue = boolean | string | string[] | boolean[] | Param[] | Param[][] | Variable | ParamValue[];
+export type ParamValue = boolean | string | (string | Variable | undefined)[] | Param[] | Param[][] | Variable;
 
 export interface Param {
   name: string;

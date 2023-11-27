@@ -171,6 +171,71 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
+  public getAssetFlow() {
+    const allPaths = this.getAllPaths();
+    const allCalls = this.FCT.calls;
+
+    const assetFlow = allPaths.map((path) => {
+      const calls = path.map((index) => allCalls[Number(index)]);
+
+      const assetFlow = calls.reduce(
+        (acc, call) => {
+          const plugin = call.plugin;
+          if (!plugin) {
+            return [];
+          }
+          const callAssetFlow = plugin.getAssetFlow();
+
+          // Check if the address is already in the accumulator
+          for (const flow of callAssetFlow) {
+            const index = acc.findIndex((accAsset) => accAsset.address === flow.address);
+            if (index === -1) {
+              acc.push(flow);
+            } else {
+              const data = acc[index];
+
+              for (const token of flow.toReceive) {
+                const tokenIndex = data.toReceive.findIndex((accToken) => accToken.token === token.token);
+                if (tokenIndex !== -1) {
+                  data.toReceive[tokenIndex].amount = (
+                    BigInt(data.toReceive[tokenIndex].amount) + BigInt(token.amount)
+                  ).toString();
+                } else {
+                  data.toReceive.push(token);
+                }
+              }
+
+              for (const token of flow.toSpend) {
+                const tokenIndex = data.toSpend.findIndex((accToken) => accToken.token === token.token);
+                if (tokenIndex !== -1) {
+                  data.toSpend[tokenIndex].amount = (
+                    BigInt(data.toSpend[tokenIndex].amount) + BigInt(token.amount)
+                  ).toString();
+                } else {
+                  data.toSpend.push(token);
+                }
+              }
+            }
+          }
+
+          return acc;
+        },
+        [] as {
+          address: string;
+          toSpend: any[];
+          toReceive: any[];
+        }[],
+      );
+
+      return {
+        path,
+        assetFlow,
+      };
+    });
+
+    return assetFlow;
+  }
+
   public kiroPerPayerGas = ({
     gas,
     gasPrice,
