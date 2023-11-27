@@ -167,7 +167,8 @@ export class FCTUtils extends FCTBase {
     // const end = (FCT.mcall.length - 1).toString();
     // pathList.push(start);
 
-    for (const end of ends) {
+    const uniqueEnds = Array.from(new Set(ends));
+    for (const end of uniqueEnds) {
       const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
         if (start === end) {
           const path = localPathList.slice();
