@@ -1,39 +1,68 @@
 // Init dotenv
 import * as dotenv from "dotenv";
 
-import { BatchMultiSigCall } from "../src";
+import { AaveV2, BatchMultiSigCall, ERC20, ethers } from "../src";
+import { Flow } from "../src/constants";
 
 dotenv.config();
 
 const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
+const receiver = ethers.Wallet.createRandom().address;
 
 async function main() {
   const FCT = new BatchMultiSigCall({
     chainId: "1",
   });
 
-  const
+  const transfer = new ERC20.actions.SimpleTransfer({
+    vaultAddress: activator,
+    chainId: "1",
+  });
 
-  // FCT.addComputed({
-  //   id: "0d286110-3ea4-4f65-a69e-a1afb3b71585",
-  //   type: "computed",
-  //   value1: "1047390746235513469810",
-  //   operator1: "/(10**X)",
-  //   value2: "12",
-  //   operator2: "+",
-  //   value3: {
-  //     type: "output",
-  //     id: {
-  //       innerIndex: 1,
-  //       nodeId: "966b50af-b432-43af-aae3-f9f1014c7900",
-  //     },
-  //   },
-  //   operator3: "/",
-  //   value4: "1000",
-  //   overflowProtection: true,
-  // });
+  transfer.input.set({
+    to: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    methodParams: {
+      from: activator,
+      amount: "100" + "0".repeat(6),
+      to: receiver,
+    },
+  });
 
-  const data = FCT.export();
+  const deposit = new AaveV2.actions.Deposit({
+    chainId: "1",
+    vaultAddress: activator,
+  });
+
+  deposit.input.set({
+    methodParams: {
+      amount: "100" + "0".repeat(6),
+      asset: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      onBehalfOf: activator,
+    },
+  });
+
+  await FCT.addMultiple([
+    {
+      plugin: transfer,
+      nodeId: "1",
+      options: {
+        flow: Flow.OK_CONT_FAIL_STOP,
+      },
+    },
+    {
+      plugin: transfer,
+      nodeId: "2.5",
+      options: {
+        flow: Flow.OK_CONT_FAIL_STOP,
+      },
+    },
+    {
+      plugin: deposit,
+      nodeId: "2",
+    },
+  ]);
+
+  const assetFlow = FCT.utils.getAssetFlow();
 }
 
 main()

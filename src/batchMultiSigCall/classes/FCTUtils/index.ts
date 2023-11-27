@@ -3,6 +3,7 @@ import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessa
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
+import { Flow } from "../../../constants";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
@@ -124,49 +125,71 @@ export class FCTUtils extends FCTBase {
       g.setNode(index.toString());
     });
 
+    const continueOnSuccessFlows = [Flow.OK_CONT_FAIL_REVERT, Flow.OK_CONT_FAIL_STOP, Flow.OK_CONT_FAIL_CONT];
+    const continueOnFailFlows = [Flow.OK_REVERT_FAIL_CONT, Flow.OK_STOP_FAIL_CONT, Flow.OK_CONT_FAIL_CONT];
+    const endFlows = [
+      Flow.OK_STOP_FAIL_STOP,
+      Flow.OK_STOP_FAIL_REVERT,
+      Flow.OK_REVERT_FAIL_STOP,
+      Flow.OK_CONT_FAIL_STOP,
+      Flow.OK_STOP_FAIL_CONT,
+    ];
+    const dontAddEdge = [Flow.OK_STOP_FAIL_STOP, Flow.OK_STOP_FAIL_REVERT, Flow.OK_REVERT_FAIL_STOP];
+
+    const ends = [(FCT.mcall.length - 1).toString()];
+
     for (let i = 0; i < FCT.mcall.length - 1; i++) {
       const callID = CallID.parseWithNumbers(FCT.mcall[i].callId);
+      const flow = callID.options.flow;
       const jumpOnSuccess = callID.options.jumpOnSuccess;
       const jumpOnFail = callID.options.jumpOnFail;
 
       if (jumpOnSuccess === jumpOnFail) {
-        g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
+        if (dontAddEdge.includes(flow)) continue;
+        g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
       } else {
-        g.setEdge(i.toString(), (i + 1 + Number(jumpOnSuccess)).toString());
-        g.setEdge(i.toString(), (i + 1 + Number(jumpOnFail)).toString());
+        if (continueOnSuccessFlows.includes(flow)) {
+          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
+        }
+        if (continueOnFailFlows.includes(flow)) {
+          g.setEdge(i.toString(), (i + 1 + +jumpOnFail).toString());
+        }
+      }
+
+      if (endFlows.includes(flow)) {
+        ends.push(i.toString());
       }
     }
 
-    const allPaths: string[][] = [];
-
-    // const isVisited: Record<string, boolean> = {};
-    const pathList: string[] = [];
     const start = "0";
-    const end = (FCT.mcall.length - 1).toString();
+    const allPaths: string[][] = [];
+    const pathList: string[] = [start];
+    // const end = (FCT.mcall.length - 1).toString();
+    // pathList.push(start);
 
-    pathList.push(start);
+    for (const end of ends) {
+      const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
+        if (start === end) {
+          const path = localPathList.slice();
+          allPaths.push(path);
+          return;
+        }
 
-    const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
-      if (start === end) {
-        const path = localPathList.slice();
-        allPaths.push(path);
-        return;
-      }
+        let successors = g.successors(start);
+        if (successors === undefined) {
+          successors = [];
+        }
 
-      let successors = g.successors(start);
-      if (successors === undefined) {
-        successors = [];
-      }
+        for (const id of successors as string[]) {
+          localPathList.push(id);
+          printAllPathsUtil(g, id, end, localPathList);
+          localPathList.splice(localPathList.indexOf(id), 1);
+        }
+      };
 
-      for (const id of successors as string[]) {
-        localPathList.push(id);
-        printAllPathsUtil(g, id, end, localPathList);
-        localPathList.splice(localPathList.indexOf(id), 1);
-      }
-    };
-
-    // printAllPathsUtil(g, start, end, isVisited, pathList);
-    printAllPathsUtil(g, start, end, pathList);
+      // printAllPathsUtil(g, start, end, isVisited, pathList);
+      printAllPathsUtil(g, start, end, pathList);
+    }
 
     return allPaths;
   }
