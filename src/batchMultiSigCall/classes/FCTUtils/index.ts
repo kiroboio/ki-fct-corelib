@@ -525,7 +525,7 @@ export class FCTUtils extends FCTBase {
     });
   };
 
-  public getExecutionResult = async ({ txHash, tenderlyRpcUrl }: { txHash: string; tenderlyRpcUrl: string }) => {
+  public getTransactionTrace = async ({ txHash, tenderlyRpcUrl }: { txHash: string; tenderlyRpcUrl: string }) => {
     const provider = new ethers.providers.JsonRpcProvider(tenderlyRpcUrl);
 
     const data = await provider.send("tenderly_traceTransaction", [txHash]);
@@ -568,12 +568,6 @@ export class FCTUtils extends FCTBase {
         }
       })
       .map(mapLog);
-
-    const callResultConstants = {
-      success: "SUCCESS",
-      failed: "FAILED",
-      skipped: "SKIPPED",
-    } as const;
 
     const calls = data.trace.filter((call) => {
       return (

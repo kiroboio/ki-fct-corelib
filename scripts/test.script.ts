@@ -17,7 +17,7 @@ async function main() {
   const tenderlyRpcUrl = process.env.TENDERLY_RPC_URL as string;
   const txHash = "0x5158732687eaee51d18dc552d49b0e780cda1ab9f5c85eace72419a3d05bfe4f";
 
-  const data = await FCT.utils.getExecutionResult({
+  const data = await FCT.utils.getTransactionTrace({
     txHash: txHash,
     tenderlyRpcUrl,
   });
