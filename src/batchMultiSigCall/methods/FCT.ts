@@ -5,13 +5,13 @@ import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
-import { CallOptions, FCTInputCall, IFCT, IRequiredApproval, Param, Variable } from "../../types";
+import { CallOptions, FCTInputCall, IRequiredApproval, Param, Variable } from "../../types";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
-import { FCTCall, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
+import { FCTCall, IFCT, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 // If F is Multicall, return multicall, else return Call
@@ -104,9 +104,9 @@ export function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): numbe
   return this._calls.findIndex((call) => call.nodeId === nodeId);
 }
 
-export function exportFCTMap(this: BatchMultiSigCall) {
+export function exportMap(this: BatchMultiSigCall) {
   const calls = this.calls.map((call) => call.nodeId);
-  const computed = this.computed.map((computed) => computed.id);
+  const computed = this.computed.map((computed) => computed.id) as string[];
   const validations = this.validation.get().map((validation) => validation.id);
 
   return {
@@ -268,6 +268,18 @@ export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
 }
 
 export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
+  return impFCT.call(this, fct);
+}
+
+export function importFCTWithMap<FCT extends IFCT>(
+  this: BatchMultiSigCall,
+  fct: FCT,
+  map: ReturnType<BatchMultiSigCall["exportMap"]>,
+) {
+  return impFCT.call(this, fct, map);
+}
+
+export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<BatchMultiSigCall["exportMap"]>) {
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta, engine } = typedData.message;
@@ -340,7 +352,8 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
     const callIndex = index + 1;
 
     const callInput: IMSCallInput = {
-      nodeId: `node${callIndex}`,
+      // nodeId: `node${callIndex}`,
+      nodeId: map?.calls[index] ?? `node${callIndex}`,
       to: call.to,
       from: call.from,
       value: call.value,
@@ -349,13 +362,22 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
       toENS: meta.to_ens,
       options: {
         gasLimit: meta.gas_limit,
-        jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + 1 + meta.jump_on_success}`,
-        jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + 1 + meta.jump_on_fail}`,
+        // jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + 1 + meta.jump_on_success}`,
+        jumpOnSuccess:
+          meta.jump_on_success === 0
+            ? ""
+            : map?.calls[index + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`,
+        // jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + 1 + meta.jump_on_fail}`,
+        jumpOnFail:
+          meta.jump_on_fail === 0
+            ? ""
+            : map?.calls[index + meta.jump_on_fail] ?? `node${callIndex + 1 + meta.jump_on_fail}`,
         flow: getFlow(),
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
-        validation: meta.validation === 0 ? "" : meta.validation.toString(),
+        // validation: meta.validation === 0 ? "" : meta.validation.toString(),
+        validation: meta.validation === 0 ? "" : map?.validations[meta.validation] ?? meta.validation.toString(),
       },
     };
 
@@ -378,7 +400,8 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
 
   for (const computedVariable of computedVariables) {
     this.addComputed({
-      id: computedVariable.index,
+      // id: computedVariable.index,
+      id: map?.computed[computedVariable.index] ?? computedVariable.index,
       value1: manageValue(computedVariable.value_1) as string | Variable,
       operator1: computedVariable.op_1,
       value2: manageValue(computedVariable.value_2) as string | Variable,
@@ -400,7 +423,8 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
 
   for (const validationVariable of validaitonVariables) {
     this.validation.addValidation({
-      id: validationVariable.index,
+      // id: validationVariable.index,
+      id: map?.validations[validationVariable.index] ?? validationVariable.index,
       value1: validationVariable.value_1,
       operator: validationVariable.op,
       value2: validationVariable.value_2,
