@@ -104,6 +104,18 @@ export function getIndexByNodeId(this: BatchMultiSigCall, nodeId: string): numbe
   return this._calls.findIndex((call) => call.nodeId === nodeId);
 }
 
+export function exportFCTMap(this: BatchMultiSigCall) {
+  const calls = this.calls.map((call) => call.nodeId);
+  const computed = this.computed.map((computed) => computed.id);
+  const validations = this.validation.get().map((validation) => validation.id);
+
+  return {
+    calls,
+    computed,
+    validations,
+  };
+}
+
 export function exportFCT(this: BatchMultiSigCall): IFCT {
   if (this.calls.length === 0) {
     throw new Error("No calls added to FCT");
@@ -343,7 +355,7 @@ export function importFCT<FCT extends IFCT>(this: BatchMultiSigCall, fct: FCT) {
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
-        validation: meta.validation.toString(),
+        validation: meta.validation === 0 ? "" : meta.validation.toString(),
       },
     };
 

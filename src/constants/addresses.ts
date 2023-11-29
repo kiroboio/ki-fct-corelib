@@ -9,7 +9,7 @@ export const addresses = {
   },
   5: {
     FCT_Controller: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    FCT_BatchMultiSig: "0xf1E8Aca842bF40ee2f0bD70AfEbaA37b26a68fDD",
+    FCT_BatchMultiSig: "0x9F8Cc08FC5293D76A0d8B3b0924742FC36a1301c",
     FCT_EnsManager: "0xB9DBD91e7cC0A4d7635d18FB33416D784EBe2524",
     FCT_Tokenomics: "0x47Fca35c6fAb9E90a1ccf2630941fF64866fD3d2",
     Actuator: "0x862A8FB429195d735106c06C4e352E305d8c7B31",

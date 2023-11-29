@@ -525,6 +525,99 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getExecutionResult = async ({ txHash, tenderlyRpcUrl }: { txHash: string; tenderlyRpcUrl: string }) => {
+    const provider = new ethers.providers.JsonRpcProvider(tenderlyRpcUrl);
+
+    const data = await provider.send("tenderly_traceTransaction", [txHash]);
+
+    const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+    const controllerInterface = Interfaces.FCT_Controller;
+
+    // Get FCTE_Activated event
+    const messageHash = data.logs.find((log) => {
+      try {
+        return controllerInterface.parseLog(log.raw).name === "FCTE_Registered";
+      } catch (e) {
+        return false;
+      }
+    })?.raw.topics[2];
+    const messageHashUtil = this.getMessageHash();
+
+    if (messageHash !== messageHashUtil) {
+      throw new Error("Message hash mismatch");
+    }
+
+    const mapLog = (log: any) => {
+      const parsedLog = batchMultiSigInterface.parseLog(log.raw);
+      return {
+        id: parsedLog.args.id,
+        caller: parsedLog.args.caller,
+        callIndex: parsedLog.args.callIndex.toString(),
+      };
+    };
+
+    const executedCalls = data.logs
+      .filter((log) => {
+        try {
+          return (
+            batchMultiSigInterface.parseLog(log.raw).name === "FCTE_CallSucceed" ||
+            batchMultiSigInterface.parseLog(log.raw).name === "FCTE_CallFailed"
+          );
+        } catch (e) {
+          return false;
+        }
+      })
+      .map(mapLog);
+
+    const callResultConstants = {
+      success: "SUCCESS",
+      failed: "FAILED",
+      skipped: "SKIPPED",
+    } as const;
+
+    const calls = data.trace.filter((call) => {
+      return (
+        call.traceAddress.length === 7 &&
+        call.traceAddress[0] === 0 &&
+        call.traceAddress[1] === 0 &&
+        call.traceAddress[3] === 0 &&
+        call.traceAddress[4] === 0 &&
+        call.traceAddress[5] === 2 &&
+        call.traceAddress[6] === 2
+      );
+    });
+
+    const fctCalls = this.FCT.calls;
+
+    return executedCalls.reduce((acc, executedCall, index) => {
+      const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
+      const internalTx = calls[index];
+      const input = internalTx.input;
+
+      acc = [
+        ...acc,
+        {
+          inputData: fctCall.decodeData(input),
+          type: "CALL",
+          id: fctCall.nodeId,
+        },
+      ];
+
+      // Check if fctCall had a validation
+      if (fctCall.options.validation && fctCall.options.validation !== "0") {
+        acc = [
+          ...acc,
+          {
+            type: "VALIDATION",
+            id: fctCall.options.validation,
+          },
+        ];
+      }
+
+      return acc;
+    }, [] as Array<any>);
+  };
+
   private validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",
