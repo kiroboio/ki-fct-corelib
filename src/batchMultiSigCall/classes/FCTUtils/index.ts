@@ -598,6 +598,7 @@ export class FCTUtils extends FCTBase {
         ...acc,
         {
           inputData: fctCall.decodeData(input),
+          error: internalTx.error || undefined,
           type: "CALL",
           id: fctCall.nodeId,
         },

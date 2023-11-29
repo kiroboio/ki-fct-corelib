@@ -98,5 +98,14 @@ export const decodeFromData = (call: Partial<MethodParamsInterface>, data: strin
     },
   ];
   const decodedData = new utils.Interface(ABI).decodeFunctionData(call.method, data);
-  return decodedData.slice(0, data.length).map(manageValue);
+  function manage(val: any) {
+    // If the value is not an array
+    if (!Array.isArray(val)) {
+      return manageValue(val);
+    }
+    // If the value is an array
+    return val.map(manage);
+  }
+
+  return decodedData.slice(0, data.length).map(manage);
 };
