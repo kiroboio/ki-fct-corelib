@@ -104,7 +104,7 @@ export function getPayersForRoute({
     getFee("estimateExtraCommmonGasCost", chainId);
 
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
-  const commonGasPerCall = commonGas / BigInt(payers.length);
+  const commonGasPerCall = commonGas / BigInt(calls.length);
 
   const gasForFCTCall = pathIndexes.reduce(
     (acc, path, index) => {

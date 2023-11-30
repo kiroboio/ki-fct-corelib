@@ -3,8 +3,8 @@ import console from "console";
 import * as dotenv from "dotenv";
 
 // https://testapi.kirobo.me/v1/eth/goerli/fct/getfct/<message hash>?key=process.env.LIOR_SERVICE_KEY
-import { BatchMultiSigCall, ERC20, ethers } from "../src";
-import { addresses } from "../src/constants";
+import { BatchMultiSigCall, ethers } from "../src";
+import FCTData from "./aLotOfGasFCT.json";
 
 dotenv.config();
 
@@ -12,28 +12,14 @@ const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
 const receiver = ethers.Wallet.createRandom().address;
 
 async function main() {
-  const FCT = new BatchMultiSigCall({ chainId: "1" });
+  const FCT = BatchMultiSigCall.from(FCTData);
 
-  const WETH = new ERC20.actions.Transfer({
-    chainId: "1",
-    initParams: {
-      to: addresses[1].WETH,
-      methodParams: {
-        amount: "100",
-        recipient: receiver,
-      },
-    },
+  const cost = FCT.utils.getPaymentPerPayer({
+    ethPriceInKIRO: "10",
+    gasPrice: "25" + "0".repeat(9),
   });
 
-  await FCT.add({
-    plugin: WETH,
-    nodeId: "WETH",
-    from: activator,
-  });
-
-  const data = await FCT.exportWithPayment(activator);
-
-  console.log(JSON.stringify(data, null, 2));
+  console.log(JSON.stringify(cost, null, 2));
 }
 
 main()
