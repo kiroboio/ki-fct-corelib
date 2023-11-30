@@ -27,7 +27,7 @@ import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
-import { getEncodedMethodParams } from "./helpers/callParams";
+import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
@@ -215,6 +215,10 @@ export class Call extends CallBase implements ICall {
 
   public getEncodedData(): string {
     return getEncodedMethodParams(this.getDecoded());
+  }
+
+  public decodeData(data: string) {
+    return decodeFromData(this.getDecoded(), data);
   }
 
   //

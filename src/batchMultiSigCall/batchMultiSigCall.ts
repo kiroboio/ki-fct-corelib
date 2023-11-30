@@ -12,8 +12,10 @@ import {
   createMultiple,
   createPlugin,
   exportFCT,
+  exportMap,
   exportNotificationFCT,
   exportWithApprovals,
+  exportWithPayment,
   getCall,
   getCallByNodeId,
   getIndexByNodeId,
@@ -21,6 +23,7 @@ import {
   getPluginClass,
   getPluginData,
   importFCT,
+  importFCTWithMap,
 } from "./methods";
 import {
   BatchMultiSigCallConstructor,
@@ -154,9 +157,14 @@ export class BatchMultiSigCall {
   public exportNotification = exportNotificationFCT;
   public exportNotificationFCT = exportNotificationFCT;
   public exportWithApprovals = exportWithApprovals;
+  public exportWithPayment = exportWithPayment;
+
+  // Export mapping
+  public exportMap = exportMap;
 
   // Import FCT
   public importFCT = importFCT;
+  public importFCTWithMap = importFCTWithMap;
 
   // FCT Call getters
   public getCall = getCall;
@@ -168,6 +176,11 @@ export class BatchMultiSigCall {
   static from = (input: IFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
+    return batchMultiSigCall;
+  };
+  static fromWithMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>) => {
+    const batchMultiSigCall = new BatchMultiSigCall();
+    batchMultiSigCall.importFCTWithMap(input, map);
     return batchMultiSigCall;
   };
 }

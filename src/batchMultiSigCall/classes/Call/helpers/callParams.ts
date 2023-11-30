@@ -1,9 +1,10 @@
-import { utils } from "ethers";
+import { ethers, utils } from "ethers";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
 import { InstanceOf } from "../../../../helpers";
 import { MethodParamsInterface, Param } from "../../../../types";
 import { GetValueType } from "../types";
+import { manageValue } from "./params";
 
 const buildInputsFromParams = (params: Param[]): { type: string; name: string }[] => {
   return params.map((param) => {
@@ -82,4 +83,29 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>): st
   if (!call.params) return "0x";
 
   return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+};
+
+export const decodeFromData = (call: Partial<MethodParamsInterface>, data: string): ethers.utils.Result | undefined => {
+  if (!call.method) return undefined;
+  const ABI = [
+    {
+      name: call.method,
+      type: "function",
+      constant: false,
+      payable: false,
+      inputs: buildInputsFromParams(call.params || []),
+      outputs: [],
+    },
+  ];
+  const decodedData = new utils.Interface(ABI).decodeFunctionData(call.method, data);
+  function manage(val: any) {
+    // If the value is not an array
+    if (!Array.isArray(val)) {
+      return manageValue(val);
+    }
+    // If the value is an array
+    return val.map(manage);
+  }
+
+  return decodedData.slice(0, data.length).map(manage);
 };
