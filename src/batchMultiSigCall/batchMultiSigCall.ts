@@ -15,6 +15,7 @@ import {
   exportMap,
   exportNotificationFCT,
   exportWithApprovals,
+  exportWithPayment,
   getCall,
   getCallByNodeId,
   getIndexByNodeId,
@@ -156,6 +157,7 @@ export class BatchMultiSigCall {
   public exportNotification = exportNotificationFCT;
   public exportNotificationFCT = exportNotificationFCT;
   public exportWithApprovals = exportWithApprovals;
+  public exportWithPayment = exportWithPayment;
 
   // Export mapping
   public exportMap = exportMap;

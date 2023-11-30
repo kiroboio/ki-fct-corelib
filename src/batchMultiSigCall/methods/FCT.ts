@@ -1,11 +1,12 @@
-import { AllPlugins, ChainId, Erc20Approvals } from "@kiroboio/fct-plugins";
+import { AllPlugins, ChainId, ERC20, Erc20Approvals, TokensMath } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
 
-import { CALL_TYPE_MSG_REV, Flow } from "../../constants";
+import { addresses, CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { CallOptions, FCTInputCall, IRequiredApproval, Param, Variable } from "../../types";
+import { getActivatorAddress, getGasPrice } from "../../variables";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
@@ -240,6 +241,53 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
     );
   }
   return FCT.exportFCT();
+}
+
+export async function exportWithPayment(this: BatchMultiSigCall, payer: string) {
+  const FCTData = this.exportFCT();
+  const FCT = BatchMultiSigCall.from(FCTData);
+  // The idea is to add 2 calls:
+  // 1 - calculate payment
+  // 2 - pay
+
+  // Get all gaslimits from existing calls
+  const gasLimit = this.calls.reduce((acc, call) => acc + BigInt(call.options.gasLimit), 0n);
+
+  const Multiply = new TokensMath.getters.Multiply({
+    chainId: this.chainId,
+    initParams: {
+      methodParams: {
+        amount1: gasLimit.toString(),
+        amount2: getGasPrice() as any,
+        decimals1: "18",
+        decimals2: "18",
+        decimalsOut: "18",
+      },
+    },
+  });
+
+  const call = await FCT.add({
+    plugin: Multiply,
+    from: payer,
+  });
+
+  const WETH = new ERC20.actions.Transfer({
+    chainId: this.chainId,
+    initParams: {
+      to: addresses[+this.chainId].WETH,
+      methodParams: {
+        amount: Multiply.output.params.result.getOutputVariable(call.nodeId),
+        recipient: getActivatorAddress() as any,
+      },
+    },
+  });
+
+  await FCT.add({
+    plugin: WETH,
+    from: payer,
+  });
+
+  return FCT.export();
 }
 
 export function exportNotificationFCT(this: BatchMultiSigCall): IFCT {
