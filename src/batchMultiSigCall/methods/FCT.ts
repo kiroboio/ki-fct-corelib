@@ -246,12 +246,9 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
 export async function exportWithPayment(this: BatchMultiSigCall, payer: string) {
   const FCTData = this.exportFCT();
   const FCT = BatchMultiSigCall.from(FCTData);
-  // The idea is to add 2 calls:
-  // 1 - calculate payment
-  // 2 - pay
 
-  // Get all gaslimits from existing calls
-  const gasLimit = this.calls.reduce((acc, call) => acc + BigInt(call.options.gasLimit), 0n);
+  // 180_000n is the approx gas limit for the calculation
+  const gasLimit = this.calls.reduce((acc, call) => acc + BigInt(call.options.gasLimit), 0n) + 180_000n;
 
   const Multiply = new TokensMath.getters.Multiply({
     chainId: this.chainId,
