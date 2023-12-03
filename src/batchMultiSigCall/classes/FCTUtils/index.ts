@@ -4,6 +4,7 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
 import { Flow } from "../../../constants";
+import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
@@ -195,34 +196,41 @@ export class FCTUtils extends FCTBase {
     return allPaths;
   }
 
-  public getAssetFlow() {
+  public async getAssetFlow() {
     const allPaths = this.getAllPaths();
     const allCalls = this.FCT.calls;
 
-    const assetFlow = allPaths.map((path) => {
-      const calls = path.map((index) => allCalls[Number(index)]);
+    const assetFlow = await Promise.all(
+      allPaths.map(async (path) => {
+        const calls = path.map((index) => allCalls[Number(index)]);
 
-      const assetFlow = calls.reduce(
-        (acc, call) => {
+        const assetFlow: {
+          address: string;
+          toSpend: any[];
+          toReceive: any[];
+        }[] = [];
+
+        for (const call of calls) {
           const plugin = call.plugin;
           if (!plugin) {
             return [];
           }
-          const callAssetFlow = plugin.getAssetFlow();
+          const callAssetFlow = await plugin.getAssetFlow();
 
           // Check if the address is already in the accumulator
           for (const flow of callAssetFlow) {
-            const index = acc.findIndex((accAsset) => accAsset.address === flow.address);
+            const index = assetFlow.findIndex((accAsset) => accAsset.address === flow.address);
             if (index === -1) {
-              acc.push(flow);
+              assetFlow.push(flow);
             } else {
-              const data = acc[index];
+              const data = assetFlow[index];
 
               for (const token of flow.toReceive) {
                 const tokenIndex = data.toReceive.findIndex((accToken) => accToken.token === token.token);
                 if (tokenIndex !== -1) {
                   data.toReceive[tokenIndex].amount = (
-                    BigInt(data.toReceive[tokenIndex].amount) + BigInt(token.amount)
+                    BigInt(data.toReceive[tokenIndex].amount) +
+                    BigInt(InstanceOf.Variable(token.amount) ? 0 : token.amount)
                   ).toString();
                 } else {
                   data.toReceive.push(token);
@@ -233,7 +241,8 @@ export class FCTUtils extends FCTBase {
                 const tokenIndex = data.toSpend.findIndex((accToken) => accToken.token === token.token);
                 if (tokenIndex !== -1) {
                   data.toSpend[tokenIndex].amount = (
-                    BigInt(data.toSpend[tokenIndex].amount) + BigInt(token.amount)
+                    BigInt(data.toSpend[tokenIndex].amount) +
+                    BigInt(InstanceOf.Variable(token.amount) ? 0 : token.amount)
                   ).toString();
                 } else {
                   data.toSpend.push(token);
@@ -241,21 +250,14 @@ export class FCTUtils extends FCTBase {
               }
             }
           }
+        }
 
-          return acc;
-        },
-        [] as {
-          address: string;
-          toSpend: any[];
-          toReceive: any[];
-        }[],
-      );
-
-      return {
-        path,
-        assetFlow,
-      };
-    });
+        return {
+          path,
+          assetFlow,
+        };
+      }),
+    );
 
     return assetFlow;
   }
