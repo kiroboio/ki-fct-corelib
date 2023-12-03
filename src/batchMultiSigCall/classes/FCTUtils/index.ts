@@ -585,34 +585,69 @@ export class FCTUtils extends FCTBase {
 
     const fctCalls = this.FCT.calls;
 
-    return executedCalls.reduce((acc, executedCall, index) => {
-      const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
-      const internalTx = calls[index];
-      const input = internalTx.input;
+    const traceData = executedCalls.reduce(
+      (acc, executedCall, index) => {
+        const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
+        const internalTx = calls[index];
+        const input = internalTx.input;
 
-      acc = [
-        ...acc,
-        {
-          inputData: fctCall.decodeData(input),
-          error: internalTx.error || undefined,
-          type: "CALL",
-          id: fctCall.nodeId,
-        },
-      ];
-
-      // Check if fctCall had a validation
-      if (fctCall.options.validation && fctCall.options.validation !== "0") {
-        acc = [
-          ...acc,
+        acc.calls = [
+          ...acc.calls,
           {
-            type: "VALIDATION",
-            id: fctCall.options.validation,
+            inputData: fctCall.decodeData(input),
+            error: internalTx.error || null,
+            id: fctCall.nodeId,
           },
         ];
-      }
 
-      return acc;
-    }, [] as Array<any>);
+        // Check if fctCall had a validation
+        if (fctCall.options.validation && fctCall.options.validation !== "0") {
+          acc.validations = [
+            ...acc.validations,
+            {
+              id: fctCall.options.validation,
+            },
+          ];
+        }
+
+        const usedComputed = this.FCT.computed.filter((computed) => {
+          return fctCall.isComputedUsed(computed.id as string);
+        });
+
+        usedComputed.forEach((computed) => {
+          // Check if the computed was already added. If yes, skip
+          if (acc.computed.find((accComputed) => accComputed.id === computed.id)) return;
+
+          acc.computed = [
+            ...acc.computed,
+            {
+              id: computed.id,
+            },
+          ];
+        });
+
+        return acc;
+      },
+      {
+        calls: [],
+        validations: [],
+        computed: [],
+      } as {
+        calls: {
+          inputData: Array<any>;
+          error: string | null;
+          id: string;
+        }[];
+        validations: {
+          id: string;
+        }[];
+        computed: {
+          id: string;
+        }[];
+      },
+    );
+
+    return traceData;
   };
 
   private validateFCTKeys(keys: string[]) {
