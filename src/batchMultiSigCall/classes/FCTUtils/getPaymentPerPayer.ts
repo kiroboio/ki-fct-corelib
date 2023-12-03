@@ -1,6 +1,9 @@
 import { MSCall } from "../../types";
 import { CallID } from "../CallID";
 
+// fctCall overhead (1st call) - 40k
+// fctCall overhead (other calls) - 11k
+
 const WHOLE_IN_BPS = 10000n as const;
 
 const fees = {
@@ -12,13 +15,13 @@ const fees = {
   FCTControllerRegisterCall: 43000n,
   signatureRecovery: 6000n,
   miscGasBeforeMcallLoop: 1700n,
-  mcallOverheadFirstCall: 34000n,
-  mcallOverheadOtherCalls: 6250n,
   paymentApproval: 9000n,
   paymentsOutBase: 24500n,
   paymentsOutPerPayment: 1300n,
   totalCallsChecker: 16000n,
   estimateExtraCommmonGasCost: 4000n,
+  mcallOverheadFirstCall: 40000n,
+  mcallOverheadOtherCalls: 11000n,
 } as const;
 
 // Arbitrum fees are 13x higher than Ethereum fees. Multiply all fees by 13.
@@ -104,7 +107,7 @@ export function getPayersForRoute({
     getFee("estimateExtraCommmonGasCost", chainId);
 
   const commonGas = getExtraCommonGas(payers.length, calldata.length) + overhead;
-  const commonGasPerCall = commonGas / BigInt(calls.length);
+  const commonGasPerCall = commonGas / BigInt(pathIndexes.length);
 
   const gasForFCTCall = pathIndexes.reduce(
     (acc, path, index) => {
@@ -113,7 +116,7 @@ export function getPayersForRoute({
       const payer = calls[payerIndex - 1].from;
       const overhead =
         index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId);
-      const gas = BigInt(options.gasLimit) || 50_000n;
+      const gas = BigInt(options.gasLimit) || 30_000n;
       const amount = gas + overhead + commonGasPerCall;
       if (acc[payer]) {
         acc[payer] += amount;
