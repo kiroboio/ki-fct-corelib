@@ -585,7 +585,7 @@ export class FCTUtils extends FCTBase {
 
     const fctCalls = this.FCT.calls;
 
-    return executedCalls.reduce(
+    const traceData = executedCalls.reduce(
       (acc, executedCall, index) => {
         const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
         const internalTx = calls[index];
@@ -610,6 +610,22 @@ export class FCTUtils extends FCTBase {
           ];
         }
 
+        const usedComputed = this.FCT.computed.filter((computed) => {
+          return fctCall.isComputedUsed(computed.id as string);
+        });
+
+        usedComputed.forEach((computed) => {
+          // Check if the computed was already added. If yes, skip
+          if (acc.computed.find((accComputed) => accComputed.id === computed.id)) return;
+
+          acc.computed = [
+            ...acc.computed,
+            {
+              id: computed.id,
+            },
+          ];
+        });
+
         return acc;
       },
       {
@@ -630,6 +646,8 @@ export class FCTUtils extends FCTBase {
         }[];
       },
     );
+
+    return traceData;
   };
 
   private validateFCTKeys(keys: string[]) {
