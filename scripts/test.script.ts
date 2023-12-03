@@ -1,7 +1,6 @@
 // Init dotenv
 import console from "console";
 import * as dotenv from "dotenv";
-import { writeFileSync } from "fs";
 
 // https://testapi.kirobo.me/v1/eth/goerli/fct/getfct/<message hash>?key=process.env.LIOR_SERVICE_KEY
 import { BatchMultiSigCall, ethers } from "../src";
@@ -15,14 +14,12 @@ const receiver = ethers.Wallet.createRandom().address;
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  const cost = FCT.utils.getPaymentPerPayer({
-    ethPriceInKIRO: "10",
-    gasPrice: "25" + "0".repeat(9),
+  const cost = await FCT.utils.getTransactionTrace({
+    txHash: "0xdeb0cd37577fd85db3e0cb8ac0b91bfcf77a2274cdc7e51195e4af78e3d21fa5",
+    tenderlyRpcUrl: process.env.TENDERLY_RPC_URL as string,
   });
 
   console.log(JSON.stringify(cost, null, 2));
-
-  // console.log(JSON.stringify(cost, null, 2));
 
   // const provider = new ethers.providers.JsonRpcProvider(process.env.TENDERLY_RPC_URL as string);
 

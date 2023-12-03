@@ -585,34 +585,51 @@ export class FCTUtils extends FCTBase {
 
     const fctCalls = this.FCT.calls;
 
-    return executedCalls.reduce((acc, executedCall, index) => {
-      const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
-      const internalTx = calls[index];
-      const input = internalTx.input;
+    return executedCalls.reduce(
+      (acc, executedCall, index) => {
+        const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
+        const internalTx = calls[index];
+        const input = internalTx.input;
 
-      acc = [
-        ...acc,
-        {
-          inputData: fctCall.decodeData(input),
-          error: internalTx.error || undefined,
-          type: "CALL",
-          id: fctCall.nodeId,
-        },
-      ];
-
-      // Check if fctCall had a validation
-      if (fctCall.options.validation && fctCall.options.validation !== "0") {
-        acc = [
-          ...acc,
+        acc.calls = [
+          ...acc.calls,
           {
-            type: "VALIDATION",
-            id: fctCall.options.validation,
+            inputData: fctCall.decodeData(input),
+            error: internalTx.error || null,
+            id: fctCall.nodeId,
           },
         ];
-      }
 
-      return acc;
-    }, [] as Array<any>);
+        // Check if fctCall had a validation
+        if (fctCall.options.validation && fctCall.options.validation !== "0") {
+          acc.validations = [
+            ...acc.validations,
+            {
+              id: fctCall.options.validation,
+            },
+          ];
+        }
+
+        return acc;
+      },
+      {
+        calls: [],
+        validations: [],
+        computed: [],
+      } as {
+        calls: {
+          inputData: Array<any>;
+          error: string | null;
+          id: string;
+        }[];
+        validations: {
+          id: string;
+        }[];
+        computed: {
+          id: string;
+        }[];
+      },
+    );
   };
 
   private validateFCTKeys(keys: string[]) {
