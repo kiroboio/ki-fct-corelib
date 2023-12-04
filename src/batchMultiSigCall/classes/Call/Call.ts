@@ -24,6 +24,7 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
+import { getFee } from "../FCTUtils/getPaymentPerPayer";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
@@ -37,14 +38,31 @@ export class Call extends CallBase implements ICall {
   constructor({
     FCT,
     input,
+    isImport,
     plugin,
   }: {
     FCT: BatchMultiSigCall;
     input: IMSCallInput;
+    isImport?: boolean;
     plugin?: InstanceType<AllPlugins>;
   }) {
     super(input);
     this.FCT = FCT;
+
+    // Check if this is the first call, we should increase the gas limit by 40k. Else 15k
+    if (!isImport) {
+      if (FCT.calls.length === 0) {
+        const fee = getFee("mcallOverheadFirstCall", FCT.chainId);
+        this._call.options = deepMerge(this._call.options, {
+          gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
+        });
+      } else {
+        const fee = getFee("mcallOverheadOtherCalls", FCT.chainId);
+        this._call.options = deepMerge(this._call.options, {
+          gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
+        });
+      }
+    }
 
     this._verifyCall({ call: this.call });
 

@@ -138,38 +138,38 @@ export class BatchMultiSigCall {
   };
 
   // Plugin functions
-  public getPlugin = getPlugin;
-  public getPluginClass = getPluginClass;
-  public getPluginData = getPluginData;
-  public createPlugin = createPlugin;
+  getPlugin = getPlugin;
+  getPluginClass = getPluginClass;
+  getPluginData = getPluginData;
+  createPlugin = createPlugin;
 
   // Add calls to FCT
-  public add = create;
-  public addMultiple = createMultiple;
-  public create = create;
-  public createMultiple = createMultiple;
+  add = create;
+  addMultiple = createMultiple;
+  create = create;
+  createMultiple = createMultiple;
   // Specific to BatchMultiSigCall
   protected addAtIndex = addAtIndex;
 
   // Export FCT
-  public export = exportFCT;
-  public exportFCT = exportFCT;
-  public exportNotification = exportNotificationFCT;
-  public exportNotificationFCT = exportNotificationFCT;
-  public exportWithApprovals = exportWithApprovals;
-  public exportWithPayment = exportWithPayment;
+  export = exportFCT;
+  exportFCT = exportFCT;
+  exportNotification = exportNotificationFCT;
+  exportNotificationFCT = exportNotificationFCT;
+  exportWithApprovals = exportWithApprovals;
+  exportWithPayment = exportWithPayment;
 
   // Export mapping
-  public exportMap = exportMap;
+  exportMap = exportMap;
 
   // Import FCT
-  public importFCT = importFCT;
-  public importFCTWithMap = importFCTWithMap;
+  importFCT = importFCT;
+  importFCTWithMap = importFCTWithMap;
 
   // FCT Call getters
-  public getCall = getCall;
-  public getCallByNodeId = getCallByNodeId;
-  public getIndexByNodeId = getIndexByNodeId;
+  getCall = getCall;
+  getCallByNodeId = getCallByNodeId;
+  getIndexByNodeId = getIndexByNodeId;
 
   // Static functions
   static utils = utils;
