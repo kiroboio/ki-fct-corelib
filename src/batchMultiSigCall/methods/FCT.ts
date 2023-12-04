@@ -428,6 +428,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
 
     const callClass = new Call({
       FCT: this,
+      isImport: true,
       input: callInput,
     });
 
