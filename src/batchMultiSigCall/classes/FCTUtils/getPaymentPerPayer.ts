@@ -29,7 +29,7 @@ const arbitrumFees = Object.fromEntries(
   Object.entries(fees).map(([key, value]) => [key, BigInt(value) * 13n]),
 ) as Record<keyof typeof fees, bigint>;
 
-function getFee(key: keyof typeof fees, chainId: string) {
+export function getFee(key: keyof typeof fees, chainId: string) {
   if (chainId === "42161" || chainId === "421613") {
     return arbitrumFees[key];
   }
@@ -114,10 +114,13 @@ export function getPayersForRoute({
       const call = calls[Number(path)];
       const { payerIndex, options } = CallID.parse(call.callId);
       const payer = calls[payerIndex - 1].from;
-      const overhead =
-        index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId);
-      const gas = BigInt(options.gasLimit) || 30_000n;
-      const amount = gas + overhead + commonGasPerCall;
+      // const overhead =
+      //   index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId);
+      const gas =
+        BigInt(options.gasLimit) ||
+        30_000n +
+          (index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId)); // Overhead is in the gasLimit
+      const amount = gas + commonGasPerCall;
       if (acc[payer]) {
         acc[payer] += amount;
       } else {
