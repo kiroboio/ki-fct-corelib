@@ -1,7 +1,7 @@
 // // Init dotenv
 import * as dotenv from "dotenv";
 
-import { BatchMultiSigCall } from "../src";
+import { BatchMultiSigCall, ethers, Utility } from "../src";
 
 dotenv.config();
 
@@ -12,37 +12,18 @@ async function main() {
     chainId: "1",
   });
 
-  FCT.addComputed({
-    id: "32",
-    type: "computed",
-    value1: "1",
-    operator1: "+",
-    value2: "12",
-    operator2: "+",
-    value3: "0",
-    operator3: "/",
-    value4: "1000",
-    overflowProtection: true,
+  const ETHTransfer = new Utility.actions.SendETH({
+    chainId: "5",
+    initParams: {
+      to: ethers.Wallet.createRandom().address,
+      value: "1" + "0".repeat(18),
+    },
   });
 
-  // FCT.addComputed({
-  //   id: "0d286110-3ea4-4f65-a69e-a1afb3b71585",
-  //   type: "computed",
-  //   value1: "1047390746235513469810",
-  //   operator1: "/(10**X)",
-  //   value2: "12",
-  //   operator2: "+",
-  //   value3: {
-  //     type: "output",
-  //     id: {
-  //       innerIndex: 1,
-  //       nodeId: "966b50af-b432-43af-aae3-f9f1014c7900",
-  //     },
-  //   },
-  //   operator3: "/",
-  //   value4: "1000",
-  //   overflowProtection: true,
-  // });
+  await FCT.add({
+    plugin: ETHTransfer,
+    from: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
+  });
 
   const data = FCT.export();
 
