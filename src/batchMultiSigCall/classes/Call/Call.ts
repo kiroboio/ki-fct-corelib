@@ -49,8 +49,10 @@ export class Call extends CallBase implements ICall {
     super(input);
     this.FCT = FCT;
 
+    this._verifyCall({ call: this.call });
+
     // Check if this is the first call, we should increase the gas limit by 40k. Else 15k
-    if (!isImport) {
+    if (!isImport && this._call.options?.gasLimit) {
       if (FCT.calls.length === 0) {
         const fee = getFee("mcallOverheadFirstCall", FCT.chainId);
         this._call.options = deepMerge(this._call.options, {
@@ -63,8 +65,6 @@ export class Call extends CallBase implements ICall {
         });
       }
     }
-
-    this._verifyCall({ call: this.call });
 
     if (plugin) {
       this.plugin = plugin;
