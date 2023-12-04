@@ -34,6 +34,7 @@ import { ICall } from "./types";
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;
   public readonly plugin: InstanceType<AllPlugins> | undefined;
+  isImport?: boolean;
 
   constructor({
     FCT,
@@ -48,23 +49,24 @@ export class Call extends CallBase implements ICall {
   }) {
     super(input);
     this.FCT = FCT;
+    this.isImport = isImport || false;
 
     this._verifyCall({ call: this.call });
 
     // Check if this is the first call, we should increase the gas limit by 40k. Else 15k
-    if (!isImport && this._call.options?.gasLimit) {
-      if (FCT.calls.length === 0) {
-        const fee = getFee("mcallOverheadFirstCall", FCT.chainId);
-        this._call.options = deepMerge(this._call.options, {
-          gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
-        });
-      } else {
-        const fee = getFee("mcallOverheadOtherCalls", FCT.chainId);
-        this._call.options = deepMerge(this._call.options, {
-          gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
-        });
-      }
-    }
+    // if (!isImport && this._call.options?.gasLimit) {
+    //   if (FCT.calls.length === 0) {
+    //     const fee = getFee("mcallOverheadFirstCall", FCT.chainId);
+    //     this._call.options = deepMerge(this._call.options, {
+    //       gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
+    //     });
+    //   } else {
+    //     const fee = getFee("mcallOverheadOtherCalls", FCT.chainId);
+    //     this._call.options = deepMerge(this._call.options, {
+    //       gasLimit: (BigInt(this._call.options?.gasLimit || 50_000) + fee).toString(),
+    //     });
+    //   }
+    // }
 
     if (plugin) {
       this.plugin = plugin;
@@ -124,7 +126,15 @@ export class Call extends CallBase implements ICall {
 
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
-    return deepMerge(this.FCT.callDefault, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
+    const callDefaults = { ...this.FCT.callDefault };
+    const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
+
+    if (!this.isImport && data.options.gasLimit && data.options.gasLimit !== "0") {
+      const fee = getFee(payerIndex === 0 ? "mcallOverheadFirstCall" : "mcallOverheadOtherCalls", this.FCT.chainId);
+      data.options.gasLimit = (BigInt(data.options.gasLimit) + fee).toString();
+    }
+
+    return data;
   }
 
   public getDecoded(): DecodedCalls {
