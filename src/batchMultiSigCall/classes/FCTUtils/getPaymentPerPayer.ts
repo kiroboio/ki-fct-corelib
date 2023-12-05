@@ -20,8 +20,8 @@ const fees = {
   paymentsOutPerPayment: 1300n,
   totalCallsChecker: 16000n,
   estimateExtraCommmonGasCost: 4000n,
-  mcallOverheadFirstCall: 40000n,
-  mcallOverheadOtherCalls: 11000n,
+  mcallOverheadFirstCall: 41500n,
+  mcallOverheadOtherCalls: 12000n,
 } as const;
 
 // Arbitrum fees are 13x higher than Ethereum fees. Multiply all fees by 13.
