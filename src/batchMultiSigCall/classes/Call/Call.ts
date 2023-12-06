@@ -26,7 +26,15 @@ import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
-import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
+import {
+  generateNodeId,
+  getAllSimpleParams,
+  getParams,
+  isAddress,
+  isInteger,
+  variableStarts,
+  verifyParam,
+} from "./helpers";
 import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
@@ -144,10 +152,17 @@ export class Call extends CallBase implements ICall {
     // We need to check all of them
     const call = this.get();
     const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
-
     return checks.some((item) => {
       if (InstanceOf.Variable(item)) {
         return item.id === id;
+      }
+      if (typeof item === "string" && item.length === 42) {
+        // If it is a string, it can be a variable as string instead of object type
+        const hexString = item.toLowerCase();
+        if (variableStarts.some((v) => hexString.startsWith(v))) {
+          const parsedId = parseInt(hexString.slice(-4), 16).toString();
+          return parsedId === id;
+        }
       }
       return false;
     });
@@ -156,10 +171,7 @@ export class Call extends CallBase implements ICall {
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     const callDefaults = { ...this.FCT.callDefault };
-    console.log("callDefaults", callDefaults);
-    console.log("this.call", this.call);
     const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
-    console.log("data", data);
 
     if (!this.isImport && data.options.gasLimit && data.options.gasLimit !== "0") {
       // This is the flow:
