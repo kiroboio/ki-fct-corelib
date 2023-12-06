@@ -173,14 +173,31 @@ export class BatchMultiSigCall {
 
   // Static functions
   static utils = utils;
+
   static from = (input: IFCT) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCT(input);
     return batchMultiSigCall;
   };
-  static fromWithMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>) => {
+
+  static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>) => {
     const batchMultiSigCall = new BatchMultiSigCall();
     batchMultiSigCall.importFCTWithMap(input, map);
     return batchMultiSigCall;
+  };
+
+  static getTransacitonTrace = async ({
+    fct,
+    map,
+    txHash,
+    tenderlyRpcUrl,
+  }: {
+    fct: IFCT;
+    map: ReturnType<BatchMultiSigCall["exportMap"]>;
+    txHash: string;
+    tenderlyRpcUrl: string;
+  }) => {
+    const FCT = BatchMultiSigCall.fromMap(fct, map);
+    return await FCT.utils.getTransactionTrace({ txHash, tenderlyRpcUrl });
   };
 }
