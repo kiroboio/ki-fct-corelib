@@ -4,12 +4,12 @@ import { FCTCallParam, Param, ParamValue, TypedDataTypes, Variable } from "../..
 
 const ParamType = ethers.utils.ParamType;
 
-export const manageValue = (value: string | number | boolean | Variable) => {
-  const variables = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000"];
+export const variableStarts = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000", "0xfe000"];
 
+export const manageValue = (value: string | number | boolean | Variable) => {
   if (BigNumber.isBigNumber(value)) {
     const hexString = value.toHexString().toLowerCase();
-    if (variables.some((v) => hexString.startsWith(v))) {
+    if (variableStarts.some((v) => hexString.startsWith(v))) {
       value = hexString;
     }
     return value.toString();

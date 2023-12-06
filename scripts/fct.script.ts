@@ -62,6 +62,8 @@ async function main() {
     },
   });
 
+  console.log(approve.gasLimit);
+
   const transfer = new ERC20.actions.TransferFrom({
     chainId,
   });
@@ -143,19 +145,17 @@ async function main() {
     },
   ]);
 
-  const call = await batchMultiSigCall.add({
+  await batchMultiSigCall.add({
     from: "0x9650578ebd1b08f98af81a84372ece4b448d7526" as const,
     to: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
     method: "balanceOf",
   } as const);
 
-  const data = call.from;
+  const FCT = batchMultiSigCall.export();
 
-  const FCT = batchMultiSigCall.exportFCT();
+  // const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
 
-  const requiredApprovals = await batchMultiSigCall.utils.getAllRequiredApprovals();
-
-  console.log("requiredApprovals", requiredApprovals);
+  // console.log("requiredApprovals", requiredApprovals);
 
   const signature = signTypedData({
     data: FCT.typedData as unknown as TypedMessage<TypedDataTypes>,
