@@ -26,15 +26,7 @@ import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
-import {
-  generateNodeId,
-  getAllSimpleParams,
-  getParams,
-  isAddress,
-  isInteger,
-  variableStarts,
-  verifyParam,
-} from "./helpers";
+import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
@@ -156,10 +148,10 @@ export class Call extends CallBase implements ICall {
       if (InstanceOf.Variable(item)) {
         return item.id === id;
       }
-      if (typeof item === "string" && item.length === 42) {
+      if (typeof item === "string" && (item.length === 42 || item.length === 66)) {
         // If it is a string, it can be a variable as string instead of object type
         const hexString = item.toLowerCase();
-        if (variableStarts.some((v) => hexString.startsWith(v))) {
+        if (hexString.startsWith("0xfe0000")) {
           const parsedId = parseInt(hexString.slice(-4), 16).toString();
           return parsedId === id;
         }
