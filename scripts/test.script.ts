@@ -1,33 +1,38 @@
 // // Init dotenv
 import * as dotenv from "dotenv";
 
-import { BatchMultiSigCall, ethers, Utility } from "../src";
+import { AaveV2, BatchMultiSigCall, ethers } from "../src";
 
 dotenv.config();
 
-const activator = "0x4c508dc4a3aacbecbf13c1d543b4936274033110";
-
 async function main() {
-  const FCT = new BatchMultiSigCall({
-    chainId: "1",
-  });
+  const chainId = "1";
+  const FCT = new BatchMultiSigCall();
 
-  const ETHTransfer = new Utility.actions.SendETH({
-    chainId: "5",
+  const aaveDeposit = new AaveV2.actions.Deposit({
+    chainId,
     initParams: {
-      to: ethers.Wallet.createRandom().address,
-      value: "1" + "0".repeat(18),
+      methodParams: {
+        amount: "1",
+        onBehalfOf: "0x9650578ebd1b08f98af81a84372ece4b448d7526",
+        asset: "0x6b175474e89094c44da98b954eedeac495271d0f",
+      },
     },
   });
 
-  await FCT.add({
-    plugin: ETHTransfer,
-    from: "0x4c508dc4a3aacbecbf13c1d543b4936274033110",
+  const callDefault = FCT.setCallDefaults({
+    from: ethers.Wallet.createRandom().address,
   });
 
-  const data = FCT.export();
+  console.log(callDefault);
 
-  console.log(JSON.stringify(data, null, 2));
+  console.log(FCT.callDefault);
+
+  const call = await FCT.add({
+    plugin: aaveDeposit,
+  });
+
+  console.log(call.get().from);
 }
 
 main()

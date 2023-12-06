@@ -645,7 +645,19 @@ export class FCTUtils extends FCTBase {
           id: string;
         }[];
       },
-    );
+    ) as {
+      calls: {
+        inputData: Array<any>;
+        error: string | null;
+        id: string;
+      }[];
+      validations: {
+        id: string;
+      }[];
+      computed: {
+        id: string;
+      }[];
+    };
 
     return traceData;
   };

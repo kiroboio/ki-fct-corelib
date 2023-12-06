@@ -7,7 +7,10 @@ export function deepMerge(target: any, ...sources: any[]) {
           if (!(key in target)) Object.assign(output, { [key]: source[key] });
           else output[key] = isObject(output[key]) ? deepMerge(target[key], source[key]) : source[key];
         } else {
-          Object.assign(output, { [key]: source[key] });
+          // If the value is undefined, it will be ignored
+          if (source[key] !== undefined) {
+            Object.assign(output, { [key]: source[key] });
+          }
         }
       });
     }

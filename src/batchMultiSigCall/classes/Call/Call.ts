@@ -1,4 +1,4 @@
-import { AllPlugins } from "@kiroboio/fct-plugins";
+import { AllPlugins, ChainId } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
@@ -24,12 +24,40 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
-import { getFee } from "../FCTUtils/getPaymentPerPayer";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
+
+// Static call overhead first - 34893
+// Static call overhead (NOTFIRST) - 8 393
+
+// Delegate call first - 43 622
+// Delegate call overhead (NOTFIRST) - 17 122
+// If there was already delegate call, other delegate call overhead - 10 622
+
+// Call overhead with ETH (FIRST) - 41396
+// Call overhead (NOTFIRST) - 8393
+// Cost of ETH in the call - 6503
+
+const gasCosts = {
+  call_firstOverhead: 35000n,
+  call_otherOverhead: 8400n,
+  delegateCall_firstOverhead: 44000n,
+  delegateCall_otherOverhead: 17200n,
+  delegateCall_repeatOverhead: 10800n,
+  nativeTokenOverhead: 6550n,
+} as const;
+
+const getGasCosts = (key: keyof typeof gasCosts, chainId: ChainId) => {
+  const gas = gasCosts[key];
+  if (chainId === "42161" || chainId === "421613") {
+    // Arbitrum x13
+    return gas * 13n;
+  }
+  return gas;
+};
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;
@@ -107,7 +135,8 @@ export class Call extends CallBase implements ICall {
   //
 
   get options(): DeepRequired<CallOptions> {
-    return this.get().options;
+    const defaults = { ...this.FCT.callDefault.options };
+    return deepMerge(defaults, this.call.options);
   }
 
   public isComputedUsed(id: string) {
@@ -127,11 +156,63 @@ export class Call extends CallBase implements ICall {
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     const callDefaults = { ...this.FCT.callDefault };
+    console.log("callDefaults", callDefaults);
+    console.log("this.call", this.call);
     const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
+    console.log("data", data);
 
     if (!this.isImport && data.options.gasLimit && data.options.gasLimit !== "0") {
-      const fee = getFee(payerIndex === 0 ? "mcallOverheadFirstCall" : "mcallOverheadOtherCalls", this.FCT.chainId);
-      data.options.gasLimit = (BigInt(data.options.gasLimit) + fee).toString();
+      // This is the flow:
+      // 1. Check if it is the first call
+      // 2. Check if the call is delegate call:
+      //   2.1 If it is - delegateCall_firstOverhead
+      //   2.2 If it is not:
+      //     2.2.1 Check if there was already delegate call - delegateCall_repeatOverhead
+      //     2.2.2 If there was not - delegateCall_otherOverhead
+      // 3. Check if the call is static call:
+      //  3.1 If it is - staticCall_firstOverhead
+      //  3.2 If it is not - staticCall_otherOverhead
+      // 4. This is a regular call
+      //  4.1 If it is first call - call_firstOverhead
+      //  4.2 If it is not - call_otherOverhead
+      //  4.3 If it is a call with ETH - add nativeTokenOverhead
+      //
+      const isFirstCall = payerIndex === 0;
+      const callType = data.options.callType;
+      let newGasLimit: string;
+
+      if (callType === "LIBRARY" || callType === "LIBRARY_VIEW_ONLY") {
+        if (isFirstCall) {
+          newGasLimit = (
+            BigInt(data.options.gasLimit) + getGasCosts("delegateCall_firstOverhead", this.FCT.chainId)
+          ).toString();
+        } else {
+          const hadDelegateCall = this.FCT.calls.slice(0, payerIndex).some((call) => {
+            return call.options.callType === "LIBRARY" || call.options.callType === "LIBRARY_VIEW_ONLY";
+          });
+          if (hadDelegateCall) {
+            newGasLimit = (
+              BigInt(data.options.gasLimit) + getGasCosts("delegateCall_repeatOverhead", this.FCT.chainId)
+            ).toString();
+          } else {
+            newGasLimit = (
+              BigInt(data.options.gasLimit) + getGasCosts("delegateCall_otherOverhead", this.FCT.chainId)
+            ).toString();
+          }
+        }
+      }
+      // Means that it is either regular call or staticcall
+      if (isFirstCall) {
+        newGasLimit = (BigInt(data.options.gasLimit) + getGasCosts("call_firstOverhead", this.FCT.chainId)).toString();
+      } else {
+        newGasLimit = (BigInt(data.options.gasLimit) + getGasCosts("call_otherOverhead", this.FCT.chainId)).toString();
+      }
+
+      if (callType === "ACTION" && data.value && data.value !== "0") {
+        newGasLimit = (BigInt(newGasLimit) + getGasCosts("nativeTokenOverhead", this.FCT.chainId)).toString();
+      }
+
+      data.options.gasLimit = newGasLimit;
     }
 
     return data;
@@ -206,7 +287,7 @@ export class Call extends CallBase implements ICall {
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
     const paramsData = this._getParamsEIP712();
     const call = this.get();
-    const options = this.options;
+    const options = call.options;
     const flow = flows[options.flow].text;
 
     const { jumpOnSuccess, jumpOnFail } = this._getJumps(index);
