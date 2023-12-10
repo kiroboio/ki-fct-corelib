@@ -61,7 +61,11 @@ export class BatchMultiSigCall {
     this._options = new Options();
 
     if (input.chainId) {
-      this.chainId = input.chainId;
+      if (typeof input.chainId === "number") {
+        this.chainId = input.chainId.toString() as ChainId;
+      } else {
+        this.chainId = input.chainId;
+      }
     } else {
       this.chainId = "1";
     }

@@ -21,7 +21,7 @@ import { BatchMultiSigCallTypedData } from "./typedData";
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
 
 export interface BatchMultiSigCallConstructor {
-  chainId?: ChainId;
+  chainId?: ChainId | number;
   options?: Partial<IFCTOptions>;
   defaults?: DeepPartial<ICallDefaults>;
   domain?: BatchMultiSigCallTypedData["domain"];
