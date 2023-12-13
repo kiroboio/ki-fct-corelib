@@ -11,12 +11,18 @@ const randAddr = () => ethers.Wallet.createRandom().address;
 async function main() {
   const FCT = BatchMultiSigCall.from(FCTData);
 
-  const data = await FCT.utils.getTransactionTrace({
-    tenderlyRpcUrl: process.env.TENDERLY_RPC_URL as string,
-    txHash: "0x16f6c8905c4ff692fd84323fae2ca13e6b5806c5712f5f308761d22a33c3a101",
+  console.time("getPaymentPerPayer");
+  const paymentPerPayer = FCT.utils.getPaymentPerPayer({
+    ethPriceInKIRO: "100000000000000",
   });
+  console.timeEnd("getPaymentPerPayer");
+  console.log(paymentPerPayer);
 
-  console.log(JSON.stringify(data, null, 2));
+  console.time("getPaymentPerPayer2");
+  const pp = FCT.utils.getPaymentPerPayer({
+    ethPriceInKIRO: "1",
+  });
+  console.timeEnd("getPaymentPerPayer2");
 }
 
 main()

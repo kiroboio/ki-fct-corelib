@@ -22,6 +22,7 @@ const fees = {
   estimateExtraCommmonGasCost: 4000n,
   mcallOverheadFirstCall: 40000n,
   mcallOverheadOtherCalls: 11000n,
+  defaultGasLimit: 30000n,
 } as const;
 
 // Arbitrum fees are 13x higher than Ethereum fees. Multiply all fees by 13.
@@ -110,16 +111,13 @@ export function getPayersForRoute({
   const commonGasPerCall = commonGas / BigInt(pathIndexes.length);
 
   const gasForFCTCall = pathIndexes.reduce(
-    (acc, path, index) => {
+    (acc, path) => {
       const call = calls[Number(path)];
       const { payerIndex, options } = CallID.parse(call.callId);
       const payer = calls[payerIndex - 1].from;
-      // const overhead =
-      //   index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId);
-      const gas =
-        BigInt(options.gasLimit) ||
-        30_000n +
-          (index === 0 ? getFee("mcallOverheadFirstCall", chainId) : getFee("mcallOverheadOtherCalls", chainId)); // Overhead is in the gasLimit
+
+      const gas = BigInt(options.gasLimit) || getFee("defaultGasLimit", chainId);
+
       const amount = gas + commonGasPerCall;
       if (acc[payer]) {
         acc[payer] += amount;
@@ -168,4 +166,8 @@ export function getEffectiveGasPrice({
     (BigInt(gasPrice) * (WHOLE_IN_BPS + baseFeeBPS) + (BigInt(maxGasPrice) - BigInt(gasPrice)) * bonusFeeBPS) /
     WHOLE_IN_BPS
   ).toString();
+}
+
+export function getCostInKiro({ ethPriceInKIRO, ethCost }: { ethPriceInKIRO: string | bigint; ethCost: bigint }) {
+  return ((ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
 }

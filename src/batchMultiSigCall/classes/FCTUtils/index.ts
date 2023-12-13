@@ -2,6 +2,7 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
+import NodeCache from "node-cache";
 
 import { Flow } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
@@ -14,11 +15,13 @@ import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
-import { getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
+import { getCostInKiro, getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
 import { PayerPayment } from "./types";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
+  private _cache = new NodeCache();
+
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);
     this._eip712 = new EIP712(FCT);
@@ -331,7 +334,14 @@ export class FCTUtils extends FCTBase {
     const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
 
     const fct = this.FCTData;
-    const allPaths = this.getAllPaths();
+
+    const allPathsKey = JSON.stringify(fct);
+    let allPaths = this._cache.get(allPathsKey) as ReturnType<this["getAllPaths"]>;
+
+    if (!allPaths) {
+      allPaths = this.getAllPaths() as ReturnType<this["getAllPaths"]>;
+      this._cache.set(allPathsKey, allPaths);
+    }
 
     const limits = fct.typedData.message.limits as TypedDataLimits;
 
@@ -368,13 +378,12 @@ export class FCTUtils extends FCTBase {
           const fee = payer.gas * (effectiveGasPrice - txGasPrice);
           const ethCost = base + fee;
 
-          const kiroCost = (ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n;
           return {
             ...acc,
             [payer.payer]: {
               ...payer,
+              pureEthCost: ethCost,
               ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
-              kiroCost,
             },
           };
         },
@@ -397,10 +406,10 @@ export class FCTUtils extends FCTBase {
       const { largest, smallest } = data.reduce(
         (acc, pathData) => {
           const currentValues = acc;
-          const currentLargestValue = currentValues.largest?.kiroCost || 0n;
-          const currentSmallestValue = currentValues.smallest?.kiroCost;
+          const currentLargestValue = currentValues.largest?.ethCost || 0n;
+          const currentSmallestValue = currentValues.smallest?.ethCost;
 
-          const value = pathData[payer as keyof typeof pathData]?.kiroCost || 0n;
+          const value = pathData[payer as keyof typeof pathData]?.pureEthCost || 0n;
           if (!currentLargestValue || value > currentLargestValue) {
             currentValues.largest = pathData[payer as keyof typeof pathData];
           }
@@ -412,20 +421,23 @@ export class FCTUtils extends FCTBase {
         {} as { largest: PayerPayment; smallest: PayerPayment },
       );
 
+      const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest.pureEthCost });
+      const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest.pureEthCost });
+
       return {
         payer,
         largestPayment: {
           gas: largest.gas.toString(),
-          tokenAmountInWei: largest.kiroCost.toString(),
+          tokenAmountInWei: largestKiroCost,
           nativeAmountInWei: largest.ethCost.toString(),
-          tokenAmount: utils.formatEther(largest.kiroCost.toString()),
+          tokenAmount: utils.formatEther(largestKiroCost),
           nativeAmount: utils.formatEther(largest.ethCost.toString()),
         },
         smallestPayment: {
           gas: smallest.gas.toString(),
-          tokenAmountInWei: smallest.kiroCost.toString(),
+          tokenAmountInWei: smallestKiroCost,
           nativeAmountInWei: smallest.ethCost.toString(),
-          tokenAmount: utils.formatEther(smallest.kiroCost.toString()),
+          tokenAmount: utils.formatEther(smallestKiroCost),
           nativeAmount: utils.formatEther(smallest.ethCost.toString()),
         },
       };
