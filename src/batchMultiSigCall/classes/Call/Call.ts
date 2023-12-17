@@ -26,15 +26,7 @@ import { IMSCallInput } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
-import {
-  generateNodeId,
-  getAllSimpleParams,
-  getParams,
-  isAddress,
-  isInteger,
-  variableStarts,
-  verifyParam,
-} from "./helpers";
+import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
@@ -147,21 +139,23 @@ export class Call extends CallBase implements ICall {
     return deepMerge(defaults, this.call.options);
   }
 
-  public isComputedUsed(id: string) {
+  public isComputedUsed(id: string, index: number) {
     // Computed Variable can be used as value, to, from, param values.
     // We need to check all of them
     const call = this.get();
     const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+
     return checks.some((item) => {
       if (InstanceOf.Variable(item)) {
         return item.id === id;
       }
-      if (typeof item === "string" && item.length === 42) {
+
+      if (typeof item === "string" && (item.length === 42 || item.length === 66)) {
         // If it is a string, it can be a variable as string instead of object type
         const hexString = item.toLowerCase();
-        if (variableStarts.some((v) => hexString.startsWith(v))) {
-          const parsedId = parseInt(hexString.slice(-4), 16).toString();
-          return parsedId === id;
+        if (hexString.startsWith("0xfe000")) {
+          const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
+          return parsedIndex === (index + 1).toString();
         }
       }
       return false;

@@ -622,8 +622,8 @@ export class FCTUtils extends FCTBase {
           ];
         }
 
-        const usedComputed = this.FCT.computed.filter((computed) => {
-          return fctCall.isComputedUsed(computed.id as string);
+        const usedComputed = this.FCT.computed.filter((computed, index) => {
+          return fctCall.isComputedUsed(computed.id as string, index);
         });
 
         usedComputed.forEach((computed) => {

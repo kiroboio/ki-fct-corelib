@@ -123,14 +123,14 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   }
   // Check if every computed variable is used in a call
   const computedVariables = this.computed;
-  for (const computedVariable of computedVariables) {
-    const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string));
+  computedVariables.forEach((computedVariable, index) => {
+    const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string, index));
     if (!isUsed) {
       throw new Error(
         `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
       );
     }
-  }
+  });
 
   const typedData = new EIP712(this).getTypedData();
   return {
@@ -397,7 +397,6 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
     const callIndex = index + 1;
 
     const callInput: IMSCallInput = {
-      // nodeId: `node${callIndex}`,
       nodeId: map?.calls[index] ?? `node${callIndex}`,
       to: call.to,
       from: call.from,
@@ -411,12 +410,12 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
         jumpOnSuccess:
           meta.jump_on_success === 0
             ? ""
-            : map?.calls[index + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`,
+            : map?.calls[callIndex + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`,
         // jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + 1 + meta.jump_on_fail}`,
         jumpOnFail:
           meta.jump_on_fail === 0
             ? ""
-            : map?.calls[index + meta.jump_on_fail] ?? `node${callIndex + 1 + meta.jump_on_fail}`,
+            : map?.calls[callIndex + meta.jump_on_fail] ?? `node${callIndex + 1 + meta.jump_on_fail}`,
         flow: getFlow(),
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
@@ -447,7 +446,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   for (const computedVariable of computedVariables) {
     this.addComputed({
       // id: computedVariable.index,
-      id: map?.computed[computedVariable.index] ?? computedVariable.index,
+      id: map?.computed[+computedVariable.index - 1] ?? computedVariable.index,
       value1: manageValue(computedVariable.value_1) as string | Variable,
       operator1: computedVariable.op_1,
       value2: manageValue(computedVariable.value_2) as string | Variable,

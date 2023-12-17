@@ -40,12 +40,12 @@ export class SessionID extends FCTBase {
   }
 
   static asString({ salt, version, options }: { salt: string; version: string; options: RequiredFCTOptions }): string {
-    const currentDate = new Date();
+    // const currentDate = new Date();
     const { recurrency, multisig } = options;
 
-    if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
-      throw new Error("Expires at date cannot be in the past");
-    }
+    // if (options.expiresAt && Number(options.expiresAt) < currentDate.getTime() / 1000) {
+    //   throw new Error("Expires at date cannot be in the past");
+    // }
 
     const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
     const v = version.slice(2);

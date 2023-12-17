@@ -43,7 +43,7 @@ export class Options {
 
   public set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O {
     const mergedOptions = deepMerge(this._options, options);
-    Options.verify(mergedOptions);
+    // Options.verify(mergedOptions);
     this._options = mergedOptions;
     return this._options as IFCTOptions & O;
   }
