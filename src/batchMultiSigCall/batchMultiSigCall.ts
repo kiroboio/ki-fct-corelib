@@ -175,6 +175,10 @@ export class BatchMultiSigCall {
   getCallByNodeId = getCallByNodeId;
   getIndexByNodeId = getIndexByNodeId;
 
+  protected _setOptionsWithoutValidation(options: DeepPartial<IFCTOptions>) {
+    return this._options.set(options, false) as RequiredFCTOptions;
+  }
+
   // Static functions
   static utils = utils;
 

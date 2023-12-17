@@ -357,7 +357,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
     },
   };
 
-  this.setOptions(options);
+  this._setOptionsWithoutValidation(options);
   const { types: typesObject } = typedData;
 
   for (const [index, call] of fct.mcall.entries()) {

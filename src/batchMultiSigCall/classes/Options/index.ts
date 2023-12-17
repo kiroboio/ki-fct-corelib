@@ -41,9 +41,9 @@ export class Options {
   static helpers = helpers;
   private _options: IFCTOptions = initOptions;
 
-  public set<O extends DeepPartial<IFCTOptions>>(options: O): IFCTOptions & O {
+  public set<O extends DeepPartial<IFCTOptions>>(options: O, verify = true): IFCTOptions & O {
     const mergedOptions = deepMerge(this._options, options);
-    // Options.verify(mergedOptions);
+    if (verify) Options.verify(mergedOptions);
     this._options = mergedOptions;
     return this._options as IFCTOptions & O;
   }
