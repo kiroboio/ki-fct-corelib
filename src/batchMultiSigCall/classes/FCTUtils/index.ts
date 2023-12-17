@@ -567,6 +567,7 @@ export class FCTUtils extends FCTBase {
         id: parsedLog.args.id,
         caller: parsedLog.args.caller,
         callIndex: parsedLog.args.callIndex.toString(),
+        isSuccess: parsedLog.name === "FCTE_CallSucceed",
       };
     };
 
@@ -606,8 +607,9 @@ export class FCTUtils extends FCTBase {
         acc.calls = [
           ...acc.calls,
           {
-            inputData: fctCall.decodeData(input),
+            inputData: fctCall.decodeData(input) ?? [],
             error: internalTx.error || null,
+            isSuccess: executedCall.isSuccess,
             id: fctCall.nodeId,
           },
         ];
