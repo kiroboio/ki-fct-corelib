@@ -122,15 +122,15 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     throw new Error("No calls added to FCT");
   }
   // Check if every computed variable is used in a call
-  const computedVariables = this.computed;
-  computedVariables.forEach((computedVariable, index) => {
-    const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string, index));
-    if (!isUsed) {
-      throw new Error(
-        `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
-      );
-    }
-  });
+  // const computedVariables = this.computed;
+  // computedVariables.forEach((computedVariable, index) => {
+  //   const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string, index));
+  //   if (!isUsed) {
+  //     throw new Error(
+  //       `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
+  //     );
+  //   }
+  // });
 
   const typedData = new EIP712(this).getTypedData();
   return {
@@ -421,7 +421,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
         // validation: meta.validation === 0 ? "" : meta.validation.toString(),
-        validation: meta.validation === 0 ? "" : map?.validations[meta.validation] ?? meta.validation.toString(),
+        validation: meta.validation === 0 ? "" : map?.validations[meta.validation - 1] ?? meta.validation.toString(),
       },
     };
 
@@ -469,7 +469,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   for (const validationVariable of validaitonVariables) {
     this.validation.addValidation({
       // id: validationVariable.index,
-      id: map?.validations[validationVariable.index] ?? validationVariable.index,
+      id: map?.validations[+validationVariable.index - 1] ?? validationVariable.index,
       value1: validationVariable.value_1,
       operator: validationVariable.op,
       value2: validationVariable.value_2,
