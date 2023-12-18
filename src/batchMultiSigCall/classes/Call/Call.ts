@@ -528,7 +528,7 @@ export class Call extends CallBase implements ICall {
 
     // Options validator
     if (call.options) {
-      const { gasLimit, callType } = call.options;
+      const { gasLimit, callType, flow } = call.options;
       if (gasLimit) {
         isInteger(gasLimit, "Gas limit");
       }
@@ -536,6 +536,12 @@ export class Call extends CallBase implements ICall {
         const keysOfCALLTYPE = Object.keys(CALL_TYPE);
         if (!keysOfCALLTYPE.includes(callType)) {
           throw new Error(`Call type ${callType} is not valid`);
+        }
+      }
+      if (flow) {
+        const keysOfFlow = Object.keys(flows);
+        if (!keysOfFlow.includes(flow)) {
+          throw new Error(`Flow ${flow} is not valid`);
         }
       }
     }
