@@ -16,7 +16,7 @@ import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { getCostInKiro, getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
-import { PayerPayment } from "./types";
+import { ITxTrace, PayerPayment } from "./types";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -607,8 +607,10 @@ export class FCTUtils extends FCTBase {
         acc.calls = [
           ...acc.calls,
           {
+            method: fctCall.call.method ?? "",
+            value: parseInt(executedCall.value, 16).toString(),
             inputData: fctCall.decodeData(input) ?? [],
-            error: internalTx.error || null,
+            error: internalTx.error || internalTx.errorString || null,
             isSuccess: executedCall.isSuccess,
             id: fctCall.nodeId,
           },
@@ -646,32 +648,8 @@ export class FCTUtils extends FCTBase {
         calls: [],
         validations: [],
         computed: [],
-      } as {
-        calls: {
-          inputData: Array<any>;
-          error: string | null;
-          id: string;
-        }[];
-        validations: {
-          id: string;
-        }[];
-        computed: {
-          id: string;
-        }[];
-      },
-    ) as {
-      calls: {
-        inputData: Array<any>;
-        error: string | null;
-        id: string;
-      }[];
-      validations: {
-        id: string;
-      }[];
-      computed: {
-        id: string;
-      }[];
-    };
+      } as ITxTrace,
+    ) as ITxTrace;
 
     return traceData;
   };
