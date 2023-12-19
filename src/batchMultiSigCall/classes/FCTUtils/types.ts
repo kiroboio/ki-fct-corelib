@@ -5,3 +5,19 @@ export interface PayerPayment {
   pureEthCost: bigint;
   // kiroCost: bigint;
 }
+
+export interface ITxTrace {
+  calls: {
+    method: string;
+    value: string;
+    inputData: Array<any>;
+    error: string | null;
+    id: string;
+  }[];
+  validations: {
+    id: string;
+  }[];
+  computed: {
+    id: string;
+  }[];
+}
