@@ -25,16 +25,8 @@ async function main() {
     validations: ["582765e8-6085-4646-90d0-dabc7e45688e", "86a6c05e-d4c3-4ca1-b74f-7722c7fea949"],
   });
 
-  // console.log(
-  //   JSON.stringify(
-  //     FCT.calls.map((call) => call.call),
-  //     null,
-  //     2,
-  //   ),
-  // );
-
   const trace = await FCT.utils.getTransactionTrace({
-    tenderlyRpcUrl: process.env.TENDERLY_RPC_URL as string,
+    tenderlyRpcUrl: `https://goerli.gateway.tenderly.co/${process.env.TENDERLY_KEY as string}`,
     txHash: "0x656493fdc44de7330edf9f3e7a6f4ab3e404716f624589070f030d6f17e2cc74",
   });
 

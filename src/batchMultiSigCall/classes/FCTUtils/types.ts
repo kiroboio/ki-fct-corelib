@@ -12,6 +12,7 @@ export interface ITxTrace {
     value: string;
     inputData: Array<any>;
     error: string | null;
+    isSuccess: boolean;
     id: string;
   }[];
   validations: {
@@ -20,4 +21,13 @@ export interface ITxTrace {
   computed: {
     id: string;
   }[];
+}
+
+export interface ISimpleTxTrace {
+  calls: {
+    isSuccess: boolean;
+    id: string;
+  }[];
+  validations: ITxTrace["validations"];
+  computed: ITxTrace["computed"];
 }

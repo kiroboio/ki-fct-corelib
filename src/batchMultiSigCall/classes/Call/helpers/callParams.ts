@@ -1,4 +1,4 @@
-import { ethers, utils } from "ethers";
+import { utils } from "ethers";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
 import { InstanceOf } from "../../../../helpers";
@@ -85,7 +85,7 @@ export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>): st
   return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
 };
 
-export const decodeFromData = (call: Partial<MethodParamsInterface>, data: string): ethers.utils.Result | undefined => {
+export const decodeFromData = (call: Partial<MethodParamsInterface>, data: string): Array<any> | undefined => {
   if (!call.method) return undefined;
   const ABI = [
     {
