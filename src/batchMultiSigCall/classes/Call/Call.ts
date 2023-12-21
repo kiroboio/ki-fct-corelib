@@ -1,4 +1,4 @@
-import { AllPlugins, ChainId } from "@kiroboio/fct-plugins";
+import { AllPlugins } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
@@ -27,37 +27,9 @@ import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
+import { getGasCosts } from "./helpers/callGas";
 import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
-
-// Static call overhead first - 34893
-// Static call overhead (NOTFIRST) - 8 393
-
-// Delegate call first - 43 622
-// Delegate call overhead (NOTFIRST) - 17 122
-// If there was already delegate call, other delegate call overhead - 10 622
-
-// Call overhead with ETH (FIRST) - 41396
-// Call overhead (NOTFIRST) - 8393
-// Cost of ETH in the call - 6503
-
-const gasCosts = {
-  call_firstOverhead: 35000n,
-  call_otherOverhead: 8400n,
-  delegateCall_firstOverhead: 44000n,
-  delegateCall_otherOverhead: 17200n,
-  delegateCall_repeatOverhead: 10800n,
-  nativeTokenOverhead: 6550n,
-} as const;
-
-const getGasCosts = (key: keyof typeof gasCosts, chainId: ChainId) => {
-  const gas = gasCosts[key];
-  if (chainId === "42161" || chainId === "421613") {
-    // Arbitrum x13
-    return gas * 13n;
-  }
-  return gas;
-};
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;

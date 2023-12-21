@@ -16,7 +16,8 @@ import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { getCostInKiro, getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
-import { ITxTrace, PayerPayment } from "./types";
+import { executedCallsFromLogs, manageValidationAndComputed, verifyMessageHash } from "./helpers";
+import { ISimpleTxTrace, ITxTrace, PayerPayment } from "./types";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -83,7 +84,7 @@ export class FCTUtils extends FCTBase {
 
   public isValid(softValidation = false): boolean | Error {
     const keys = Object.keys(this.FCTData);
-    this.validateFCTKeys(keys);
+    this._validateFCTKeys(keys);
 
     const limits = this.FCTData.typedData.message.limits;
     const engine = this.FCTData.typedData.message.engine;
@@ -168,8 +169,6 @@ export class FCTUtils extends FCTBase {
     const start = "0";
     const allPaths: string[][] = [];
     const pathList: string[] = [start];
-    // const end = (FCT.mcall.length - 1).toString();
-    // pathList.push(start);
 
     const uniqueEnds = Array.from(new Set(ends));
     for (const end of uniqueEnds) {
@@ -192,7 +191,6 @@ export class FCTUtils extends FCTBase {
         }
       };
 
-      // printAllPathsUtil(g, start, end, isVisited, pathList);
       printAllPathsUtil(g, start, end, pathList);
     }
 
@@ -473,21 +471,8 @@ export class FCTUtils extends FCTBase {
     }
     const txReceipt = await provider.getTransactionReceipt(txHash);
     const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
-    const controllerInterface = Interfaces.FCT_Controller;
 
-    // Get FCTE_Activated event
-    const messageHash = txReceipt.logs.find((log) => {
-      try {
-        return controllerInterface.parseLog(log).name === "FCTE_Registered";
-      } catch (e) {
-        return false;
-      }
-    })?.topics[2];
-    const messageHashUtil = this.getMessageHash();
-
-    if (messageHash !== messageHashUtil) {
-      throw new Error("Message hash mismatch");
-    }
+    verifyMessageHash(txReceipt.logs, this.getMessageHash());
 
     const mapLog = (log: ethers.providers.Log) => {
       const parsedLog = batchMultiSigInterface.parseLog(log);
@@ -539,108 +524,103 @@ export class FCTUtils extends FCTBase {
     });
   };
 
-  public getTransactionTrace = async ({ txHash, tenderlyRpcUrl }: { txHash: string; tenderlyRpcUrl: string }) => {
+  public getTransactionTrace = async ({
+    txHash,
+    tenderlyRpcUrl,
+    tries = 3,
+  }: {
+    txHash: string;
+    tenderlyRpcUrl: string;
+    tries?: number;
+  }) => {
     const provider = new ethers.providers.JsonRpcProvider(tenderlyRpcUrl);
-
-    const data = await provider.send("tenderly_traceTransaction", [txHash]);
-
-    const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
-    const controllerInterface = Interfaces.FCT_Controller;
-
-    // Get FCTE_Activated event
-    const messageHash = data.logs.find((log) => {
+    let keepTrying = true;
+    do {
       try {
-        return controllerInterface.parseLog(log.raw).name === "FCTE_Registered";
-      } catch (e) {
-        return false;
-      }
-    })?.raw.topics[2];
-    const messageHashUtil = this.getMessageHash();
+        const data = await provider.send("tenderly_traceTransaction", [txHash]);
+        const rawLogs = data.logs.map((log) => log.raw);
+        verifyMessageHash(rawLogs, this.getMessageHash());
+        const executedCalls = executedCallsFromLogs(rawLogs);
 
-    if (messageHash !== messageHashUtil) {
-      throw new Error("Message hash mismatch");
-    }
-
-    const mapLog = (log: any) => {
-      const parsedLog = batchMultiSigInterface.parseLog(log.raw);
-      return {
-        id: parsedLog.args.id,
-        caller: parsedLog.args.caller,
-        callIndex: parsedLog.args.callIndex.toString(),
-        isSuccess: parsedLog.name === "FCTE_CallSucceed",
-      };
-    };
-
-    const executedCalls = data.logs
-      .filter((log) => {
-        try {
+        const callsFromTenderlyTrace = data.trace.filter((call) => {
           return (
-            batchMultiSigInterface.parseLog(log.raw).name === "FCTE_CallSucceed" ||
-            batchMultiSigInterface.parseLog(log.raw).name === "FCTE_CallFailed"
+            call.traceAddress.length === 7 &&
+            call.traceAddress[0] === 0 &&
+            call.traceAddress[1] === 0 &&
+            call.traceAddress[3] === 0 &&
+            call.traceAddress[4] === 0 &&
+            call.traceAddress[5] === 2 &&
+            call.traceAddress[6] === 2
           );
-        } catch (e) {
-          return false;
+        });
+
+        const fctCalls = this.FCT.calls;
+        const allFCTComputed = this.FCT.computed;
+
+        const traceData = executedCalls.reduce(
+          (acc, executedCall, index) => {
+            const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
+            const callResult = callsFromTenderlyTrace[index];
+            const input = callResult.input;
+
+            acc.calls = [
+              ...acc.calls,
+              {
+                method: fctCall.call.method ?? "",
+                value: callResult.value ? parseInt(callResult.value, 16).toString() : "0",
+                inputData: fctCall.decodeData(input) ?? [],
+                error: callResult.error || callResult.errorString || null,
+                isSuccess: executedCall.isSuccess,
+                id: fctCall.nodeId,
+              },
+            ];
+
+            manageValidationAndComputed(acc, fctCall, allFCTComputed);
+
+            return acc;
+          },
+          {
+            calls: [],
+            validations: [],
+            computed: [],
+          } as ITxTrace,
+        ) as ITxTrace;
+
+        keepTrying = false;
+
+        return traceData;
+      } catch (e) {
+        if (tries > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          throw e;
         }
-      })
-      .map(mapLog);
+      }
+    } while (keepTrying && tries-- > 0);
+  };
 
-    const calls = data.trace.filter((call) => {
-      return (
-        call.traceAddress.length === 7 &&
-        call.traceAddress[0] === 0 &&
-        call.traceAddress[1] === 0 &&
-        call.traceAddress[3] === 0 &&
-        call.traceAddress[4] === 0 &&
-        call.traceAddress[5] === 2 &&
-        call.traceAddress[6] === 2
-      );
-    });
+  public getSimpleTransactionTrace = async ({ txHash, rpcUrl }: { txHash: string; rpcUrl: string }) => {
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const txReceipt = await provider.getTransactionReceipt(txHash);
 
+    verifyMessageHash(txReceipt.logs, this.getMessageHash());
+    const executedCalls = executedCallsFromLogs(txReceipt.logs);
     const fctCalls = this.FCT.calls;
+    const allFCTComputed = this.FCT.computed;
 
-    const traceData = executedCalls.reduce(
-      (acc, executedCall, index) => {
+    return executedCalls.reduce(
+      (acc, executedCall) => {
         const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
-        const internalTx = calls[index];
-        const input = internalTx.input;
 
         acc.calls = [
           ...acc.calls,
           {
-            method: fctCall.call.method ?? "",
-            value: parseInt(executedCall.value, 16).toString(),
-            inputData: fctCall.decodeData(input) ?? [],
-            error: internalTx.error || internalTx.errorString || null,
             isSuccess: executedCall.isSuccess,
             id: fctCall.nodeId,
           },
         ];
 
-        // Check if fctCall had a validation
-        if (fctCall.options.validation && fctCall.options.validation !== "0") {
-          acc.validations = [
-            ...acc.validations,
-            {
-              id: fctCall.options.validation,
-            },
-          ];
-        }
-
-        const usedComputed = this.FCT.computed.filter((computed, index) => {
-          return fctCall.isComputedUsed(computed.id as string, index);
-        });
-
-        usedComputed.forEach((computed) => {
-          // Check if the computed was already added. If yes, skip
-          if (acc.computed.find((accComputed) => accComputed.id === computed.id)) return;
-
-          acc.computed = [
-            ...acc.computed,
-            {
-              id: computed.id,
-            },
-          ];
-        });
+        manageValidationAndComputed(acc, fctCall, allFCTComputed);
 
         return acc;
       },
@@ -648,13 +628,11 @@ export class FCTUtils extends FCTBase {
         calls: [],
         validations: [],
         computed: [],
-      } as ITxTrace,
-    ) as ITxTrace;
-
-    return traceData;
+      } as ISimpleTxTrace,
+    ) as ISimpleTxTrace;
   };
 
-  private validateFCTKeys(keys: string[]) {
+  private _validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",
       "typedData",
