@@ -328,11 +328,11 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta, engine } = typedData.message;
-  this.batchMultiSigSelector = engine.selector;
-  this.version = engine.version;
-  this.chainId = domain.chainId.toString() as ChainId;
-  this.domain = domain;
-  this.randomId = engine.random_id.slice(2);
+  this._batchMultiSigSelector = engine.selector;
+  this._version = engine.version;
+  this._chainId = domain.chainId.toString() as ChainId;
+  this._domain = domain;
+  this._randomId = engine.random_id.slice(2);
 
   const sessionIDOptions = SessionID.asOptions(fct.sessionId);
 

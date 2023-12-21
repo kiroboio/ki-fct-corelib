@@ -36,14 +36,24 @@ import {
 import * as utils from "./utils";
 
 export class BatchMultiSigCall {
-  public batchMultiSigSelector = "0x7d971612";
-  public version = "0x020101";
-  public chainId: ChainId;
-  public domain: TypedDataDomain;
-  public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+  protected _batchMultiSigSelector = "0x7d971612";
+  protected _version = "0x020101";
+  protected _chainId: ChainId;
+  protected _domain: TypedDataDomain;
+  protected _randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
-  // Utils
+  // TODO: Don't rely on child classes.
+  // Instead of using the child classes (FCTUtils, Variables, Validation) directly,
+  // we should use the parent class (BatchMultiSigCall) to access them.
+  /*
+   * _utils = {getTransactionTrace: () => {}...}
+   *
+   */
+
   public utils: FCTUtils;
+
+  // TODO: There is absolutely no need for these to be public.
+  // So for these it is a must them to be an object.
   public variables: Variables;
   public validation: Validation;
 
@@ -62,27 +72,49 @@ export class BatchMultiSigCall {
 
     if (input.chainId) {
       if (typeof input.chainId === "number") {
-        this.chainId = input.chainId.toString() as ChainId;
+        this._chainId = input.chainId.toString() as ChainId;
       } else {
-        this.chainId = input.chainId;
+        this._chainId = input.chainId;
       }
     } else {
-      this.chainId = "1";
+      this._chainId = "1";
     }
     if (input.domain) {
-      this.domain = input.domain;
+      this._domain = input.domain;
     } else {
-      const domain = EIP712.getTypedDataDomain(this.chainId);
-      if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
-      this.domain = domain;
+      const domain = EIP712.getTypedDataDomain(this._chainId);
+      if (!domain) throw new Error(`ChainId ${this._chainId} is not supported. Please provide a custom EIP712 domain.`);
+      this._domain = domain;
     }
 
-    if (input.version) this.version = input.version;
+    if (input.version) this._version = input.version;
     if (input.options) this.setOptions(input.options);
     if (input.defaults) this.setCallDefaults(input.defaults);
   }
-
+  //
   // Getters
+  //
+  // Stored values
+  get batchMultiSigSelector() {
+    return this._batchMultiSigSelector;
+  }
+
+  get version() {
+    return this._version;
+  }
+
+  get chainId() {
+    return this._chainId;
+  }
+
+  get domain() {
+    return this._domain;
+  }
+
+  get randomId() {
+    return this._randomId;
+  }
+
   get options(): RequiredFCTOptions {
     return this._options.get();
   }
@@ -126,10 +158,10 @@ export class BatchMultiSigCall {
   }
 
   public changeChainId = (chainId: ChainId) => {
-    this.chainId = chainId;
+    this._chainId = chainId;
     const domain = EIP712.getTypedDataDomain(this.chainId);
     if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
-    this.domain = domain;
+    this._domain = domain;
   };
 
   // Variables
