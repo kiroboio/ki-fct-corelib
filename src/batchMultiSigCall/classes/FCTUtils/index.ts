@@ -537,6 +537,7 @@ export class FCTUtils extends FCTBase {
     let keepTrying = true;
     do {
       try {
+        // throw new Error("Tenderly trace is not working");
         const data = await provider.send("tenderly_traceTransaction", [txHash]);
         const rawLogs = data.logs.map((log) => log.raw);
         verifyMessageHash(rawLogs, this.getMessageHash());
@@ -591,7 +592,7 @@ export class FCTUtils extends FCTBase {
         return traceData;
       } catch (e) {
         if (tries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
         } else {
           throw e;
         }
