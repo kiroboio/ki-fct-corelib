@@ -539,6 +539,9 @@ export class FCTUtils extends FCTBase {
       try {
         // throw new Error("Tenderly trace is not working");
         const data = await provider.send("tenderly_traceTransaction", [txHash]);
+        if (!data || !data.trace || !data.logs) {
+          throw new Error("Tenderly trace is not working");
+        }
         const rawLogs = data.logs.map((log) => log.raw);
         verifyMessageHash(rawLogs, this.getMessageHash());
         const executedCalls = executedCallsFromLogs(rawLogs);
