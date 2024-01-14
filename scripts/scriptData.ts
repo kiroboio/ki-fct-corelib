@@ -35,6 +35,9 @@ export const scriptData = {
   421613: {
     rpcUrl: "https://arb-goerli.g.alchemy.com/v2/wjZQ8R9YDxyzIa9USq-lHXDUiVjWrk2y",
   },
+  11155111: {
+    rpcUrl: "https://ethereum-sepolia.publicnode.com",
+  },
 };
 
 export default scriptData;

@@ -9,7 +9,8 @@ import { IValidationEIP712 } from "../Validation/types";
 import { IComputedEIP712 } from "../Variables/types";
 import { Call, Computed, EIP712Domain, Engine, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
-const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
+// const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
+const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
   "1": {
     // Mainnet
     name: "FCT Controller",
@@ -41,6 +42,13 @@ const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
     chainId: 421613,
     verifyingContract: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
     salt: "0x0100df6d107dcaba91640000574f4cdab7ec20e3a37bde025260f0a2359503d6",
+  },
+  "11155111": {
+    name: "FCT Controller",
+    version: "1",
+    chainId: 11155111,
+    verifyingContract: "0x1Bc4e8448E6B6703c7458C4Ee8361eB6c3015fD4",
+    salt: "0x01006e6774a58cfed2c900001bc4e8448e6b6703c7458c4ee8361eb6c3015fd4",
   },
 };
 

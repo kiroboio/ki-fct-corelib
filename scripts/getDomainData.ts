@@ -1,13 +1,14 @@
 import * as dotenv from "dotenv";
 
-import { addresses } from "../src/batchMultiSigCall";
+import { constants } from "../src";
 import { Interfaces } from "../src/helpers/Interfaces";
 import { ethers } from "../src/index";
 import scriptData from "./scriptData";
 
+const addresses = constants.addresses;
 dotenv.config();
 
-const chainId = 421613;
+const chainId = 11155111;
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
