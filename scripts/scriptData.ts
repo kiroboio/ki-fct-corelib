@@ -6,6 +6,7 @@ export const scriptData = {
   1: {
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     KIRO: "0xB1191F691A355b43542Bea9B8847bc73e7Abb137",
+    WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     rpcUrl: process.env.RPC_URL_MAINNET as string,
     FCT_BatchMultiSig: "0x6D8E3Dc3a0128A3Bbf852506642C0dF78806859c",
     FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
