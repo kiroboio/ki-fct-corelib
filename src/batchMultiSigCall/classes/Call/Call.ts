@@ -1,4 +1,4 @@
-import { AllPlugins } from "@kiroboio/fct-plugins";
+import { AllPlugins, getPlugin } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
@@ -28,7 +28,7 @@ import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
 import { getGasCosts } from "./helpers/callGas";
-import { decodeFromData, getEncodedMethodParams } from "./helpers/callParams";
+import { decodeFromData, decodeOutputData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
@@ -306,6 +306,28 @@ export class Call extends CallBase implements ICall {
 
   public decodeData(data: string) {
     return decodeFromData(this.getDecoded(), data);
+  }
+
+  public decodeOutputData(data: string) {
+    if (this.plugin) {
+      return decodeOutputData(this.plugin, data);
+    }
+
+    const to = this.get().to;
+    const pluginData = getPlugin({
+      signature: this.getFunctionSignature(),
+      address: typeof to === "string" ? to : "",
+      chainId: this.FCT.chainId,
+    });
+    if (!pluginData) return null;
+    return decodeOutputData(
+      // @ts-ignore
+      new pluginData.plugin({
+        walletAddress: "0x",
+        chainId: this.FCT.chainId,
+      } as any),
+      data,
+    );
   }
 
   //

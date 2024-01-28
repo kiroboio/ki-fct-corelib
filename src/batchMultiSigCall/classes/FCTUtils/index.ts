@@ -566,6 +566,7 @@ export class FCTUtils extends FCTBase {
             const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
             const callResult = callsFromTenderlyTrace[index];
             const input = callResult.input;
+            const output = callResult.output;
 
             acc.calls = [
               ...acc.calls,
@@ -573,6 +574,7 @@ export class FCTUtils extends FCTBase {
                 method: fctCall.call.method ?? "",
                 value: callResult.value ? parseInt(callResult.value, 16).toString() : "0",
                 inputData: fctCall.decodeData(input) ?? [],
+                outputData: fctCall.decodeOutputData(output) ?? [],
                 error: callResult.error || callResult.errorString || null,
                 isSuccess: executedCall.isSuccess,
                 id: fctCall.nodeId,

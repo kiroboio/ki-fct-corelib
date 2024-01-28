@@ -1,10 +1,20 @@
 import { utils } from "ethers";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
+import { AllPlugins } from "@kiroboio/fct-plugins";
 import { InstanceOf } from "../../../../helpers";
 import { MethodParamsInterface, Param } from "../../../../types";
 import { GetValueType } from "../types";
 import { manageValue } from "./params";
+
+function manage(val: any) {
+  // If the value is not an array
+  if (!Array.isArray(val)) {
+    return manageValue(val);
+  }
+  // If the value is an array
+  return val.map(manage);
+}
 
 const buildInputsFromParams = (params: Param[]): { type: string; name: string }[] => {
   return params.map((param) => {
@@ -98,14 +108,12 @@ export const decodeFromData = (call: Partial<MethodParamsInterface>, data: strin
     },
   ];
   const decodedData = new utils.Interface(ABI).decodeFunctionData(call.method, data);
-  function manage(val: any) {
-    // If the value is not an array
-    if (!Array.isArray(val)) {
-      return manageValue(val);
-    }
-    // If the value is an array
-    return val.map(manage);
-  }
 
   return decodedData.slice(0, data.length).map(manage);
+};
+
+export const decodeOutputData = (plugin: InstanceType<AllPlugins> | undefined, data: string): Array<any> | null => {
+  if (!plugin) return null;
+  const outputTypes = plugin.output.paramsList.map(({ param }) => param.fctType);
+  return defaultAbiCoder.decode(outputTypes, data).map(manage);
 };

@@ -6,7 +6,6 @@ const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
 const controllerInterface = Interfaces.FCT_Controller;
 
 export const verifyMessageHash = (logs: any[], messageHashFromFCT: string) => {
-  console.log("logs", logs);
   const messageHash = logs.find((log) => {
     try {
       return controllerInterface.parseLog(log).name === "FCTE_Registered";

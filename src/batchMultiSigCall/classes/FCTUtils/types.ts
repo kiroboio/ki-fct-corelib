@@ -11,6 +11,7 @@ export interface ITxTrace {
     method: string;
     value: string;
     inputData: Array<any>;
+    outputData: Array<any>;
     error: string | null;
     isSuccess: boolean;
     id: string;
