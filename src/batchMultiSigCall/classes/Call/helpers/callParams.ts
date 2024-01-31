@@ -116,7 +116,6 @@ export const decodeOutputData = (plugin: any | undefined, data: string): Array<a
   if (!plugin) return null;
   if (plugin instanceof Multicall) {
     const outputTypes = plugin.getOutputParamsTypes();
-    console.log("outputTypes", outputTypes);
 
     //Check If all the types are the same in the array
     if (outputTypes.every((val, i, arr) => val === arr[0])) {
