@@ -1,4 +1,4 @@
-import { ChainId, getMulticallPlugin, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
+import { ChainId, Multicall, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
 
 import { InstanceOf } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
@@ -15,28 +15,32 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
 
   let PluginClass: PluginInstance;
 
-  if (callData.toENS === "@lib:multicall") {
-    const plugin = getMulticallPlugin({
-      signature: call.getFunctionSignature(),
-      chainId: chainId as ChainId,
-    });
-    if (!plugin) {
-      throw new Error("Multicall plugin not found");
-    }
-    PluginClass = plugin as unknown as PluginInstance;
+  // if (callData.toENS === "@lib:multicall") {
+  //   const plugin = getMulticallPlugin({
+  //     signature: call.getFunctionSignature(),
+  //     chainId: chainId as ChainId,
+  //   });
+  //   if (!plugin) {
+  //     throw new Error("Multicall plugin not found");
+  //   }
+  //   PluginClass = plugin as unknown as PluginInstance;
+  // } else {
+  const pluginData = getPluginProvider({
+    signature: call.getFunctionSignature(),
+    address: callData.to,
+    chainId: chainId as ChainId,
+  });
+  if (pluginData === null || pluginData === undefined) {
+    throw new Error("Plugin not found");
+  }
+  if (pluginData instanceof Multicall) {
+    PluginClass = pluginData as unknown as PluginInstance;
   } else {
-    const pluginData = getPluginProvider({
-      signature: call.getFunctionSignature(),
-      address: callData.to,
-      chainId: chainId as ChainId,
-    });
-    if (pluginData === null) {
-      throw new Error("Plugin not found");
-    }
     PluginClass = new pluginData.plugin({
       chainId: chainId.toString() as ChainId,
     }) as unknown as PluginInstance;
   }
+  // }
 
   PluginClass.input.set({
     to: callData.to,

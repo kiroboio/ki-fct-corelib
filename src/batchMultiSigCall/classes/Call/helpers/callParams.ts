@@ -1,7 +1,7 @@
 import { utils } from "ethers";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
-import { AllPlugins } from "@kiroboio/fct-plugins";
+import { AllPlugins, Multicall } from "@kiroboio/fct-plugins";
 import { InstanceOf } from "../../../../helpers";
 import { MethodParamsInterface, Param } from "../../../../types";
 import { GetValueType } from "../types";
@@ -112,8 +112,21 @@ export const decodeFromData = (call: Partial<MethodParamsInterface>, data: strin
   return decodedData.slice(0, data.length).map(manage);
 };
 
-export const decodeOutputData = (plugin: InstanceType<AllPlugins> | undefined, data: string): Array<any> | null => {
+export const decodeOutputData = (plugin: any | undefined, data: string): Array<any> | null => {
   if (!plugin) return null;
+  if (plugin instanceof Multicall) {
+    const outputTypes = plugin.getOutputParamsTypes();
+    console.log("outputTypes", outputTypes);
+
+    //Check If all the types are the same in the array
+    if (outputTypes.every((val, i, arr) => val === arr[0])) {
+      // Then we can decode it as an array - `{arr[0]}[]`
+      const outputParams = defaultAbiCoder.decode([`${outputTypes[0]}[]`], data)[0].map(manage);
+      return outputParams;
+    }
+
+    return [];
+  }
   const outputTypes = plugin.output.paramsList.map(({ param }) => param.fctType);
   return defaultAbiCoder.decode(outputTypes, data).map(manage);
 };

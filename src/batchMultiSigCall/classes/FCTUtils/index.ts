@@ -568,13 +568,18 @@ export class FCTUtils extends FCTBase {
             const input = callResult.input;
             const output = callResult.output;
 
+            const resData = fctCall.decodeData({
+              inputData: input,
+              outputData: output,
+            });
+
             acc.calls = [
               ...acc.calls,
               {
                 method: fctCall.call.method ?? "",
                 value: callResult.value ? parseInt(callResult.value, 16).toString() : "0",
-                inputData: fctCall.decodeData(input) ?? [],
-                outputData: fctCall.decodeOutputData(output) ?? [],
+                inputData: resData?.inputData ?? [],
+                outputData: resData?.outputData ?? [],
                 error: callResult.error || callResult.errorString || null,
                 isSuccess: executedCall.isSuccess,
                 id: fctCall.nodeId,

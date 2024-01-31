@@ -1,4 +1,4 @@
-import { AllPlugins, getPlugin } from "@kiroboio/fct-plugins";
+import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
@@ -304,8 +304,36 @@ export class Call extends CallBase implements ICall {
     return getEncodedMethodParams(this.getDecoded());
   }
 
-  public decodeData(data: string) {
-    return decodeFromData(this.getDecoded(), data);
+  public decodeData({ inputData, outputData }: { inputData: string; outputData?: string }) {
+    // return decodeFromData(this.getDecoded(), inputData);
+    const res: { inputData: any[]; outputData: any[] | null } = {} as any;
+    res.inputData = decodeFromData(this.getDecoded(), inputData) as any[];
+    if (outputData) {
+      const to = this.get().to;
+      const pluginData = getPlugin({
+        signature: this.getFunctionSignature(),
+        address: typeof to === "string" ? to : "",
+        chainId: this.FCT.chainId,
+      });
+      if (!pluginData) return null;
+      let plugin: any;
+      if (pluginData instanceof Multicall) {
+        plugin = pluginData;
+        plugin.setMethodParams(res.inputData);
+      } else {
+        // @ts-ignore
+        plugin = new pluginData.plugin({
+          walletAddress: "0x",
+          chainId: this.FCT.chainId,
+        } as any);
+      }
+
+      res.outputData = decodeOutputData(plugin, outputData);
+    } else {
+      res.outputData = [];
+    }
+
+    return res;
   }
 
   public decodeOutputData(data: string) {
@@ -320,6 +348,10 @@ export class Call extends CallBase implements ICall {
       chainId: this.FCT.chainId,
     });
     if (!pluginData) return null;
+    if (pluginData instanceof Multicall) {
+      const plugin = pluginData;
+    }
+
     return decodeOutputData(
       // @ts-ignore
       new pluginData.plugin({

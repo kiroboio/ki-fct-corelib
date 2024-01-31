@@ -6,12 +6,7 @@
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "keywords": [
-    "ethereum",
-    "web3",
-    "kirobo",
-    "fct"
-  ],
+  "keywords": ["ethereum", "web3", "kirobo", "fct"],
   "homepage": "https://www.kirobo.io/",
   "repository": {
     "type": "git",
@@ -21,9 +16,7 @@
   "bugs": {
     "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "commit": "cz",
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
@@ -75,7 +68,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@kiroboio/fct-plugins": "1.1.573",
+    "@kiroboio/fct-plugins": "1.1.574",
     "@metamask/eth-sig-util": "^5.1.0",
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8",
@@ -87,9 +80,7 @@
     }
   },
   "release": {
-    "branches": [
-      "main"
-    ],
+    "branches": ["main"],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -98,9 +89,7 @@
       [
         "@semantic-release/git",
         {
-          "assets": [
-            "package.json"
-          ],
+          "assets": ["package.json"],
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
       ]
