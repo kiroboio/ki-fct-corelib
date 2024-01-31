@@ -121,7 +121,7 @@ export const decodeOutputData = (plugin: any | undefined, data: string): Array<a
     if (outputTypes.every((val, i, arr) => val === arr[0])) {
       // Then we can decode it as an array - `{arr[0]}[]`
       const outputParams = defaultAbiCoder.decode([`${outputTypes[0]}[]`], data)[0].map(manage);
-      return outputParams;
+      return [outputParams];
     }
 
     return [];
