@@ -115,16 +115,15 @@ export const decodeFromData = (call: Partial<MethodParamsInterface>, data: strin
 export const decodeOutputData = (plugin: any | undefined, data: string): Array<any> | null => {
   if (!plugin) return null;
   if (plugin instanceof Multicall) {
-    const outputTypes = plugin.getOutputParamsTypes();
-
-    //Check If all the types are the same in the array
-    if (outputTypes.every((val, i, arr) => val === arr[0])) {
-      // Then we can decode it as an array - `{arr[0]}[]`
-      const outputParams = defaultAbiCoder.decode([`${outputTypes[0]}[]`], data)[0].map(manage);
-      return [outputParams];
+    // If the plugin method is mutliCall, we handle it differently
+    if (plugin.method === "multiCall") {
+      // the returned types from plugin.getOutputParamsTypes() is a bit different so we have to
+      // handle it differently. plugin.getOutputParamsTypes() returns string[][][]
+      return [];
     }
-
-    return [];
+    const outputTypes = plugin.getOutputParamsTypes() as string[];
+    const outputParams = defaultAbiCoder.decode(outputTypes, data).map(manage);
+    return outputParams;
   }
   const outputTypes = plugin.output.paramsList.map(({ param }) => param.fctType);
   return defaultAbiCoder.decode(outputTypes, data).map(manage);
