@@ -28,8 +28,11 @@ const gasPriceCalculationsByChains = {
   },
   1: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
 };
-function avg(arr: string[]) {
-  const sum = arr.reduce((a, v) => BigInt(a) + BigInt(v), 0n);
+function avg(arr: string[] | undefined[]) {
+  if (arr.every((v) => v === undefined)) {
+    return 0n;
+  }
+  const sum = (arr as string[]).reduce((a, v) => BigInt(a) + BigInt(v), 0n);
   return sum / BigInt(arr.length);
 }
 
@@ -79,7 +82,9 @@ export const getGasPrices = async ({
         body: generateBody(),
       });
       const data = await res.json();
-      const result = data.result;
+      const result = data.result as
+        | { oldestBlock: string; baseFeePerGas: string[]; gasUsedRatio: number[]; reward?: string[][] }
+        | undefined;
 
       if (!result) {
         throw new Error("No result");
@@ -90,7 +95,7 @@ export const getGasPrices = async ({
       const blocks: {
         number: number;
         baseFeePerGas: string;
-        gasUsedRatio: string;
+        gasUsedRatio: number;
         priorityFeePerGas: string[];
       }[] = [];
 
@@ -99,7 +104,7 @@ export const getGasPrices = async ({
           number: blockNum,
           baseFeePerGas: result.baseFeePerGas[index],
           gasUsedRatio: result.gasUsedRatio[index],
-          priorityFeePerGas: result.reward[index],
+          priorityFeePerGas: result.reward ? result.reward[index] : [],
         });
         blockNum += 1;
         index += 1;

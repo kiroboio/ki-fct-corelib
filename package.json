@@ -29,7 +29,7 @@
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
     "test:fct": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/*.test.ts",
     "test:multicall": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/Multicall.test.ts",
-    "test:utils": "mocha -r ts-node/register src/utils/*.test.ts",
+    "test:utils": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/utils/*.test.ts",
     "test:validation": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/Validation.test.ts",
     "test:variable": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Variables/Variables.test.ts",
     "test:call": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Call/Call.test.ts",

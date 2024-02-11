@@ -52,7 +52,7 @@ describe("Utility functions", () => {
 
   it("Should get gas prices", async () => {
     const gasPrices = await utils.getGasPrices({
-      rpcUrl: "https://eth-goerli.public.blastapi.io",
+      rpcUrl: "https://virtual.mainnet.rpc.tenderly.co/8db750a7-018c-4f4a-9903-a12b0c4e63f7",
       chainId: 5,
     });
 
