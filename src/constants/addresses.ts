@@ -1,7 +1,7 @@
 export const addresses = {
   1: {
     FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
-    FCT_BatchMultiSig: "0xee261D709227e0Bf1037D3Cd5D45becD8B93f712",
+    FCT_BatchMultiSig: "0x74fe4729c31002c817a2c57cbe67fa37e62cf2f0",
     FCT_EnsManager: "0x30B25912faeb6E9B70c1FD9F395D2fF2083C966C",
     FCT_Tokenomics: "0xB6E0d8DCc868061faAf38D3Bf00793592ff68484",
     Actuator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
