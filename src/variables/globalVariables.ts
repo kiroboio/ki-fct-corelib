@@ -9,7 +9,8 @@ export type GlobalVariable =
   | "investorAddress"
   | "activatorAddress"
   | "engineAddress"
-  | "chainId";
+  | "chainId"
+  | "flowHash";
 
 const BLOCK_NUMBER = "0xFB0A000000000000000000000000000000000000";
 const BLOCK_TIMESTAMP = "0xFB0B000000000000000000000000000000000000";
@@ -21,6 +22,7 @@ const INVESTOR_ADDRESS = "0xFA0C000000000000000000000000000000000000";
 const ACTIVATOR_ADDRESS = "0xFA0D000000000000000000000000000000000000";
 const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 const CHAIN_ID = "0xFB0E000000000000000000000000000000000000";
+const FLOW_HASH = "0xFB0D000000000000000000000000000000000000";
 
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
 
@@ -34,6 +36,7 @@ export const globalVariables = {
   investorAddress: INVESTOR_ADDRESS,
   activatorAddress: ACTIVATOR_ADDRESS,
   engineAddress: ENGINE_ADDRESS,
+  flowHash: FLOW_HASH,
 };
 
 export const globalVariablesBytes = {
@@ -41,6 +44,7 @@ export const globalVariablesBytes = {
   blockTimestamp: BLOCK_TIMESTAMP.padEnd(66, "0"),
   chainId: CHAIN_ID.padEnd(66, "0"),
   gasPrice: GAS_PRICE.padEnd(66, "0"),
+  flowHash: FLOW_HASH.padEnd(66, "0"),
 };
 
 export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
@@ -52,3 +56,4 @@ export const getInvestorAddress = (): Variable => ({ type: "global", id: "invest
 export const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
 export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
 export const getChainID = (): Variable => ({ type: "global", id: "chainId" });
+export const getFlowHash = (): Variable => ({ type: "global", id: "flowHash" });
