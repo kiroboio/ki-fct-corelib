@@ -16,6 +16,7 @@ export const scriptData = {
     // RecoveryWallet: "0x38e5Bec4f5401AF5C35990BED8D4153113EDa743",
     // RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
     // RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
+    flashbots: "https://relay.flashbots.net",
   },
   5: {
     USDC: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
@@ -29,6 +30,7 @@ export const scriptData = {
     RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
     RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
     rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
+    flashbots: "https://relay-goerli.flashbots.net",
   },
   42161: {
     rpcUrl: "https://rpc.ankr.com/arbitrum",
@@ -37,7 +39,8 @@ export const scriptData = {
     rpcUrl: "https://arb-goerli.g.alchemy.com/v2/wjZQ8R9YDxyzIa9USq-lHXDUiVjWrk2y",
   },
   11155111: {
-    rpcUrl: "https://ethereum-sepolia.publicnode.com",
+    rpcUrl: "https://1rpc.io/sepolia",
+    flashbots: "https://relay-sepolia.flashbots.net",
   },
 };
 
