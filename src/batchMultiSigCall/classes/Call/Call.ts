@@ -220,6 +220,7 @@ export class Call extends CallBase implements ICall {
         validation: this.FCT.validation,
         call,
         index,
+        payerIndex: this.options.payerIndex,
       }),
       from: this.FCT.variables.getValue(call.from, "address"),
       to: this.FCT.variables.getValue(call.to, "address"),
@@ -273,7 +274,7 @@ export class Call extends CallBase implements ICall {
     return {
       call: {
         call_index: index + 1,
-        payer_index: index + 1,
+        payer_index: typeof call.options.payerIndex === "number" ? call.options.payerIndex : index + 1,
         call_type: CALL_TYPE_MSG[call.options.callType],
         from: this.FCT.variables.getValue(call.from, "address"),
         to: this.FCT.variables.getValue(call.to, "address"),

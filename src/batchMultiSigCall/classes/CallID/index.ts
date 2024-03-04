@@ -26,11 +26,13 @@ export class CallID {
     validation,
     call,
     index,
+    payerIndex,
   }: {
     calls: IMSCallInput[];
     validation: Validation;
     call: StrictMSCallInput;
     index: number;
+    payerIndex?: number;
   }): string {
     const permissions = "0000";
     const validationIndex = valueWithPadStart(
@@ -38,7 +40,7 @@ export class CallID {
       4,
     );
     const flow = valueWithPadStart(flows[call.options.flow].value, 2);
-    const payerIndex = valueWithPadStart(index + 1, 4);
+    const payerIndexHex = valueWithPadStart(typeof payerIndex === "number" ? payerIndex : index + 1, 4);
     const callIndex = valueWithPadStart(index + 1, 4);
     const gasLimit = valueWithPadStart(call.options.gasLimit, 8);
 
@@ -73,7 +75,7 @@ export class CallID {
 
     return (
       "0x" +
-      `${validationIndex}${permissions}${flow}${failJump}${successJump}${payerIndex}${callIndex}${gasLimit}${flags()}`.padStart(
+      `${validationIndex}${permissions}${flow}${failJump}${successJump}${payerIndexHex}${callIndex}${gasLimit}${flags()}`.padStart(
         64,
         "0",
       )

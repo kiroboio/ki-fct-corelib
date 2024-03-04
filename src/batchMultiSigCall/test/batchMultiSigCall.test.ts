@@ -201,6 +201,41 @@ describe("BatchMultiSigCall", () => {
         chainId: "5",
       });
     });
+    it("Should create an FCT with payerIndex", async () => {
+      const transfer = new ERC20.actions.Transfer({
+        chainId: "5",
+        initParams: {
+          to: "0xfeab457d95d9990b7eb6c943c839258245541754",
+          methodParams: {
+            amount: "1000000000000000000",
+            recipient: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+          },
+        },
+      });
+
+      await batchMultiSigCall.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        plugin: transfer,
+        options: {
+          flow: Flow.OK_CONT_FAIL_STOP,
+          payerIndex: 0,
+        },
+      });
+
+      await batchMultiSigCall.add({
+        nodeId: "node2",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        plugin: transfer,
+        options: {
+          flow: Flow.OK_CONT_FAIL_STOP,
+        },
+      });
+
+      const FCT = batchMultiSigCall.exportFCT();
+
+      expect(FCT.typedData.message["transaction_1"].call.payer_index).to.eq(0);
+    });
     it("Should create an FCT with 1 plugin call", async () => {
       const transfer = new ERC20.actions.Transfer({
         chainId: "5",
