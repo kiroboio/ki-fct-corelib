@@ -1,12 +1,17 @@
 {
   "name": "@kiroboio/fct-core",
-  "version": "3.7.5",
+  "version": "3.7.6",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
   "main": "dist/cjs/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "keywords": ["ethereum", "web3", "kirobo", "fct"],
+  "keywords": [
+    "ethereum",
+    "web3",
+    "kirobo",
+    "fct"
+  ],
   "homepage": "https://www.kirobo.io/",
   "repository": {
     "type": "git",
@@ -16,7 +21,9 @@
   "bugs": {
     "url": "https://github.com/kiroboio/ki-fct-corelib/issues"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "commit": "cz",
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",
@@ -80,7 +87,9 @@
     }
   },
   "release": {
-    "branches": ["main"],
+    "branches": [
+      "main"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -89,7 +98,9 @@
       [
         "@semantic-release/git",
         {
-          "assets": ["package.json"],
+          "assets": [
+            "package.json"
+          ],
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
       ]
