@@ -749,10 +749,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kiroboio/fct-plugins@1.1.595":
-  version "1.1.595"
-  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.595.tgz#cc5ffb3e2ca523e0e16304caf993f80343b678ff"
-  integrity sha512-sP9/AqDfd+9tZhkVK4Kgqm6iCtixVXeOgT4Q33RKDE5tFNYaaxX+fi+JtapZasZHY4Ji6O7bbByC1/3CBEqQHw==
+"@kiroboio/fct-plugins@1.1.596":
+  version "1.1.596"
+  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.596.tgz#9a27423566defc712aa25f405fd7bec619334d82"
+  integrity sha512-v2BA0T1QS1vtZ9vsXfspxtVwI7sZli39lNtVbKV9quIqIxO7jhfE8Mvp4FzQaA8hTzvzGaEh3OHAya56D7hCeQ==
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@sushiswap/sdk" "^5.0.0-canary.116"
@@ -3385,10 +3385,23 @@ eip-712@^0.4.3:
     keccak "^3.0.1"
     superstruct "^0.10.12"
 
-elliptic@6.5.4, elliptic@^6.5.2, elliptic@^6.5.4:
+elliptic@6.5.4:
   version "6.5.4"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.4.tgz#da37cebd31e79a1367e941b592ed1fbebd58abbb"
   integrity sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==
+  dependencies:
+    bn.js "^4.11.9"
+    brorand "^1.1.0"
+    hash.js "^1.0.0"
+    hmac-drbg "^1.0.1"
+    inherits "^2.0.4"
+    minimalistic-assert "^1.0.1"
+    minimalistic-crypto-utils "^1.0.1"
+
+elliptic@^6.5.2, elliptic@^6.5.4:
+  version "6.5.5"
+  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.5.tgz#c715e09f78b6923977610d4c2346d6ce22e6dded"
+  integrity sha512-7EjbcmUm17NQFu4Pmgmq2olYMj8nwMnpcddByChSUjArp8F5DQWcIcpriwO4ZToLNAJig0yiyjswfyGNje/ixw==
   dependencies:
     bn.js "^4.11.9"
     brorand "^1.1.0"
@@ -3914,9 +3927,9 @@ figures@^3.0.0:
     escape-string-regexp "^1.0.5"
 
 figures@^6.0.0:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/figures/-/figures-6.0.1.tgz#75a2baf3ca8c63e2ea253179e9f1157833587ea4"
-  integrity sha512-0oY/olScYD4IhQ8u//gCPA4F3mlTn2dacYmiDm/mbDQvpmLjV4uH+zhsQ5IyXRyvqkvtUkXkNdGvg5OFJTCsuQ==
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/figures/-/figures-6.1.0.tgz#935479f51865fa7479f6fa94fc6fc7ac14e62c4a"
+  integrity sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==
   dependencies:
     is-unicode-supported "^2.0.0"
 
@@ -4675,7 +4688,7 @@ inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.1, 
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
 
-ini@4.1.1, ini@^4.1.0, ini@^4.1.1:
+ini@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ini/-/ini-4.1.1.tgz#d95b3d843b1e906e56d6747d5447904ff50ce7a1"
   integrity sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==
@@ -4684,6 +4697,11 @@ ini@^1.3.4, ini@~1.3.0:
   version "1.3.8"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
   integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
+
+ini@^4.1.0, ini@^4.1.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-4.1.2.tgz#7f646dbd9caea595e61f88ef60bfff8b01f8130a"
+  integrity sha512-AMB1mvwR1pyBFY/nSevUX6y8nJWS63/SzUKD3JyQn97s4xgIdgQPT75IRouIiBAN4yLQBUShNYVW0+UG25daCw==
 
 init-package-json@^6.0.0:
   version "6.0.2"
@@ -7663,9 +7681,9 @@ type-fest@^3.0.0:
   integrity sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==
 
 type-fest@^4.6.0, type-fest@^4.7.1:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.11.0.tgz#621f1f8491bdec8ce04ed60e85b7b2437410e6e2"
-  integrity sha512-DPsoHKtnCUqqoB5Y4OPyat7ObSLz1XOkhHTmz+gOkz2p1xs+BBneTvHWriTwc313eozfBWh8b45EpaV3ZrrPPQ==
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.11.1.tgz#7de27117459b926cb56922a4fd565423041e06d3"
+  integrity sha512-MFMf6VkEVZAETidGGSYW2B1MjXbGX+sWIywn2QPEaJ3j08V+MwVRHMXtf2noB8ENJaD0LIun9wh5Z6OPNf1QzQ==
 
 typechain@^8.0.0:
   version "8.3.2"
