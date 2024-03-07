@@ -40,7 +40,8 @@ export const scriptData = {
   },
   11155111: {
     rpcUrl: "https://1rpc.io/sepolia",
-    flashbots: "https://relay-sepolia.flashbots.net",
+    flashbotsRelay: "https://relay-sepolia.flashbots.net",
+    flashbotsRpc: "https://rpc-sepolia.flashbots.net",
   },
 };
 
