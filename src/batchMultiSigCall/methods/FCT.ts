@@ -426,6 +426,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
         // validation: meta.validation === 0 ? "" : meta.validation.toString(),
+        payerIndex: meta.payer_index,
         validation: meta.validation === 0 ? "" : map?.validations[meta.validation - 1] ?? meta.validation.toString(),
         usePureMethod: meta.method_interface.includes("(") ? false : true,
       },
