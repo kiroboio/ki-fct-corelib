@@ -232,6 +232,10 @@ describe("BatchMultiSigCall", () => {
       const FCTExport = FCT.exportFCT();
 
       expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("magic");
+
+      const address = BatchMultiSigCall.from(FCTExport).utils.recoverAddress(FCTExport.signatures[0]);
+
+      console.log("address", address);
     });
   });
 
