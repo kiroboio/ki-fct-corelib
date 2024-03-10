@@ -18,7 +18,7 @@ import { PluginParams } from "./types";
 // If F is Multicall, return multicall, else return Call
 // type CreateOutput<F extends FCTInputCall> = F extends Multicall ? Multicall : Call;
 
-export async function create(this: BatchMultiSigCall, call: FCTInputCall) {
+export async function create(this: BatchMultiSigCall, call: FCTInputCall): Promise<Call> {
   // If the input is already made Call class, we just add it to _calls.
   if (call instanceof Call) {
     this._calls.push(call);
@@ -117,6 +117,11 @@ export function exportMap(this: BatchMultiSigCall) {
   };
 }
 
+/**
+ * Prepares FCT data to be signed on and executed on the blockchain.
+ * @returns The IFCT object representing the current state of the FCT.
+ * @throws Error if no calls are added to FCT.
+ */
 export function exportFCT(this: BatchMultiSigCall): IFCT {
   if (this.calls.length === 0) {
     throw new Error("No calls added to FCT");

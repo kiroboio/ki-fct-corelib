@@ -1,7 +1,7 @@
+import { Multicall } from "@kiroboio/fct-plugins";
 import { utils } from "ethers";
 import { defaultAbiCoder, toUtf8Bytes } from "ethers/lib/utils";
 
-import { AllPlugins, Multicall } from "@kiroboio/fct-plugins";
 import { InstanceOf } from "../../../../helpers";
 import { MethodParamsInterface, Param } from "../../../../types";
 import { GetValueType } from "../types";

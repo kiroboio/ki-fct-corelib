@@ -349,9 +349,9 @@ export class Call extends CallBase implements ICall {
       chainId: this.FCT.chainId,
     });
     if (!pluginData) return null;
-    if (pluginData instanceof Multicall) {
-      const plugin = pluginData;
-    }
+    // if (pluginData instanceof Multicall) {
+    //   const plugin = pluginData;
+    // }
 
     return decodeOutputData(
       // @ts-ignore

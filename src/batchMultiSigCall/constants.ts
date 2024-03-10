@@ -12,4 +12,5 @@ export const DEFAULT_CALL_OPTIONS: DeepRequired<Omit<CallOptions, "payerIndex">>
   falseMeansFail: false,
   callType: "ACTION",
   validation: "",
+  usePureMethod: false,
 };

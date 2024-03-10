@@ -47,18 +47,24 @@ export class CallBase {
     return getTypesArray(call.params);
   }
 
+  /**
+   * Returns the function signature of the call.
+   * If the call has a method, it returns the function signature using the `utils.id` function.
+   * Otherwise, it returns hashed empty string. (ethers.utils.id(''))
+   *
+   * @returns The function signature of the call or hashed empty string.
+   */
   public getFunctionSignature(): string {
-    if (this._call.method) {
-      return utils.id(this.getFunction());
-    }
-    return nullValue;
+    return this._call.method ? utils.id(this.getFunction()) : nullValue;
   }
 
   public getFunction(): string {
-    return getMethodInterface({
-      method: this._call.method,
-      params: this._call.params,
-    });
+    return this._call.options?.usePureMethod
+      ? this._call.method || ""
+      : getMethodInterface({
+          method: this._call.method,
+          params: this._call.params,
+        });
   }
 
   public setOptions(options: DeepPartial<CallOptions>) {

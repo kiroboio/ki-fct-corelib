@@ -116,6 +116,9 @@ export class BatchMultiSigCall {
   }
 
   // Setters
+  /**
+   * Set the options for the FCT.
+   */
   public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
     return this._options.set(options) as RequiredFCTOptions & O;
   }
@@ -148,9 +151,43 @@ export class BatchMultiSigCall {
   createPlugin = createPlugin;
 
   // Add calls to FCT
+  /**
+   * This function adds a new Call instance and adds it to the _calls array.
+   * If the input is already a Call instance, it is directly added to the _calls array.
+   * Otherwise, a new Call instance is created from the input and then added to the _calls array.
+   *
+   * @param {FCTInputCall} call - The input call to create a Call instance from.
+   * @returns {Promise<Call>} The created Call instance.
+   */
   add = create;
+  /**
+   * This function adds multiple new Call instances and adds them to the _calls array.
+   * If the input is already a Call instance, it is directly added to the _calls array.
+   * Otherwise, a new Call instance is created from the input and then added to the _calls array.
+   *
+   * @param {FCTInputCall[]} calls - The input calls to create Call instances from.
+   * @returns {Promise<Call[]>} The created Call instances.
+   */
   addMultiple = createMultiple;
+  // * @deprecated Please use `add` instead.
+  /**
+   * This function adds a new Call instance and adds it to the _calls array.
+   * If the input is already a Call instance, it is directly added to the _calls array.
+   * Otherwise, a new Call instance is created from the input and then added to the _calls array.
+   *
+   * @param {FCTInputCall} call - The input call to create a Call instance from.
+   * @returns {Promise<Call>} The created Call instance.
+   */
   create = create;
+  //  * @deprecated Please use `addMultiple` instead.
+  /**
+   * This function adds multiple new Call instances and adds them to the _calls array.
+   * If the input is already a Call instance, it is directly added to the _calls array.
+   * Otherwise, a new Call instance is created from the input and then added to the _calls array.
+   *
+   * @param {FCTInputCall[]} calls - The input calls to create Call instances from.
+   * @returns {Promise<Call[]>} The created Call instances.
+   */
   createMultiple = createMultiple;
   // Specific to BatchMultiSigCall
   protected addAtIndex = addAtIndex;
