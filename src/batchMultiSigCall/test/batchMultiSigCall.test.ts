@@ -1,4 +1,4 @@
-import { AaveV2, ChainId, ERC20 } from "@kiroboio/fct-plugins";
+import { AaveV2, ChainId, ERC20, Magic } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { beforeEach } from "mocha";
@@ -213,6 +213,20 @@ describe("BatchMultiSigCall", () => {
         options: {
           usePureMethod: true,
         },
+      });
+
+      const FCTExport = FCT.exportFCT();
+
+      expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("magic");
+    });
+
+    it("Should create an FCT with magic plugin", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        plugin: new Magic.actions.Magic({
+          chainId: "5",
+        }),
       });
 
       const FCTExport = FCT.exportFCT();
