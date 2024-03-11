@@ -1,8 +1,12 @@
+import { ethers } from "ethers";
+
 import { MSCall } from "../../types";
 import { CallID } from "../CallID";
 
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
+
+// TODO: This needs to be heavily optimized.
 
 const WHOLE_IN_BPS = 10000n as const;
 
@@ -60,7 +64,7 @@ const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
   return pathIndexes.reduce((acc, pathIndex) => {
     const call = calls[Number(pathIndex)];
     const { payerIndex } = CallID.parse(call.callId);
-    const payer = payerIndex === 0 ? undefined : calls[payerIndex - 1].from;
+    const payer = payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
     // If payer !== undefined AND payer !== lastPayer, add it to the array
     if (payer && payer !== acc[acc.length - 1]) {
       acc.push(payer);
@@ -69,7 +73,7 @@ const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
   }, [] as string[]);
 };
 
-const getAllSenders = (calls: MSCall[]) => {
+const getAllSigners = (calls: MSCall[]) => {
   return calls.reduce((acc, call) => {
     // If call.from is already in the array, don't add it
     if (!acc.includes(call.from)) {
@@ -91,13 +95,13 @@ export function getPayersForRoute({
   calldata: string;
 }) {
   const payers = getPayers(calls, pathIndexes);
-  const allSenders = getAllSenders(calls);
+  const allSigners = getAllSigners(calls);
   const batchMultiSigCallOverhead =
     getFee("FCTControllerOverhead", chainId) +
     getFee("gasBeforeEncodedLoop", chainId) +
     getEncodingMcallCost(calls.length, chainId) +
     getFee("FCTControllerRegisterCall", chainId) +
-    getSignatureRecoveryCost(allSenders.length + 1, chainId) + // +1 because verification signature
+    getSignatureRecoveryCost(allSigners.length + 1, chainId) + // +1 because verification signature
     getFee("miscGasBeforeMcallLoop", chainId);
 
   const overhead =
@@ -114,7 +118,7 @@ export function getPayersForRoute({
     (acc, path) => {
       const call = calls[Number(path)];
       const { payerIndex, options } = CallID.parse(call.callId);
-      const payer = calls[payerIndex - 1].from;
+      const payer = payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
 
       const gas = BigInt(options.gasLimit) || getFee("defaultGasLimit", chainId);
 
@@ -142,7 +146,7 @@ export function getPayersForRoute({
     {} as Record<string, bigint>,
   );
 
-  return allSenders.map((payer) => {
+  return payers.map((payer) => {
     const gas = gasForFCTCall[payer] + gasForPaymentApprovals[payer];
     return {
       payer,

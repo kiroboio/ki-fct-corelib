@@ -1,26 +1,42 @@
 // // Init dotenv
 import * as dotenv from "dotenv";
 
-import { BatchMultiSigCall, ethers } from "../src";
-import FCTData from "./mcallFct.json";
+import { BatchMultiSigCall, ethers, Magic } from "../src";
 
 dotenv.config();
 
 const randAddr = () => ethers.Wallet.createRandom().address;
 
 async function main() {
-  const FCT = BatchMultiSigCall.fromMap(FCTData.data, {
-    calls: ["4d27b519-7d01-437f-8a1e-aefc59e0ad5a"],
-    computed: [],
-    validations: [],
+  const FCT = new BatchMultiSigCall({
+    chainId: "5",
   });
 
-  const trace = await FCT.utils.getTransactionTrace({
-    tenderlyRpcUrl: `https://goerli.gateway.tenderly.co/${process.env.TENDERLY_KEY as string}`,
-    txHash: "0x8f29a71a893733d24e079c9a0518aed4c04cc766ab8c2a37c39fab259bf2dc59",
+  await FCT.add({
+    from: "0x9297e49dEac4F4AFeEF452D90F21576C3B8A973B",
+    plugin: new Magic.actions.Magic({
+      chainId: "5",
+    }),
+    options: {
+      payerIndex: 0,
+    },
   });
 
-  console.log(JSON.stringify(trace, null, 2));
+  // Get payment per payer
+  const paymentPerPayer = FCT.utils.getPaymentPerPayer({
+    ethPriceInKIRO: "1",
+  });
+
+  console.log("payment1", paymentPerPayer);
+
+  const exportedFCT = FCT.export();
+
+  // Import it back in and call
+  const paymentPerPayer2 = BatchMultiSigCall.from(exportedFCT).utils.getPaymentPerPayer({
+    ethPriceInKIRO: "1",
+  });
+
+  console.log("payment2", paymentPerPayer2);
 }
 
 main()

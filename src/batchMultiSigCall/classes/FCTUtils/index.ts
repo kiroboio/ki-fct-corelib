@@ -370,6 +370,8 @@ export class FCTUtils extends FCTBase {
         pathIndexes: path,
       });
 
+      console.log("payers", payers);
+
       return payers.reduce(
         (acc, payer) => {
           const base = payer.gas * txGasPrice;
@@ -401,6 +403,7 @@ export class FCTUtils extends FCTBase {
     ];
 
     return allPayers.map((payer) => {
+      console.log("data", data);
       const { largest, smallest } = data.reduce(
         (acc, pathData) => {
           const currentValues = acc;
@@ -418,6 +421,8 @@ export class FCTUtils extends FCTBase {
         },
         {} as { largest: PayerPayment; smallest: PayerPayment },
       );
+
+      console.log("largest", largest, smallest);
 
       const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest.pureEthCost });
       const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest.pureEthCost });
