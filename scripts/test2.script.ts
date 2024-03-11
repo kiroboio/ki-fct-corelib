@@ -12,8 +12,19 @@ async function main() {
     chainId: "5",
   });
 
+  const from = randAddr();
+
+  console.log(from);
+
   await FCT.add({
-    from: "0x9297e49dEac4F4AFeEF452D90F21576C3B8A973B",
+    from,
+    method: "transfer",
+    to: randAddr(),
+    value: "0",
+  });
+
+  await FCT.add({
+    from: "0x4FEe9fc300DFF6221e5911f296c4CaA3d23A7830",
     plugin: new Magic.actions.Magic({
       chainId: "5",
     }),
@@ -22,21 +33,9 @@ async function main() {
     },
   });
 
-  // Get payment per payer
-  const paymentPerPayer = FCT.utils.getPaymentPerPayer({
-    ethPriceInKIRO: "1",
-  });
+  const signers = FCT.utils.getSigners();
 
-  console.log("payment1", paymentPerPayer);
-
-  const exportedFCT = FCT.export();
-
-  // Import it back in and call
-  const paymentPerPayer2 = BatchMultiSigCall.from(exportedFCT).utils.getPaymentPerPayer({
-    ethPriceInKIRO: "1",
-  });
-
-  console.log("payment2", paymentPerPayer2);
+  console.log(signers);
 }
 
 main()

@@ -15,6 +15,7 @@ import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
 import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
+import { secureStorageAddresses } from "./constants";
 import { getCostInKiro, getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
 import { executedCallsFromLogs, manageValidationAndComputed, verifyMessageHash } from "./helpers";
 import { ISimpleTxTrace, ITxTrace, PayerPayment } from "./types";
@@ -115,7 +116,14 @@ export class FCTUtils extends FCTBase {
 
   public getSigners(): string[] {
     return this.FCTData.mcall.reduce((acc: string[], { from }) => {
-      if (!acc.includes(from)) {
+      // Check if the address is already in the accumulator
+      // And it is not an address from secureStorageAddresses. If it is, we dont
+      // want to add it to the signers array
+      const doNotReturn = secureStorageAddresses.find(
+        (address) => address.address.toLowerCase() === from.toLowerCase() && address.chainId === this.FCT.chainId,
+      );
+
+      if (!acc.includes(from) && !doNotReturn) {
         acc.push(from);
       }
       return acc;
@@ -370,8 +378,6 @@ export class FCTUtils extends FCTBase {
         pathIndexes: path,
       });
 
-      console.log("payers", payers);
-
       return payers.reduce(
         (acc, payer) => {
           const base = payer.gas * txGasPrice;
@@ -403,7 +409,6 @@ export class FCTUtils extends FCTBase {
     ];
 
     return allPayers.map((payer) => {
-      console.log("data", data);
       const { largest, smallest } = data.reduce(
         (acc, pathData) => {
           const currentValues = acc;
@@ -421,8 +426,6 @@ export class FCTUtils extends FCTBase {
         },
         {} as { largest: PayerPayment; smallest: PayerPayment },
       );
-
-      console.log("largest", largest, smallest);
 
       const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest.pureEthCost });
       const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest.pureEthCost });
