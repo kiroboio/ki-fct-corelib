@@ -17,7 +17,7 @@ const valueWithPadStart = (value: string | number, padStart: number) => {
 // 4 - Call index
 // 8 - Gas limit
 // 2 - Flags
-
+//                                    / Parm / Fl / Fail / Ok   / Payr / Call / Gas lmt  / Flags
 // 0x00000000000000000000000000000000 / 0000 / 05 / 0000 / 0001 / 0001 / 0001 / 00000000 / 00;
 
 export class CallID {
