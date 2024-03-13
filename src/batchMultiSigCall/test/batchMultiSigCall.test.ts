@@ -300,6 +300,32 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("write_bytes(bytes32,bytes)");
     });
+
+    it("Should fail to add an FCT with messageTypes that are not supported", async () => {
+      const params = [
+        {
+          name: "key",
+          type: "bytes32",
+          customType: false,
+          value: "test",
+          messageType: "uint256",
+        },
+      ];
+
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "magic",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params,
+      });
+
+      expect(() => {
+        FCT.exportFCT();
+      }).to.throw(
+        `Param ${params[0].name} - Conversion from ${params[0].messageType} to ${params[0].type} is not supported`,
+      );
+    });
   });
 
   describe("Complex FCTs", () => {
