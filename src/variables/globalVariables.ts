@@ -1,5 +1,3 @@
-import { Variable } from "../types";
-
 export type GlobalVariable =
   | "blockNumber"
   | "blockTimestamp"
@@ -47,13 +45,13 @@ export const globalVariablesBytes = {
   flowHash: FLOW_HASH.padEnd(66, "0"),
 };
 
-export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
-export const getBlockTimestamp = (): Variable => ({ type: "global", id: "blockTimestamp" });
-export const getGasPrice = (): Variable => ({ type: "global", id: "gasPrice" });
-export const getMinerAddress = (): Variable => ({ type: "global", id: "minerAddress" });
-export const getOriginAddress = (): Variable => ({ type: "global", id: "originAddress" });
-export const getInvestorAddress = (): Variable => ({ type: "global", id: "investorAddress" });
-export const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
-export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
-export const getChainID = (): Variable => ({ type: "global", id: "chainId" });
-export const getFlowHash = (): Variable => ({ type: "global", id: "flowHash" });
+// export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
+// export const getBlockTimestamp = (): Variable => ({ type: "global", id: "blockTimestamp" });
+// export const getGasPrice = (): Variable => ({ type: "global", id: "gasPrice" });
+// export const getMinerAddress = (): Variable => ({ type: "global", id: "minerAddress" });
+// export const getOriginAddress = (): Variable => ({ type: "global", id: "originAddress" });
+// export const getInvestorAddress = (): Variable => ({ type: "global", id: "investorAddress" });
+// export const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
+// export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
+// export const getChainID = (): Variable => ({ type: "global", id: "chainId" });
+// export const getFlowHash = (): Variable => ({ type: "global", id: "flowHash" });

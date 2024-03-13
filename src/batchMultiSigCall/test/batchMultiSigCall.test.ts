@@ -278,7 +278,7 @@ describe("BatchMultiSigCall", () => {
       expect(FCT2.calls[0].get().params).to.deep.eq(params);
     });
 
-    it.only("Should create an FCT with secure storage plugins", async () => {
+    it("Should create an FCT with secure storage plugins", async () => {
       const plugin = new SecureStorage.actions.Write_bytes({
         chainId: "5",
         initParams: {
@@ -290,8 +290,6 @@ describe("BatchMultiSigCall", () => {
         },
       });
 
-      const data = await plugin.create();
-      console.log(data);
       await FCT.add({
         nodeId: "node1",
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",

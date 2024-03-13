@@ -35,16 +35,9 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
   // }
 
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  // const signer = new ethers.Wallet(actuatorPrivateKey, provider);
   const actuatorContract = new ethers.Contract(actuatorContractAddress, FCTActuatorABI, provider);
 
   try {
-    // const gas = await actuatorContract.estimateGas[activateForFree ? "activateForFree" : "activate"](
-    //   callData,
-    //   "0x19B272A2f2C5B4673057397390909757a0033633",
-    //   { ...gasPrice },
-    // );
-
     const gas = await provider.estimateGas({
       to: actuatorContractAddress,
       data: actuatorContract.interface.encodeFunctionData(activateForFree ? "activateForFree" : "activate", [
