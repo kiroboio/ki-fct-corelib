@@ -10,7 +10,7 @@ const getFixedArrayLength = (type: string): number => +type.slice(type.indexOf("
 
 const typeValue = (param: Param): number[] => {
   // If type is an array
-  if (param.type.lastIndexOf("[") > 0 && !param.hashed) {
+  if (param.type.lastIndexOf("[") > 0) {
     const TYPE = param.type.indexOf("]") - param.type.indexOf("[") === 1 ? TYPE_ARRAY : TYPE_ARRAY_WITH_LENGTH;
 
     // If the type is an array of tuple/custom struct
@@ -38,12 +38,12 @@ const typeValue = (param: Param): number[] => {
   }
 
   // If type is a string
-  if (param.type === "string" && !param.hashed) {
+  if (param.type === "string") {
     return [TYPE_STRING];
   }
 
   // If type is bytes
-  if (param.type === "bytes" && !param.hashed) {
+  if (param.type === "bytes") {
     return [TYPE_BYTES];
   }
 

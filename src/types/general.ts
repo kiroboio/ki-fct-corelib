@@ -16,7 +16,7 @@ export interface Param {
   type: string;
   value?: ParamValue;
   customType?: boolean;
-  hashed?: boolean;
+  messageType?: string;
 }
 
 export type ParamWithoutVariable<P extends Param> = P & { value?: boolean | string | string[] | Param[] | Param[][] };

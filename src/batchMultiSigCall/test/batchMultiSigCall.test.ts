@@ -1,4 +1,4 @@
-import { AaveV2, ChainId, ERC20, Magic } from "@kiroboio/fct-plugins";
+import { AaveV2, ChainId, ERC20, Magic, SecureStorage } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { beforeEach } from "mocha";
@@ -232,10 +232,99 @@ describe("BatchMultiSigCall", () => {
       const FCTExport = FCT.exportFCT();
 
       expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("magic");
+    });
 
-      const address = BatchMultiSigCall.from(FCTExport).utils.recoverAddress(FCTExport.signatures[0]);
+    it("Should create an FCT with messageType params", async () => {
+      const params = [
+        {
+          name: "key",
+          type: "bytes32",
+          customType: false,
+          value: "test",
+          messageType: "string",
+        },
+        {
+          name: "message",
+          type: "bytes",
+          customType: false,
+          value: "test",
+          messageType: "string",
+        },
+      ];
 
-      console.log("address", address);
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "magic",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params,
+      });
+
+      const FCTD = FCT.exportFCT();
+      const { typedData } = FCTD;
+
+      expect(typedData.types.transaction1[1]).to.deep.eq({ name: "key", type: "string" });
+      expect(typedData.types.transaction1[2]).to.deep.eq({ name: "message", type: "string" });
+      expect(typedData.message["transaction_1"].call.method_interface).to.eq("magic(bytes32,bytes)");
+      expect(typedData.message["transaction_1"].key).to.eq("test");
+      expect(typedData.message["transaction_1"].message).to.eq("test");
+
+      // Test import back
+      const FCT2 = BatchMultiSigCall.from(FCTD);
+
+      // Log every call every parameter
+      // console.log(FCT2.calls[0].get().params);
+
+      expect(FCT2.calls[0].get().params).to.deep.eq(params);
+    });
+
+    it("Should create an FCT with secure storage plugins", async () => {
+      const plugin = new SecureStorage.actions.Write_bytes({
+        chainId: "5",
+        initParams: {
+          methodParams: {
+            // key: "ethers.utils.hexZeroPad("0x4f631612941F710db646B8290dB097bFB8657dC2", 32),"
+            key: "test",
+            value: "hello",
+          },
+        },
+      });
+
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        plugin: plugin,
+      });
+
+      const FCTExport = FCT.exportFCT();
+
+      expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("write_bytes(bytes32,bytes)");
+    });
+
+    it("Should fail to add an FCT with messageTypes that are not supported", async () => {
+      const params = [
+        {
+          name: "key",
+          type: "bytes32",
+          customType: false,
+          value: "test",
+          messageType: "uint256",
+        },
+      ];
+
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "magic",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params,
+      });
+
+      expect(() => {
+        FCT.exportFCT();
+      }).to.throw(
+        `Param ${params[0].name} - Conversion from ${params[0].messageType} to ${params[0].type} is not supported`,
+      );
     });
   });
 
