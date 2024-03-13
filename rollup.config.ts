@@ -13,7 +13,7 @@ const esm = {
   output: {
     dir: "dist",
     format: "esm",
-    sourcemap: false,
+    sourcemap: true,
   },
 };
 const cjs = {
@@ -23,7 +23,7 @@ const cjs = {
     entryFileNames: "[name].cjs",
     chunkFileNames: "[name]-[hash].cjs",
     format: "cjs",
-    sourcemap: false,
+    sourcemap: true,
   },
   watch: false,
 };
