@@ -3,7 +3,6 @@ import { BigNumber, ethers } from "ethers";
 import { FCTCallParam, Param, ParamValue, TypedDataTypes, Variable } from "../../../../types";
 
 const ParamType = ethers.utils.ParamType;
-
 export const variableStarts = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000", "0xfe000"];
 
 export const manageValue = (value: string | number | boolean | Variable) => {
@@ -77,17 +76,17 @@ export const getParamsFromInputs = (inputs: ethers.utils.ParamType[], values: et
 };
 
 export const getParamsFromTypedData = ({
-  methodInterfaceParams,
+  coreParamTypes,
   parameters,
   types,
   primaryType,
 }: {
-  methodInterfaceParams: ethers.utils.ParamType[];
+  coreParamTypes: ethers.utils.ParamType[];
   parameters: Record<string, FCTCallParam>;
   types: TypedDataTypes;
   primaryType: string;
 }) => {
-  const generateRealInputParams = (types: TypedDataTypes, primaryType: string) => {
+  const generateTypedDataTypes = (types: TypedDataTypes, primaryType: string) => {
     let type = types[primaryType];
     // If the type[0] name is call and type is Call, then slice the first element
     if (type[0].name === "call" && type[0].type === "Call") {
@@ -99,7 +98,7 @@ export const getParamsFromTypedData = ({
       const typeWithoutArray = paramType.replace(/\[\]$/, "");
 
       if (types[typeWithoutArray]) {
-        const components = generateRealInputParams(types, typeWithoutArray);
+        const components = generateTypedDataTypes(types, typeWithoutArray);
         params.push(ParamType.from({ name, type: typeWithoutArray, components }));
       } else {
         params.push(ParamType.from({ name, type: paramType }));
@@ -109,51 +108,48 @@ export const getParamsFromTypedData = ({
   };
 
   const getParams = (
-    realInputParams: ethers.utils.ParamType[],
-    eip712InputTypes: ethers.utils.ParamType[],
+    typedDataTypes: ethers.utils.ParamType[],
+    coreParamTypes: ethers.utils.ParamType[],
     parameters: Record<string, FCTCallParam>,
   ) => {
-    return eip712InputTypes.map((input, i): Param => {
-      const realInput = realInputParams[i];
-      if (input.type === "tuple") {
+    return typedDataTypes.map((typedDataInput, i): Param => {
+      const coreInput = coreParamTypes[i];
+      if (typedDataInput.type === "tuple") {
         return {
-          name: realInput.name,
-          type: input.type,
+          name: typedDataInput.name,
+          type: typedDataInput.type,
           customType: true,
           value: getParams(
-            realInput.components,
-            input.components,
-            parameters[realInput.name] as Record<string, FCTCallParam>,
+            coreInput.components,
+            typedDataInput.components,
+            parameters[typedDataInput.name] as Record<string, FCTCallParam>,
           ),
         };
       }
-      if (input.type === "tuple[]") {
+      if (typedDataInput.type === "tuple[]") {
         return {
-          name: realInput.name,
-          type: input.type,
+          name: typedDataInput.name,
+          type: typedDataInput.type,
           customType: true,
-          value: (parameters[realInput.name] as Record<string, FCTCallParam>[]).map((tuple) =>
-            getParams(realInput.components, input.components, tuple),
+          value: (parameters[typedDataInput.name] as Record<string, FCTCallParam>[]).map((tuple) =>
+            getParams(coreInput.components, typedDataInput.components, tuple),
           ),
         };
       }
-      let value = parameters[realInput.name] as boolean | string | Variable | number;
+      let value = parameters[typedDataInput.name] as boolean | string | Variable | number;
       // Check if value isn't a variable
       value = manageValue(value);
       return {
-        name: realInput.name,
-        type: realInput.type,
+        name: typedDataInput.name,
+        type: coreInput.type,
         customType: false,
-        // If realInputType.type is a string and eip712InputType.type is bytes32, value is hashed
-        hashed: input.type === "bytes32" && realInput.type === "string",
+        messageType: typedDataInput.type,
         value,
       };
     });
   };
 
-  const realInputParams = generateRealInputParams(types, primaryType);
-
-  return getParams(realInputParams, methodInterfaceParams, parameters);
+  return getParams(generateTypedDataTypes(types, primaryType), coreParamTypes, parameters);
 };
 
 export const getAllSimpleParams = (params: Param[]): ParamValue[] => {

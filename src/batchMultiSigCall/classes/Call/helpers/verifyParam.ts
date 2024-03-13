@@ -25,28 +25,29 @@ export const isAddress = (value: string, key: string) => {
 };
 
 export const verifyParam = (param: Param) => {
+  const type = param.messageType || param.type;
   if (!param.value) {
     throw new Error(`Param ${param.name} is missing a value`);
   }
 
-  if (Array.isArray(param.value) && param.type.includes("[") && param.type.includes("]")) {
+  if (Array.isArray(param.value) && type.includes("[") && type.includes("]")) {
     if (InstanceOf.Variable(param.value)) {
-      throw new Error(`Param ${param.name} (${param.type}) - arrays cannot be set as Variables`);
+      throw new Error(`Param ${param.name} (${type}) - arrays cannot be set as Variables`);
     }
 
-    if (param.type.indexOf("]") - param.type.indexOf("[") > 1) {
-      const length = +param.type.slice(param.type.indexOf("[") + 1, param.type.indexOf("]"));
+    if (type.indexOf("]") - type.indexOf("[") > 1) {
+      const length = +type.slice(type.indexOf("[") + 1, type.indexOf("]"));
       if (param.value.length !== length) {
-        throw new Error(`Param ${param.name} (${param.type}) value is not an array of length ${length}`);
+        throw new Error(`Param ${param.name} (${type}) value is not an array of length ${length}`);
       }
     }
 
-    const type = param.type.slice(0, param.type.lastIndexOf("["));
+    const baseType = type.slice(0, type.lastIndexOf("["));
 
     (param.value as Exclude<typeof param.value, Param[]>).forEach((value, index) => {
       verifyParam({
         name: `${param.name}[${index}]`,
-        type,
+        type: baseType,
         value: value,
       });
     });
@@ -55,7 +56,7 @@ export const verifyParam = (param: Param) => {
   if (InstanceOf.Variable(param.value)) return;
 
   // Check if type boolean is a boolean value
-  if (param.type === "bool") {
+  if (type === "bool") {
     if (typeof param.value !== "boolean") {
       throw new Error(`Param ${param.name} is not a boolean`);
     }
@@ -65,7 +66,7 @@ export const verifyParam = (param: Param) => {
     return;
   }
   // uint value
-  if (param.type.startsWith("uint")) {
+  if (type.startsWith("uint")) {
     if (param.value.includes(".")) {
       throw new Error(`Param ${param.name} cannot be a decimal`);
     }
@@ -74,35 +75,35 @@ export const verifyParam = (param: Param) => {
     }
   }
   // int value
-  if (param.type.startsWith("int")) {
+  if (type.startsWith("int")) {
     if (param.value.includes(".")) {
       throw new Error(`Param ${param.name} cannot be a decimal`);
     }
   }
   // address
-  if (param.type === "address") {
+  if (type === "address") {
     if (!utils.isAddress(param.value)) {
       throw new Error(`Param ${param.name} is not a valid address`);
     }
   }
   // bytes
-  if (param.type.startsWith("bytes")) {
+  if (type.startsWith("bytes")) {
     if (!param.value.startsWith("0x")) {
       throw new Error(`Param ${param.name} is not a valid bytes value`);
     }
     // Check if type has a length
-    const length = param.type.match(/\d+/g);
+    const length = type.match(/\d+/g);
     if (!length) {
       // If no length, then the type is `bytes`
       if (InstanceOf.Variable(param.value)) {
-        throw new Error(`Param ${param.name} (${param.type}) - bytes cannot be set as Variables`);
+        throw new Error(`Param ${param.name} (${type}) - bytes cannot be set as Variables`);
       }
       return;
     }
 
     const requiredLength = +length[0] * 2 + 2;
     if (param.value.length !== requiredLength) {
-      throw new Error(`Param ${param.name} is not a valid ${param.type} value`);
+      throw new Error(`Param ${param.name} is not a valid ${type} value`);
     }
   }
 };

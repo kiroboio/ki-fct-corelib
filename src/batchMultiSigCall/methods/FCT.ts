@@ -382,7 +382,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
       const inputs = ifaceFunction.inputs;
 
       params = getParamsFromTypedData({
-        methodInterfaceParams: inputs,
+        coreParamTypes: inputs,
         parameters,
         types: typesObject,
         primaryType: `transaction${index + 1}`,
@@ -411,12 +411,10 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
       toENS: meta.to_ens,
       options: {
         gasLimit: meta.gas_limit,
-        // jumpOnSuccess: meta.jump_on_success === 0 ? "" : `node${callIndex + 1 + meta.jump_on_success}`,
         jumpOnSuccess:
           meta.jump_on_success === 0
             ? ""
             : map?.calls[callIndex + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`,
-        // jumpOnFail: meta.jump_on_fail === 0 ? "" : `node${callIndex + 1 + meta.jump_on_fail}`,
         jumpOnFail:
           meta.jump_on_fail === 0
             ? ""
@@ -425,7 +423,6 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
-        // validation: meta.validation === 0 ? "" : meta.validation.toString(),
         payerIndex: meta.payer_index,
         validation: meta.validation === 0 ? "" : map?.validations[meta.validation - 1] ?? meta.validation.toString(),
         usePureMethod: meta.method_interface.includes("(") ? false : true,

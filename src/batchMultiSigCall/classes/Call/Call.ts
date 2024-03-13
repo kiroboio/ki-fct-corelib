@@ -389,7 +389,7 @@ export class Call extends CallBase implements ICall {
     structTypes?: Record<string, { name: string; type: string }[]>;
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
-      return param.type;
+      return param.messageType || param.type;
     }
 
     let paramValue: Param[] | Param[][];
@@ -416,7 +416,7 @@ export class Call extends CallBase implements ICall {
       }
       return {
         name: item.name,
-        type: item.hashed ? "string" : item.type,
+        type: item.messageType || item.type,
       };
     });
 
