@@ -1,4 +1,4 @@
-import { AaveV2, ChainId, ERC20, Magic } from "@kiroboio/fct-plugins";
+import { AaveV2, ChainId, ERC20, Magic, SecureStorage } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { beforeEach } from "mocha";
@@ -276,6 +276,31 @@ describe("BatchMultiSigCall", () => {
       // console.log(FCT2.calls[0].get().params);
 
       expect(FCT2.calls[0].get().params).to.deep.eq(params);
+    });
+
+    it.only("Should create an FCT with secure storage plugins", async () => {
+      const plugin = new SecureStorage.actions.Write_bytes({
+        chainId: "5",
+        initParams: {
+          methodParams: {
+            // key: "ethers.utils.hexZeroPad("0x4f631612941F710db646B8290dB097bFB8657dC2", 32),"
+            key: "test",
+            value: "hello",
+          },
+        },
+      });
+
+      const data = await plugin.create();
+      console.log(data);
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        plugin: plugin,
+      });
+
+      const FCTExport = FCT.exportFCT();
+
+      expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("write_bytes(bytes32,bytes)");
     });
   });
 
