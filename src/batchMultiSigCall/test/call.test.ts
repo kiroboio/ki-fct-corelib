@@ -18,7 +18,7 @@ const defaultCall: IMSCallInput = {
       type: "uint256",
       value: "12",
       customType: false,
-      hashed: false,
+      // hashed: false,
     },
   ],
 };
