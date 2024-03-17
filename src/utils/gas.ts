@@ -81,7 +81,7 @@ export const getGasPrices = async ({
         },
         body: generateBody(),
       });
-      const data = await res.json();
+      const data = (await res.json()) as { result: unknown };
       const result = data.result as
         | { oldestBlock: string; baseFeePerGas: string[]; gasUsedRatio: number[]; reward?: string[][] }
         | undefined;

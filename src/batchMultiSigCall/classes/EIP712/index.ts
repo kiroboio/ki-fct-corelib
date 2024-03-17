@@ -1,5 +1,5 @@
 import { ChainId } from "@kiroboio/fct-plugins";
-import { MessageTypeProperty } from "@metamask/eth-sig-util/dist/sign-typed-data";
+import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { deepMerge } from "../../../helpers/deepMerge";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";

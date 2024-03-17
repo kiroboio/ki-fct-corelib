@@ -3,9 +3,9 @@
   "version": "3.9.0",
   "description": "Kirobo.io FCT Core library",
   "author": "Brendons Karelis <bk@kirobo.io>",
-  "main": "dist/cjs/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
   "keywords": [
     "ethereum",
     "web3",
@@ -39,7 +39,10 @@
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts .",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "build-esm": "tsc --project esm.tsconfig.json",
+    "build-cjs": "tsc --project commonjs.tsconfig.json",
+    "build-all": "npm run build-esm && npm run build-cjs"
   },
   "devDependencies": {
     "@flashbots/ethers-provider-bundle": "0.6.2",
