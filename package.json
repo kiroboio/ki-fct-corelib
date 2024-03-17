@@ -35,17 +35,17 @@
     "test:validation": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/**/Validation.test.ts",
     "test:variable": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Variables/Variables.test.ts",
     "test:call": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register src/batchMultiSigCall/classes/Call/Call.test.ts",
-    "build": "rollup --config rollup.config.ts --configPlugin typescript",
     "script": "ts-node --project tsconfig.testing.json",
     "fct": "ts-node scripts/fct.script.ts",
     "fct:getDomainData": "ts-node scripts/getDomainData.ts",
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "semantic-release": "semantic-release",
-    "_build-dist": "rollup -c && uglifyjs ./dist/core.js -o ./dist/core.min.js --source-map",
+    "build": "npm run build-esm && npm run build-cjs && npm run _build-dist",
     "build-esm": "tsc --project esm.tsconfig.json",
     "build-cjs": "tsc --project commonjs.tsconfig.json",
-    "build-all": "npm run build-esm && npm run build-cjs && npm run _build-dist"
+    "build-all": "npm run build-esm && npm run build-cjs && npm run _build-dist",
+    "_build-dist": "rollup -c && uglifyjs ./dist/core.js -o ./dist/core.min.js --source-map"
   },
   "devDependencies": {
     "@flashbots/ethers-provider-bundle": "0.6.2",
