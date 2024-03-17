@@ -1,0 +1,1184 @@
+[
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "impl",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "FCTE_EngineAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "ens",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "prevEns",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "FCTE_EnsManagerChanged",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "messageHash",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "meta",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "FCTE_Purged",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "messageHash",
+                "type": "bytes32"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "uint8",
+                        "name": "flags",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "expiresAt",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "starttime",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "lasttime",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "timestamp",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "repeatsLeft",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "maxRepeats",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "bytes7",
+                        "name": "engineId",
+                        "type": "bytes7"
+                    },
+                    {
+                        "internalType": "uint32",
+                        "name": "chilltime",
+                        "type": "uint32"
+                    },
+                    {
+                        "internalType": "uint224",
+                        "name": "reserved1",
+                        "type": "uint224"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved2",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved3",
+                        "type": "uint256"
+                    }
+                ],
+                "indexed": false,
+                "internalType": "struct FCT_Controller.Meta",
+                "name": "meta",
+                "type": "tuple"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "FCTE_Registered",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "previousAdminRole",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "newAdminRole",
+                "type": "bytes32"
+            }
+        ],
+        "name": "RoleAdminChanged",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            }
+        ],
+        "name": "RoleGranted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            }
+        ],
+        "name": "RoleRevoked",
+        "type": "event"
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "fallback"
+    },
+    {
+        "inputs": [],
+        "name": "ACTIVATION_ID_MASK",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ACTUATOR_ADMIN_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ACTUATOR_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "CHAIN_ID",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DEFAULT_ADMIN_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DOMAIN_SEPARATOR",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "EMPTY_HASH",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ENS_ADMIN_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ENS_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ID_VERSION_MASK",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "LOCAL_ENS_ADMIN_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "LOCAL_ENS_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "META_ACCUMATABLE_FLAG",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "META_BLOCKABLE_FLAG",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "META_EIP712_FLAG",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "META_PURGABLE_FLAG",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "NAME",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TARGET_ADMIN_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TARGET_ROLE",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "UID",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "VERSION",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "VERSION_NUMBER",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "activationId",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "activationInfo",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_engine",
+                "type": "address"
+            }
+        ],
+        "name": "addEngine",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "engine",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "messageHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getFctMeta",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "uint8",
+                        "name": "flags",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "expiresAt",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "starttime",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "lasttime",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint40",
+                        "name": "timestamp",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "repeatsLeft",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "maxRepeats",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "bytes7",
+                        "name": "engineId",
+                        "type": "bytes7"
+                    },
+                    {
+                        "internalType": "uint32",
+                        "name": "chilltime",
+                        "type": "uint32"
+                    },
+                    {
+                        "internalType": "uint224",
+                        "name": "reserved1",
+                        "type": "uint224"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved2",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved3",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct FCT_Controller.Meta",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getRoleAdmin",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "grantRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "hasRole",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "isExecuting",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "messageHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "isExecutingFCT",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32[]",
+                "name": "messageHashes",
+                "type": "bytes32[]"
+            }
+        ],
+        "name": "purge",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "dataHash",
+                "type": "bytes32"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "uint40",
+                        "name": "expiresAt",
+                        "type": "uint40"
+                    },
+                    {
+                        "internalType": "uint32",
+                        "name": "chilltime",
+                        "type": "uint32"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "maxRepeats",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "accumatable",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "eip712",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "purgeable",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "blockable",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "extraFlags",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint224",
+                        "name": "reserved1",
+                        "type": "uint224"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved2",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "reserved3",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct MetaInput",
+                "name": "meta",
+                "type": "tuple"
+            }
+        ],
+        "name": "register",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "messageHash",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "newMeta",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "newActivationId",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "renounceRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "revokeRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "s_activations",
+        "outputs": [
+            {
+                "internalType": "uint248",
+                "name": "nonce",
+                "type": "uint248"
+            },
+            {
+                "internalType": "bool",
+                "name": "executing",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "s_engines",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "s_ensManager",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "s_executing",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "s_fcts",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "flags",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint40",
+                "name": "expiresAt",
+                "type": "uint40"
+            },
+            {
+                "internalType": "uint40",
+                "name": "starttime",
+                "type": "uint40"
+            },
+            {
+                "internalType": "uint40",
+                "name": "lasttime",
+                "type": "uint40"
+            },
+            {
+                "internalType": "uint40",
+                "name": "timestamp",
+                "type": "uint40"
+            },
+            {
+                "internalType": "uint16",
+                "name": "repeatsLeft",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint16",
+                "name": "maxRepeats",
+                "type": "uint16"
+            },
+            {
+                "internalType": "bytes7",
+                "name": "engineId",
+                "type": "bytes7"
+            },
+            {
+                "internalType": "uint32",
+                "name": "chilltime",
+                "type": "uint32"
+            },
+            {
+                "internalType": "uint224",
+                "name": "reserved1",
+                "type": "uint224"
+            },
+            {
+                "internalType": "uint256",
+                "name": "reserved2",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "reserved3",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "ensManager",
+                "type": "address"
+            }
+        ],
+        "name": "setEnsManager",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes4",
+                "name": "interfaceId",
+                "type": "bytes4"
+            }
+        ],
+        "name": "supportsInterface",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "_engine",
+                "type": "address"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "ensHash",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "expectedAddress",
+                "type": "address"
+            }
+        ],
+        "name": "verifiedEnsToAddress",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "dest",
+                "type": "address"
+            },
+            {
+                "internalType": "uint8",
+                "name": "ensType",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            }
+        ],
+        "name": "version",
+        "outputs": [
+            {
+                "internalType": "bytes3",
+                "name": "",
+                "type": "bytes3"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
