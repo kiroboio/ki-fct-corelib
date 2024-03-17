@@ -40,14 +40,16 @@
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "semantic-release": "semantic-release",
+    "_build-dist": "rollup -c && uglifyjs ./dist/core.js -o ./dist/core.min.js",
     "build-esm": "tsc --project esm.tsconfig.json",
     "build-cjs": "tsc --project commonjs.tsconfig.json",
-    "build-all": "npm run build-esm && npm run build-cjs"
+    "build-all": "npm run build-esm && npm run build-cjs && npm run _build-dist"
   },
   "devDependencies": {
     "@flashbots/ethers-provider-bundle": "0.6.2",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.0",
     "@semantic-release/commit-analyzer": "^11.1.0",
     "@semantic-release/git": "^10.0.1",
