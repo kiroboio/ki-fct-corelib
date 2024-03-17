@@ -42,7 +42,7 @@
     "lint": "eslint  --ext .js,.ts .",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "semantic-release": "semantic-release",
-    "_build-dist": "rollup -c && uglifyjs ./dist/core.js -o ./dist/core.min.js",
+    "_build-dist": "rollup -c && uglifyjs ./dist/core.js -o ./dist/core.min.js --source-map",
     "build-esm": "tsc --project esm.tsconfig.json",
     "build-cjs": "tsc --project commonjs.tsconfig.json",
     "build-all": "npm run build-esm && npm run build-cjs && npm run _build-dist"

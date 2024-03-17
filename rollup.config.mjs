@@ -1,7 +1,6 @@
 // Need @rollup/plugin-json
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import { dts } from "rollup-plugin-dts";
 
 function getConfig(opts) {
   if (opts == null) {
@@ -39,16 +38,16 @@ function getConfig(opts) {
 
 export default [
   getConfig({ browser: true }),
-  {
-    input: "src/index.ts",
-    output: [{ file: "dist/index.d.ts" }],
-    plugins: [
-      // typescript({
-      //   tsconfig: "esm.tsconfig.json",
-      // }),
-      dts({
-        tsconfig: "esm.tsconfig.json",
-      }),
-    ],
-  },
+  // {
+  //   input: "src/index.ts",
+  //   output: [{ file: "dist/index.d.ts" }],
+  //   plugins: [
+  //     // typescript({
+  //     //   tsconfig: "esm.tsconfig.json",
+  //     // }),
+  //     dts({
+  //       tsconfig: "esm.tsconfig.json",
+  //     }),
+  //   ],
+  // },
 ];
