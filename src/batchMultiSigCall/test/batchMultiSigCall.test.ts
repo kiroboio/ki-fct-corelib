@@ -6,6 +6,7 @@ import { beforeEach } from "mocha";
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
+import { Interfaces } from "../../helpers/Interfaces";
 import { CallOptions } from "../../types";
 import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
@@ -325,6 +326,33 @@ describe("BatchMultiSigCall", () => {
       }).to.throw(
         `Param ${params[0].name} - Conversion from ${params[0].messageType} to ${params[0].type} is not supported`,
       );
+    });
+    it.only("Should export an efficient FCT", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "transfer",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params: [
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", value: "20" },
+        ],
+      });
+
+      const FCTExport = FCT.exportEfficientFCT();
+
+      expect(FCTExport.mcall.length).to.eq(1);
+      expect(FCTExport.computed.length).to.eq(0);
+      expect(FCTExport.validations.length).to.eq(0);
+
+      const IERC20 = Interfaces.ERC20;
+
+      const transferCalldata = IERC20.encodeFunctionData("transfer", [
+        "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        "20",
+      ]);
+
+      expect(FCTExport.mcall[0].data.toLowerCase()).to.eq(transferCalldata.toLowerCase());
     });
   });
 

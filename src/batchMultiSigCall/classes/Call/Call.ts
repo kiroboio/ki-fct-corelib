@@ -1,5 +1,6 @@
 import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
+import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
@@ -22,7 +23,7 @@ import {
 } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
-import { IMSCallInput } from "../../types";
+import { IMSCallInput, MSCall_Eff } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
@@ -230,6 +231,22 @@ export class Call extends CallBase implements ICall {
     };
   }
 
+  public getAsEfficientMCall(index: number): MSCall_Eff {
+    const call = this.get();
+    return {
+      to: this.FCT.variables.getValue(call.to, "address"),
+      value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+      data: this.getEncodedDataWithSignature(),
+      callid: CallID.asString({
+        calls: this.FCT.callsAsObjects,
+        validation: this.FCT.validation,
+        call: this.get(),
+        index,
+        payerIndex: this.options.payerIndex,
+      }),
+    };
+  }
+
   //
   // EIP 712 methods
   //
@@ -303,6 +320,14 @@ export class Call extends CallBase implements ICall {
 
   public getEncodedData(): string {
     return getEncodedMethodParams(this.getDecoded());
+  }
+
+  public getEncodedDataWithSignature(): string {
+    // return this.getFunctionSignature().slice(0, 10) + this.getEncodedData();
+    return ethers.utils.solidityPack(
+      ["bytes4", "bytes"],
+      [this.getFunctionSignature().slice(0, 10), this.getEncodedData()],
+    );
   }
 
   public decodeData({ inputData, outputData }: { inputData: string; outputData?: string }) {

@@ -103,6 +103,19 @@ export interface MSCall {
   typedHashes: string[];
 }
 
+export interface MSCall_Eff {
+  to: string;
+  value: string;
+  data: string;
+  callid: string;
+}
+
+export interface MSCalls_Eff {
+  mcall: MSCall_Eff[];
+  computed: IComputedData[];
+  validations: IValidationData[];
+}
+
 export interface IFCTOptions {
   id: string;
   name: string;

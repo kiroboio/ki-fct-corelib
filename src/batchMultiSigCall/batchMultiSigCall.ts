@@ -11,6 +11,7 @@ import {
   create,
   createMultiple,
   createPlugin,
+  exportEfficientFCT,
   exportFCT,
   exportMap,
   exportNotificationFCT,
@@ -199,6 +200,9 @@ export class BatchMultiSigCall {
   exportNotificationFCT = exportNotificationFCT;
   exportWithApprovals = exportWithApprovals;
   exportWithPayment = exportWithPayment;
+
+  // Export minimal FCT
+  exportEfficientFCT = exportEfficientFCT;
 
   // Export mapping
   exportMap = exportMap;
