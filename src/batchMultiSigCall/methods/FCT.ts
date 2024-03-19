@@ -12,7 +12,7 @@ import { Call, EIP712, SessionID } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
-import { FCTCall, IFCT, IFCTOptions, IMSCallInput, TypedDataMessageTransaction } from "../types";
+import { FCTCall, IFCT, IFCTOptions, IMSCallInput, MSCalls_Eff, TypedDataMessageTransaction } from "../types";
 import { PluginParams } from "./types";
 
 // If F is Multicall, return multicall, else return Call
@@ -481,6 +481,14 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   }
 
   return this.calls;
+}
+
+export function exportEfficientFCT(this: BatchMultiSigCall): MSCalls_Eff {
+  return {
+    mcall: this.calls.map((call, i) => call.getAsEfficientMCall(i)),
+    computed: this.computedAsData,
+    validations: this.validation.getForData(),
+  };
 }
 
 // NOTE: For now not used - we have custom plugins that do the same thing
