@@ -327,7 +327,7 @@ describe("BatchMultiSigCall", () => {
         `Param ${params[0].name} - Conversion from ${params[0].messageType} to ${params[0].type} is not supported`,
       );
     });
-    it.only("Should export an efficient FCT", async () => {
+    it("Should export an efficient FCT", async () => {
       await FCT.add({
         nodeId: "node1",
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",

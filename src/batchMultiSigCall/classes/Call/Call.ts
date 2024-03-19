@@ -1,6 +1,5 @@
 import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
 
 import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
@@ -323,11 +322,9 @@ export class Call extends CallBase implements ICall {
   }
 
   public getEncodedDataWithSignature(): string {
-    // return this.getFunctionSignature().slice(0, 10) + this.getEncodedData();
-    return ethers.utils.solidityPack(
-      ["bytes4", "bytes"],
-      [this.getFunctionSignature().slice(0, 10), this.getEncodedData()],
-    );
+    const funcSigAsBytes4 = this.getFunctionSignature().slice(0, 10);
+    const encodedData = this.getEncodedData().replace(/^0x/, "");
+    return funcSigAsBytes4 + encodedData;
   }
 
   public decodeData({ inputData, outputData }: { inputData: string; outputData?: string }) {
