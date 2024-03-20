@@ -1,5 +1,3 @@
-import { ethers } from "ethers";
-
 import { MSCall } from "../../types";
 import { CallID } from "../CallID";
 
@@ -64,7 +62,9 @@ const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
   return pathIndexes.reduce((acc, pathIndex) => {
     const call = calls[Number(pathIndex)];
     const { payerIndex } = CallID.parse(call.callId);
-    const payer = payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
+    // If payer is the activator, dont add it to the needed fuel
+    if (payerIndex === 0) return acc;
+    const payer = calls[payerIndex - 1].from;
     // If payer !== undefined AND payer !== lastPayer, add it to the array
     if (payer && payer !== acc[acc.length - 1]) {
       acc.push(payer);
@@ -118,7 +118,9 @@ export function getPayersForRoute({
     (acc, path) => {
       const call = calls[Number(path)];
       const { payerIndex, options } = CallID.parse(call.callId);
-      const payer = payerIndex === 0 ? ethers.constants.AddressZero : calls[payerIndex - 1].from;
+      // If payer is the activator, dont add it to the needed fuel
+      if (payerIndex === 0) return acc;
+      const payer = calls[payerIndex - 1].from;
 
       const gas = BigInt(options.gasLimit) || getFee("defaultGasLimit", chainId);
 

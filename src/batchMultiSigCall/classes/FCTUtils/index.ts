@@ -399,12 +399,14 @@ export class FCTUtils extends FCTBase {
 
     const allPayers = [
       ...new Set(
-        fct.mcall.map((call) => {
-          const { payerIndex } = CallID.parse(call.callId);
-          if (payerIndex === 0) return ethers.constants.AddressZero;
-          const payer = fct.mcall[payerIndex - 1].from;
-          return payer;
-        }),
+        fct.mcall
+          .map((call) => {
+            const { payerIndex } = CallID.parse(call.callId);
+            if (payerIndex === 0) return ethers.constants.AddressZero;
+            const payer = fct.mcall[payerIndex - 1].from;
+            return payer;
+          })
+          .filter((payer) => payer !== ethers.constants.AddressZero),
       ),
     ];
 
