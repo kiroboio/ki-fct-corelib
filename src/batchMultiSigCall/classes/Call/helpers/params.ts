@@ -114,25 +114,25 @@ export const getParamsFromTypedData = ({
   ) => {
     return typedDataTypes.map((typedDataInput, i): Param => {
       const coreInput = coreParamTypes[i];
-      if (typedDataInput.type === "tuple") {
+      if (typedDataInput.baseType === "tuple") {
         return {
           name: typedDataInput.name,
           type: typedDataInput.type,
           customType: true,
           value: getParams(
-            coreInput.components,
             typedDataInput.components,
+            coreInput.components,
             parameters[typedDataInput.name] as Record<string, FCTCallParam>,
           ),
         };
       }
-      if (typedDataInput.type === "tuple[]") {
+      if (typedDataInput.baseType === "tuple[]") {
         return {
           name: typedDataInput.name,
           type: typedDataInput.type,
           customType: true,
           value: (parameters[typedDataInput.name] as Record<string, FCTCallParam>[]).map((tuple) =>
-            getParams(coreInput.components, typedDataInput.components, tuple),
+            getParams(typedDataInput.components, coreInput.components, tuple),
           ),
         };
       }
