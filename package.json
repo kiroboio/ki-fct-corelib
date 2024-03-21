@@ -83,7 +83,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@kiroboio/fct-plugins": "latest",
+    "@kiroboio/fct-plugins": "1.1.639",
     "@metamask/eth-sig-util": "^5.1.0",
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8",

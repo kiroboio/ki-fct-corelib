@@ -824,10 +824,17 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+<<<<<<< HEAD
 "@kiroboio/fct-plugins@latest":
   version "1.1.640"
   resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.640.tgz#d931a6909d801dc0c7190a517ad796f53679b5f4"
   integrity sha512-vGPP9sr4NNUfwCIdkSUX8j92Iwzqnz+HLETzJLwTOchEKbdHcmeG3ibtBZbeag63ksF89Q1spegau3zLmseAOQ==
+=======
+"@kiroboio/fct-plugins@1.1.639":
+  version "1.1.639"
+  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.639.tgz#b0e9cb62f8142520599047b7c05978aadb301859"
+  integrity sha512-Qmao7hq7JLEF4/UnxOvJtkiEnOtva7w3tSiqMuCeQVHA71rgQxal0BZBvgjDn2UNscfy+8dGpCiNIS3Dnx5jCQ==
+>>>>>>> 60848f0e1ad1a411f40dba559b69cd5c5ce43d08
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@sushiswap/sdk" "^5.0.0-canary.116"
@@ -8134,6 +8141,7 @@ workerpool@6.2.1:
   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
