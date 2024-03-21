@@ -113,7 +113,6 @@ export const getParamsFromTypedData = ({
     parameters: Record<string, FCTCallParam>,
   ) => {
     return typedDataTypes.map((typedDataInput, i): Param => {
-      console.log("typedDataInput", typedDataInput);
       const coreInput = coreParamTypes[i];
       if (typedDataInput.baseType === "tuple") {
         return {
