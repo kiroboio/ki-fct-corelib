@@ -158,8 +158,9 @@ export class FCTUtils extends FCTBase {
       const jumpOnFail = callID.options.jumpOnFail;
 
       if (jumpOnSuccess === jumpOnFail) {
-        if (dontAddEdge.includes(flow)) continue;
-        g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
+        if (!dontAddEdge.includes(flow)) {
+          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
+        }
       } else {
         if (continueOnSuccessFlows.includes(flow)) {
           g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
