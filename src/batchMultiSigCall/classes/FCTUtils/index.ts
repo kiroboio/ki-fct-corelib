@@ -430,8 +430,8 @@ export class FCTUtils extends FCTBase {
         {} as { largest: PayerPayment; smallest: PayerPayment },
       );
 
-      const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest.pureEthCost });
-      const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest.pureEthCost });
+      const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest?.pureEthCost });
+      const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest?.pureEthCost });
 
       return {
         payer,

@@ -174,6 +174,12 @@ export function getEffectiveGasPrice({
   ).toString();
 }
 
-export function getCostInKiro({ ethPriceInKIRO, ethCost }: { ethPriceInKIRO: string | bigint; ethCost: bigint }) {
-  return ((ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
+export function getCostInKiro({
+  ethPriceInKIRO,
+  ethCost,
+}: {
+  ethPriceInKIRO: string | bigint;
+  ethCost: bigint | undefined;
+}) {
+  return (((ethCost || 0n) * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
 }
