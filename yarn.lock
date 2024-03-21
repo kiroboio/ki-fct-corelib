@@ -824,7 +824,7 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kiroboio/fct-plugins@1.1.636":
+"@kiroboio/fct-plugins@latest":
   version "1.1.636"
   resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.636.tgz#4fc95522c31b80b3b6b4b7c5e152a5903865d012"
   integrity sha512-1EPf5oejRXSU7Jq0Xx8jFCOzeQ8iEGTNZr2KmtCs4ko+r81x28QV6IMfWp7okU4Z/43c4gmfvPLGGjHaRHFubA==
