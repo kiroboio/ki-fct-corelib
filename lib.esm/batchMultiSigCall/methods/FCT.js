@@ -388,6 +388,13 @@ export function impFCT(fct, map) {
     }
     return this.calls;
 }
+export function exportEfficientFCT() {
+    return {
+        mcall: this.calls.map((call, i) => call.getAsEfficientMCall(i)),
+        computed: this.computedAsData,
+        validations: this.validation.getForData(),
+    };
+}
 // NOTE: For now not used - we have custom plugins that do the same thing
 // export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
 //   const iface = Interfaces.FCT_BatchMultiSigCall;

@@ -1,7 +1,7 @@
 import { AllPlugins } from "@kiroboio/fct-plugins";
 import { BatchMultiSigCallTypedData, CallOptions, DecodedCalls, DeepPartial, DeepRequired, IWithPlugin, MSCall, StrictMSCallInput, TypedDataMessageTransaction } from "../../../types";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { IMSCallInput } from "../../types";
+import { IMSCallInput, MSCall_Eff } from "../../types";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { ICall } from "./types";
@@ -22,6 +22,7 @@ export declare class Call extends CallBase implements ICall {
     get(): StrictMSCallInput;
     getDecoded(): DecodedCalls;
     getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall;
+    getAsEfficientMCall(index: number): MSCall_Eff;
     generateEIP712Type(index: number): {
         structTypes: {
             [key: string]: {
@@ -37,6 +38,7 @@ export declare class Call extends CallBase implements ICall {
     generateEIP712Message(index: number): TypedDataMessageTransaction;
     getTypedHashes(index: number): string[];
     getEncodedData(): string;
+    getEncodedDataWithSignature(): string;
     decodeData({ inputData, outputData }: {
         inputData: string;
         outputData?: string;

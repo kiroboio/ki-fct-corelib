@@ -113,9 +113,9 @@ export class FCTUtils extends FCTBase {
             const jumpOnSuccess = callID.options.jumpOnSuccess;
             const jumpOnFail = callID.options.jumpOnFail;
             if (jumpOnSuccess === jumpOnFail) {
-                if (dontAddEdge.includes(flow))
-                    continue;
-                g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
+                if (!dontAddEdge.includes(flow)) {
+                    g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
+                }
             }
             else {
                 if (continueOnSuccessFlows.includes(flow)) {
@@ -274,13 +274,15 @@ export class FCTUtils extends FCTBase {
             }, {});
         });
         const allPayers = [
-            ...new Set(fct.mcall.map((call) => {
+            ...new Set(fct.mcall
+                .map((call) => {
                 const { payerIndex } = CallID.parse(call.callId);
                 if (payerIndex === 0)
                     return ethers.constants.AddressZero;
                 const payer = fct.mcall[payerIndex - 1].from;
                 return payer;
-            })),
+            })
+                .filter((payer) => payer !== ethers.constants.AddressZero)),
         ];
         return allPayers.map((payer) => {
             const { largest, smallest } = data.reduce((acc, pathData) => {

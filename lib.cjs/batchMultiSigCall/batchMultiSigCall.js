@@ -158,6 +158,8 @@ class BatchMultiSigCall {
     exportNotificationFCT = methods_1.exportNotificationFCT;
     exportWithApprovals = methods_1.exportWithApprovals;
     exportWithPayment = methods_1.exportWithPayment;
+    // Export minimal FCT
+    exportEfficientFCT = methods_1.exportEfficientFCT;
     // Export mapping
     exportMap = methods_1.exportMap;
     // Import FCT

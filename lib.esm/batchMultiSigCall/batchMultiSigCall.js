@@ -1,7 +1,7 @@
 import { deepMerge } from "../helpers/deepMerge";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
-import { addAtIndex, create, createMultiple, createPlugin, exportFCT, exportMap, exportNotificationFCT, exportWithApprovals, exportWithPayment, getCall, getCallByNodeId, getIndexByNodeId, getPlugin, getPluginClass, getPluginData, importFCT, importFCTWithMap, } from "./methods";
+import { addAtIndex, create, createMultiple, createPlugin, exportEfficientFCT, exportFCT, exportMap, exportNotificationFCT, exportWithApprovals, exportWithPayment, getCall, getCallByNodeId, getIndexByNodeId, getPlugin, getPluginClass, getPluginData, importFCT, importFCTWithMap, } from "./methods";
 import * as utils from "./utils";
 export class BatchMultiSigCall {
     batchMultiSigSelector = "0x7d971612";
@@ -154,6 +154,8 @@ export class BatchMultiSigCall {
     exportNotificationFCT = exportNotificationFCT;
     exportWithApprovals = exportWithApprovals;
     exportWithPayment = exportWithPayment;
+    // Export minimal FCT
+    exportEfficientFCT = exportEfficientFCT;
     // Export mapping
     exportMap = exportMap;
     // Import FCT

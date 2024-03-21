@@ -90,20 +90,20 @@ export const getParamsFromTypedData = ({ coreParamTypes, parameters, types, prim
     const getParams = (typedDataTypes, coreParamTypes, parameters) => {
         return typedDataTypes.map((typedDataInput, i) => {
             const coreInput = coreParamTypes[i];
-            if (typedDataInput.type === "tuple") {
+            if (typedDataInput.baseType === "tuple") {
                 return {
                     name: typedDataInput.name,
                     type: typedDataInput.type,
                     customType: true,
-                    value: getParams(coreInput.components, typedDataInput.components, parameters[typedDataInput.name]),
+                    value: getParams(typedDataInput.components, coreInput.components, parameters[typedDataInput.name]),
                 };
             }
-            if (typedDataInput.type === "tuple[]") {
+            if (typedDataInput.baseType === "tuple[]") {
                 return {
                     name: typedDataInput.name,
                     type: typedDataInput.type,
                     customType: true,
-                    value: parameters[typedDataInput.name].map((tuple) => getParams(coreInput.components, typedDataInput.components, tuple)),
+                    value: parameters[typedDataInput.name].map((tuple) => getParams(typedDataInput.components, coreInput.components, tuple)),
                 };
             }
             let value = parameters[typedDataInput.name];

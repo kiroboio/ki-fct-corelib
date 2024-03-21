@@ -3,7 +3,7 @@ import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
 import { FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
-import { addAtIndex, create, createMultiple, createPlugin, exportFCT, exportMap, exportNotificationFCT, exportWithApprovals, exportWithPayment, getCall, getCallByNodeId, getIndexByNodeId, getPlugin, getPluginClass, getPluginData, importFCT, importFCTWithMap } from "./methods";
+import { addAtIndex, create, createMultiple, createPlugin, exportEfficientFCT, exportFCT, exportMap, exportNotificationFCT, exportWithApprovals, exportWithPayment, getCall, getCallByNodeId, getIndexByNodeId, getPlugin, getPluginClass, getPluginData, importFCT, importFCTWithMap } from "./methods";
 import { BatchMultiSigCallConstructor, DecodedCalls, ICallDefaults, IFCTOptions, RequiredFCTOptions, TypedDataDomain } from "./types";
 import * as utils from "./utils";
 export declare class BatchMultiSigCall {
@@ -62,8 +62,8 @@ export declare class BatchMultiSigCall {
     } & O;
     setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C): Omit<import("../types").RequiredKeys<Partial<import("./types").MSCallBase>, "value">, "nodeId"> & {
         options: {
-            gasLimit: string;
             validation: string;
+            gasLimit: string;
             falseMeansFail: boolean;
             usePureMethod: boolean;
             permissions: string;
@@ -126,6 +126,7 @@ export declare class BatchMultiSigCall {
     exportNotificationFCT: typeof exportNotificationFCT;
     exportWithApprovals: typeof exportWithApprovals;
     exportWithPayment: typeof exportWithPayment;
+    exportEfficientFCT: typeof exportEfficientFCT;
     exportMap: typeof exportMap;
     importFCT: typeof importFCT;
     importFCTWithMap: typeof importFCTWithMap;

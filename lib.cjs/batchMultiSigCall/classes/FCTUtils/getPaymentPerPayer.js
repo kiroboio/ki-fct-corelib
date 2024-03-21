@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCostInKiro = exports.getEffectiveGasPrice = exports.getPayersForRoute = exports.getFee = void 0;
-const ethers_1 = require("ethers");
 const CallID_1 = require("../CallID");
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
@@ -51,7 +50,10 @@ const getPayers = (calls, pathIndexes) => {
     return pathIndexes.reduce((acc, pathIndex) => {
         const call = calls[Number(pathIndex)];
         const { payerIndex } = CallID_1.CallID.parse(call.callId);
-        const payer = payerIndex === 0 ? ethers_1.ethers.constants.AddressZero : calls[payerIndex - 1].from;
+        // If payer is the activator, dont add it to the needed fuel
+        if (payerIndex === 0)
+            return acc;
+        const payer = calls[payerIndex - 1].from;
         // If payer !== undefined AND payer !== lastPayer, add it to the array
         if (payer && payer !== acc[acc.length - 1]) {
             acc.push(payer);
@@ -87,7 +89,10 @@ function getPayersForRoute({ chainId, calls, pathIndexes, calldata, }) {
     const gasForFCTCall = pathIndexes.reduce((acc, path) => {
         const call = calls[Number(path)];
         const { payerIndex, options } = CallID_1.CallID.parse(call.callId);
-        const payer = payerIndex === 0 ? ethers_1.ethers.constants.AddressZero : calls[payerIndex - 1].from;
+        // If payer is the activator, dont add it to the needed fuel
+        if (payerIndex === 0)
+            return acc;
+        const payer = calls[payerIndex - 1].from;
         const gas = BigInt(options.gasLimit) || getFee("defaultGasLimit", chainId);
         const amount = gas + commonGasPerCall;
         if (acc[payer]) {

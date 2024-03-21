@@ -825,9 +825,9 @@
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
 "@kiroboio/fct-plugins@latest":
-  version "1.1.636"
-  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.636.tgz#4fc95522c31b80b3b6b4b7c5e152a5903865d012"
-  integrity sha512-1EPf5oejRXSU7Jq0Xx8jFCOzeQ8iEGTNZr2KmtCs4ko+r81x28QV6IMfWp7okU4Z/43c4gmfvPLGGjHaRHFubA==
+  version "1.1.640"
+  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.640.tgz#d931a6909d801dc0c7190a517ad796f53679b5f4"
+  integrity sha512-vGPP9sr4NNUfwCIdkSUX8j92Iwzqnz+HLETzJLwTOchEKbdHcmeG3ibtBZbeag63ksF89Q1spegau3zLmseAOQ==
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@sushiswap/sdk" "^5.0.0-canary.116"

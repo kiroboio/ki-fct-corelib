@@ -175,6 +175,21 @@ export class Call extends CallBase {
             typedHashes: this.getTypedHashes(index),
         };
     }
+    getAsEfficientMCall(index) {
+        const call = this.get();
+        return {
+            to: this.FCT.variables.getValue(call.to, "address"),
+            value: this.FCT.variables.getValue(call.value, "uint256", "0"),
+            data: this.getEncodedDataWithSignature(),
+            callid: CallID.asString({
+                calls: this.FCT.callsAsObjects,
+                validation: this.FCT.validation,
+                call: this.get(),
+                index,
+                payerIndex: this.options.payerIndex,
+            }),
+        };
+    }
     //
     // EIP 712 methods
     //
@@ -238,6 +253,11 @@ export class Call extends CallBase {
     }
     getEncodedData() {
         return getEncodedMethodParams(this.getDecoded());
+    }
+    getEncodedDataWithSignature() {
+        const funcSigAsBytes4 = this.getFunctionSignature().slice(0, 10);
+        const encodedData = this.getEncodedData().replace(/^0x/, "");
+        return funcSigAsBytes4 + encodedData;
     }
     decodeData({ inputData, outputData }) {
         // return decodeFromData(this.getDecoded(), inputData);

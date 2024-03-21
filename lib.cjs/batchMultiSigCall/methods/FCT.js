@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.impFCT = exports.importFCTWithMap = exports.importFCT = exports.exportNotificationFCT = exports.exportWithPayment = exports.exportWithApprovals = exports.exportFCT = exports.exportMap = exports.getIndexByNodeId = exports.getCallByNodeId = exports.getCall = exports.createPlugin = exports.addAtIndex = exports.createMultiple = exports.create = void 0;
+exports.exportEfficientFCT = exports.impFCT = exports.importFCTWithMap = exports.importFCT = exports.exportNotificationFCT = exports.exportWithPayment = exports.exportWithApprovals = exports.exportFCT = exports.exportMap = exports.getIndexByNodeId = exports.getCallByNodeId = exports.getCall = exports.createPlugin = exports.addAtIndex = exports.createMultiple = exports.create = void 0;
 const fct_plugins_1 = require("@kiroboio/fct-plugins");
 const eth_sig_util_1 = require("@metamask/eth-sig-util");
 const ethers_1 = require("ethers");
@@ -406,6 +406,14 @@ function impFCT(fct, map) {
     return this.calls;
 }
 exports.impFCT = impFCT;
+function exportEfficientFCT() {
+    return {
+        mcall: this.calls.map((call, i) => call.getAsEfficientMCall(i)),
+        computed: this.computedAsData,
+        validations: this.validation.getForData(),
+    };
+}
+exports.exportEfficientFCT = exportEfficientFCT;
 // NOTE: For now not used - we have custom plugins that do the same thing
 // export async function importEncodedFCT(this: BatchMultiSigCall, calldata: string) {
 //   const iface = Interfaces.FCT_BatchMultiSigCall;
