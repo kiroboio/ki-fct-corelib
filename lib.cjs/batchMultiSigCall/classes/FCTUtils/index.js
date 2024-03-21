@@ -302,8 +302,8 @@ class FCTUtils extends FCTBase_1.FCTBase {
                 }
                 return currentValues;
             }, {});
-            const largestKiroCost = (0, getPaymentPerPayer_1.getCostInKiro)({ ethPriceInKIRO, ethCost: largest.pureEthCost });
-            const smallestKiroCost = (0, getPaymentPerPayer_1.getCostInKiro)({ ethPriceInKIRO, ethCost: smallest.pureEthCost });
+            const largestKiroCost = (0, getPaymentPerPayer_1.getCostInKiro)({ ethPriceInKIRO, ethCost: largest?.pureEthCost });
+            const smallestKiroCost = (0, getPaymentPerPayer_1.getCostInKiro)({ ethPriceInKIRO, ethCost: smallest?.pureEthCost });
             return {
                 payer,
                 largestPayment: {

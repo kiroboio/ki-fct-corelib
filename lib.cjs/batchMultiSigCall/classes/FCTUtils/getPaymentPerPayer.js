@@ -127,8 +127,8 @@ function getEffectiveGasPrice({ maxGasPrice, gasPrice, baseFeeBPS, bonusFeeBPS, 
         WHOLE_IN_BPS).toString();
 }
 exports.getEffectiveGasPrice = getEffectiveGasPrice;
-function getCostInKiro({ ethPriceInKIRO, ethCost }) {
-    return ((ethCost * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
+function getCostInKiro({ ethPriceInKIRO, ethCost, }) {
+    return (((ethCost || 0n) * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
 }
 exports.getCostInKiro = getCostInKiro;
 //# sourceMappingURL=getPaymentPerPayer.js.map

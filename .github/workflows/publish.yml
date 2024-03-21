@@ -11,7 +11,7 @@ jobs:
           persist-credentials: false # this prevents GitHub actions from using a token we don't want to use
           fetch-depth: 0 # this is required to fetch all the tags
       - name: Install and Build
-        run: yarn install --frozen-lockfile && yarn build
+        run: yarn install && yarn build
       - name: Release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

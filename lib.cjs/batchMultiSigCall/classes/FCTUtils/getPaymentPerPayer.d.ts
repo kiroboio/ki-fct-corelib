@@ -33,9 +33,9 @@ export declare function getEffectiveGasPrice({ maxGasPrice, gasPrice, baseFeeBPS
     baseFeeBPS: bigint;
     bonusFeeBPS: bigint;
 }): string;
-export declare function getCostInKiro({ ethPriceInKIRO, ethCost }: {
+export declare function getCostInKiro({ ethPriceInKIRO, ethCost, }: {
     ethPriceInKIRO: string | bigint;
-    ethCost: bigint;
+    ethCost: bigint | undefined;
 }): string;
 export {};
 //# sourceMappingURL=getPaymentPerPayer.d.ts.map
