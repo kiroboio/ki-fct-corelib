@@ -134,6 +134,18 @@ export class Call extends CallBase implements ICall {
     });
   }
 
+  public isExternalVariableUsed() {
+    const call = this.get();
+    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+
+    return checks.some((item) => {
+      if (InstanceOf.Variable(item)) {
+        return item.type === "external";
+      }
+      return false;
+    });
+  }
+
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     const callDefaults = { ...this.FCT.callDefault };

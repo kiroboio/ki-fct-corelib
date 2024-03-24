@@ -654,6 +654,12 @@ export class FCTUtils extends FCTBase {
     ) as ISimpleTxTrace;
   };
 
+  usesExternalVariables() {
+    return this.FCT.calls.some((call) => {
+      return call.isExternalVariableUsed();
+    });
+  }
+
   private _validateFCTKeys(keys: string[]) {
     const validKeys = [
       "typeHash",
