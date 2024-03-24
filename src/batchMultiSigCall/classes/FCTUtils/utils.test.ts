@@ -22,6 +22,11 @@ describe("BatchMultiSigCall utils", () => {
     });
 
     expect(FCTWithExternalVariable.utils.usesExternalVariables()).to.be.true;
+
+    const exportedFCT = FCTWithExternalVariable.exportFCT();
+    const importedFCT = BatchMultiSigCall.from(exportedFCT);
+
+    expect(importedFCT.utils.usesExternalVariables()).to.be.true;
   });
 
   it("Should return false on usesExternalVariables", async () => {
@@ -36,5 +41,10 @@ describe("BatchMultiSigCall utils", () => {
     });
 
     expect(FCTWithExternalVariable.utils.usesExternalVariables()).to.be.false;
+
+    const exportedFCT = FCTWithExternalVariable.exportFCT();
+    const importedFCT = BatchMultiSigCall.from(exportedFCT);
+
+    expect(importedFCT.utils.usesExternalVariables()).to.be.false;
   });
 });

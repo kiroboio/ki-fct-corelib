@@ -142,6 +142,12 @@ export class Call extends CallBase implements ICall {
       if (InstanceOf.Variable(item)) {
         return item.type === "external";
       }
+
+      if (typeof item === "string" && (item.length === 42 || item.length === 66)) {
+        const hexString = item.toLowerCase();
+        return hexString.startsWith("0xfc0000");
+      }
+
       return false;
     });
   }

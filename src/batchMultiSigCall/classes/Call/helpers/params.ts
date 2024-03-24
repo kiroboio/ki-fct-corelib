@@ -3,7 +3,7 @@ import { BigNumber, ethers } from "ethers";
 import { FCTCallParam, Param, ParamValue, TypedDataTypes, Variable } from "../../../../types";
 
 const ParamType = ethers.utils.ParamType;
-export const variableStarts = ["0xfb0", "0xfa0", "0xfc00000", "0xfd00000", "0xfdb000", "0xfe000"];
+export const variableStarts = ["0xfb000000", "0xfa00000", "0xfc00000", "0xfd00000", "0xfdb000", "0xfe000"];
 
 export const manageValue = (value: string | number | boolean | Variable) => {
   if (BigNumber.isBigNumber(value)) {
