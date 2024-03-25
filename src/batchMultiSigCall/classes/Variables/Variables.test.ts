@@ -65,9 +65,16 @@ describe("Variables", () => {
 
       expect(fct.typedData.types).to.include.keys("Computed");
 
-      expect(fct.typedData.message.transaction_2.amount).to.equal("0xFE00000000000000000000000000000000000001");
+      expect(fct.typedData.message.transaction_2.amount).to.equal(
+        "0xFE00000000000000000000000000000000000000000000000000000000000001",
+      );
 
-      expect(fct.computed[0].values).to.deep.eq(["0xFD00000000000000000000000000000000000001", "2", "0", "0"]);
+      expect(fct.computed[0].values).to.deep.eq([
+        "0xFD00000000000000000000000000000000000000000000000000000000000001",
+        "2",
+        "0",
+        "0",
+      ]);
       expect(fct.computed[0].operators).to.deep.eq([ethers.utils.id("/"), ethers.utils.id("+"), ethers.utils.id("+")]);
       expect(fct.computed[0].overflowProtection).to.deep.eq(true);
     });

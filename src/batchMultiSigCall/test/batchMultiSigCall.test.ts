@@ -592,7 +592,9 @@ describe("BatchMultiSigCall", () => {
       });
 
       expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
-      expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFD00000000000000000000000000000000000001");
+      expect(FCT.typedData.message["transaction_2"].amount).to.eq(
+        "0xFD00000000000000000000000000000000000000000000000000000000000001",
+      );
 
       expect(FCT.typedData.message["transaction_3"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
       expect(FCT.typedData.message["transaction_3"].amount).to.eq("20");
@@ -652,9 +654,11 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT).to.be.an("object");
 
-      expect(FCT.typedData.message["transaction_2"].amount).to.eq("0xFE00000000000000000000000000000000000001");
+      expect(FCT.typedData.message["transaction_2"].amount).to.eq(
+        "0xFE00000000000000000000000000000000000000000000000000000000000001",
+      );
 
-      expect(FCT.computed[0].values[0]).to.eq("0xFD00000000000000000000000000000000000001");
+      expect(FCT.computed[0].values[0]).to.eq("0xFD00000000000000000000000000000000000000000000000000000000000001");
       expect(FCT.computed[0].operators[0]).to.eq(ethers.utils.id("-"));
     });
     //

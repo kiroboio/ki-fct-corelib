@@ -1,12 +1,12 @@
 import {
-  ComputedBase,
-  ComputedBaseBytes,
-  FCBase,
-  FCBaseBytes,
-  FDBackBase,
-  FDBackBaseBytes,
-  FDBase,
-  FDBaseBytes,
+  BackOutputVariableBaseAddress,
+  BackOutputVariableBaseBytes32,
+  ComputedBaseAddress,
+  ComputedBaseBytes32,
+  ExternalVariableBaseAddress,
+  ExternalVariableBaseBytes32,
+  OutputVariableBaseAddress,
+  OutputVariableBaseBytes32,
 } from "../constants";
 import { Variable } from "../types";
 import { globalVariables, globalVariablesBytes } from "./globalVariables";
@@ -46,18 +46,10 @@ export function getOutputVariable({
 
   if (innerIndex < 0) {
     innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(4, "0");
-    if (type.includes("bytes")) {
-      base = FDBackBaseBytes;
-    } else {
-      base = FDBackBase;
-    }
+    base = type === "address" ? BackOutputVariableBaseAddress : BackOutputVariableBaseBytes32;
   } else {
     innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    if (type.includes("bytes")) {
-      base = FDBaseBytes;
-    } else {
-      base = FDBase;
-    }
+    base = type === "address" ? OutputVariableBaseAddress : OutputVariableBaseBytes32;
   }
 
   return (innerIndexHex + outputIndexHex).padStart(base.length, base);
@@ -71,12 +63,8 @@ export function getOutputVariable({
  */
 export function getExternalVariable({ index, type }: { index: number; type: string }) {
   const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-
-  if (type.includes("bytes")) {
-    return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
-  }
-
-  return outputIndexHex.padStart(FCBase.length, FCBase);
+  const base = type === "address" ? ExternalVariableBaseAddress : ExternalVariableBaseBytes32;
+  return outputIndexHex.padStart(base.length, base);
 }
 
 /**
@@ -87,12 +75,8 @@ export function getExternalVariable({ index, type }: { index: number; type: stri
  */
 export function getComputedVariable({ index, type }: { index: number; type: string }) {
   const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-
-  if (type.includes("bytes")) {
-    return outputIndexHex.padStart(ComputedBaseBytes.length, ComputedBaseBytes);
-  }
-
-  return outputIndexHex.padStart(ComputedBase.length, ComputedBase);
+  const base = type === "address" ? ComputedBaseAddress : ComputedBaseBytes32;
+  return outputIndexHex.padStart(base.length, base);
 }
 
 /**

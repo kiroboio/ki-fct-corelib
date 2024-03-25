@@ -42,7 +42,7 @@ describe("Validation", () => {
     expect(fct.typedData.message.transaction_1.call.validation).to.equal(1);
 
     const validation1 = fct.validations[0];
-    expect(validation1.value1).to.equal("0xFD00000000000000000000000000000000000001");
+    expect(validation1.value1).to.equal("0xFD00000000000000000000000000000000000000000000000000000000000001");
     expect(validation1.operator).to.equal(ethers.utils.id("equal"));
     expect(validation1.value2).to.equal("20");
   });

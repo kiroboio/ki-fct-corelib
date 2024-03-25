@@ -666,14 +666,19 @@ export class FCTUtils extends FCTBase {
     // - calls
     // - computed variables
     // - validations
-    const inCalls = this.FCT.calls.some((call) => {
-      return call.isExternalVariableUsed();
-    });
-    if (inCalls) return true;
-    const inComputed = this.FCT.variables.isExternalVariableUsed();
-    if (inComputed) return true;
-    const inValidations = this.FCT.validation.isExternalVariableUsed();
-    return inValidations;
+    let result = false;
+    if (!result) {
+      result = this.FCT.calls.some((call) => {
+        return call.isExternalVariableUsed();
+      });
+    }
+    if (!result) {
+      result = this.FCT.variables.isExternalVariableUsed();
+    }
+    if (!result) {
+      result = this.FCT.validation.isExternalVariableUsed();
+    }
+    return result;
   }
 
   private _validateFCTKeys(keys: string[]) {

@@ -20,6 +20,7 @@ import {
   StrictMSCallInput,
   TypedDataMessageTransaction,
 } from "../../../types";
+import { isComputedVariable, isExternalVariable } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput, MSCall_Eff } from "../../types";
@@ -118,19 +119,12 @@ export class Call extends CallBase implements ICall {
     const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
 
     return checks.some((item) => {
-      if (InstanceOf.Variable(item)) {
-        return item.id === id;
-      }
-
-      if (typeof item === "string" && (item.length === 42 || item.length === 66)) {
-        // If it is a string, it can be a variable as string instead of object type
-        const hexString = item.toLowerCase();
-        if (hexString.startsWith("0xfe000")) {
-          const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
-          return parsedIndex === (index + 1).toString();
-        }
-      }
-      return false;
+      return isComputedVariable({
+        strict: true,
+        value: item,
+        id,
+        index,
+      });
     });
   }
 
@@ -138,18 +132,7 @@ export class Call extends CallBase implements ICall {
     const call = this.get();
     const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
 
-    return checks.some((item) => {
-      if (InstanceOf.Variable(item)) {
-        return item.type === "external";
-      }
-
-      if (typeof item === "string" && (item.length === 42 || item.length === 66)) {
-        const hexString = item.toLowerCase();
-        return hexString.startsWith("0xfc0000");
-      }
-
-      return false;
-    });
+    return checks.some(isExternalVariable);
   }
 
   public get(): StrictMSCallInput {

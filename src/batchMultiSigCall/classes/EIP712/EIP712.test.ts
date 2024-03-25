@@ -88,7 +88,7 @@ describe("BatchMultiSigCall EIP712", () => {
   });
 
   it("should generate the correct EIP712 typed data message", () => {
-    const { meta, engine, limits, transaction_1, transaction_2, computed_1 } = eip712.getTypedDataMessage();
+    const { limits, transaction_1, transaction_2, computed_1 } = eip712.getTypedDataMessage();
     // expect(meta).to.deep.equal({
     //   name: "",
     //   builder: FCT.options.builder,
@@ -147,12 +147,12 @@ describe("BatchMultiSigCall EIP712", () => {
         jump_on_fail: 0,
         method_interface: "transfer(address,uint256)",
       },
-      amount: "0xFE00000000000000000000000000000000000001", // Computed Variable
       recipient: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
+      amount: "0xFE00000000000000000000000000000000000000000000000000000000000001", // Computed Variable
     });
     expect(computed_1).to.deep.equal({
       index: "1",
-      value_1: "0xFD00000000000000000000000000000000000001",
+      value_1: "0xFD00000000000000000000000000000000000000000000000000000000000001",
       op_1: "+",
       value_2: "2",
       op_2: "*",
