@@ -398,36 +398,41 @@ export class FCTUtils extends FCTBase {
       );
     });
 
-    const allPayers = [
-      ...new Set(
-        fct.mcall
-          .map((call) => {
-            const { payerIndex } = CallID.parse(call.callId);
-            if (payerIndex === 0) return ethers.constants.AddressZero;
-            const payer = fct.mcall[payerIndex - 1].from;
-            return payer;
-          })
-          .filter((payer) => payer !== ethers.constants.AddressZero),
-      ),
-    ];
+    const allSenders = [...new Set(fct.mcall.map((call) => call.from))];
 
-    return allPayers.map((payer) => {
+    return allSenders.map((payer) => {
       const { largest, smallest } = data.reduce(
-        (acc, pathData) => {
-          const currentValues = acc;
-          const currentLargestValue = currentValues.largest?.ethCost || 0n;
+        (currentValues, pathData) => {
+          if (!pathData[payer as keyof typeof pathData]) {
+            return currentValues;
+          }
+
+          const currentLargestValue = currentValues.largest?.ethCost;
           const currentSmallestValue = currentValues.smallest?.ethCost;
 
           const value = pathData[payer as keyof typeof pathData]?.pureEthCost || 0n;
-          if (!currentLargestValue || value > currentLargestValue) {
+          if (value > currentLargestValue) {
             currentValues.largest = pathData[payer as keyof typeof pathData];
           }
-          if (!currentSmallestValue || value < currentSmallestValue) {
+          if (currentSmallestValue == 0n || value < currentSmallestValue) {
             currentValues.smallest = pathData[payer as keyof typeof pathData];
           }
           return currentValues;
         },
-        {} as { largest: PayerPayment; smallest: PayerPayment },
+        {
+          largest: {
+            payer,
+            gas: 0n,
+            ethCost: 0n,
+            pureEthCost: 0n,
+          },
+          smallest: {
+            payer,
+            gas: 0n,
+            ethCost: 0n,
+            pureEthCost: 0n,
+          },
+        } as { largest: PayerPayment; smallest: PayerPayment },
       );
 
       const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest?.pureEthCost });
@@ -453,8 +458,10 @@ export class FCTUtils extends FCTBase {
     });
   };
 
+  public getPaymentPerSender = this.getPaymentPerPayer;
+
   public getMaxGas = () => {
-    const allPayers = this.getPaymentPerPayer({ ethPriceInKIRO: "0" });
+    const allPayers = this.getPaymentPerSender({ ethPriceInKIRO: "0" });
 
     return allPayers.reduce((acc, payer) => {
       const largestGas = payer.largestPayment.gas;

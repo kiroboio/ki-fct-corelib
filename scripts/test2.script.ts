@@ -2,7 +2,7 @@
 import * as dotenv from "dotenv";
 
 import { BatchMultiSigCall, ethers } from "../src";
-import FCTData from "./jj.json";
+import FCTData from "./fct.json";
 
 dotenv.config();
 
@@ -16,26 +16,9 @@ async function main() {
   console.log(routes);
 
   const payments = FCT.utils.getPaymentPerPayer({
-    ethPriceInKIRO: "123",
+    ethPriceInKIRO: "123000000000",
   });
   console.log(payments);
-  // const FCT = new BatchMultiSigCall({ chainId: "1" });
-
-  // await FCT.add({
-  //   to: randAddr(),
-  //   from: randAddr(),
-  //   value: "123",
-  //   options: {
-  //     gasLimit: "40000",
-  //     payerIndex: 0,
-  //   },
-  // });
-
-  // const payments = FCT.utils.getPaymentPerPayer({
-  //   ethPriceInKIRO: "123",
-  // });
-
-  // console.log(payments);
 }
 
 main()
