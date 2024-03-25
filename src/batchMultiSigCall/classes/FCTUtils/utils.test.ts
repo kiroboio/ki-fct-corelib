@@ -2,14 +2,11 @@ import { expect } from "chai";
 import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { freshTestFCT } from "../../test/helpers";
 // import { SessionID } from ".";
 
 const getRandomAddress = () => ethers.Wallet.createRandom().address;
 
 describe("BatchMultiSigCall utils", () => {
-  const FCT = freshTestFCT({ chainId: "1" });
-
   it("Should return true on usesExternalVariables", async () => {
     const FCTWithExternalVariable = new BatchMultiSigCall({
       chainId: "1",
@@ -46,5 +43,50 @@ describe("BatchMultiSigCall utils", () => {
     const importedFCT = BatchMultiSigCall.from(exportedFCT);
 
     expect(importedFCT.utils.usesExternalVariables()).to.be.false;
+  });
+
+  it("Should return true on usesExternalVariables when used in computed", async () => {
+    const FCT = new BatchMultiSigCall({
+      chainId: "1",
+    });
+
+    await FCT.add({
+      from: getRandomAddress(),
+      to: getRandomAddress(),
+      value: "123",
+    });
+
+    FCT.addComputed({
+      id: "123",
+      value1: { type: "external", id: 0 },
+      operator1: "+",
+      value2: { type: "external", id: 1 },
+    });
+
+    expect(FCT.utils.usesExternalVariables()).to.be.true;
+  });
+
+  it("Should return true on usesExternalVariables when used in validation", async () => {
+    const FCT = new BatchMultiSigCall({
+      chainId: "1",
+    });
+
+    await FCT.add({
+      nodeId: "123",
+      from: getRandomAddress(),
+      to: getRandomAddress(),
+      value: "123",
+    });
+
+    FCT.addValidation({
+      nodeId: "123",
+      validation: {
+        value1: { type: "external", id: 0 },
+        operator: "equal",
+        value2: "20",
+      },
+    });
+
+    expect(FCT.utils.usesExternalVariables()).to.be.true;
   });
 });

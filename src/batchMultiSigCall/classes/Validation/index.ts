@@ -16,6 +16,23 @@ export class Validation extends FCTBase {
     return this._validations;
   }
 
+  public isExternalVariableUsed() {
+    return this._validations.some((validation) => {
+      return [validation.value1, validation.value2].some((value) => {
+        if (InstanceOf.Variable(value)) {
+          return value.type === "external";
+        }
+
+        if (typeof value === "string" && (value.length === 42 || value.length === 66)) {
+          const hexString = value.toLowerCase();
+          return hexString.startsWith("0xfc0000");
+        }
+
+        return false;
+      });
+    });
+  }
+
   public getForEIP712(): IValidationEIP712[] {
     return this._validations.map((c, i) => ({
       index: (i + 1).toString(),

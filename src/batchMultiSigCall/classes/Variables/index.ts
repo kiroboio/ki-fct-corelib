@@ -55,6 +55,23 @@ export class Variables extends FCTBase {
     }));
   }
 
+  public isExternalVariableUsed() {
+    return this._computed.some((computed) => {
+      return [computed.value1, computed.value2, computed.value3, computed.value4].some((value) => {
+        if (InstanceOf.Variable(value)) {
+          return value.type === "external";
+        }
+
+        if (typeof value === "string" && (value.length === 42 || value.length === 66)) {
+          const hexString = value.toLowerCase();
+          return hexString.startsWith("0xfc0000");
+        }
+
+        return false;
+      });
+    });
+  }
+
   public addComputed<C extends Partial<IComputed>>(computed: C): AddComputedResult<C> {
     // Add the computed value to the batch call.
     const defaultValue = "0";
