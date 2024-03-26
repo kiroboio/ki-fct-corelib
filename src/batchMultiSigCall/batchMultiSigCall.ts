@@ -1,7 +1,9 @@
 import { ChainId } from "@kiroboio/fct-plugins";
 
 import { deepMerge } from "../helpers/deepMerge";
+import { getMessageHashFromTypedData } from "../helpers/eip712";
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
+import { FCTCache } from "./cache";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
@@ -224,15 +226,31 @@ export class BatchMultiSigCall {
   static utils = utils;
 
   static from = (input: IFCT) => {
-    const batchMultiSigCall = new BatchMultiSigCall();
-    batchMultiSigCall.importFCT(input);
-    return batchMultiSigCall;
+    const messageHash = getMessageHashFromTypedData(input.typedData);
+    const cached = FCTCache.get<BatchMultiSigCall>(messageHash);
+    if (cached) {
+      console.log("Got cached", messageHash);
+    }
+    if (cached) return cached;
+
+    const FCT = new BatchMultiSigCall();
+    FCT.importFCT(input);
+    FCTCache.set(messageHash, FCT);
+    return FCT;
   };
 
   static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>) => {
-    const batchMultiSigCall = new BatchMultiSigCall();
-    batchMultiSigCall.importFCTWithMap(input, map);
-    return batchMultiSigCall;
+    const messageHash = getMessageHashFromTypedData(input.typedData);
+    const cached = FCTCache.get<BatchMultiSigCall>(messageHash);
+    if (cached) {
+      console.log("Got cached", messageHash);
+    }
+    if (cached) return cached;
+
+    const FCT = new BatchMultiSigCall();
+    FCT.importFCTWithMap(input, map);
+    FCTCache.set(messageHash, FCT);
+    return FCT;
   };
 
   static getTransacitonTrace = async ({
