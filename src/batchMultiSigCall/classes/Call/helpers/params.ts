@@ -154,7 +154,7 @@ export const getParamsFromTypedData = ({
 
 export const getAllSimpleParams = (params: Param[]): ParamValue[] => {
   return params.reduce((acc, param) => {
-    if (param.customType || param.type.lastIndexOf("[") > 0) {
+    if (param.customType) {
       if (param.type.lastIndexOf("[") > 0) {
         const valueArray = param.value as Param[][];
         const data = valueArray.map((item) => getAllSimpleParams(item)).flat();
@@ -164,6 +164,12 @@ export const getAllSimpleParams = (params: Param[]): ParamValue[] => {
         return [...acc, ...getAllSimpleParams(valueArray)];
       }
     } else {
+      // If it is an array of normal types,
+      // then return the value as an array
+      if (param.type.lastIndexOf("[") > 0) {
+        const valueArray = param.value as ParamValue[];
+        return [...acc, ...valueArray];
+      }
       return [...acc, param.value as ParamValue];
     }
   }, [] as ParamValue[]);

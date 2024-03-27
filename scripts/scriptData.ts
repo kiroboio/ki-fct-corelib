@@ -17,6 +17,7 @@ export const scriptData = {
     // RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
     // RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
     flashbots: "https://relay.flashbots.net",
+    activator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
   },
   5: {
     USDC: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
@@ -42,6 +43,7 @@ export const scriptData = {
     rpcUrl: "https://1rpc.io/sepolia",
     flashbotsRelay: "https://relay-sepolia.flashbots.net",
     flashbotsRpc: "https://rpc-sepolia.flashbots.net",
+    activator: "0x3A8D62A3E8e8b9ABB663a6733bf9CD2057365f3e",
   },
 };
 

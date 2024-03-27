@@ -1,4 +1,4 @@
-import { ChainId, Multicall, getPlugin as getPluginProvider, PluginInstance } from "@kiroboio/fct-plugins";
+import { ChainId, getPlugin as getPluginProvider, Multicall, PluginInstance } from "@kiroboio/fct-plugins";
 
 import { InstanceOf } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";

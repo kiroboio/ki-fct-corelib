@@ -16,6 +16,8 @@ const typeValue = (param: Param): number[] => {
     // If the type is an array of tuple/custom struct
     if (param.customType || param.type.includes("tuple")) {
       const value = param.value as Param[][];
+      // FIXME: There is an issue here - it is possible that the tuple array is empty
+      // but we need to build the types array based on the first element.
       const typesArray = getTypesArray(value[0], false);
       if (TYPE === TYPE_ARRAY_WITH_LENGTH) {
         // Get countOfElements from type
