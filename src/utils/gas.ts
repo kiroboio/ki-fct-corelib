@@ -7,6 +7,7 @@ const precentilesForNetworks = {
   1: [2, 5, 15, 25],
   42161: [2, 5, 15, 25],
   421613: [2, 6, 15, 30],
+  11155111: [2, 10, 50, 80],
 };
 
 const gasPriceCalculationsByChains = {
