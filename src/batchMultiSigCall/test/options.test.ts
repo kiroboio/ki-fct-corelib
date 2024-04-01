@@ -9,7 +9,7 @@ type DeepPartial<T> = T extends object
   : T;
 
 const FCT = new BatchMultiSigCall({
-  chainId: "5",
+  chainId: "1",
 });
 
 const catchError = ({ param, message }: { param: DeepPartial<IFCTOptions>; message: string }) => {

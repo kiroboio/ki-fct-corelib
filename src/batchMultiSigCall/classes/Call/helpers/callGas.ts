@@ -22,7 +22,7 @@ const gasCosts = {
 
 export const getGasCosts = (key: keyof typeof gasCosts, chainId: ChainId) => {
   const gas = gasCosts[key];
-  if (chainId === "42161" || chainId === "421613") {
+  if (chainId === "42161") {
     // Arbitrum x13
     return gas * 13n;
   }

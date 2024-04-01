@@ -755,10 +755,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kiroboio/fct-plugins@1.1.653":
-  version "1.1.653"
-  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.653.tgz#3077b0afb10d4b7abb112af3ab5decc86481175e"
-  integrity sha512-LWAeDKbdOHyKRuPbA2Mcx1JK+mboaRqWgF3k2XfEOI7M7ZWu21wQRPZmfvTbIvB9XzHYTomu2j7ZiiKm5d6Q+Q==
+"@kiroboio/fct-plugins@latest":
+  version "1.1.661"
+  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.661.tgz#973bd61f610547e92b7cade06edd2694c089adc7"
+  integrity sha512-SIMYNUIo9ya2T2htRR5lLZgpyqV6n+Iz4SZbCbd5yyWXI7g0iY2Bv0miAVX0I7D2xx3WRRWvN9iJ26E6kO6j0g==
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@sushiswap/sdk" "^5.0.0-canary.116"
