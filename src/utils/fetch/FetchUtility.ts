@@ -8,6 +8,7 @@ import { fetchCurrentApprovals } from "../fetch";
 interface FetchUtilConstructor {
   rpcUrl?: string;
   provider?: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider;
+  multicallAddress?: string;
   chainId: number | string;
 }
 
@@ -15,7 +16,7 @@ export class FetchUtility {
   public chainId: number;
   private readonly multicallContract: ethers.Contract;
 
-  constructor({ rpcUrl, chainId, provider }: FetchUtilConstructor) {
+  constructor({ rpcUrl, chainId, provider, multicallAddress }: FetchUtilConstructor) {
     if (!provider) {
       if (!rpcUrl) {
         throw new Error("No provider or rpcUrl provided");
@@ -30,7 +31,9 @@ export class FetchUtility {
 
     this.chainId = chainId;
 
-    if (!multicallContracts[Number(chainId) as keyof typeof multicallContracts]) {
+    const mcallAddress = multicallAddress || multicallContracts[chainId as keyof typeof multicallContracts];
+
+    if (!mcallAddress) {
       throw new Error("Multicall contract not found for this chain");
     }
 
