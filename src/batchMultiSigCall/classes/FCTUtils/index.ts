@@ -39,17 +39,21 @@ export class FCTUtils extends FCTBase {
 
   public getCalldataForActuator({
     signatures,
-    purgedFCT,
-    investor,
+    purgedFCT = ethers.constants.HashZero,
+    investor = ethers.constants.AddressZero,
     activator,
+    externalSigners = [],
+    variables = [],
   }: {
     signatures: SignatureLike[];
-    purgedFCT: string;
-    investor: string;
+    purgedFCT?: string;
+    investor?: string;
     activator: string;
+    externalSigners?: string[];
+    variables?: string[];
   }) {
     return getCalldataForActuator({
-      signedFCT: deepMerge(this.FCTData, { signatures }),
+      signedFCT: deepMerge(this.FCTData, { signatures, externalSigners, variables }),
       purgedFCT,
       investor,
       activator,

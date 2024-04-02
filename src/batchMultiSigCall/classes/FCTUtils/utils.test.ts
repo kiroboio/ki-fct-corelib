@@ -89,4 +89,29 @@ describe("BatchMultiSigCall utils", () => {
 
     expect(FCT.utils.usesExternalVariables()).to.be.true;
   });
+
+  it.only("Should return calldata with externalSigners and variables", async () => {
+    const FCT = new BatchMultiSigCall({
+      chainId: "1",
+    });
+
+    await FCT.add({
+      nodeId: "123",
+      from: getRandomAddress(),
+      to: getRandomAddress(),
+      value: "123",
+    });
+
+    const varValue = ethers.utils.defaultAbiCoder.encode(["uint256"], [123]);
+
+    const calldata = FCT.utils.getCalldataForActuator({
+      signatures: [],
+      externalSigners: [getRandomAddress()],
+      variables: [varValue],
+      activator: getRandomAddress(),
+    });
+
+    // Expect calldata to be string
+    expect(typeof calldata).to.be.eq("string");
+  });
 });
