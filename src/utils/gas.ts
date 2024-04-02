@@ -2,31 +2,16 @@ import { ethers } from "ethers";
 
 import { EIP1559GasPrice } from "../types";
 
-const precentilesForNetworks = {
-  5: [2, 6, 15, 30],
-  1: [2, 5, 15, 25],
+const percentilesForNetworks = {
+  1: [5, 8, 15, 25],
+  // 5: [2, 6, 15, 30],
   42161: [2, 5, 15, 25],
   421613: [2, 6, 15, 30],
   11155111: [2, 10, 50, 80],
 };
 
 const gasPriceCalculationsByChains = {
-  5: (maxFeePerGas: bigint) => {
-    // If maxFeePerGas < 70 gwei, add 15% to maxFeePerGas
-
-    if (maxFeePerGas < 70_000_000_000n) {
-      return (maxFeePerGas + (maxFeePerGas * 15n) / 100n).toString();
-    }
-    // If maxFeePerGas < 100 gwei, add 10% to maxFeePerGas
-    if (maxFeePerGas < 100_000_000_000) {
-      return (maxFeePerGas + (maxFeePerGas * 10n) / 100n).toString();
-    }
-    // If maxFeePerGas > 200 gwei, add 5% to maxFeePerGas
-    if (maxFeePerGas > 200_000_000_000) {
-      return (maxFeePerGas + (maxFeePerGas * 5n) / 100n).toString();
-    }
-    return maxFeePerGas.toString();
-  },
+  // 5: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
   1: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
 };
 function avg(arr: string[] | undefined[]) {
@@ -35,6 +20,14 @@ function avg(arr: string[] | undefined[]) {
   }
   const sum = (arr as string[]).reduce((a, v) => BigInt(a) + BigInt(v), 0n);
   return sum / BigInt(arr.length);
+}
+
+function getMaxBaseFeeInFutureBlock(baseFee: bigint, blocksInFuture: number): bigint {
+  let maxBaseFee = baseFee;
+  for (let i = 0; i < blocksInFuture; i++) {
+    maxBaseFee = (maxBaseFee * 1125n) / 1000n + 1n;
+  }
+  return maxBaseFee;
 }
 
 export const getGasPrices = async ({
@@ -69,7 +62,7 @@ export const getGasPrices = async ({
           params: [
             historicalBlocks,
             `0x${blockNumber.toString(16)}`,
-            precentilesForNetworks[chainId as keyof typeof precentilesForNetworks] || precentilesForNetworks[5],
+            percentilesForNetworks[chainId as keyof typeof percentilesForNetworks] || percentilesForNetworks[5],
           ],
           id: 1,
         });
@@ -115,7 +108,9 @@ export const getGasPrices = async ({
       const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
       const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
       const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
-      const baseFeePerGas = BigInt(baseFee);
+      // const baseFeePerGas = getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
+      // If chainId is 42161, use the baseFee as is, otherwise calculate the baseFee for 2 blocks in the future
+      const baseFeePerGas = chainId === 42161 ? BigInt(baseFee) : getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
 
       const gasPriceCalc =
         gasPriceCalculationsByChains[chainId as keyof typeof gasPriceCalculationsByChains] ||
