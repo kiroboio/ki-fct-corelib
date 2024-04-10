@@ -87,7 +87,7 @@ export class FCTUtils extends FCTBase {
     );
   }
 
-  public isValid(softValidation = false): boolean | Error {
+  public isValid(softValidation = false): { valid: boolean; message: string | null } {
     const keys = Object.keys(this.FCTData);
     this._validateFCTKeys(keys);
 
@@ -100,22 +100,22 @@ export class FCTUtils extends FCTBase {
     const gasPriceLimit = limits.gas_price_limit;
 
     if (!softValidation && validFrom > currentDate) {
-      throw new Error(`FCT is not valid yet. FCT is valid from ${validFrom}`);
+      return { valid: false, message: `FCT is not valid yet. FCT is valid from ${validFrom}` };
     }
 
     if (expiresAt < currentDate) {
-      throw new Error(`FCT has expired. FCT expired at ${expiresAt}`);
+      return { valid: false, message: `FCT has expired. FCT expired at ${expiresAt}` };
     }
 
     if (gasPriceLimit === "0") {
-      throw new Error(`FCT gas price limit cannot be 0`);
+      return { valid: false, message: `FCT gas price limit cannot be 0` };
     }
 
     if (!engine.eip712) {
-      throw new Error(`FCT must be type EIP712`);
+      return { valid: false, message: `FCT must be type EIP712` };
     }
 
-    return true;
+    return { valid: true, message: null };
   }
 
   public getSigners(): string[] {
