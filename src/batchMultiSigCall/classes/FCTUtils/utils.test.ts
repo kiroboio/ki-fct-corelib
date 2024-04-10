@@ -90,7 +90,7 @@ describe("BatchMultiSigCall utils", () => {
     expect(FCT.utils.usesExternalVariables()).to.be.true;
   });
 
-  it.only("Should return calldata with externalSigners and variables", async () => {
+  it("Should return calldata with externalSigners and variables", async () => {
     const FCT = new BatchMultiSigCall({
       chainId: "1",
     });
