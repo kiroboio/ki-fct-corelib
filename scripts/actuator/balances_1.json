@@ -1,0 +1,52 @@
+[
+  {
+    "address": "0x37D365C33aE91aacbd6797Ddb591dD3957f7ab44",
+    "token": "0",
+    "native": "0"
+  },
+  {
+    "address": "0x55B32c0f71054eA1A14BBed1E1Ae5e607EBBC4B1",
+    "token": "0",
+    "native": "11000000000000000"
+  },
+  {
+    "address": "0x5EB0a4366d4aE285E96AF8eA22A853f1ef91F1eB",
+    "token": "0",
+    "native": "161577096001765590"
+  },
+  {
+    "address": "0xF3458fc57645112de6f7993A91F6676EFE2C7D26",
+    "token": "0",
+    "native": "54018277082319194"
+  },
+  {
+    "address": "0x3b34843cb0870362FBe9DaC62038a2FfEF0Caa71",
+    "token": "0",
+    "native": "10000000000000000"
+  },
+  {
+    "address": "0x37F8Cf234e6F629A681Def0692D25c6857D8ECbf",
+    "token": "2",
+    "native": "533281600880999"
+  },
+  {
+    "address": "0x28e4A31018950A5702B28a8E143d1c56d04281ea",
+    "token": "0",
+    "native": "51350192467920244"
+  },
+  {
+    "address": "0xC434b739d2DaC17279f8fA1B66C0C7381df4909b",
+    "token": "0",
+    "native": "0"
+  },
+  {
+    "address": "0xDAD10086Db0264bEA6a4e6352794e89544D06A2f",
+    "token": "0",
+    "native": "500000000000000000"
+  },
+  {
+    "address": "0x01C0256e93B4413290Bf65B70e0EA23d52916Ce6",
+    "token": "0",
+    "native": "50000000000000000"
+  }
+]

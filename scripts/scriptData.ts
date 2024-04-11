@@ -12,7 +12,7 @@ export const scriptData = {
     FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
     PureValidator: "0x9AeF40a815bEF44c41fb018749CfE7adBd1E2EDd", // Not updated
     PureSafeMath: "0x48F969e8c73A55cfC709bd4be8a90343CC02B9e5", // Not up
-    Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
+    Actuator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
     flashbots: "https://relay.flashbots.net",
     activator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
   },
@@ -24,7 +24,8 @@ export const scriptData = {
     rpcUrl: "https://optimism.drpc.org",
   },
   42161: {
-    rpcUrl: "https://rpc.ankr.com/arbitrum",
+    rpcUrl: process.env.RPC_URL_ARB || "https://rpc.ankr.com/arbitrum",
+    Actuator: "0x4171ef9EB2CF074ECaA058Bd8e0F109C0ad4C6d1",
   },
   421613: {
     rpcUrl: "https://arb-goerli.g.alchemy.com/v2/wjZQ8R9YDxyzIa9USq-lHXDUiVjWrk2y",

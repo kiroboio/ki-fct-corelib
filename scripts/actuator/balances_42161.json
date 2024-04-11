@@ -1,0 +1,27 @@
+[
+  {
+    "address": "0xE62dc56EB41951FC74164779B02951D36a90ca77",
+    "token": "0",
+    "native": "2000000000000000"
+  },
+  {
+    "address": "0xE1489DdADfF736b4e19B78790CB329841c02c06e",
+    "token": "0",
+    "native": "2760607956000000"
+  },
+  {
+    "address": "0x64f23581610EA29945e5B81cf1a100DcD52a061D",
+    "token": "0",
+    "native": "9000000000000000"
+  },
+  {
+    "address": "0x845CB4A46A5687Db6055115339a7f69f77691228",
+    "token": "0",
+    "native": "5977953680000000"
+  },
+  {
+    "address": "0x1E8979C2411e1FF1ae0E96f7Be5347fc8b401DAb",
+    "token": "0",
+    "native": "9214193430000000"
+  }
+]
