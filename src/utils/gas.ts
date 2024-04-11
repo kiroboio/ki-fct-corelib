@@ -4,10 +4,13 @@ import { EIP1559GasPrice } from "../types";
 
 const percentilesForNetworks = {
   1: [5, 8, 15, 25],
-  // 5: [2, 6, 15, 30],
   42161: [2, 5, 15, 25],
-  421613: [2, 6, 15, 30],
+  10: [2, 5, 15, 25],
+  //
+  // Testnets
   11155111: [2, 10, 50, 80],
+  421613: [2, 6, 15, 30],
+  // 5: [2, 6, 15, 30],
 };
 
 const gasPriceCalculationsByChains = {

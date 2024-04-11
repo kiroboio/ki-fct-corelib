@@ -9,46 +9,57 @@ import { IValidationEIP712 } from "../Validation/types";
 import { IComputedEIP712 } from "../Variables/types";
 import { Call, Computed, EIP712Domain, Engine, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
-// const TYPED_DATA_DOMAIN: Record<ChainId, TypedDataDomain> = {
 const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
+  // Mainnet
   "1": {
-    // Mainnet
     name: "FCT Controller",
     version: "1",
     chainId: 1,
     verifyingContract: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
     salt: "0x0100c3ae8d91c3ffd32800000a0ea58e6504aa7bfff6f3d069bd175abab638ee",
   },
-  "5": {
-    // Goerli
-    name: "FCT Controller",
-    version: "1",
-    chainId: 5,
-    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
-    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
-  },
+  // Arbitrum One
   "42161": {
-    // Arbitrum
     name: "FCT Controller",
     version: "1",
     chainId: 42161,
     verifyingContract: "0x7A45405D953974998fc447C196Fb015DC41C0650",
     salt: "0x0100af89b3a0314c9a2f00007a45405d953974998fc447c196fb015dc41c0650",
   },
-  "421613": {
-    // Arbitrum Testnet
+  // Optimism
+  "10": {
     name: "FCT Controller",
     version: "1",
-    chainId: 421613,
+    chainId: 10,
     verifyingContract: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
-    salt: "0x0100df6d107dcaba91640000574f4cdab7ec20e3a37bde025260f0a2359503d6",
+    salt: "0x0100cf95b9e9710875170000574f4cdab7ec20e3a37bde025260f0a2359503d6",
   },
+  //
+  // Testnets
+  //
+  // Sepolia
   "11155111": {
     name: "FCT Controller",
     version: "1",
     chainId: 11155111,
     verifyingContract: "0x1Bc4e8448E6B6703c7458C4Ee8361eB6c3015fD4",
     salt: "0x01006e6774a58cfed2c900001bc4e8448e6b6703c7458c4ee8361eb6c3015fd4",
+  },
+  // Goerli (DEPRECATED)
+  "5": {
+    name: "FCT Controller",
+    version: "1",
+    chainId: 5,
+    verifyingContract: "0x38B5249Ec6529F19aee7CE2c650CadD407a78Ed7",
+    salt: "0x01004130db7959f5983e000038b5249ec6529f19aee7ce2c650cadd407a78ed7",
+  },
+  // Arbitrum Goerli (DEPRECATED)
+  "421613": {
+    name: "FCT Controller",
+    version: "1",
+    chainId: 421613,
+    verifyingContract: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
+    salt: "0x0100df6d107dcaba91640000574f4cdab7ec20e3a37bde025260f0a2359503d6",
   },
 };
 
