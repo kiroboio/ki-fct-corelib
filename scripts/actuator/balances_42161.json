@@ -1,27 +1,32 @@
 [
   {
-    "address": "0xE62dc56EB41951FC74164779B02951D36a90ca77",
+    "vault": "0xE62dc56EB41951FC74164779B02951D36a90ca77",
+    "owner": "0xf88c0381D3a276e90725f46Cb9CB3A6cEaAEA500",
     "token": "0",
-    "native": "2000000000000000"
+    "native": "0"
   },
   {
-    "address": "0xE1489DdADfF736b4e19B78790CB329841c02c06e",
+    "vault": "0xE1489DdADfF736b4e19B78790CB329841c02c06e",
+    "owner": "0x37F8Cf234e6F629A681Def0692D25c6857D8ECbf",
     "token": "0",
     "native": "2760607956000000"
   },
   {
-    "address": "0x64f23581610EA29945e5B81cf1a100DcD52a061D",
+    "vault": "0x64f23581610EA29945e5B81cf1a100DcD52a061D",
+    "owner": "0xBAadCAe3C0a98b42efc3B206A4dd19eAB956E40D",
     "token": "0",
     "native": "9000000000000000"
   },
   {
-    "address": "0x845CB4A46A5687Db6055115339a7f69f77691228",
+    "vault": "0x845CB4A46A5687Db6055115339a7f69f77691228",
+    "owner": "0xE02c9F5D6b3bDEc3C1EE28A5a5F01ee5755EF36b",
     "token": "0",
-    "native": "5977953680000000"
+    "native": "0"
   },
   {
-    "address": "0x1E8979C2411e1FF1ae0E96f7Be5347fc8b401DAb",
+    "vault": "0x1E8979C2411e1FF1ae0E96f7Be5347fc8b401DAb",
+    "owner": "0x7b9CAC243a0A1f887f0DEa329392C4169a461E8e",
     "token": "0",
-    "native": "9214193430000000"
+    "native": "0"
   }
 ]

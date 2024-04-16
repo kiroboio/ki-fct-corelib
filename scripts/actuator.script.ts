@@ -1681,11 +1681,12 @@ dotenv.config();
 const randAddr = () => ethers.Wallet.createRandom().address;
 
 // const chainId = 1;
-const chainId = 42161;
-const actuator = scriptData[chainId].Actuator;
 // const startBlock = 17768601;
+// const batchSize = 15000;
+const chainId = 42161;
 const startBlock = 121746953;
 const batchSize = 75000;
+const actuator = scriptData[chainId].Actuator;
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
@@ -1702,7 +1703,7 @@ async function main() {
 
   const addresses = new Set<string>();
   if (existsSync(`scripts/actuator/addresses_${chainId}.json`)) {
-    const data = readFileSync(`actuator/addresses_${chainId}.json`, "utf-8");
+    const data = readFileSync(`scripts/actuator/addresses_${chainId}.json`, "utf-8");
     const parsedData = JSON.parse(data);
     parsedData.forEach((address: string) => {
       addresses.add(address);
@@ -1744,8 +1745,31 @@ async function main() {
     });
   }
   const mapAsObj = Array.from(balances, ([address, { token, native }]) => ({ address, token, native }));
+  const wholeData: any[] = [];
 
-  writeFileSync(`scripts/actuator/balances_${chainId}.json`, JSON.stringify(mapAsObj, null, 2));
+  for (const balance of mapAsObj) {
+    const vaultContract = new ethers.Contract(balance.address, ["function owner() view returns (address)"], provider);
+
+    try {
+      const owner = await vaultContract.owner();
+
+      wholeData.push({
+        vault: balance.address,
+        owner,
+        token: balance.token,
+        native: balance.native,
+      });
+    } catch (e) {
+      // wholeData.push({
+      //   vault: "UNKNOWN",
+      //   owner: balance.address,
+      //   token: balance.token,
+      //   native: balance.native,
+      // });
+    }
+  }
+
+  writeFileSync(`scripts/actuator/balances_${chainId}.json`, JSON.stringify(wholeData, null, 2));
 }
 
 main()
