@@ -73,8 +73,16 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
         error: null,
       };
     }
-    if (err.reason === "processing response error") {
-      throw err;
+    if (err.code === "SERVER_ERROR") {
+      return {
+        isValid: false,
+        txData: { gas: 0, ...gasPrice, type: 2 },
+        prices: {
+          gas: 0,
+          gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
+        },
+        error: err.error.message || err.error,
+      };
     }
     if (txVal.errorIsValid) {
       return {
