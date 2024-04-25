@@ -20,8 +20,10 @@ export const scriptData = {
     KIRO: "0xa82a423671379fD93f78eA4A37ABA73C019C6D3C",
     FCT_BatchMultiSig: "0xCeEf951d0A3756A97c35df068C43aD5D7c11bf23",
     FCT_Controller: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
-    Actuator: "0xE215Fe5f574593A034c7E6e9BE280A254D02F4dd",
+    Actuator: "0xe5CBA6552E32ce631894eFE20047EB6EBd17C625",
     rpcUrl: "https://optimism.drpc.org",
+    // Tokens
+    USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   },
   42161: {
     rpcUrl: process.env.RPC_URL_ARB || "https://rpc.ankr.com/arbitrum",
