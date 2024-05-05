@@ -79,12 +79,11 @@ export class FCTUtils extends FCTBase {
   }
 
   public getMessageHash(): string {
-    return ethers.utils.hexlify(
-      TypedDataUtils.eip712Hash(
-        this.FCTData.typedData as unknown as TypedMessage<TypedDataTypes>,
-        SignTypedDataVersion.V4,
-      ),
+    const buffer = TypedDataUtils.eip712Hash(
+      this.FCTData.typedData as unknown as TypedMessage<TypedDataTypes>,
+      SignTypedDataVersion.V4,
     );
+    return `0x${buffer.toString("hex")}`;
   }
 
   public isValid(softValidation = false): { valid: boolean; message: string | null } {
