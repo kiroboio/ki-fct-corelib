@@ -79,8 +79,6 @@ const calldata = FCT.utils.getCalldataForActuator({
 });
 
 txValidator({
-  // rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
-  // chainId: 5,
   rpcUrl: process.env.RPC_URL_MAINNET as string,
   chainId: 1,
   calldata,

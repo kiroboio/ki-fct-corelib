@@ -53,8 +53,16 @@ async function main() {
 
   for (let i = 0; i < 10; i++) {
     console.time("from");
-    BatchMultiSigCall.from(exported, messageHash);
+    const FCT2 = BatchMultiSigCall.from(exported, messageHash);
     console.timeEnd("from");
+
+    console.time("isValid");
+    FCT2.utils.isValid();
+    console.timeEnd("isValid");
+
+    console.time("recoverAddress");
+    FCT2.utils.recoverAddress(exported.signatures[0]);
+    console.timeEnd("recoverAddress");
   }
 }
 

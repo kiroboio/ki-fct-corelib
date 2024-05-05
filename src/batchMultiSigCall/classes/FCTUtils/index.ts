@@ -87,16 +87,12 @@ export class FCTUtils extends FCTBase {
   }
 
   public isValid(softValidation = false): { valid: boolean; message: string | null } {
-    const keys = Object.keys(this.FCTData);
-    this._validateFCTKeys(keys);
-
-    const limits = this.FCTData.typedData.message.limits;
-    const engine = this.FCTData.typedData.message.engine;
+    const options = this.FCT.options;
 
     const currentDate = new Date().getTime() / 1000;
-    const validFrom = parseInt(limits.valid_from);
-    const expiresAt = parseInt(limits.expires_at);
-    const gasPriceLimit = limits.gas_price_limit;
+    const validFrom = parseInt(options.validFrom);
+    const expiresAt = parseInt(options.expiresAt);
+    const gasPriceLimit = options.maxGasPrice;
 
     if (!softValidation && validFrom > currentDate) {
       return { valid: false, message: `FCT is not valid yet. FCT is valid from ${validFrom}` };
@@ -108,10 +104,6 @@ export class FCTUtils extends FCTBase {
 
     if (gasPriceLimit === "0") {
       return { valid: false, message: `FCT gas price limit cannot be 0` };
-    }
-
-    if (!engine.eip712) {
-      return { valid: false, message: `FCT must be type EIP712` };
     }
 
     return { valid: true, message: null };
