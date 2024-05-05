@@ -238,7 +238,7 @@ export class BatchMultiSigCall {
 
   static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>, messageHash?: string) => {
     if (messageHash) {
-      const cached = FCTCache.get<BatchMultiSigCall>(messageHash.toLowerCase());
+      const cached = FCTCache.get<BatchMultiSigCall>(`map:${messageHash}`.toLowerCase());
       if (cached) return cached;
     }
 
