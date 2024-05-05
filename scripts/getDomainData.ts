@@ -8,7 +8,7 @@ import scriptData from "./scriptData";
 const addresses = constants.addresses;
 dotenv.config();
 
-const chainId = 11155111;
+const chainId = 10;
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);

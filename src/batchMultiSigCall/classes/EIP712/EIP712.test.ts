@@ -9,7 +9,7 @@ describe("BatchMultiSigCall EIP712", () => {
   let eip712: EIP712;
   before(async () => {
     FCT = new BatchMultiSigCall({
-      chainId: "5",
+      chainId: "1",
     });
 
     const Call = await FCT.create({
@@ -62,7 +62,7 @@ describe("BatchMultiSigCall EIP712", () => {
 
   it("should generate the correct EIP712 domain", () => {
     const domain = eip712.getTypedDataDomain();
-    expect(domain).to.deep.equal(EIP712.getTypedDataDomain("5"));
+    expect(domain).to.deep.equal(EIP712.getTypedDataDomain("1"));
   });
 
   it("should generate the correct EIP712 primary type", () => {

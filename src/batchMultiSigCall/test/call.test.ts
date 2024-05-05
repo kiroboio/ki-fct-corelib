@@ -5,7 +5,7 @@ import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { IMSCallInput } from "../types";
 
 const FCT = new BatchMultiSigCall({
-  chainId: "5",
+  chainId: "1",
 });
 
 const defaultCall: IMSCallInput = {

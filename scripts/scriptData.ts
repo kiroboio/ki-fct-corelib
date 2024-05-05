@@ -12,28 +12,22 @@ export const scriptData = {
     FCT_Controller: "0x0A0ea58E6504aA7bfFf6F3d069Bd175AbAb638ee",
     PureValidator: "0x9AeF40a815bEF44c41fb018749CfE7adBd1E2EDd", // Not updated
     PureSafeMath: "0x48F969e8c73A55cfC709bd4be8a90343CC02B9e5", // Not up
-    Actuator: "0x78b3e89ec2F4D4f1689332059E488835E05045DD",
-    // RecoveryWallet: "0x38e5Bec4f5401AF5C35990BED8D4153113EDa743",
-    // RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
-    // RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
+    Actuator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
     flashbots: "https://relay.flashbots.net",
+    activator: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
   },
-  5: {
-    USDC: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
-    KIRO: "0xba232b47a7ddfccc221916cf08da03a4973d3a1d",
-    FCT_BatchMultiSig: "0x067D176d13651c8AfF7964a4bB9dF3107F893e88",
-    FCT_Controller: "0x087550a787B2720AAC06351065afC1F413D82572",
-    PureValidator: "0x9AeF40a815bEF44c41fb018749CfE7adBd1E2EDd",
-    PureSafeMath: "0x48F969e8c73A55cfC709bd4be8a90343CC02B9e5",
-    Actuator: "0x6B271aEa169B4804D1d709B2687c17c3Cc8E2e56",
-    RecoveryWallet: "0x38e5Bec4f5401AF5C35990BED8D4153113EDa743",
-    RecoveryWalletCore: "0xD2FA1cbd47ff29F462342a5d6f445aCDA852FD6A",
-    RecoveryOracle: "0x9034f5225C76B09750c0dA9Ef5B4BBaf0d455A1C",
-    rpcUrl: "https://goerli.infura.io/v3/99229ae47ba74d21abc557bdc503a5d9",
-    flashbots: "https://relay-goerli.flashbots.net",
+  10: {
+    KIRO: "0xa82a423671379fD93f78eA4A37ABA73C019C6D3C",
+    FCT_BatchMultiSig: "0xCeEf951d0A3756A97c35df068C43aD5D7c11bf23",
+    FCT_Controller: "0x574F4cDAB7ec20E3A37BDE025260F0A2359503d6",
+    Actuator: "0xe5CBA6552E32ce631894eFE20047EB6EBd17C625",
+    rpcUrl: "https://optimism.drpc.org",
+    // Tokens
+    USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   },
   42161: {
-    rpcUrl: "https://rpc.ankr.com/arbitrum",
+    rpcUrl: process.env.RPC_URL_ARB || "https://rpc.ankr.com/arbitrum",
+    Actuator: "0x4171ef9EB2CF074ECaA058Bd8e0F109C0ad4C6d1",
   },
   421613: {
     rpcUrl: "https://arb-goerli.g.alchemy.com/v2/wjZQ8R9YDxyzIa9USq-lHXDUiVjWrk2y",
@@ -42,6 +36,7 @@ export const scriptData = {
     rpcUrl: "https://1rpc.io/sepolia",
     flashbotsRelay: "https://relay-sepolia.flashbots.net",
     flashbotsRpc: "https://rpc-sepolia.flashbots.net",
+    activator: "0x3A8D62A3E8e8b9ABB663a6733bf9CD2057365f3e",
   },
 };
 

@@ -22,7 +22,7 @@ describe("BatchMultiSigCall", () => {
 
   beforeEach(() => {
     batchMultiSigCall = new BatchMultiSigCall({
-      chainId: "5",
+      chainId: "1",
     });
   });
 
@@ -201,7 +201,7 @@ describe("BatchMultiSigCall", () => {
   describe("Regular FCTs", () => {
     beforeEach(() => {
       FCT = new BatchMultiSigCall({
-        chainId: "5",
+        chainId: "1",
       });
     });
 
@@ -226,7 +226,7 @@ describe("BatchMultiSigCall", () => {
         nodeId: "node1",
         from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
         plugin: new Magic.actions.Magic({
-          chainId: "5",
+          chainId: "1",
         }),
       });
 
@@ -281,7 +281,7 @@ describe("BatchMultiSigCall", () => {
 
     it("Should create an FCT with secure storage plugins", async () => {
       const plugin = new SecureStorage.actions.Write_bytes({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           methodParams: {
             // key: "ethers.utils.hexZeroPad("0x4f631612941F710db646B8290dB097bFB8657dC2", 32),"
@@ -359,12 +359,12 @@ describe("BatchMultiSigCall", () => {
   describe("Complex FCTs", () => {
     beforeEach(() => {
       batchMultiSigCall = new BatchMultiSigCall({
-        chainId: "5",
+        chainId: "1",
       });
     });
     it("Should create an FCT with payerIndex", async () => {
       const transfer = new ERC20.actions.Transfer({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           to: "0xfeab457d95d9990b7eb6c943c839258245541754",
           methodParams: {
@@ -399,7 +399,7 @@ describe("BatchMultiSigCall", () => {
     });
     it("Should create an FCT with 1 plugin call", async () => {
       const transfer = new ERC20.actions.Transfer({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           to: "0xfeab457d95d9990b7eb6c943c839258245541754",
           methodParams: {
@@ -429,7 +429,7 @@ describe("BatchMultiSigCall", () => {
     });
     it("Should create an FCT with 2 plugin calls and 1 non-plugin call", async () => {
       const balanceOf = new ERC20.getters.BalanceOf({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           to: "0xfeab457d95d9990b7eb6c943c839258245541754",
           methodParams: {
@@ -439,7 +439,7 @@ describe("BatchMultiSigCall", () => {
       });
 
       const deposit = new AaveV2.actions.Deposit({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           to: "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9",
           methodParams: {
@@ -602,7 +602,7 @@ describe("BatchMultiSigCall", () => {
     });
     it("Should create FCT with Computed Variables", async () => {
       const balanceOf = new ERC20.getters.BalanceOf({
-        chainId: "5",
+        chainId: "1",
         initParams: {
           to: "0xfeab457d95d9990b7eb6c943c839258245541754",
           methodParams: {
@@ -746,7 +746,7 @@ describe("BatchMultiSigCall", () => {
     // });
     it("Should create FCT with tuple array", async () => {
       const FCT = new BatchMultiSigCall({
-        chainId: "5",
+        chainId: "1",
       });
 
       const tupleArrayValue = [
@@ -800,7 +800,7 @@ describe("BatchMultiSigCall", () => {
     });
     it("Should create FCT where one of params are an empty array", async () => {
       const FCT = new BatchMultiSigCall({
-        chainId: "5",
+        chainId: "1",
       });
 
       await FCT.add({
@@ -831,7 +831,7 @@ describe("BatchMultiSigCall", () => {
     });
     it("Should create FCT where one of params is fixed length array", async () => {
       const FCT = new BatchMultiSigCall({
-        chainId: "5",
+        chainId: "1",
       });
 
       const addresses = [createRandomAddress(), createRandomAddress(), createRandomAddress()];

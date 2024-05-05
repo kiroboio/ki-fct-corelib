@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { utils } from "../index";
+import { utils } from "..";
 import { FetchUtility } from "./fetch";
 
 describe("Utility functions", () => {
@@ -52,8 +52,8 @@ describe("Utility functions", () => {
 
   it("Should get gas prices", async () => {
     const gasPrices = await utils.getGasPrices({
-      rpcUrl: "https://eth-goerli.public.blastapi.io",
-      chainId: 5,
+      rpcUrl: "https://1rpc.io/sepolia",
+      chainId: 11155111,
     });
 
     expect(gasPrices).to.be.a("object");
