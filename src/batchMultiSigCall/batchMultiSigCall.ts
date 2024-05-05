@@ -2,6 +2,7 @@ import { ChainId } from "@kiroboio/fct-plugins";
 
 import { deepMerge } from "../helpers/deepMerge";
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
+import { FCTCache } from "./cache";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
@@ -223,16 +224,28 @@ export class BatchMultiSigCall {
   // Static functions
   static utils = utils;
 
-  static from = (input: IFCT) => {
-    const batchMultiSigCall = new BatchMultiSigCall();
-    batchMultiSigCall.importFCT(input);
-    return batchMultiSigCall;
+  static from = (input: IFCT, messageHash?: string) => {
+    if (messageHash) {
+      const cached = FCTCache.get<BatchMultiSigCall>(messageHash.toLowerCase());
+      if (cached) return cached;
+    }
+
+    const FCT = new BatchMultiSigCall();
+    FCT.importFCT(input);
+    if (messageHash) FCTCache.set(messageHash.toLowerCase(), FCT);
+    return FCT;
   };
 
-  static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>) => {
-    const batchMultiSigCall = new BatchMultiSigCall();
-    batchMultiSigCall.importFCTWithMap(input, map);
-    return batchMultiSigCall;
+  static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>, messageHash?: string) => {
+    if (messageHash) {
+      const cached = FCTCache.get<BatchMultiSigCall>(messageHash.toLowerCase());
+      if (cached) return cached;
+    }
+
+    const FCT = new BatchMultiSigCall();
+    FCT.importFCTWithMap(input, map);
+    if (messageHash) FCTCache.set(messageHash.toLowerCase(), FCT);
+    return FCT;
   };
 
   static getTransacitonTrace = async ({

@@ -80,7 +80,11 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
+
 # dist
+lib.esm
+lib.cjs
+dist
 
 # Gatsby files
 .cache/
@@ -106,3 +110,4 @@ typings/
 # Local files
 .idea
 .vscode
+
