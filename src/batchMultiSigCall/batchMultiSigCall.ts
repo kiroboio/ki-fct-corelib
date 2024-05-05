@@ -244,7 +244,7 @@ export class BatchMultiSigCall {
 
     const FCT = new BatchMultiSigCall();
     FCT.importFCTWithMap(input, map);
-    if (messageHash) FCTCache.set(messageHash.toLowerCase(), FCT);
+    if (messageHash) FCTCache.set(`map:${messageHash}`.toLowerCase(), FCT);
     return FCT;
   };
 
