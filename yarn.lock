@@ -756,15 +756,9 @@
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
 "@kiroboio/fct-plugins@latest":
-<<<<<<< HEAD
-  version "1.1.649"
-  resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.649.tgz#4030da01d4d463bd64f52b0c4f9fffb82de501f0"
-  integrity sha512-WrGzNeWzAE7VyeY4jbfZxhJ60/XAoNfmM6J8HextGXavR17y8j3QFjd3yAYDhMqXs/BfnUDApsqKswicOH6olw==
-=======
   version "1.1.669"
   resolved "https://registry.yarnpkg.com/@kiroboio/fct-plugins/-/fct-plugins-1.1.669.tgz#3a29dc790f0cba2633d9baf11e807eaea19e5b0b"
   integrity sha512-pRwFwF5BLjkCkD345J2tqoDVOxZh/P6tbtEdUWk1Ujt5nnO0CdrtXDjeUQ13vH1yAgiH3lJ6k61zW6Mc+ehGIw==
->>>>>>> main
   dependencies:
     "@babel/runtime" "^7.17.0"
     "@sushiswap/sdk" "^5.0.0-canary.116"
@@ -1636,11 +1630,7 @@
     "@sigstore/protobuf-specs" "^0.3.1"
     make-fetch-happen "^13.0.0"
 
-<<<<<<< HEAD
-"@sigstore/tuf@^2.3.1":
-=======
 "@sigstore/tuf@^2.3.1", "@sigstore/tuf@^2.3.2":
->>>>>>> main
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@sigstore/tuf/-/tuf-2.3.2.tgz#e9c5bffc2a5f3434f87195902d7f9cd7f48c70fa"
   integrity sha512-mwbY1VrEGU4CO55t+Kl6I7WZzIl+ysSzEYdA1Nv/FTrl2bkeaPXo5PnWZAVfcY2zSdhOpsUTJW67/M2zHXGn5w==
@@ -1648,16 +1638,6 @@
     "@sigstore/protobuf-specs" "^0.3.0"
     tuf-js "^2.2.0"
 
-<<<<<<< HEAD
-"@sigstore/verify@^1.1.0":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@sigstore/verify/-/verify-1.1.1.tgz#f90f66e6d738434e687e00590c3619a15934ac69"
-  integrity sha512-BNANJms49rw9Q5J+fJjrDqOQSzjXDcOq/pgKDaVdDoIvQwqIfaoUriy+fQfh8sBX04hr4bkkrwu3EbhQqoQH7A==
-  dependencies:
-    "@sigstore/bundle" "^2.2.0"
-    "@sigstore/core" "^1.1.0"
-    "@sigstore/protobuf-specs" "^0.3.0"
-=======
 "@sigstore/verify@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@sigstore/verify/-/verify-1.2.0.tgz#48549186305d8a5e471a3a304cf4cb3e0c99dde7"
@@ -1666,7 +1646,6 @@
     "@sigstore/bundle" "^2.3.1"
     "@sigstore/core" "^1.1.0"
     "@sigstore/protobuf-specs" "^0.3.1"
->>>>>>> main
 
 "@sindresorhus/is@^4.6.0":
   version "4.6.0"
@@ -6340,11 +6319,7 @@ node-gyp-build@^4.2.0, node-gyp-build@^4.3.0:
   resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.8.0.tgz#3fee9c1731df4581a3f9ead74664369ff00d26dd"
   integrity sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==
 
-<<<<<<< HEAD
-node-gyp@^10.0.0, node-gyp@^10.0.1:
-=======
 node-gyp@^10.0.0, node-gyp@^10.1.0:
->>>>>>> main
   version "10.1.0"
   resolved "https://registry.yarnpkg.com/node-gyp/-/node-gyp-10.1.0.tgz#75e6f223f2acb4026866c26a2ead6aab75a8ca7e"
   integrity sha512-B4J5M1cABxPc5PwfjhbV5hoy2DP9p8lFXASnEN6hugXOa61416tnTZ29x9sSwAd0o99XNIcpvDDy1swAExsVKA==
