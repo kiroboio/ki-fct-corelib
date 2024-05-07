@@ -1,5 +1,9 @@
-import { MSCall } from "../../types";
-import { CallID } from "../CallID";
+import { ChainId } from "@kiroboio/fct-plugins";
+import { utils } from "ethers";
+
+import { FCTUtils } from "../..";
+import { Call } from "../../Call";
+import { PayerPayment } from "../types";
 
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
@@ -58,26 +62,25 @@ const getExtraCommonGas = (payersCount: number, msgDataLength: number) => {
   return 23100n + 4600n * BigInt(payersCount) + (77600n * BigInt(msgDataLength)) / 10_000n;
 };
 
-const getPayers = (calls: MSCall[], pathIndexes: string[]) => {
+const getPayers = (calls: Call[], pathIndexes: string[]) => {
   return pathIndexes.reduce((acc, pathIndex) => {
     const call = calls[Number(pathIndex)];
-    const { payerIndex } = CallID.parse(call.callId);
-    // If payer is the activator, dont add it to the needed fuel
+    const payerIndex = call.options.payerIndex;
+
     if (payerIndex === 0) return acc;
-    const payer = calls[payerIndex - 1].from;
-    // If payer !== undefined AND payer !== lastPayer, add it to the array
-    if (payer && payer !== acc[acc.length - 1]) {
+    const payer = calls[payerIndex - 1].get().from;
+    if (payer && payer !== acc[acc.length - 1] && typeof payer === "string") {
       acc.push(payer);
     }
     return acc;
   }, [] as string[]);
 };
 
-const getAllSigners = (calls: MSCall[]) => {
+const getAllSigners = (calls: Call[]) => {
   return calls.reduce((acc, call) => {
-    // If call.from is already in the array, don't add it
-    if (!acc.includes(call.from)) {
-      acc.push(call.from);
+    const from = call.get().from;
+    if (typeof from === "string" && !acc.includes(from)) {
+      acc.push(from);
     }
     return acc;
   }, [] as string[]);
@@ -90,7 +93,7 @@ export function getPayersForRoute({
   calldata,
 }: {
   chainId: string;
-  calls: MSCall[];
+  calls: Call[];
   pathIndexes: string[];
   calldata: string;
 }) {
@@ -117,10 +120,15 @@ export function getPayersForRoute({
   const gasForFCTCall = pathIndexes.reduce(
     (acc, path) => {
       const call = calls[Number(path)];
-      const { payerIndex, options } = CallID.parse(call.callId);
+      // const { payerIndex, options } = CallID.parse(call.callId);
+      const _call = call.get();
+      const options = _call.options;
+      const payerIndex = options.payerIndex;
+
       // If payer is the activator, dont add it to the needed fuel
       if (payerIndex === 0) return acc;
-      const payer = calls[payerIndex - 1].from;
+      const payer = calls[payerIndex - 1].get().from;
+      if (typeof payer !== "string") return acc;
 
       const gas = BigInt(options.gasLimit) || getFee("defaultGasLimit", chainId);
 
@@ -182,4 +190,153 @@ export function getCostInKiro({
   ethCost: bigint | undefined;
 }) {
   return (((ethCost || 0n) * BigInt(ethPriceInKIRO)) / 10n ** 18n).toString();
+}
+
+export function getGasPrices({
+  maxGasPrice,
+  gasPrice,
+  baseFeeBPS,
+  bonusFeeBPS,
+}: {
+  maxGasPrice: bigint;
+  gasPrice: bigint;
+  baseFeeBPS: bigint;
+  bonusFeeBPS: bigint;
+}) {
+  // maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(options.maxGasPrice);
+  const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
+  const effectiveGasPrice = BigInt(
+    getEffectiveGasPrice({
+      gasPrice: txGasPrice,
+      maxGasPrice,
+      baseFeeBPS,
+      bonusFeeBPS,
+    }),
+  );
+  return {
+    txGasPrice,
+    effectiveGasPrice,
+  };
+}
+
+export function getPayerMap({
+  chainId,
+  paths,
+  calldata,
+  calls,
+  gasPrice,
+  maxGasPrice,
+  baseFeeBPS,
+  bonusFeeBPS,
+  penalty,
+}: {
+  chainId: ChainId;
+  paths: ReturnType<FCTUtils["getAllPaths"]>;
+  calldata: string;
+  calls: Call[];
+  gasPrice: bigint;
+  maxGasPrice: bigint;
+  baseFeeBPS: bigint;
+  bonusFeeBPS: bigint;
+  penalty?: number | string;
+}) {
+  const { txGasPrice, effectiveGasPrice } = getGasPrices({
+    maxGasPrice,
+    gasPrice,
+    baseFeeBPS,
+    bonusFeeBPS,
+  });
+  return paths.map((path) => {
+    const payers = getPayersForRoute({
+      chainId,
+      calldata,
+      calls,
+      pathIndexes: path,
+    });
+
+    return payers.reduce(
+      (acc, payer) => {
+        const base = payer.gas * txGasPrice;
+        const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+        const ethCost = base + fee;
+
+        return {
+          ...acc,
+          [payer.payer]: {
+            ...payer,
+            pureEthCost: ethCost,
+            ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
+          },
+        };
+      },
+      {} as Record<string, PayerPayment>,
+    );
+  });
+}
+
+export function preparePaymentPerPayerResult({
+  payerMap,
+  senders,
+  ethPriceInKIRO,
+}: {
+  payerMap: Record<string, PayerPayment>[];
+  senders: string[];
+  ethPriceInKIRO: string | bigint;
+}) {
+  return senders.map((payer) => {
+    const { largest, smallest } = payerMap.reduce(
+      (currentValues, pathData) => {
+        if (!pathData[payer as keyof typeof pathData]) {
+          return currentValues;
+        }
+
+        const currentLargestValue = currentValues.largest?.ethCost;
+        const currentSmallestValue = currentValues.smallest?.ethCost;
+
+        const value = pathData[payer as keyof typeof pathData]?.pureEthCost || 0n;
+        if (value > currentLargestValue) {
+          currentValues.largest = pathData[payer as keyof typeof pathData];
+        }
+        if (currentSmallestValue == 0n || value < currentSmallestValue) {
+          currentValues.smallest = pathData[payer as keyof typeof pathData];
+        }
+        return currentValues;
+      },
+      {
+        largest: {
+          payer,
+          gas: 0n,
+          ethCost: 0n,
+          pureEthCost: 0n,
+        },
+        smallest: {
+          payer,
+          gas: 0n,
+          ethCost: 0n,
+          pureEthCost: 0n,
+        },
+      } as { largest: PayerPayment; smallest: PayerPayment },
+    );
+
+    const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest?.pureEthCost });
+    const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest?.pureEthCost });
+
+    return {
+      payer,
+      largestPayment: {
+        gas: largest.gas.toString(),
+        tokenAmountInWei: largestKiroCost,
+        nativeAmountInWei: largest.ethCost.toString(),
+        tokenAmount: utils.formatEther(largestKiroCost),
+        nativeAmount: utils.formatEther(largest.ethCost.toString()),
+      },
+      smallestPayment: {
+        gas: smallest.gas.toString(),
+        tokenAmountInWei: smallestKiroCost,
+        nativeAmountInWei: smallest.ethCost.toString(),
+        tokenAmount: utils.formatEther(smallestKiroCost),
+        nativeAmount: utils.formatEther(smallest.ethCost.toString()),
+      },
+    };
+  });
 }

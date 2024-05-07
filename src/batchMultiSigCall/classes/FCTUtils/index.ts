@@ -4,21 +4,27 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import NodeCache from "node-cache";
 
-import { Flow } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { TypedDataLimits, TypedDataTypes } from "../../types";
+import { TypedDataTypes } from "../../types";
 import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
 import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
-import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { secureStorageAddresses } from "./constants";
-import { getCostInKiro, getEffectiveGasPrice, getPayersForRoute } from "./getPaymentPerPayer";
-import { executedCallsFromLogs, manageValidationAndComputed, verifyMessageHash } from "./helpers";
-import { ISimpleTxTrace, ITxTrace, PayerPayment } from "./types";
+import { ISimpleTxTrace } from "./types";
+import { getEffectiveGasPrice, getPayerMap, preparePaymentPerPayerResult } from "./utils/getPaymentPerPayer";
+import { getPathsFromGraph, manageFCTNodesInGraph } from "./utils/paths";
+import {
+  executedCallsFromLogs,
+  executedCallsFromRawLogs,
+  getCallsFromTrace,
+  getTraceData,
+  manageValidationAndComputed,
+  verifyMessageHash,
+} from "./utils/transactionTrace";
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
@@ -67,11 +73,11 @@ export class FCTUtils extends FCTBase {
 
   public recoverAddress(signature: SignatureLike): string | null {
     try {
-      const signatureString = utils.joinSignature(signature);
+      const FCT = this.FCT;
       return recoverTypedSignature<SignTypedDataVersion.V4, TypedDataTypes>({
-        data: this.FCTData.typedData as unknown as TypedMessage<TypedDataTypes>,
+        data: new EIP712(FCT).getTypedData() as unknown as TypedMessage<TypedDataTypes>,
         version: SignTypedDataVersion.V4,
-        signature: signatureString,
+        signature: utils.joinSignature(signature),
       });
     } catch (e) {
       return null;
@@ -110,10 +116,9 @@ export class FCTUtils extends FCTBase {
   }
 
   public getSigners(): string[] {
-    return this.FCTData.mcall.reduce((acc: string[], { from }) => {
-      // Check if the address is already in the accumulator
-      // And it is not an address from secureStorageAddresses. If it is, we dont
-      // want to add it to the signers array
+    return this.FCT.calls.reduce((acc: string[], call) => {
+      const from = call.get().from;
+      if (typeof from !== "string") return acc;
       const doNotReturn = secureStorageAddresses.find(
         (address) => address.address.toLowerCase() === from.toLowerCase() && address.chainId === this.FCT.chainId,
       );
@@ -126,79 +131,19 @@ export class FCTUtils extends FCTBase {
   }
 
   public getAllPaths(): string[][] {
-    const FCT = this.FCTData;
+    const FCT = this.FCT;
     const g = new Graph({ directed: true });
 
-    FCT.mcall.forEach((_, index) => {
-      g.setNode(index.toString());
+    const ends = manageFCTNodesInGraph({
+      calls: this.FCT.calls,
+      FCT,
+      g,
     });
 
-    const continueOnSuccessFlows = [Flow.OK_CONT_FAIL_REVERT, Flow.OK_CONT_FAIL_STOP, Flow.OK_CONT_FAIL_CONT];
-    const continueOnFailFlows = [Flow.OK_REVERT_FAIL_CONT, Flow.OK_STOP_FAIL_CONT, Flow.OK_CONT_FAIL_CONT];
-    const endFlows = [
-      Flow.OK_STOP_FAIL_STOP,
-      Flow.OK_STOP_FAIL_REVERT,
-      Flow.OK_REVERT_FAIL_STOP,
-      Flow.OK_CONT_FAIL_STOP,
-      Flow.OK_STOP_FAIL_CONT,
-    ];
-    const dontAddEdge = [Flow.OK_STOP_FAIL_STOP, Flow.OK_STOP_FAIL_REVERT, Flow.OK_REVERT_FAIL_STOP];
-
-    const ends = [(FCT.mcall.length - 1).toString()];
-
-    for (let i = 0; i < FCT.mcall.length - 1; i++) {
-      const callID = CallID.parseWithNumbers(FCT.mcall[i].callId);
-      const flow = callID.options.flow;
-      const jumpOnSuccess = callID.options.jumpOnSuccess;
-      const jumpOnFail = callID.options.jumpOnFail;
-
-      if (jumpOnSuccess === jumpOnFail) {
-        if (!dontAddEdge.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
-        }
-      } else {
-        if (continueOnSuccessFlows.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
-        }
-        if (continueOnFailFlows.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnFail).toString());
-        }
-      }
-
-      if (endFlows.includes(flow)) {
-        ends.push(i.toString());
-      }
-    }
-
-    const start = "0";
-    const allPaths: string[][] = [];
-    const pathList: string[] = [start];
-
-    const uniqueEnds = Array.from(new Set(ends));
-    for (const end of uniqueEnds) {
-      const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
-        if (start === end) {
-          const path = localPathList.slice();
-          allPaths.push(path);
-          return;
-        }
-
-        let successors = g.successors(start);
-        if (successors === undefined) {
-          successors = [];
-        }
-
-        for (const id of successors as string[]) {
-          localPathList.push(id);
-          printAllPathsUtil(g, id, end, localPathList);
-          localPathList.splice(localPathList.indexOf(id), 1);
-        }
-      };
-
-      printAllPathsUtil(g, start, end, pathList);
-    }
-
-    return allPaths;
+    return getPathsFromGraph({
+      g,
+      ends,
+    });
   }
 
   public async getAssetFlow() {
@@ -332,12 +277,11 @@ export class FCTUtils extends FCTBase {
       bonusFeeBPS?: number | string;
     };
   }) => {
-    const baseFeeBPS = fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n;
-    const bonusFeeBPS = fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n;
+    const calls = this.FCT.calls;
+    const options = this.FCT.options;
+    signatures = signatures || [];
 
-    const fct = this.FCTData;
-
-    const allPathsKey = JSON.stringify(fct);
+    const allPathsKey = JSON.stringify(options) + JSON.stringify(this.FCT.callsAsObjects);
     let allPaths = this._cache.get(allPathsKey) as ReturnType<this["getAllPaths"]>;
 
     if (!allPaths) {
@@ -345,111 +289,31 @@ export class FCTUtils extends FCTBase {
       this._cache.set(allPathsKey, allPaths);
     }
 
-    const limits = fct.typedData.message.limits as TypedDataLimits;
-
-    maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(limits.gas_price_limit);
-    const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
-    const effectiveGasPrice = BigInt(
-      getEffectiveGasPrice({
-        gasPrice: txGasPrice,
-        maxGasPrice,
-        baseFeeBPS,
-        bonusFeeBPS,
-      }),
-    );
-    fct.signatures = signatures || [];
-
     const calldata = this.getCalldataForActuator({
       activator: "0x0000000000000000000000000000000000000000",
       investor: "0x0000000000000000000000000000000000000000",
       purgedFCT: "0x".padEnd(66, "0"),
-      signatures: fct.signatures,
+      signatures,
     });
 
-    const data = allPaths.map((path) => {
-      const payers = getPayersForRoute({
-        chainId: this.FCT.chainId,
-        calldata,
-        calls: fct.mcall,
-        pathIndexes: path,
-      });
-
-      return payers.reduce(
-        (acc, payer) => {
-          const base = payer.gas * txGasPrice;
-          const fee = payer.gas * (effectiveGasPrice - txGasPrice);
-          const ethCost = base + fee;
-
-          return {
-            ...acc,
-            [payer.payer]: {
-              ...payer,
-              pureEthCost: ethCost,
-              ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
-            },
-          };
-        },
-        {} as Record<string, PayerPayment>,
-      );
+    const payerMap = getPayerMap({
+      chainId: this.FCT.chainId,
+      paths: allPaths,
+      calldata,
+      calls,
+      maxGasPrice: maxGasPrice ? BigInt(maxGasPrice) : BigInt(options.maxGasPrice),
+      gasPrice: gasPrice ? BigInt(gasPrice) : BigInt(options.maxGasPrice),
+      baseFeeBPS: fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n,
+      bonusFeeBPS: fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n,
+      penalty,
     });
 
-    const allSenders = [...new Set(fct.mcall.map((call) => call.from))];
+    const senders = [...new Set(calls.map((call) => call.get().from).filter((i) => typeof i === "string"))] as string[];
 
-    return allSenders.map((payer) => {
-      const { largest, smallest } = data.reduce(
-        (currentValues, pathData) => {
-          if (!pathData[payer as keyof typeof pathData]) {
-            return currentValues;
-          }
-
-          const currentLargestValue = currentValues.largest?.ethCost;
-          const currentSmallestValue = currentValues.smallest?.ethCost;
-
-          const value = pathData[payer as keyof typeof pathData]?.pureEthCost || 0n;
-          if (value > currentLargestValue) {
-            currentValues.largest = pathData[payer as keyof typeof pathData];
-          }
-          if (currentSmallestValue == 0n || value < currentSmallestValue) {
-            currentValues.smallest = pathData[payer as keyof typeof pathData];
-          }
-          return currentValues;
-        },
-        {
-          largest: {
-            payer,
-            gas: 0n,
-            ethCost: 0n,
-            pureEthCost: 0n,
-          },
-          smallest: {
-            payer,
-            gas: 0n,
-            ethCost: 0n,
-            pureEthCost: 0n,
-          },
-        } as { largest: PayerPayment; smallest: PayerPayment },
-      );
-
-      const largestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: largest?.pureEthCost });
-      const smallestKiroCost = getCostInKiro({ ethPriceInKIRO, ethCost: smallest?.pureEthCost });
-
-      return {
-        payer,
-        largestPayment: {
-          gas: largest.gas.toString(),
-          tokenAmountInWei: largestKiroCost,
-          nativeAmountInWei: largest.ethCost.toString(),
-          tokenAmount: utils.formatEther(largestKiroCost),
-          nativeAmount: utils.formatEther(largest.ethCost.toString()),
-        },
-        smallestPayment: {
-          gas: smallest.gas.toString(),
-          tokenAmountInWei: smallestKiroCost,
-          nativeAmountInWei: smallest.ethCost.toString(),
-          tokenAmount: utils.formatEther(smallestKiroCost),
-          nativeAmount: utils.formatEther(smallest.ethCost.toString()),
-        },
-      };
+    return preparePaymentPerPayerResult({
+      payerMap,
+      senders,
+      ethPriceInKIRO,
     });
   };
 
@@ -555,60 +419,15 @@ export class FCTUtils extends FCTBase {
         if (!data || !data.trace || !data.logs) {
           throw new Error("Tenderly trace is not working");
         }
-        const rawLogs = data.logs.map((log) => log.raw);
-        verifyMessageHash(rawLogs, this.getMessageHash());
-        const executedCalls = executedCallsFromLogs(rawLogs);
 
-        const callsFromTenderlyTrace = data.trace.filter((call) => {
-          return (
-            call.traceAddress.length === 7 &&
-            call.traceAddress[0] === 0 &&
-            call.traceAddress[1] === 0 &&
-            call.traceAddress[3] === 0 &&
-            call.traceAddress[4] === 0 &&
-            call.traceAddress[5] === 2 &&
-            call.traceAddress[6] === 2
-          );
+        const executedCalls = executedCallsFromLogs(data.logs, this.getMessageHash());
+
+        const traceData = getTraceData({
+          calls: this.FCT.calls,
+          callsFromTenderlyTrace: getCallsFromTrace(data.trace),
+          executedCalls,
+          computedVariables: this.FCT.computed,
         });
-
-        const fctCalls = this.FCT.calls;
-        const allFCTComputed = this.FCT.computed;
-
-        const traceData = executedCalls.reduce(
-          (acc, executedCall, index) => {
-            const fctCall = fctCalls[Number(executedCall.callIndex) - 1];
-            const callResult = callsFromTenderlyTrace[index];
-            const input = callResult.input;
-            const output = callResult.output;
-
-            const resData = fctCall.decodeData({
-              inputData: input,
-              outputData: output,
-            });
-
-            acc.calls = [
-              ...acc.calls,
-              {
-                method: fctCall.call.method ?? "",
-                value: callResult.value ? parseInt(callResult.value, 16).toString() : "0",
-                inputData: resData?.inputData ?? [],
-                outputData: resData?.outputData ?? [],
-                error: callResult.error || callResult.errorString || null,
-                isSuccess: executedCall.isSuccess,
-                id: fctCall.nodeId,
-              },
-            ];
-
-            manageValidationAndComputed(acc, fctCall, allFCTComputed);
-
-            return acc;
-          },
-          {
-            calls: [],
-            validations: [],
-            computed: [],
-          } as ITxTrace,
-        ) as ITxTrace;
 
         keepTrying = false;
 
@@ -628,7 +447,7 @@ export class FCTUtils extends FCTBase {
     const txReceipt = await provider.getTransactionReceipt(txHash);
 
     verifyMessageHash(txReceipt.logs, this.getMessageHash());
-    const executedCalls = executedCallsFromLogs(txReceipt.logs);
+    const executedCalls = executedCallsFromRawLogs(txReceipt.logs, this.getMessageHash());
     const fctCalls = this.FCT.calls;
     const allFCTComputed = this.FCT.computed;
 
@@ -674,25 +493,5 @@ export class FCTUtils extends FCTBase {
       result = this.FCT.validation.isExternalVariableUsed();
     }
     return result;
-  }
-
-  private _validateFCTKeys(keys: string[]) {
-    const validKeys = [
-      "typeHash",
-      "typedData",
-      "sessionId",
-      "nameHash",
-      "mcall",
-      "builderAddress",
-      "variables",
-      "externalSigners",
-      "computed",
-      "signatures",
-    ];
-    validKeys.forEach((key) => {
-      if (!keys.includes(key)) {
-        throw new Error(`FCT missing key ${key}`);
-      }
-    });
   }
 }

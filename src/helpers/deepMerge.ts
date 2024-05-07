@@ -3,19 +3,26 @@ export function deepMerge(target: any, ...sources: any[]) {
   sources.forEach((source) => {
     if (isObject(source)) {
       Object.keys(source).forEach((key) => {
-        if (isObject(source[key])) {
-          if (!(key in target)) Object.assign(output, { [key]: source[key] });
-          else output[key] = isObject(output[key]) ? deepMerge(target[key], source[key]) : source[key];
-        } else {
-          // If the value is undefined, it will be ignored
-          if (source[key] !== undefined) {
-            Object.assign(output, { [key]: source[key] });
-          }
-        }
+        mergeProperty(output, target, source, key);
       });
     }
   });
   return output;
+}
+
+function mergeProperty(output: any, target: any, source: any, key: string) {
+  if (isObject(source[key])) {
+    if (!(key in target)) {
+      Object.assign(output, { [key]: source[key] });
+    } else {
+      output[key] = isObject(output[key]) ? deepMerge(target[key], source[key]) : source[key];
+    }
+  } else {
+    // If the value is undefined, it will be ignored
+    if (source[key] !== undefined) {
+      Object.assign(output, { [key]: source[key] });
+    }
+  }
 }
 
 export function isObject(item: any) {

@@ -6,17 +6,51 @@ const percentilesForNetworks = {
   1: [5, 8, 15, 25],
   42161: [2, 5, 15, 25],
   10: [2, 5, 15, 25],
-  //
   // Testnets
   11155111: [2, 10, 50, 80],
   421613: [2, 6, 15, 30],
-  // 5: [2, 6, 15, 30],
 };
 
-const gasPriceCalculationsByChains = {
-  // 5: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
-  1: (maxFeePerGas: bigint) => maxFeePerGas.toString(),
+export const getGasPrices = async ({
+  rpcUrl,
+  chainId,
+  historicalBlocks = 10,
+  tries = 40,
+}: {
+  rpcUrl: string;
+  chainId: number;
+  historicalBlocks?: number;
+  tries?: number;
+}): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
+  const keepTrying = true;
+
+  do {
+    try {
+      const { result, baseFee } = await getFeeHistory({ rpcUrl, chainId, historicalBlocks });
+
+      if (!result) {
+        throw new Error("No result");
+      }
+
+      const blocks = buildBlocks({
+        historicalBlocks,
+        feeHistoryResult: result,
+        oldestBlock: parseInt(result.oldestBlock, 16),
+      });
+
+      return getGasPriceResult({ baseFee, chainId, averages: getAverages(blocks) });
+    } catch (err) {
+      if (tries > 0) {
+        // Wait 3 seconds before retrying
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      } else {
+        throw new Error("Could not get gas prices, issue might be related to node provider");
+      }
+    }
+  } while (keepTrying && tries-- > 0);
+  throw new Error("Could not get gas prices, issue might be related to node provider");
 };
+
 function avg(arr: string[] | undefined[]) {
   if (arr.every((v) => v === undefined)) {
     return 0n;
@@ -33,122 +67,119 @@ function getMaxBaseFeeInFutureBlock(baseFee: bigint, blocksInFuture: number): bi
   return maxBaseFee;
 }
 
-export const getGasPrices = async ({
+async function getFeeHistory({
   rpcUrl,
   chainId,
-  historicalBlocks = 10,
-  tries = 40,
+  historicalBlocks,
 }: {
   rpcUrl: string;
   chainId: number;
-  historicalBlocks?: number;
-  tries?: number;
-}): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
+  historicalBlocks: number;
+}) {
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const latestBlock = await provider.getBlock("latest");
+  if (!latestBlock.baseFeePerGas) {
+    throw new Error("No baseFeePerGas");
+  }
+  const baseFee = latestBlock.baseFeePerGas.toString();
+  const blockNumber = latestBlock.number;
 
-  let keepTrying = true;
-  let returnValue: Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>;
+  const data = await fetchFeeHistory({ historicalBlocks, blockNumber, chainId, rpcUrl });
 
-  do {
-    try {
-      const latestBlock = await provider.getBlock("latest");
-      if (!latestBlock.baseFeePerGas) {
-        throw new Error("No baseFeePerGas");
-      }
-      const baseFee = latestBlock.baseFeePerGas.toString();
-      const blockNumber = latestBlock.number;
+  return {
+    result: data.result as
+      | { oldestBlock: string; baseFeePerGas: string[]; gasUsedRatio: number[]; reward?: string[][] }
+      | undefined,
+    baseFee,
+  };
+}
 
-      const generateBody = () => {
-        return JSON.stringify({
-          jsonrpc: "2.0",
-          method: "eth_feeHistory",
-          params: [
-            historicalBlocks,
-            `0x${blockNumber.toString(16)}`,
-            percentilesForNetworks[chainId as keyof typeof percentilesForNetworks] || percentilesForNetworks[5],
-          ],
-          id: 1,
-        });
-      };
+async function fetchFeeHistory({
+  historicalBlocks,
+  blockNumber,
+  chainId,
+  rpcUrl,
+}: {
+  historicalBlocks: number;
+  blockNumber: number;
+  chainId: number;
+  rpcUrl: string;
+}) {
+  const res = await fetch(rpcUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: "eth_feeHistory",
+      params: [
+        historicalBlocks,
+        `0x${blockNumber.toString(16)}`,
+        percentilesForNetworks[chainId as keyof typeof percentilesForNetworks] || percentilesForNetworks[1],
+      ],
+      id: 1,
+    }),
+  });
+  return (await res.json()) as { result: unknown };
+}
 
-      const res = await fetch(rpcUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: generateBody(),
-      });
-      const data = (await res.json()) as { result: unknown };
-      const result = data.result as
-        | { oldestBlock: string; baseFeePerGas: string[]; gasUsedRatio: number[]; reward?: string[][] }
-        | undefined;
+function buildBlocks({
+  historicalBlocks,
+  feeHistoryResult,
+  oldestBlock,
+}: {
+  historicalBlocks: number;
+  feeHistoryResult: { oldestBlock: string; baseFeePerGas: string[]; gasUsedRatio: number[]; reward?: string[][] };
+  oldestBlock: number;
+}) {
+  let blockNum = oldestBlock;
+  return Array.from({ length: historicalBlocks - 1 }, (_, i) => {
+    const number = blockNum;
+    blockNum += 1;
+    return {
+      number,
+      baseFeePerGas: feeHistoryResult.baseFeePerGas[i],
+      gasUsedRatio: feeHistoryResult.gasUsedRatio[i],
+      priorityFeePerGas: feeHistoryResult.reward ? feeHistoryResult.reward[i] : [],
+    };
+  });
+}
 
-      if (!result) {
-        throw new Error("No result");
-      }
+function getAverages(blocks: any[]) {
+  return {
+    slow: avg(blocks.map((b) => b.priorityFeePerGas[0])),
+    average: avg(blocks.map((b) => b.priorityFeePerGas[1])),
+    fast: avg(blocks.map((b) => b.priorityFeePerGas[2])),
+    fastest: avg(blocks.map((b) => b.priorityFeePerGas[3])),
+  };
+}
 
-      let blockNum = parseInt(result.oldestBlock, 16);
-      let index = 0;
-      const blocks: {
-        number: number;
-        baseFeePerGas: string;
-        gasUsedRatio: number;
-        priorityFeePerGas: string[];
-      }[] = [];
+function getGasPriceResult({
+  baseFee,
+  chainId,
+  averages,
+}: {
+  baseFee: string;
+  chainId: number;
+  averages: ReturnType<typeof getAverages>;
+}) {
+  const { slow, average, fast, fastest } = averages;
 
-      while (blockNum < parseInt(result.oldestBlock, 16) + historicalBlocks) {
-        blocks.push({
-          number: blockNum,
-          baseFeePerGas: result.baseFeePerGas[index],
-          gasUsedRatio: result.gasUsedRatio[index],
-          priorityFeePerGas: result.reward ? result.reward[index] : [],
-        });
-        blockNum += 1;
-        index += 1;
-      }
+  // On Arbitrum use the baseFee as is, otherwise calculate the baseFee for 2 blocks in the future
+  const baseFeePerGas = chainId === 42161 ? BigInt(baseFee) : getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
 
-      const slow = avg(blocks.map((b) => b.priorityFeePerGas[0]));
-      const average = avg(blocks.map((b) => b.priorityFeePerGas[1]));
-      const fast = avg(blocks.map((b) => b.priorityFeePerGas[2]));
-      const fastest = avg(blocks.map((b) => b.priorityFeePerGas[3]));
-      // const baseFeePerGas = getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
-      // If chainId is 42161, use the baseFee as is, otherwise calculate the baseFee for 2 blocks in the future
-      const baseFeePerGas = chainId === 42161 ? BigInt(baseFee) : getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
+  return {
+    slow: gasPriceCalculation({ priorityFee: slow, baseFee: baseFeePerGas }),
+    average: gasPriceCalculation({ priorityFee: average, baseFee: baseFeePerGas }),
+    fast: gasPriceCalculation({ priorityFee: fast, baseFee: baseFeePerGas }),
+    fastest: gasPriceCalculation({ priorityFee: fastest, baseFee: baseFeePerGas }),
+  };
+}
 
-      const gasPriceCalc =
-        gasPriceCalculationsByChains[chainId as keyof typeof gasPriceCalculationsByChains] ||
-        gasPriceCalculationsByChains[1];
-
-      returnValue = {
-        slow: {
-          maxFeePerGas: (slow + baseFeePerGas).toString(),
-          maxPriorityFeePerGas: slow.toString(),
-        },
-        average: {
-          maxFeePerGas: (average + baseFeePerGas).toString(),
-          maxPriorityFeePerGas: average.toString(),
-        },
-        fast: {
-          maxFeePerGas: gasPriceCalc(fast + baseFeePerGas),
-          maxPriorityFeePerGas: fast.toString(),
-        },
-        fastest: {
-          maxFeePerGas: gasPriceCalc(fastest + baseFeePerGas),
-          maxPriorityFeePerGas: fastest.toString(),
-        },
-      };
-
-      keepTrying = false;
-
-      return returnValue;
-    } catch (err) {
-      if (tries > 0) {
-        // Wait 3 seconds before retrying
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      } else {
-        throw new Error("Could not get gas prices, issue might be related to node provider");
-      }
-    }
-  } while (keepTrying && tries-- > 0);
-  throw new Error("Could not get gas prices, issue might be related to node provider");
-};
+function gasPriceCalculation({ priorityFee, baseFee }: { priorityFee: bigint; baseFee: bigint }) {
+  return {
+    maxFeePerGas: (baseFee + priorityFee).toString(),
+    maxPriorityFeePerGas: priorityFee.toString(),
+  };
+}
