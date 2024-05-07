@@ -36,13 +36,15 @@ async function main() {
     },
   });
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 5; i++) {
     await FCT.add({
+      nodeId: `node1_${i}`,
       from: "0x8c9b261faef3b3c2e64ab5e58e04615f8c788099",
       plugin: Transfer,
     });
 
     await FCT.add({
+      nodeId: `node2_${i}`,
       from: "0x8c9b261faef3b3c2e64ab5e58e04615f8c788099",
       plugin: Balance,
     });
@@ -63,6 +65,13 @@ async function main() {
     console.time("recoverAddress");
     FCT2.utils.recoverAddress(exported.signatures[0]);
     console.timeEnd("recoverAddress");
+
+    console.time("paymentPerPayer");
+    const payment = FCT2.utils.getPaymentPerPayer({
+      ethPriceInKIRO: "1",
+    });
+    console.log(payment);
+    console.timeEnd("paymentPerPayer");
   }
 }
 

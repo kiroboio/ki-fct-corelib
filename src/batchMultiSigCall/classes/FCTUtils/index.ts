@@ -4,7 +4,6 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 import NodeCache from "node-cache";
 
-import { Flow } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { Interfaces } from "../../../helpers/Interfaces";
@@ -12,12 +11,12 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { TypedDataTypes } from "../../types";
 import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
 import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
-import { CallID } from "../CallID";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { secureStorageAddresses } from "./constants";
 import { ISimpleTxTrace } from "./types";
 import { getEffectiveGasPrice, getPayerMap, preparePaymentPerPayerResult } from "./utils/getPaymentPerPayer";
+import { getPathsFromGraph, manageFCTNodesInGraph } from "./utils/paths";
 import {
   executedCallsFromLogs,
   executedCallsFromRawLogs,
@@ -132,79 +131,19 @@ export class FCTUtils extends FCTBase {
   }
 
   public getAllPaths(): string[][] {
-    const FCT = this.FCTData;
+    const FCT = this.FCT;
     const g = new Graph({ directed: true });
 
-    FCT.mcall.forEach((_, index) => {
-      g.setNode(index.toString());
+    const ends = manageFCTNodesInGraph({
+      calls: this.FCT.calls,
+      FCT,
+      g,
     });
 
-    const continueOnSuccessFlows = [Flow.OK_CONT_FAIL_REVERT, Flow.OK_CONT_FAIL_STOP, Flow.OK_CONT_FAIL_CONT];
-    const continueOnFailFlows = [Flow.OK_REVERT_FAIL_CONT, Flow.OK_STOP_FAIL_CONT, Flow.OK_CONT_FAIL_CONT];
-    const endFlows = [
-      Flow.OK_STOP_FAIL_STOP,
-      Flow.OK_STOP_FAIL_REVERT,
-      Flow.OK_REVERT_FAIL_STOP,
-      Flow.OK_CONT_FAIL_STOP,
-      Flow.OK_STOP_FAIL_CONT,
-    ];
-    const dontAddEdge = [Flow.OK_STOP_FAIL_STOP, Flow.OK_STOP_FAIL_REVERT, Flow.OK_REVERT_FAIL_STOP];
-
-    const ends = [(FCT.mcall.length - 1).toString()];
-
-    for (let i = 0; i < FCT.mcall.length - 1; i++) {
-      const callID = CallID.parseWithNumbers(FCT.mcall[i].callId);
-      const flow = callID.options.flow;
-      const jumpOnSuccess = callID.options.jumpOnSuccess;
-      const jumpOnFail = callID.options.jumpOnFail;
-
-      if (jumpOnSuccess === jumpOnFail) {
-        if (!dontAddEdge.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
-        }
-      } else {
-        if (continueOnSuccessFlows.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnSuccess).toString());
-        }
-        if (continueOnFailFlows.includes(flow)) {
-          g.setEdge(i.toString(), (i + 1 + +jumpOnFail).toString());
-        }
-      }
-
-      if (endFlows.includes(flow)) {
-        ends.push(i.toString());
-      }
-    }
-
-    const start = "0";
-    const allPaths: string[][] = [];
-    const pathList: string[] = [start];
-
-    const uniqueEnds = Array.from(new Set(ends));
-    for (const end of uniqueEnds) {
-      const printAllPathsUtil = (g: Graph, start: string, end: string, localPathList: string[]) => {
-        if (start === end) {
-          const path = localPathList.slice();
-          allPaths.push(path);
-          return;
-        }
-
-        let successors = g.successors(start);
-        if (successors === undefined) {
-          successors = [];
-        }
-
-        for (const id of successors as string[]) {
-          localPathList.push(id);
-          printAllPathsUtil(g, id, end, localPathList);
-          localPathList.splice(localPathList.indexOf(id), 1);
-        }
-      };
-
-      printAllPathsUtil(g, start, end, pathList);
-    }
-
-    return allPaths;
+    return getPathsFromGraph({
+      g,
+      ends,
+    });
   }
 
   public async getAssetFlow() {
