@@ -73,18 +73,24 @@ export function getTraceData({
   ) as ITxTrace;
 }
 
-export const verifyMessageHash = (logs: any[], messageHashFromFCT: string) => {
-  const messageHash = logs
-    .map((log) => log.raw)
-    .find((log) => {
-      try {
-        return controllerInterface.parseLog(log).name === "FCTE_Registered";
-      } catch (e) {
-        return false;
-      }
-    })?.topics[2];
+export const verifyMessageHash = (logs: any[], messageHas: string) => {
+  const rawLogs = logs.map((log) => log.raw);
+  return verifyMessageHashRaw(rawLogs, messageHas);
+};
 
-  if (messageHash !== messageHashFromFCT) {
+export const verifyMessageHashRaw = (logs: any[], messageHashFromFCT: string) => {
+  const messageHash = logs.find((log) => {
+    try {
+      return controllerInterface.parseLog(log).name === "FCTE_Registered";
+    } catch (e) {
+      return false;
+    }
+  })?.topics[2];
+
+  console.log("messageHash", messageHash);
+  console.log("messageHashFromFCT", messageHashFromFCT);
+
+  if (messageHash.toLowerCase() !== messageHashFromFCT.toLowerCase()) {
     throw new Error("Message hash mismatch");
   }
 
@@ -107,7 +113,7 @@ export const executedCallsFromLogs = (logs: any[], messageHash: string) => {
 };
 
 export const executedCallsFromRawLogs = (rawLogs: any[], messageHash: string) => {
-  verifyMessageHash(rawLogs, messageHash);
+  verifyMessageHashRaw(rawLogs, messageHash);
 
   return rawLogs
     .filter((log) => {
