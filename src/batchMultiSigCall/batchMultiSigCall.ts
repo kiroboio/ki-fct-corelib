@@ -225,26 +225,26 @@ export class BatchMultiSigCall {
   static utils = utils;
 
   static from = (input: IFCT, messageHash?: string) => {
-    if (messageHash) {
+    if (messageHash && messageHash.length === 66) {
       const cached = FCTCache.get<BatchMultiSigCall>(messageHash.toLowerCase());
       if (cached) return cached;
     }
 
     const FCT = new BatchMultiSigCall();
     FCT.importFCT(input);
-    if (messageHash) FCTCache.set(messageHash.toLowerCase(), FCT);
+    if (messageHash && messageHash.length === 66) FCTCache.set(messageHash.toLowerCase(), FCT);
     return FCT;
   };
 
   static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>, messageHash?: string) => {
-    if (messageHash) {
+    if (messageHash && messageHash.length === 66) {
       const cached = FCTCache.get<BatchMultiSigCall>(`map:${messageHash}`.toLowerCase());
       if (cached) return cached;
     }
 
     const FCT = new BatchMultiSigCall();
     FCT.importFCTWithMap(input, map);
-    if (messageHash) FCTCache.set(`map:${messageHash}`.toLowerCase(), FCT);
+    if (messageHash && messageHash.length === 66) FCTCache.set(`map:${messageHash}`.toLowerCase(), FCT);
     return FCT;
   };
 

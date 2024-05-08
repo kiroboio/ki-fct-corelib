@@ -74,8 +74,9 @@ export class FCTUtils extends FCTBase {
   public recoverAddress(signature: SignatureLike): string | null {
     try {
       const FCT = this.FCT;
+      const data = new EIP712(FCT).getTypedData() as unknown as TypedMessage<TypedDataTypes>;
       return recoverTypedSignature<SignTypedDataVersion.V4, TypedDataTypes>({
-        data: new EIP712(FCT).getTypedData() as unknown as TypedMessage<TypedDataTypes>,
+        data,
         version: SignTypedDataVersion.V4,
         signature: utils.joinSignature(signature),
       });
