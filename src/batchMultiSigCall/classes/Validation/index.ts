@@ -1,16 +1,11 @@
 import { ValidationBase, ValidationOperator } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
-import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 import { IValidation, IValidationData, IValidationEIP712, ValidationAddResult, ValidationVariable } from "./types";
 
 export class Validation extends FCTBase {
   protected _validations: Required<IValidation<false>>[] = [];
-
-  constructor(FCT: BatchMultiSigCall) {
-    super(FCT);
-  }
 
   public get() {
     return this._validations;

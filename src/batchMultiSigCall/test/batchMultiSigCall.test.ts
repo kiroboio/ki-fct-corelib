@@ -857,7 +857,7 @@ describe("BatchMultiSigCall", () => {
       expect(fctData.mcall[0].types).to.deep.eq([5000, 3, 1000]);
     });
   });
-  describe.only("getAllRequiredApprovals", () => {
+  describe("getAllRequiredApprovals", () => {
     it("Should get required approvals", async () => {
       const FCT = new BatchMultiSigCall({
         chainId: "1",

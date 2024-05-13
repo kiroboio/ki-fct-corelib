@@ -1,5 +1,5 @@
 export function deepMerge(target: any, ...sources: any[]) {
-  const output = Object.assign({}, target || {});
+  const output = { ...target };
   sources.forEach((source) => {
     if (isObject(source)) {
       Object.keys(source).forEach((key) => {
@@ -17,11 +17,9 @@ function mergeProperty(output: any, target: any, source: any, key: string) {
     } else {
       output[key] = isObject(output[key]) ? deepMerge(target[key], source[key]) : source[key];
     }
-  } else {
+  } else if (source[key] !== undefined) {
     // If the value is undefined, it will be ignored
-    if (source[key] !== undefined) {
-      Object.assign(output, { [key]: source[key] });
-    }
+    Object.assign(output, { [key]: source[key] });
   }
 }
 

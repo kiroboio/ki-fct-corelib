@@ -2,7 +2,6 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { deepMerge } from "../../../helpers/deepMerge";
-import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
 import { FCTBase } from "../FCTBase";
 import { IValidationEIP712 } from "../Validation/types";
@@ -76,9 +75,6 @@ const types = {
 } as const;
 
 export class EIP712 extends FCTBase {
-  constructor(FCT: BatchMultiSigCall) {
-    super(FCT);
-  }
   static types = types;
 
   static getTypedDataDomain(chainId: ChainId) {

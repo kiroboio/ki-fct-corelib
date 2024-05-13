@@ -4,17 +4,12 @@ import { variables } from "../../..";
 import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
 import { globalVariables, globalVariablesBytes } from "../../../variables";
-import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { FCTBase } from "../FCTBase";
 import { ComputedOperators } from "./computedConstants";
 import { AddComputedResult, IComputed, IComputedData, IComputedEIP712 } from "./types";
 
 export class Variables extends FCTBase {
   protected _computed: Required<IComputed>[] = [];
-
-  constructor(FCT: BatchMultiSigCall) {
-    super(FCT);
-  }
 
   get computed() {
     return this._computed;
@@ -148,48 +143,14 @@ export class Variables extends FCTBase {
     innerIndex: number;
     type?: string;
   }) {
-    // const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-    // let base: string;
-    // let innerIndexHex: string;
-    // innerIndex = innerIndex ?? 0;
-    // if (innerIndex < 0) {
-    //   innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(4, "0");
-    //   if (type.includes("bytes")) {
-    //     base = FDBackBaseBytes;
-    //   } else {
-    //     base = FDBackBase;
-    //   }
-    // } else {
-    //   innerIndexHex = innerIndex.toString(16).padStart(4, "0");
-    //   if (type.includes("bytes")) {
-    //     base = FDBaseBytes;
-    //   } else {
-    //     base = FDBase;
-    //   }
-    // }
-    // return (innerIndexHex + outputIndexHex).padStart(base.length, base);
     return variables.getOutputVariable({ index, innerIndex, type });
   }
 
   private getExternalVariable(index: number, type: string) {
-    // const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-
-    // if (type.includes("bytes")) {
-    //   return outputIndexHex.padStart(FCBaseBytes.length, FCBaseBytes);
-    // }
-
-    // return outputIndexHex.padStart(FCBase.length, FCBase);
     return variables.getExternalVariable({ index, type });
   }
 
   private getComputedVariable(index: number, type: string) {
-    // const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
-
-    // if (type.includes("bytes")) {
-    //   return outputIndexHex.padStart(ComputedBaseBytes.length, ComputedBaseBytes);
-    // }
-
-    // return outputIndexHex.padStart(ComputedBase.length, ComputedBase);
     return variables.getComputedVariable({ index, type });
   }
 

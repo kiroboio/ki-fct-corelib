@@ -412,12 +412,10 @@ export class FCTUtils extends FCTBase {
     tries?: number;
   }) => {
     const provider = new ethers.providers.JsonRpcProvider(tenderlyRpcUrl);
-    let keepTrying = true;
     do {
       try {
-        // throw new Error("Tenderly trace is not working");
         const data = await provider.send("tenderly_traceTransaction", [txHash]);
-        if (!data || !data.trace || !data.logs) {
+        if (!data?.trace || !data?.logs) {
           throw new Error("Tenderly trace is not working");
         }
 
@@ -430,8 +428,6 @@ export class FCTUtils extends FCTBase {
           computedVariables: this.FCT.computed,
         });
 
-        keepTrying = false;
-
         return traceData;
       } catch (e) {
         if (tries > 0) {
@@ -440,7 +436,7 @@ export class FCTUtils extends FCTBase {
           throw e;
         }
       }
-    } while (keepTrying && tries-- > 0);
+    } while (tries-- > 0);
   };
 
   public getSimpleTransactionTrace = async ({ txHash, rpcUrl }: { txHash: string; rpcUrl: string }) => {

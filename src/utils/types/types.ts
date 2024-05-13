@@ -14,6 +14,4 @@ export interface TransactionValidatorError {
   error: string;
 }
 
-// export type TransactionValidatorError = TransactionValidatorSuccess & { isValid: false; error: string };
-
 export type TransactionValidatorResult = TransactionValidatorSuccess | TransactionValidatorError;

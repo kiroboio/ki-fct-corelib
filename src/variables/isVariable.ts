@@ -21,7 +21,6 @@ type IsComputedVariableInput =
       index?: number;
     };
 
-// type IsVaribleInputType = string | boolean | Param;
 export function isExternalVariable(value: ParamValue) {
   if (InstanceOf.Variable(value)) {
     return value.type === "external";
@@ -57,15 +56,7 @@ export function isComputedVariable({ value, id, index, strict = false }: IsCompu
   return false;
 }
 
-export function isOutputVariable({
-  value,
-  index,
-  //   innerIndex,
-}: {
-  value: ParamValue;
-  index: number;
-  innerIndex: number;
-}) {
+export function isOutputVariable({ value, index }: { value: ParamValue; index: number }) {
   if (InstanceOf.Variable(value)) {
     return value.type === "output";
   }

@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 
-import { addresses } from "../constants";
-import { multicallContracts } from "../constants";
+import { addresses, multicallContracts } from "../constants";
 import { Interfaces } from "../helpers/Interfaces";
 
 // FCTE_KiroPriceUpdated event topic = 0xa9fb3015d4fdf1af5c13719bec86b7870426824a268fb0b3f0002ad32cd14ba3

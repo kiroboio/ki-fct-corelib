@@ -47,51 +47,12 @@ export const getMethodInterface = (call: { method?: string; params?: Param[] }):
 };
 
 export const getEncodedMethodParams = (call: Partial<MethodParamsInterface>): string => {
-  if (!call.method) return "0x";
+  if (!call.method || !call.params) return "0x";
 
-  const getType = (param: Param): string => {
-    if (param.customType || param.type.includes("tuple")) {
-      let value: Param[];
-      let isArray = false;
-      if (param.type.lastIndexOf("[") > 0) {
-        isArray = true;
-        value = (param.value as Param[][])[0];
-      } else {
-        value = param.value as Param[];
-      }
-      return `(${value.map(getType).join(",")})${isArray ? "[]" : ""}`;
-    }
-    return param.type;
-  };
-
-  const getValues = (param: Param): GetValueType => {
-    if (!param.value) {
-      throw new Error("Param value is required");
-    }
-    if (param.customType || param.type.includes("tuple")) {
-      let value;
-      if (param.type.lastIndexOf("[") > 0) {
-        value = param.value as Param[][];
-        return value.reduce((acc, val) => {
-          return [...acc, val.map(getValues)];
-        }, [] as GetValueType[][]);
-      } else {
-        value = param.value as Param[];
-        return value.map(getValues);
-      }
-    }
-
-    if (param.messageType) {
-      // TODO: Here we need to add the logic for type conversion
-      // If message type is defined, we need to convert value. Value is always a `messageType`
-      return handleTypeConversion(param as Param & { messageType: string });
-    }
-
-    return param.value as boolean | string;
-  };
-  if (!call.params) return "0x";
-
-  return defaultAbiCoder.encode(call.params.map(getType), call.params.map(getValues));
+  return defaultAbiCoder.encode(
+    call.params.map(_getTypeForEncodedMethodParams),
+    call.params.map(_getValuesForEncodedMethodParams),
+  );
 };
 
 export const decodeFromData = (call: Partial<MethodParamsInterface>, data: string): Array<any> | undefined => {
@@ -128,7 +89,7 @@ export const decodeOutputData = (plugin: any | undefined, data: string): Array<a
   return defaultAbiCoder.decode(outputTypes, data).map(manage);
 };
 
-function handleTypeConversion(param: Param & { messageType: string }) {
+function _handleTypeConversion(param: Param & { messageType: string }) {
   // If messageType is the same as type, no need for conversion
   if (param.messageType === param.type) return param.value;
 
@@ -142,4 +103,45 @@ function handleTypeConversion(param: Param & { messageType: string }) {
 const typeConversions = {
   ["string_bytes32"]: (value: string) => utils.keccak256(utils.toUtf8Bytes(value)),
   ["string_bytes"]: (value: string) => utils.toUtf8Bytes(value),
+};
+
+const _getTypeForEncodedMethodParams = (param: Param): string => {
+  if (param.customType || param.type.includes("tuple")) {
+    let value: Param[];
+    let isArray = false;
+    if (param.type.lastIndexOf("[") > 0) {
+      isArray = true;
+      value = (param.value as Param[][])[0];
+    } else {
+      value = param.value as Param[];
+    }
+    return `(${value.map(_getTypeForEncodedMethodParams).join(",")})${isArray ? "[]" : ""}`;
+  }
+  return param.type;
+};
+
+const _getValuesForEncodedMethodParams = (param: Param): GetValueType => {
+  if (!param.value) {
+    throw new Error("Param value is required");
+  }
+  if (param.customType || param.type.includes("tuple")) {
+    let value;
+    if (param.type.lastIndexOf("[") > 0) {
+      value = param.value as Param[][];
+      return value.reduce((acc, val) => {
+        return [...acc, val.map(_getValuesForEncodedMethodParams)];
+      }, [] as GetValueType[][]);
+    } else {
+      value = param.value as Param[];
+      return value.map(_getValuesForEncodedMethodParams);
+    }
+  }
+
+  if (param.messageType) {
+    // TODO: Here we need to add the logic for type conversion
+    // If message type is defined, we need to convert value. Value is always a `messageType`
+    return _handleTypeConversion(param as Param & { messageType: string });
+  }
+
+  return param.value as boolean | string;
 };

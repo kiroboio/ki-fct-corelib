@@ -131,13 +131,6 @@ export class Options {
           throw new Error(`Options: expiresAt must be greater than validFrom`);
         }
       }
-      // TODO: Should think how to validate maxGasPrice, because this will not work with notificaiton FCTs
-      // if (objKey === "maxGasPrice") {
-      //   // Max gas price cannot be 0
-      //   if (BigInt(value[objKey]) <= BigInt(0)) {
-      //     throw new Error(`Options: maxGasPrice must be greater than 0`);
-      //   }
-      // }
     });
   };
 

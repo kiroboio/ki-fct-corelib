@@ -175,7 +175,7 @@ function getApprovalsWithFrom({
         const whoIsSpending = getAddress(approval.params.spender);
 
         // If the caller and spender is the same, no need to approve
-        return !(whoIsSending === whoIsSpending);
+        return whoIsSending !== whoIsSpending;
       }
       return true;
     });

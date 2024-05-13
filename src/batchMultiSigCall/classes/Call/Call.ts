@@ -314,7 +314,6 @@ export class Call extends CallBase implements ICall {
   }
 
   public decodeData({ inputData, outputData }: { inputData: string; outputData?: string }) {
-    // return decodeFromData(this.getDecoded(), inputData);
     const res: { inputData: any[]; outputData: any[] | null } = {} as any;
     res.inputData = decodeFromData(this.getDecoded(), inputData) as any[];
     if (outputData) {
@@ -357,9 +356,6 @@ export class Call extends CallBase implements ICall {
       chainId: this.FCT.chainId,
     });
     if (!pluginData) return null;
-    // if (pluginData instanceof Multicall) {
-    //   const plugin = pluginData;
-    // }
 
     return decodeOutputData(
       // @ts-ignore
@@ -581,7 +577,7 @@ export class Call extends CallBase implements ICall {
       }
     }
 
-    if (call.params && call.params.length) {
+    if (call.params?.length) {
       if (!call.method) {
         throw new Error("Method is required when params are present");
       }

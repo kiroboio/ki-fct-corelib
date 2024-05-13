@@ -15,16 +15,6 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
 
   let PluginClass: PluginInstance;
 
-  // if (callData.toENS === "@lib:multicall") {
-  //   const plugin = getMulticallPlugin({
-  //     signature: call.getFunctionSignature(),
-  //     chainId: chainId as ChainId,
-  //   });
-  //   if (!plugin) {
-  //     throw new Error("Multicall plugin not found");
-  //   }
-  //   PluginClass = plugin as unknown as PluginInstance;
-  // } else {
   const pluginData = getPluginProvider({
     signature: call.getFunctionSignature(),
     address: callData.to,
@@ -40,7 +30,6 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
       chainId: chainId.toString() as ChainId,
     }) as unknown as PluginInstance;
   }
-  // }
 
   PluginClass.input.set({
     to: callData.to,

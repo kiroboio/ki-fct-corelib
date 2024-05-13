@@ -120,7 +120,6 @@ export function getPayersForRoute({
   const gasForFCTCall = pathIndexes.reduce(
     (acc, path) => {
       const call = calls[Number(path)];
-      // const { payerIndex, options } = CallID.parse(call.callId);
       const _call = call.get();
       const options = _call.options;
       const payerIndex = options.payerIndex;
@@ -203,7 +202,6 @@ export function getGasPrices({
   baseFeeBPS: bigint;
   bonusFeeBPS: bigint;
 }) {
-  // maxGasPrice = maxGasPrice ? BigInt(maxGasPrice) : BigInt(options.maxGasPrice);
   const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
   const effectiveGasPrice = BigInt(
     getEffectiveGasPrice({
