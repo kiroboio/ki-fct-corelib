@@ -1,7 +1,7 @@
 import { AaveV2, ChainId, ERC20, Magic, SecureStorage } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
-import { beforeEach } from "mocha";
+import { beforeEach, describe } from "mocha";
 
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
@@ -10,7 +10,7 @@ import { Interfaces } from "../../helpers/Interfaces";
 import { CallOptions } from "../../types";
 import { CallID, SessionID } from "../classes";
 import { BatchMultiSigCall } from "../index";
-import { IMSCallInput } from "../types";
+import { IMSCallInput, IRequiredApproval } from "../types";
 import { FCTCreateCallErrors } from "./call.test";
 import { FCTOptionsErrors } from "./options.test";
 // Create a function that creates a random address
@@ -855,6 +855,45 @@ describe("BatchMultiSigCall", () => {
       expect(fctData.typedData.message["transaction_1"].recipientAddresses).to.deep.eq(addresses);
 
       expect(fctData.mcall[0].types).to.deep.eq([5000, 3, 1000]);
+    });
+  });
+  describe.only("getAllRequiredApprovals", () => {
+    it("Should get required approvals", async () => {
+      const FCT = new BatchMultiSigCall({
+        chainId: "1",
+      });
+
+      const token = createRandomAddress();
+      const recipient = createRandomAddress();
+      const from = createRandomAddress();
+      const transferFrom = createRandomAddress();
+
+      const TransferFrom = new ERC20.actions.TransferFrom({
+        chainId: "1",
+        initParams: {
+          to: token,
+          methodParams: {
+            from: transferFrom,
+            to: recipient,
+            amount: "30000",
+          },
+        },
+      });
+
+      await FCT.add({
+        from,
+        plugin: TransferFrom,
+      });
+
+      const requiredApprovals = await FCT.utils.getAllRequiredApprovals();
+      expect(requiredApprovals.length).to.eq(1);
+
+      const requiredApproval = requiredApprovals[0] as IRequiredApproval & { protocol: "ERC20" };
+
+      expect(requiredApproval.token).to.eq(token);
+      expect(requiredApproval.from).to.eq(transferFrom);
+      expect(requiredApproval.params.spender).to.eq(from);
+      expect(requiredApproval.params.amount).to.eq("30000");
     });
   });
 });
