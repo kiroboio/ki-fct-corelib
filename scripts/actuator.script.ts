@@ -1678,8 +1678,6 @@ const ABI = [
 
 dotenv.config();
 
-const randAddr = () => ethers.Wallet.createRandom().address;
-
 // const chainId = 1;
 // const startBlock = 17768601;
 // const batchSize = 15000;
@@ -1759,14 +1757,7 @@ async function main() {
         token: balance.token,
         native: balance.native,
       });
-    } catch (e) {
-      // wholeData.push({
-      //   vault: "UNKNOWN",
-      //   owner: balance.address,
-      //   token: balance.token,
-      //   native: balance.native,
-      // });
-    }
+    } catch (e) {}
   }
 
   writeFileSync(`scripts/actuator/balances_${chainId}.json`, JSON.stringify(wholeData, null, 2));

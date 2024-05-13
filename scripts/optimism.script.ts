@@ -100,9 +100,6 @@ const Actuator_ABI = [
   },
 ];
 
-// const chainId = 11155111;
-// const chainId = 5;
-// const chainId = 1;
 const chainId = 10;
 
 const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
@@ -163,11 +160,6 @@ async function main() {
       from: vault,
     });
   }
-
-  // await FCT.add({
-  //   plugin: Transfer,
-  //   from: vault,
-  // });
 
   const exported = FCT.export();
 

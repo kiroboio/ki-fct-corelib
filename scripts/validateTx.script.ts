@@ -4,15 +4,13 @@ import { ethers } from "ethers";
 
 import { BatchMultiSigCall } from "../src";
 import FCTActuatorABI from "../src/abi/FCT_Actuator.abi.json";
-import FCTFail from "./ff.json";
+import FCTFail from "./fct.json";
 import { scriptData } from "./scriptData";
 
 dotenv.config();
 
-const FCTData = FCTFail.data;
+const FCTData = FCTFail;
 
-// const chainId = 11155111;
-// const chainId = 5;
 const chainId = 1;
 
 const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
@@ -39,17 +37,6 @@ async function main() {
     gasPrice: FCT.options.maxGasPrice,
     timestamp: +FCT.options.expiresAt - 1,
   });
-
-  // const tx = await transactionValidator({
-  //   callData: calldata,
-  //   actuatorContractAddress: "0x1332e1A702DaC73523708F95827E6b706DAE5fD9",
-  //   activator,
-  //   rpcUrl: scriptData[chainId].rpcUrl,
-  //   activateForFree: false,
-  //   gasPrice: { maxFeePerGas: FCT.options.maxGasPrice, maxPriorityFeePerGas: "0" },
-  // });
-
-  // console.log("res", tx);
 }
 
 main().catch((err) => {

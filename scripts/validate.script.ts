@@ -6,12 +6,9 @@ import { scriptData } from "./scriptData";
 
 dotenv.config();
 
-const chainId = 11155111;
-// const chainId = 5;
-// const chainId = 1;
+const chainId = 1;
 
 const provider = new ethers.providers.JsonRpcProvider(scriptData[chainId].rpcUrl);
-// const flashbotsProvider = new ethers.providers.JsonRpcProvider(scriptData[chainId].flashbots);
 
 async function main() {
   // defining the wallet private key
@@ -47,23 +44,8 @@ async function main() {
   // sign and serialize the transaction
   const signedTransaction = await wallet.signTransaction(transaction);
 
-  // {
-  //   "jsonrpc": "2.0",
-  //   "id": 1,
-  //   "method": "eth_callBundle",
-  //   "params": [
-  //     {
-  //       txs,               // Array[String], A list of signed transactions to execute in an atomic bundle
-  //       blockNumber,       // String, a hex encoded block number for which this bundle is valid on
-  //       stateBlockNumber,  // String, either a hex encoded number or a block tag for which state to base this simulation on. Can use "latest"
-  //       timestamp,         // (Optional) Number, the timestamp to use for this bundle simulation, in seconds since the unix epoch
-  //     }
-  //   ]
-  // }
-
   const data = {
     txs: [signedTransaction],
-    // blockNumber: "0x" + ((await provider.getBlockNumber()) + 1).toString(16),
     blockNumber: "0x" + blockNumber.toString(16),
     stateBlockNumber: "latest",
   };
@@ -90,9 +72,6 @@ async function main() {
   });
 
   console.log("Res: ", JSON.stringify(await res.json(), null, 2));
-
-  // print the raw transaction hash
-  // console.log("Raw txhash string " + rawTransaction);
 }
 
 main().catch((err) => {
