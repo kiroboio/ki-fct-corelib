@@ -37,11 +37,7 @@ export class FetchUtility {
       throw new Error("Multicall contract not found for this chain");
     }
 
-    this.multicallContract = new ethers.Contract(
-      multicallContracts[Number(chainId) as keyof typeof multicallContracts],
-      Interfaces.Multicall,
-      provider,
-    );
+    this.multicallContract = new ethers.Contract(mcallAddress, Interfaces.Multicall, provider);
   }
 
   public async fetchCurrentApprovals(data: IRequiredApproval[]) {
