@@ -586,7 +586,7 @@ export class Call extends CallBase implements ICall {
         throw new Error("Method is required when params are present");
       }
 
-      call.params.map(verifyParam);
+      call.params.forEach(verifyParam);
     }
   }
   static async create({ call, FCT }: { call: IMSCallInput | IWithPlugin; FCT: BatchMultiSigCall }) {
