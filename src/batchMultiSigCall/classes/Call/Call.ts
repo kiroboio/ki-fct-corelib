@@ -28,7 +28,7 @@ import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
 import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
-import { getGasCosts } from "./helpers/callGas";
+import { getCallGasLimit } from "./helpers/callGas";
 import { decodeFromData, decodeOutputData, getEncodedMethodParams } from "./helpers/callParams";
 import { ICall } from "./types";
 
@@ -126,57 +126,13 @@ export class Call extends CallBase implements ICall {
     const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
 
     if (!this.isImport && data.options.gasLimit && data.options.gasLimit !== "0") {
-      // This is the flow:
-      // 1. Check if it is the first call
-      // 2. Check if the call is delegate call:
-      //   2.1 If it is - delegateCall_firstOverhead
-      //   2.2 If it is not:
-      //     2.2.1 Check if there was already delegate call - delegateCall_repeatOverhead
-      //     2.2.2 If there was not - delegateCall_otherOverhead
-      // 3. Check if the call is static call:
-      //  3.1 If it is - staticCall_firstOverhead
-      //  3.2 If it is not - staticCall_otherOverhead
-      // 4. This is a regular call
-      //  4.1 If it is first call - call_firstOverhead
-      //  4.2 If it is not - call_otherOverhead
-      //  4.3 If it is a call with ETH - add nativeTokenOverhead
-      //
-      const isFirstCall = payerIndex === 0;
-      const callType = data.options.callType;
-      let newGasLimit: string;
-
-      if (callType === "LIBRARY" || callType === "LIBRARY_VIEW_ONLY") {
-        if (isFirstCall) {
-          newGasLimit = (
-            BigInt(data.options.gasLimit) + getGasCosts("delegateCall_firstOverhead", this.FCT.chainId)
-          ).toString();
-        } else {
-          const hadDelegateCall = this.FCT.calls.slice(0, payerIndex).some((call) => {
-            return call.options.callType === "LIBRARY" || call.options.callType === "LIBRARY_VIEW_ONLY";
-          });
-          if (hadDelegateCall) {
-            newGasLimit = (
-              BigInt(data.options.gasLimit) + getGasCosts("delegateCall_repeatOverhead", this.FCT.chainId)
-            ).toString();
-          } else {
-            newGasLimit = (
-              BigInt(data.options.gasLimit) + getGasCosts("delegateCall_otherOverhead", this.FCT.chainId)
-            ).toString();
-          }
-        }
-      }
-      // Means that it is either regular call or staticcall
-      if (isFirstCall) {
-        newGasLimit = (BigInt(data.options.gasLimit) + getGasCosts("call_firstOverhead", this.FCT.chainId)).toString();
-      } else {
-        newGasLimit = (BigInt(data.options.gasLimit) + getGasCosts("call_otherOverhead", this.FCT.chainId)).toString();
-      }
-
-      if (callType === "ACTION" && data.value && data.value !== "0") {
-        newGasLimit = (BigInt(newGasLimit) + getGasCosts("nativeTokenOverhead", this.FCT.chainId)).toString();
-      }
-
-      data.options.gasLimit = newGasLimit;
+      data.options.gasLimit = getCallGasLimit({
+        payerIndex,
+        value: data.value,
+        callType: data.options.callType,
+        gasLimit: data.options.gasLimit,
+        calls: this.FCT.calls,
+      });
     }
 
     return data;

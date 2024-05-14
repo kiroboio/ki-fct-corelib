@@ -22,8 +22,6 @@ export const getGasPrices = async ({
   historicalBlocks?: number;
   tries?: number;
 }): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
-  const keepTrying = true;
-
   do {
     try {
       const { result, baseFee } = await getFeeHistory({ rpcUrl, chainId, historicalBlocks });
@@ -47,7 +45,7 @@ export const getGasPrices = async ({
         throw new Error("Could not get gas prices, issue might be related to node provider");
       }
     }
-  } while (keepTrying && tries-- > 0);
+  } while (tries-- > 0);
   throw new Error("Could not get gas prices, issue might be related to node provider");
 };
 

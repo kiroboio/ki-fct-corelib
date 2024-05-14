@@ -1,4 +1,6 @@
-import { ChainId } from "@kiroboio/fct-plugins";
+import { Variable } from "../../../../types";
+import { Call } from "../Call";
+import { ICall } from "../types";
 
 // Static call overhead first - 34893
 // Static call overhead (NOTFIRST) - 8 393
@@ -20,11 +22,71 @@ const gasCosts = {
   nativeTokenOverhead: 6550n,
 } as const;
 
-export const getGasCosts = (key: keyof typeof gasCosts, chainId: ChainId) => {
+export const getGasCosts = (key: keyof typeof gasCosts) => {
   const gas = gasCosts[key];
-  if (chainId === "42161") {
-    // Arbitrum x13
-    return gas * 13n;
-  }
   return gas;
 };
+
+function calculateGasLimit({ gasLimit, gasType }: { gasLimit: string; gasType: keyof typeof gasCosts }) {
+  const gas = getGasCosts(gasType);
+  return (BigInt(gasLimit) + gas).toString();
+}
+
+// For getCallGasLimit function
+//
+// This is the flow:
+// 1. Check if it is the first call
+// 2. Check if the call is delegate call:
+//   2.1 If it is - delegateCall_firstOverhead
+//   2.2 If it is not:
+//     2.2.1 Check if there was already delegate call - delegateCall_repeatOverhead
+//     2.2.2 If there was not - delegateCall_otherOverhead
+// 3. Check if the call is static call:
+//  3.1 If it is - staticCall_firstOverhead
+//  3.2 If it is not - staticCall_otherOverhead
+// 4. This is a regular call
+//  4.1 If it is first call - call_firstOverhead
+//  4.2 If it is not - call_otherOverhead
+//  4.3 If it is a call with ETH - add nativeTokenOverhead
+export function getCallGasLimit({
+  payerIndex,
+  value,
+  callType,
+  gasLimit,
+  calls,
+}: {
+  payerIndex: number;
+  value: string | Variable;
+  callType: ICall["options"]["callType"];
+  gasLimit: string;
+  calls: Call[];
+}) {
+  const isFirstCall = payerIndex === 0;
+
+  if (callType === "LIBRARY" || callType === "LIBRARY_VIEW_ONLY") {
+    if (isFirstCall) {
+      return calculateGasLimit({ gasLimit, gasType: "delegateCall_firstOverhead" });
+    } else {
+      const hadDelegateCall = calls.slice(0, payerIndex).some((call) => {
+        const callType = call.options.callType;
+        return callType === "LIBRARY" || callType === "LIBRARY_VIEW_ONLY";
+      });
+      if (hadDelegateCall) {
+        return calculateGasLimit({ gasLimit, gasType: "delegateCall_repeatOverhead" });
+      } else {
+        return calculateGasLimit({ gasLimit, gasType: "delegateCall_otherOverhead" });
+      }
+    }
+  }
+  // Means that it is either ACTION or STATIC_CALL
+  let newGasLimit = calculateGasLimit({
+    gasLimit,
+    gasType: isFirstCall ? "call_firstOverhead" : "call_otherOverhead",
+  });
+
+  if (callType === "ACTION" && value && value !== "0") {
+    newGasLimit = calculateGasLimit({ gasLimit: newGasLimit, gasType: "nativeTokenOverhead" });
+  }
+
+  return newGasLimit;
+}

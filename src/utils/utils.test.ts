@@ -52,8 +52,8 @@ describe("Utility functions", () => {
 
   it("Should get gas prices", async () => {
     const gasPrices = await utils.getGasPrices({
-      rpcUrl: "https://1rpc.io/sepolia",
-      chainId: 11155111,
+      rpcUrl: "https://optimism.drpc.org",
+      chainId: 10,
     });
 
     expect(gasPrices).to.be.a("object");

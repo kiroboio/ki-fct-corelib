@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import _ from "lodash";
 
 import { getDate } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
@@ -79,58 +78,10 @@ export class Options {
     if (!value) {
       return;
     }
-    Object.keys(value).forEach((key) => {
-      const keyId = [...parentKeys, key].join(".");
-      const objKey = key as keyof typeof value;
-      // If value is undefined, skip it
-      if (value[objKey] === undefined) {
-        return;
-      }
-
-      if (helpers.mustBeObject.includes(keyId)) {
-        if (typeof value[objKey] === "object") {
-          this.validateOptionsValues(value[objKey], [...parentKeys, objKey]);
-          return;
-        } else {
-          throw new Error(`Options: ${keyId} must be an object`);
-        }
-      }
-
-      if (helpers.mustBeBoolean.includes(keyId)) {
-        if (typeof value[objKey] !== "boolean") {
-          throw new Error(`Options: ${keyId} must be a boolean`);
-        }
-        return;
-      }
-
-      // Else this must be a string. If it is not a string, throw an error
-      // Get value from keyId
-      const realVal = _.get(initOptions, keyId);
-      if (typeof value[objKey] !== typeof realVal) {
-        throw new Error(`Options: ${keyId} must be a ${typeof realVal}`);
-      }
-
-      // Integer validator
-      if (helpers.mustBeInteger.includes(keyId)) {
-        helpers.validateInteger(value[objKey] as string, keyId);
-      }
-      // Address validator
-      if (helpers.mustBeAddress.includes(keyId)) {
-        helpers.validateAddress(value[objKey] as string, keyId);
-      }
-      // Expires at validator
-      if (objKey === "expiresAt") {
-        const expiresAt = Number(value[objKey]);
-        const now = Number(new Date().getTime() / 1000).toFixed();
-        const validFrom = (value as IFCTOptions).validFrom;
-
-        if (BigInt(expiresAt) <= BigInt(now)) {
-          throw new Error(`Options: expiresAt must be in the future`);
-        }
-        if (validFrom && BigInt(expiresAt) <= BigInt(validFrom)) {
-          throw new Error(`Options: expiresAt must be greater than validFrom`);
-        }
-      }
+    helpers.validateOptionsValues({
+      value,
+      initOptions: initOptions,
+      parentKeys,
     });
   };
 
