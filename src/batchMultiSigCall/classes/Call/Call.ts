@@ -2,7 +2,7 @@ import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
-import { CALL_TYPE, CALL_TYPE_MSG } from "../../../constants";
+import { CALL_TYPE_MSG } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
@@ -27,9 +27,10 @@ import { IMSCallInput, MSCall_Eff } from "../../types";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
-import { generateNodeId, getAllSimpleParams, getParams, isAddress, isInteger, verifyParam } from "./helpers";
+import { generateNodeId, getAllSimpleParams, getParams } from "./helpers";
 import { getCallGasLimit } from "./helpers/callGas";
 import { decodeFromData, decodeOutputData, getEncodedMethodParams } from "./helpers/callParams";
+import { verifyCall } from "./helpers/verifyCall";
 import { ICall } from "./types";
 
 export class Call extends CallBase implements ICall {
@@ -479,68 +480,13 @@ export class Call extends CallBase implements ICall {
   }
 
   private _verifyCall({ call, update = false }: { call: IMSCallInput; update?: boolean }) {
-    // To address validator
-    if (!call.to) {
-      throw new Error("To address is required");
-    } else if (typeof call.to === "string") {
-      isAddress(call.to, "To");
-    }
-
-    // Value validator
-    if (call.value && typeof call.value === "string") {
-      isInteger(call.value, "Value");
-    }
-
-    // Method validator
-    if (call.method && call.method.length === 0) {
-      throw new Error("Method cannot be empty string");
-    }
-
-    // Node ID validator
-    if (call.nodeId) {
-      let index: number;
-      if (update) {
-        // If it is an update, we need to ignore the current node ID
-        const currentCallIndex = this.FCT.getIndexByNodeId(this.nodeId);
-        // Ignore the current node ID from this.calls;
-        const calls = this.FCT.calls.filter((item, i) => i !== currentCallIndex);
-        index = calls.findIndex((item) => item.nodeId === call.nodeId);
-      } else {
-        index = this.FCT.calls.findIndex((item) => item.nodeId === call.nodeId);
-      }
-      if (index > -1) {
-        throw new Error(`Node ID ${call.nodeId} already exists, please use a different one`);
-      }
-    }
-
-    // Options validator
-    if (call.options) {
-      const { gasLimit, callType, flow } = call.options;
-      if (gasLimit) {
-        isInteger(gasLimit, "Gas limit");
-      }
-      if (callType) {
-        const keysOfCALLTYPE = Object.keys(CALL_TYPE);
-        if (!keysOfCALLTYPE.includes(callType)) {
-          throw new Error(`Call type ${callType} is not valid`);
-        }
-      }
-      if (flow) {
-        const keysOfFlow = Object.keys(flows);
-        if (!keysOfFlow.includes(flow)) {
-          throw new Error(`Flow ${flow} is not valid`);
-        }
-      }
-    }
-
-    if (call.params?.length) {
-      if (!call.method) {
-        throw new Error("Method is required when params are present");
-      }
-
-      call.params.forEach(verifyParam);
-    }
+    verifyCall({
+      call,
+      update,
+      FCT: this.FCT,
+    });
   }
+
   static async create({ call, FCT }: { call: IMSCallInput | IWithPlugin; FCT: BatchMultiSigCall }) {
     if (InstanceOf.CallWithPlugin(call)) {
       return await this._createWithPlugin(FCT, call);
