@@ -25,6 +25,15 @@ export const scriptData = {
     // Tokens
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   },
+  8453: {
+    KIRO: "0xba232b47a7dDFCCc221916cf08Da03a4973D3A1D",
+    FCT_BatchMultiSig: "0x4171ef9EB2CF074ECaA058Bd8e0F109C0ad4C6d1",
+    FCT_Controller: "0xE8572102FA6AE172df00634d5262E56ee283C134",
+    Actuator: "0x633e1Fc62084A2b98639147bAec75169dEcfe234",
+    rpcUrl: "https://base-rpc.publicnode.com",
+    // Tokens
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  },
   42161: {
     rpcUrl: process.env.RPC_URL_ARB || "https://rpc.ankr.com/arbitrum",
     Actuator: "0x4171ef9EB2CF074ECaA058Bd8e0F109C0ad4C6d1",
