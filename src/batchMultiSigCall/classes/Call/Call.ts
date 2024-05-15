@@ -2,7 +2,7 @@ import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
-import { CALL_TYPE_MSG } from "../../../constants";
+import { CALL_TYPE_MSG, EMPTY_HASH } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
@@ -155,7 +155,7 @@ export class Call extends CallBase implements ICall {
     const call = this.get();
     return {
       typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: id(call.toENS || ""),
+      ensHash: call.toENS ? id(call.toENS) : EMPTY_HASH,
       functionSignature: this.getFunctionSignature(),
       value: this.FCT.variables.getValue(call.value, "uint256", "0"),
       callId: CallID.asString({

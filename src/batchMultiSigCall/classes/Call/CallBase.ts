@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 
-import { nullValue } from "../../../constants";
+import { EMPTY_HASH } from "../../../constants";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { CallOptions, DeepPartial, Variable } from "../../../types";
 import { IMSCallInput } from "../../types";
@@ -55,7 +55,7 @@ export class CallBase {
    * @returns The function signature of the call or hashed empty string.
    */
   public getFunctionSignature(): string {
-    return this._call.method ? utils.id(this.getFunction()) : nullValue;
+    return this._call.method ? utils.id(this.getFunction()) : EMPTY_HASH;
   }
 
   public getFunction(): string {
