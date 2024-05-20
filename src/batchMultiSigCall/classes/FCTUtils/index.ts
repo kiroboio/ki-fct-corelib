@@ -303,7 +303,7 @@ export class FCTUtils extends FCTBase {
       calldata,
       calls,
       maxGasPrice: maxGasPrice ? BigInt(maxGasPrice) : BigInt(options.maxGasPrice),
-      gasPrice: gasPrice ? BigInt(gasPrice) : "0",
+      gasPrice: gasPrice ? BigInt(gasPrice) : BigInt("0"),
       baseFeeBPS: fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n,
       bonusFeeBPS: fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n,
       penalty,
