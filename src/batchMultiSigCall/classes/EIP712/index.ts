@@ -7,6 +7,7 @@ import { FCTBase } from "../FCTBase";
 import { IValidationEIP712 } from "../Validation/types";
 import { IComputedEIP712 } from "../Variables/types";
 import { Call, Computed, EIP712Domain, Engine, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
+import { EIP712_oldVersion } from "./versions/oldVersion";
 
 const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
   // Mainnet
@@ -124,31 +125,12 @@ export class EIP712 extends FCTBase {
       });
     }
 
+    const VersionEIP712 = new EIP712_oldVersion();
+
     return {
-      meta: {
-        name: FCTOptions.name || "",
-        app: FCTOptions.app.name || "",
-        app_version: FCTOptions.app.version || "",
-        builder: FCTOptions.builder.name || "",
-        builder_address: FCTOptions.builder.address || "",
-        domain: FCTOptions.domain || "",
-      },
-      engine: {
-        selector: this.FCT.batchMultiSigSelector,
-        version: this.FCT.version,
-        random_id: `0x${this.FCT.randomId}`,
-        eip712: true,
-        verifier: FCTOptions.verifier,
-        auth_enabled: FCTOptions.authEnabled,
-        dry_run: FCTOptions.dryRun,
-      },
-      limits: {
-        valid_from: FCTOptions.validFrom,
-        expires_at: FCTOptions.expiresAt,
-        gas_price_limit: FCTOptions.maxGasPrice,
-        purgeable: FCTOptions.purgeable,
-        blockable: FCTOptions.blockable,
-      },
+      meta: VersionEIP712.getMetaMessage(this.FCT) as any,
+      engine: VersionEIP712.getEngineMessage(this.FCT) as any,
+      limits: VersionEIP712.getLimitsMessage(this.FCT) as any,
       ...optionalMessage,
       ...this.getComputedVariableMessage(),
       ...this.getValidationMessage(),
