@@ -60,7 +60,8 @@ export type TypedDataMessageTransaction = {
 export interface TypedDataLimits {
   valid_from: string;
   expires_at: string;
-  gas_price_limit: string;
+  payable_gas_limit_in_kilo: string;
+  max_payable_gas_price: string;
   purgeable: boolean;
   blockable: boolean;
 }

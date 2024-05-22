@@ -17,6 +17,8 @@ describe("BatchMultiSigCall Options", () => {
       validFrom: "0",
       expiresAt: "2680505796", // Far away in the future
       maxGasPrice: "100" + "0".repeat(9), // 100 Gwei
+      // 1 = 1k gas limit. 100 = 100k gas limit
+      payableGasLimitInKilo: "100",
       blockable: false,
       purgeable: true,
       authEnabled: true,

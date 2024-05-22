@@ -89,23 +89,11 @@ describe("BatchMultiSigCall EIP712", () => {
 
   it("should generate the correct EIP712 typed data message", () => {
     const { limits, transaction_1, transaction_2, computed_1 } = eip712.getTypedDataMessage();
-    // expect(meta).to.deep.equal({
-    //   name: "",
-    //   builder: FCT.options.builder,
-    //   selector: FCT.batchMultiSigSelector,
-    //   version: FCT.version,
-    //   random_id: "0x" + FCT.randomId,
-    //   app: "",
-    //   by: "",
-    //   verifier: "",
-    //   dry_run: false,
-    //   eip712: true,
-    //   auth_enabled: true,
-    // });
     expect(limits).to.deep.equal({
       valid_from: FCT.options.validFrom,
       expires_at: FCT.options.expiresAt,
-      gas_price_limit: FCT.options.maxGasPrice,
+      max_payable_gas_price: FCT.options.maxGasPrice,
+      payable_gas_limit_in_kilo: FCT.options.payableGasLimitInKilo,
       purgeable: FCT.options.purgeable,
       blockable: FCT.options.blockable,
     });

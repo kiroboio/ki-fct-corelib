@@ -29,10 +29,14 @@ export const Engine: MessageTypeProperty[] = [
   { name: "dry_run", type: "bool" },
 ];
 
+// bytes32 constant BATCH_MULTI_SIG_CALL_LIMITS_TYPEHASH = keccak256(
+//     "Limits(uint40 valid_from,uint40 expires_at,uint24 payable_gas_limit_in_kilo,uint40 max_payable_gas_price,bool purgeable,bool blockable)"
+// );
 export const Limits: MessageTypeProperty[] = [
   { name: "valid_from", type: "uint40" },
   { name: "expires_at", type: "uint40" },
-  { name: "gas_price_limit", type: "uint64" },
+  { name: "payable_gas_limit_in_kilo", type: "uint24" },
+  { name: "max_payable_gas_price", type: "uint40" },
   { name: "purgeable", type: "bool" },
   { name: "blockable", type: "bool" },
 ];

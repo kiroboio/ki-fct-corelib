@@ -145,7 +145,8 @@ export class EIP712 extends FCTBase {
       limits: {
         valid_from: FCTOptions.validFrom,
         expires_at: FCTOptions.expiresAt,
-        gas_price_limit: FCTOptions.maxGasPrice,
+        payable_gas_limit_in_kilo: FCTOptions.payableGasLimitInKilo,
+        max_payable_gas_price: FCTOptions.maxGasPrice,
         purgeable: FCTOptions.purgeable,
         blockable: FCTOptions.blockable,
       },

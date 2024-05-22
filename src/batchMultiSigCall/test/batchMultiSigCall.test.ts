@@ -218,6 +218,8 @@ describe("BatchMultiSigCall", () => {
 
       const FCTExport = FCT.exportFCT();
 
+      console.log("Exported FCT", JSON.stringify(FCTExport, null, 2));
+
       expect(FCTExport.typedData.message["transaction_1"].call.method_interface).to.eq("magic");
     });
 
