@@ -2,6 +2,7 @@ import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { Version_old } from "../oldVersion";
+import { SessionId_020201 } from "./SessionId";
 // NEW VERSION - 0x020201
 
 const Limits: MessageTypeProperty[] = [
@@ -16,6 +17,12 @@ const Limits: MessageTypeProperty[] = [
 // This version introduced payable_gas_limit_in_kilo and max_payable_gas_price, removed gas_price_limit
 
 export class Version_020201 extends Version_old {
+  public SessionId: SessionId_020201;
+  constructor(FCT?: BatchMultiSigCall) {
+    super(FCT);
+    this.SessionId = new SessionId_020201(FCT);
+  }
+
   public Limits: MessageTypeProperty[] = Limits;
 
   getLimitsMessage(FCT: BatchMultiSigCall): Record<string, any> {

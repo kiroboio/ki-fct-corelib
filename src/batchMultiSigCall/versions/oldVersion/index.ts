@@ -1,10 +1,15 @@
 import { BatchMultiSigCall } from "../../../batchMultiSigCall";
-// import { Engine, Meta } from "../../classes/EIP712/constants";
 import { VersionBase } from "../VersionBase";
-// import { Engine, Meta } from "../constants";
-// import { EIP712Base } from "../version";
+import { SessionId_oldVersion } from "./SessionId";
 
 export class Version_old extends VersionBase {
+  public SessionId: SessionId_oldVersion;
+
+  constructor(FCT?: BatchMultiSigCall) {
+    super(FCT);
+    this.SessionId = new SessionId_oldVersion(FCT);
+  }
+
   getMetaMessage(FCT: BatchMultiSigCall): Record<string, any> {
     const FCTOptions = FCT.options;
     return {

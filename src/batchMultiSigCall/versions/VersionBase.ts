@@ -1,6 +1,7 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { SessionIdBase } from "./SessionIdBase";
 
 export const EIP712Domain: MessageTypeProperty[] = [
   { name: "name", type: "string" },
@@ -88,6 +89,12 @@ export const Validation: MessageTypeProperty[] = [
 ];
 
 export abstract class VersionBase {
+  public FCT: BatchMultiSigCall | undefined;
+
+  constructor(FCT?: BatchMultiSigCall) {
+    this.FCT = FCT;
+  }
+
   public EIP712Domain: MessageTypeProperty[] = EIP712Domain;
   public Meta: MessageTypeProperty[] = Meta;
   public Engine: MessageTypeProperty[] = Engine;
@@ -97,6 +104,8 @@ export abstract class VersionBase {
   public Recurrency: MessageTypeProperty[] = Recurrency;
   public Multisig: MessageTypeProperty[] = Multisig;
   public Validation: MessageTypeProperty[] = Validation;
+
+  abstract SessionId: SessionIdBase;
 
   abstract getMetaMessage(FCT: BatchMultiSigCall): Record<string, any>;
   abstract getEngineMessage(FCT: BatchMultiSigCall): Record<string, any>;
