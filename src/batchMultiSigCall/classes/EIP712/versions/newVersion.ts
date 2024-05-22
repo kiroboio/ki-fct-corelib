@@ -1,4 +1,5 @@
 import { MessageTypeProperty } from "@metamask/eth-sig-util";
+// NEW VERSION - 0x020201
 
 // bytes32 constant BATCH_MULTI_SIG_CALL_META_TYPEHASH = keccak256(
 //     "Meta(string name,string app,string app_version,string builder,address builder_address,string domain)"
