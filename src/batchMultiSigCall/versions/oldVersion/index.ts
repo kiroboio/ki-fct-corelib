@@ -1,28 +1,10 @@
-import { MessageTypeProperty } from "@metamask/eth-sig-util";
-
 import { BatchMultiSigCall } from "../../../batchMultiSigCall";
-import { Engine, Meta } from "../constants";
-import { EIP712Base } from "../version";
+// import { Engine, Meta } from "../../classes/EIP712/constants";
+import { VersionBase } from "../VersionBase";
+// import { Engine, Meta } from "../constants";
+// import { EIP712Base } from "../version";
 
-const Limits: MessageTypeProperty[] = [
-  { name: "valid_from", type: "uint40" },
-  { name: "expires_at", type: "uint40" },
-  { name: "gas_price_limit", type: "uint64" },
-  { name: "purgeable", type: "bool" },
-  { name: "blockable", type: "bool" },
-];
-
-export class EIP712_oldVersion extends EIP712Base {
-  getMetaType(): MessageTypeProperty[] {
-    return Meta;
-  }
-  getEngineType() {
-    return Engine;
-  }
-  getLimitsType() {
-    return Limits;
-  }
-
+export class Version_old extends VersionBase {
   getMetaMessage(FCT: BatchMultiSigCall): Record<string, any> {
     const FCTOptions = FCT.options;
     return {
