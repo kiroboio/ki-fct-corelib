@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-import { SessionID } from "../batchMultiSigCall/classes";
+import { parseSessionId } from "../batchMultiSigCall/versions/getVersion";
 import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
@@ -10,7 +10,8 @@ export const transactionValidator = async (txVal: ITxValidator): Promise<Transac
   let { gasPrice } = txVal;
 
   const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
-  const { maxGasPrice, dryRun } = SessionID.parse(decodedFCTCalldata[1].sessionId.toHexString());
+  const parsedSessionId = parseSessionId(decodedFCTCalldata[1].sessionId.toHexString());
+  const { maxGasPrice, dryRun } = parsedSessionId;
   gasPrice = manageGasPrice({ gasPrice, maxGasPrice, dryRun });
 
   try {

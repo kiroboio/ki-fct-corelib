@@ -127,17 +127,8 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   if (this.calls.length === 0) {
     throw new Error("No calls added to FCT");
   }
-  // Check if every computed variable is used in a call
-  // const computedVariables = this.computed;
-  // computedVariables.forEach((computedVariable, index) => {
-  //   const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string, index));
-  //   if (!isUsed) {
-  //     throw new Error(
-  //       `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
-  //     );
-  //   }
-  // });
 
+  const options = this.options;
   const Version = getVersionClass(this);
 
   const typedData = new EIP712(this).getTypedData();
@@ -145,15 +136,15 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
     typedData,
     typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
     sessionId: Version.SessionId.asString(),
-    nameHash: id(this.options.name),
-    appHash: id(this.options.app.name),
-    appVersionHash: id(this.options.app.version),
-    builderHash: id(this.options.builder.name),
-    builderAddress: this.options.builder.address,
-    domainHash: id(this.options.domain),
-    verifierHash: id(this.options.verifier),
+    nameHash: id(options.name),
+    appHash: id(options.app.name),
+    appVersionHash: id(options.app.version),
+    builderHash: id(options.builder.name),
+    builderAddress: options.builder.address,
+    domainHash: id(options.domain),
+    verifierHash: id(options.verifier),
     mcall: this.calls.map((call, index) => call.getAsMCall(typedData, index)),
-    externalSigners: this.options.multisig.externalSigners,
+    externalSigners: options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
     validations: this.validation.getForData(),

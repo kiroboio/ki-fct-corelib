@@ -22,3 +22,14 @@ export function getVersionFromVersion(version: string, FCT?: BatchMultiSigCall):
   }
   return new Version_old(FCT);
 }
+
+export function parseSessionId(sessionId: string): Record<string, any> {
+  //This is the session id string - 0x44578300020101000000000000009fc545c0000000000000000006fc23ac001cn
+  //                              - 0x00000000ffffff00000000000000000000000000000000000000000000000000n
+  // The version will always be located where 020101 is. Create mask for it
+  const VERSION_MASK = 0x00000000ffffff00000000000000000000000000000000000000000000000000n;
+  const version = (BigInt(sessionId) & VERSION_MASK) >> 200n;
+  const VersionClass = getVersionFromVersion(version.toString());
+  const parsed = VersionClass.SessionId.parse(sessionId);
+  return parsed;
+}

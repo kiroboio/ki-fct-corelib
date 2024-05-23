@@ -39,7 +39,7 @@ import * as utils from "./utils";
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0x7d971612";
-  public version = "0x020101";
+  public version = "0x020201";
   public chainId: ChainId;
   public domain: TypedDataDomain;
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");

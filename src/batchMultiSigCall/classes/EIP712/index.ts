@@ -128,7 +128,7 @@ export class EIP712 extends FCTBase {
   }
 
   public getTypedDataTypes(): TypedDataTypes {
-    const Version = getVersionClass(this.FCT.version);
+    const Version = getVersionClass(this.FCT);
     const { structTypes, transactionTypes } = this.getCallTypesAndStructs();
 
     const FCTOptions = this.FCT.options;
@@ -256,7 +256,7 @@ export class EIP712 extends FCTBase {
 
   private _getVersionClass() {
     if (!this._VersionClass || this._lastVersion !== this.FCT.version) {
-      this._VersionClass = getVersionClass(this.FCT.version);
+      this._VersionClass = getVersionClass(this.FCT);
       this._lastVersion = this.FCT.version;
     }
     return this._VersionClass;
