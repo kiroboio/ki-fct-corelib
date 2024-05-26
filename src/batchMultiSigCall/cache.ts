@@ -1,5 +1,3 @@
-import NodeCache from "node-cache";
+import { BatchMultiSigCall } from "./batchMultiSigCall";
 
-export const FCTCache = new NodeCache({
-  useClones: false,
-});
+export const FCT_Cache = new Map<string, BatchMultiSigCall>();
