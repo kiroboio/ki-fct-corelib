@@ -110,4 +110,4 @@ dist
 # Local files
 .idea
 .vscode
-
+scripts/
