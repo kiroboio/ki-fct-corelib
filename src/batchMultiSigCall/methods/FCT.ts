@@ -8,11 +8,12 @@ import { flows } from "../../constants/flows";
 import { CallOptions, FCTInputCall, IRequiredApproval, Param, Variable } from "../../types";
 import { getActivatorAddress, getGasPrice } from "../../variables";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { Call, EIP712, SessionID } from "../classes";
+import { Call, EIP712 } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
 import { FCTCall, IFCT, IFCTOptions, IMSCallInput, MSCalls_Eff, TypedDataMessageTransaction } from "../types";
+import { getVersionClass, getVersionFromVersion } from "../versions/getVersion";
 import { PluginParams } from "./types";
 
 // If F is Multicall, return multicall, else return Call
@@ -126,31 +127,24 @@ export function exportFCT(this: BatchMultiSigCall): IFCT {
   if (this.calls.length === 0) {
     throw new Error("No calls added to FCT");
   }
-  // Check if every computed variable is used in a call
-  // const computedVariables = this.computed;
-  // computedVariables.forEach((computedVariable, index) => {
-  //   const isUsed = this.calls.some((call) => call.isComputedUsed(computedVariable.id as string, index));
-  //   if (!isUsed) {
-  //     throw new Error(
-  //       `Computed variable ${computedVariable.id} is not used. Make sure to remove it if the computed variable is not intended to be used.`,
-  //     );
-  //   }
-  // });
+
+  const options = this.options;
+  const Version = getVersionClass(this);
 
   const typedData = new EIP712(this).getTypedData();
   return {
     typedData,
     typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
-    sessionId: new SessionID(this).asString(),
-    nameHash: id(this.options.name),
-    appHash: id(this.options.app.name),
-    appVersionHash: id(this.options.app.version),
-    builderHash: id(this.options.builder.name),
-    builderAddress: this.options.builder.address,
-    domainHash: id(this.options.domain),
-    verifierHash: id(this.options.verifier),
+    sessionId: Version.SessionId.asString(),
+    nameHash: id(options.name),
+    appHash: id(options.app.name),
+    appVersionHash: id(options.app.version),
+    builderHash: id(options.builder.name),
+    builderAddress: options.builder.address,
+    domainHash: id(options.domain),
+    verifierHash: id(options.verifier),
     mcall: this.calls.map((call, index) => call.getAsMCall(typedData, index)),
-    externalSigners: this.options.multisig.externalSigners,
+    externalSigners: options.multisig.externalSigners,
     signatures: [this.utils.getAuthenticatorSignature()],
     computed: this.computedAsData,
     validations: this.validation.getForData(),
@@ -339,11 +333,12 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   this.domain = domain;
   this.randomId = engine.random_id.slice(2);
 
-  const sessionIDOptions = SessionID.asOptions(fct.sessionId);
+  const Version = getVersionFromVersion(this.version);
+  const sessionIDOptions = Version.SessionId.parse(fct.sessionId) as any;
 
   const options: IFCTOptions = {
     id: "",
-    ...SessionID.asOptions(fct.sessionId),
+    ...sessionIDOptions,
     authEnabled: engine.auth_enabled,
     domain: meta.domain,
     name: meta.name,

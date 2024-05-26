@@ -1,7 +1,8 @@
 import { CALL_TYPE, Flow } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { NO_JUMP } from "../../constants";
-import { IMSCallInput, StrictMSCallInput } from "../../types";
+import { StrictMSCallInput } from "../../types";
+import { Call } from "../Call/Call";
 import { Validation } from "../Validation";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
@@ -28,7 +29,7 @@ export class CallID {
     index,
     payerIndex,
   }: {
-    calls: IMSCallInput[];
+    calls: Call[];
     validation: Validation;
     call: StrictMSCallInput;
     index: number;

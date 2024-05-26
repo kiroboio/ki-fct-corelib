@@ -122,6 +122,7 @@ export interface IFCTOptions {
   validFrom: string;
   expiresAt: string;
   maxGasPrice: string;
+  payableGasLimitInKilo: string;
   blockable: boolean;
   purgeable: boolean;
   authEnabled: boolean;

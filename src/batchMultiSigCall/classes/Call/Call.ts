@@ -159,7 +159,7 @@ export class Call extends CallBase implements ICall {
       functionSignature: this.getFunctionSignature(),
       value: this.FCT.variables.getValue(call.value, "uint256", "0"),
       callId: CallID.asString({
-        calls: this.FCT.callsAsObjects,
+        calls: this.FCT.calls,
         validation: this.FCT.validation,
         call,
         index,
@@ -180,7 +180,7 @@ export class Call extends CallBase implements ICall {
       value: this.FCT.variables.getValue(call.value, "uint256", "0"),
       data: this.getEncodedDataWithSignature(),
       callid: CallID.asString({
-        calls: this.FCT.callsAsObjects,
+        calls: this.FCT.calls,
         validation: this.FCT.validation,
         call: this.get(),
         index,

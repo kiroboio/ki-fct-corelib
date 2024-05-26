@@ -1,5 +1,4 @@
-import { RequiredFCTOptions } from "../../types";
-import { FCTBase } from "../FCTBase";
+import { SessionIdBase } from "../SessionIdBase";
 
 const sessionIdFlag = {
   accumetable: 0x1,
@@ -25,16 +24,13 @@ const valueWithPadStart = (value: string | number, padStart: number) => {
 // 16 - Gas price limit
 // 2 - Flags
 
-export class SessionID extends FCTBase {
+export class SessionId_oldVersion extends SessionIdBase {
+  //   public asString({ salt, version, options }: { salt: string; version: string; options: RequiredFCTOptions }): string {
   public asString(): string {
-    return SessionID.asString({
-      salt: this.FCT.randomId,
-      version: this.FCT.version,
-      options: this.FCT.options,
-    });
-  }
-
-  static asString({ salt, version, options }: { salt: string; version: string; options: RequiredFCTOptions }): string {
+    if (!this.FCT) throw new Error("FCT is not defined, this should not happen");
+    const salt = this.FCT.randomId;
+    const version = this.FCT.version;
+    const options = this.FCT.options;
     const { recurrency, multisig } = options;
 
     const minimumApprovals = valueWithPadStart(multisig.minimumApprovals, 2);
@@ -60,11 +56,7 @@ export class SessionID extends FCTBase {
     return `0x${salt}${minimumApprovals}${v}${maxRepeats}${chillTime}${beforeTimestamp}${afterTimestamp}${maxGasPrice}${flags}`;
   }
 
-  static asOptions(sessionId: string) {
-    return SessionID.parse(sessionId);
-  }
-
-  static parse(sessionId: string) {
+  public parse(sessionId: string) {
     const minimumApprovals = parseInt(sessionId.slice(8, 10), 16).toString();
     const maxRepeats = parseInt(sessionId.slice(16, 20), 16).toString();
     const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();

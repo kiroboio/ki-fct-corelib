@@ -3,10 +3,11 @@ import { MessageTypeProperty } from "@metamask/eth-sig-util";
 
 import { deepMerge } from "../../../helpers/deepMerge";
 import { BatchMultiSigCallTypedData, TypedDataDomain, TypedDataMessage, TypedDataTypes } from "../../types";
+import { getVersionClass } from "../../versions/getVersion";
+import { VersionBase } from "../../versions/VersionBase";
 import { FCTBase } from "../FCTBase";
 import { IValidationEIP712 } from "../Validation/types";
 import { IComputedEIP712 } from "../Variables/types";
-import { Call, Computed, EIP712Domain, Engine, Limits, Meta, Multisig, Recurrency, Validation } from "./constants";
 
 const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
   // Mainnet
@@ -70,20 +71,9 @@ const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
   },
 };
 
-const types = {
-  domain: EIP712Domain,
-  meta: Meta,
-  engine: Engine,
-  limits: Limits,
-  computed: Computed,
-  call: Call,
-  recurrency: Recurrency,
-  multisig: Multisig,
-  validation: Validation,
-} as const;
-
 export class EIP712 extends FCTBase {
-  static types = types;
+  private _lastVersion: string | undefined;
+  private _VersionClass: VersionBase | undefined;
 
   static getTypedDataDomain(chainId: ChainId) {
     return TYPED_DATA_DOMAIN[chainId];
@@ -124,31 +114,12 @@ export class EIP712 extends FCTBase {
       });
     }
 
+    const Version = this._getVersionClass();
+
     return {
-      meta: {
-        name: FCTOptions.name || "",
-        app: FCTOptions.app.name || "",
-        app_version: FCTOptions.app.version || "",
-        builder: FCTOptions.builder.name || "",
-        builder_address: FCTOptions.builder.address || "",
-        domain: FCTOptions.domain || "",
-      },
-      engine: {
-        selector: this.FCT.batchMultiSigSelector,
-        version: this.FCT.version,
-        random_id: `0x${this.FCT.randomId}`,
-        eip712: true,
-        verifier: FCTOptions.verifier,
-        auth_enabled: FCTOptions.authEnabled,
-        dry_run: FCTOptions.dryRun,
-      },
-      limits: {
-        valid_from: FCTOptions.validFrom,
-        expires_at: FCTOptions.expiresAt,
-        gas_price_limit: FCTOptions.maxGasPrice,
-        purgeable: FCTOptions.purgeable,
-        blockable: FCTOptions.blockable,
-      },
+      meta: Version.getMetaMessage(this.FCT) as any,
+      engine: Version.getEngineMessage(this.FCT) as any,
+      limits: Version.getLimitsMessage(this.FCT) as any,
       ...optionalMessage,
       ...this.getComputedVariableMessage(),
       ...this.getValidationMessage(),
@@ -157,6 +128,7 @@ export class EIP712 extends FCTBase {
   }
 
   public getTypedDataTypes(): TypedDataTypes {
+    const Version = getVersionClass(this.FCT);
     const { structTypes, transactionTypes } = this.getCallTypesAndStructs();
 
     const FCTOptions = this.FCT.options;
@@ -165,33 +137,33 @@ export class EIP712 extends FCTBase {
     const additionalTypesInPrimary: MessageTypeProperty[] = [];
 
     if (Number(recurrency.maxRepeats) > 1) {
-      optionalTypes = deepMerge(optionalTypes, { Recurrency: EIP712.types.recurrency });
+      optionalTypes = deepMerge(optionalTypes, { Recurrency: Version.Recurrency });
       additionalTypesInPrimary.push({ name: "recurrency", type: "Recurrency" });
     }
 
     if (multisig.externalSigners.length > 0) {
-      optionalTypes = deepMerge(optionalTypes, { Multisig: EIP712.types.multisig });
+      optionalTypes = deepMerge(optionalTypes, { Multisig: Version.Multisig });
       additionalTypesInPrimary.push({ name: "multisig", type: "Multisig" });
     }
 
     if (this.FCT.computed.length > 0) {
-      optionalTypes = deepMerge(optionalTypes, { Computed: EIP712.types.computed });
+      optionalTypes = deepMerge(optionalTypes, { Computed: Version.Computed });
     }
 
     if (this.FCT.validation.get().length > 0) {
-      optionalTypes = deepMerge(optionalTypes, { Validation: EIP712.types.validation });
+      optionalTypes = deepMerge(optionalTypes, { Validation: Version.Validation });
     }
 
     return {
-      EIP712Domain: EIP712.types.domain,
-      Meta: EIP712.types.meta,
-      Engine: EIP712.types.engine,
-      Limits: EIP712.types.limits,
+      EIP712Domain: Version.EIP712Domain,
+      Meta: Version.Meta,
+      Engine: Version.Engine,
+      Limits: Version.Limits,
       ...optionalTypes,
       ...transactionTypes,
       ...structTypes,
       BatchMultiSigCall: this.getPrimaryTypeTypes(additionalTypesInPrimary),
-      Call: EIP712.types.call,
+      Call: Version.Call,
     };
   }
 
@@ -280,5 +252,13 @@ export class EIP712 extends FCTBase {
     });
 
     return { structTypes: structs, transactionTypes: types };
+  }
+
+  private _getVersionClass() {
+    if (!this._VersionClass || this._lastVersion !== this.FCT.version) {
+      this._VersionClass = getVersionClass(this.FCT);
+      this._lastVersion = this.FCT.version;
+    }
+    return this._VersionClass;
   }
 }

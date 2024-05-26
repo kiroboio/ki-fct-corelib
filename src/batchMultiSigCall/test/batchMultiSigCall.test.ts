@@ -8,9 +8,10 @@ import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
 import { Interfaces } from "../../helpers/Interfaces";
 import { CallOptions } from "../../types";
-import { CallID, SessionID } from "../classes";
+import { CallID } from "../classes";
 import { BatchMultiSigCall } from "../index";
 import { IMSCallInput, IRequiredApproval } from "../types";
+import { getVersionClass } from "../versions/getVersion";
 import { FCTCreateCallErrors } from "./call.test";
 import { FCTOptionsErrors } from "./options.test";
 // Create a function that creates a random address
@@ -354,6 +355,48 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCTExport.mcall[0].data.toLowerCase()).to.eq(transferCalldata.toLowerCase());
     });
+
+    it("Should create the same FCTs but for different version", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "transfer",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params: [
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", value: "20" },
+        ],
+      });
+
+      const FCTNewVersion = FCT.export();
+      expect(FCTNewVersion.typedData.message.limits).to.have.keys([
+        "valid_from",
+        "expires_at",
+        "payable_gas_limit_in_kilo",
+        "max_payable_gas_price",
+        "purgeable",
+        "blockable",
+      ]);
+
+      // the same limits should not have "gas_price_limit"
+      expect(FCTNewVersion.typedData.message.limits).to.not.have.keys(["gas_price_limit"]);
+
+      FCT.version = "0x020103";
+      const FCTOldVersion = FCT.export();
+
+      expect(FCTOldVersion.typedData.message.limits).to.have.keys([
+        "valid_from",
+        "expires_at",
+        "gas_price_limit",
+        "purgeable",
+        "blockable",
+      ]);
+      // Should not have "payable_gas_limit_in_kilo" and "max_payable_gas_price"
+      expect(FCTOldVersion.typedData.message.limits).to.not.have.keys([
+        "payable_gas_limit_in_kilo",
+        "max_payable_gas_price",
+      ]);
+    });
   });
 
   describe("Complex FCTs", () => {
@@ -543,32 +586,8 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT).to.be.an("object");
 
-      // parse SessionId
-      const sessionId = SessionID.asOptions(FCT.sessionId);
+      const sessionId = getVersionClass(batchMultiSigCall).SessionId.parse(FCT.sessionId);
       expect(sessionId).to.be.an("object");
-      // expect(sessionId).to.be.eql({
-      //   name: "",
-      //   validFrom: batchMultiSigCall.options.validFrom,
-      //   expiresAt: batchMultiSigCall.options.expiresAt,
-      //   maxGasPrice: batchMultiSigCall.options.maxGasPrice,
-      //   blockable: true,
-      //   purgeable: false,
-      //   authEnabled: true,
-      //   builder: FCT.builder,
-      //   dryRun: false,
-      //   app: "",
-      //   by: "",
-      //   verifier: "",
-      //   recurrency: {
-      //     accumetable: false,
-      //     chillTime: "0",
-      //     maxRepeats: "0",
-      //   },
-      //   multisig: {
-      //     minimumApprovals: "0",
-      //     externalSigners: [],
-      //   },
-      // });
 
       expect(FCT.typedData.message["transaction_1"].recipient).to.eq("0xFA0A000000000000000000000000000000000000");
       expect(FCT.typedData.message["transaction_1"].call.jump_on_success).to.eq(1);

@@ -2,7 +2,7 @@ import { ChainId } from "@kiroboio/fct-plugins";
 
 import { deepMerge } from "../helpers/deepMerge";
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
-import { FCTCache } from "./cache";
+import { FCT_Cache } from "./cache";
 import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
@@ -39,7 +39,7 @@ import * as utils from "./utils";
 
 export class BatchMultiSigCall {
   public batchMultiSigSelector = "0x7d971612";
-  public version = "0x020101";
+  public version = "0x020201";
   public chainId: ChainId;
   public domain: TypedDataDomain;
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
@@ -226,25 +226,25 @@ export class BatchMultiSigCall {
 
   static from = (input: IFCT, messageHash?: string) => {
     if (messageHash && messageHash.length === 66) {
-      const cached = FCTCache.get<BatchMultiSigCall>(messageHash.toLowerCase());
+      const cached = FCT_Cache.get(messageHash.toLowerCase());
       if (cached) return cached;
     }
 
     const FCT = new BatchMultiSigCall();
     FCT.importFCT(input);
-    if (messageHash && messageHash.length === 66) FCTCache.set(messageHash.toLowerCase(), FCT);
+    if (messageHash && messageHash.length === 66) FCT_Cache.set(messageHash.toLowerCase(), FCT);
     return FCT;
   };
 
   static fromMap = (input: IFCT, map: ReturnType<BatchMultiSigCall["exportMap"]>, messageHash?: string) => {
     if (messageHash && messageHash.length === 66) {
-      const cached = FCTCache.get<BatchMultiSigCall>(`map:${messageHash}`.toLowerCase());
+      const cached = FCT_Cache.get(`map:${messageHash}`.toLowerCase());
       if (cached) return cached;
     }
 
     const FCT = new BatchMultiSigCall();
     FCT.importFCTWithMap(input, map);
-    if (messageHash && messageHash.length === 66) FCTCache.set(`map:${messageHash}`.toLowerCase(), FCT);
+    if (messageHash && messageHash.length === 66) FCT_Cache.set(`map:${messageHash}`.toLowerCase(), FCT);
     return FCT;
   };
 
