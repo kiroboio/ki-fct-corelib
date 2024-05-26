@@ -2,7 +2,6 @@ import { SignatureLike } from "@ethersproject/bytes";
 import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessage } from "@metamask/eth-sig-util";
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
-import NodeCache from "node-cache";
 
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
@@ -28,7 +27,7 @@ import {
 
 export class FCTUtils extends FCTBase {
   private _eip712: EIP712;
-  private _cache = new NodeCache();
+  private _cache = new Map();
 
   constructor(FCT: BatchMultiSigCall) {
     super(FCT);

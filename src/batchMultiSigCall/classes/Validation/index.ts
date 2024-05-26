@@ -81,7 +81,7 @@ export class Validation extends FCTBase {
       validation.value2 = { type: "validation", id };
     }
 
-    const id = validation.id || this._validations.length.toString();
+    const id = validation.id || (this._validations.length + 1).toString();
 
     // Check if the validation id is already used
     if (this._validations.some((v) => v.id === id)) throw new Error(`Validation with id ${id} already exists`);
