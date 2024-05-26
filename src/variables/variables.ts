@@ -10,6 +10,7 @@ import {
 } from "../constants";
 import { Variable } from "../types";
 import { globalVariables, globalVariablesBytes } from "./globalVariables";
+export { ComputedOperators } from "../batchMultiSigCall/classes/Variables/computedConstants";
 
 // Global Variables
 export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });

@@ -78,9 +78,9 @@ export class Variables extends FCTBase {
       value2: computed.value2 || defaultValue,
       operator2: computed.operator2 || defaultOperator,
       value3: computed.value3 || defaultValue,
-      operator3: computed.operator2 || defaultOperator,
+      operator3: computed.operator3 || defaultOperator,
       value4: computed.value4 || defaultValue,
-      overflowProtection: computed.overflowProtection || true,
+      overflowProtection: typeof computed.overflowProtection === "boolean" ? computed.overflowProtection : true,
     };
     this._computed.push(data);
 
