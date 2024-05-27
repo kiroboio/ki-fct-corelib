@@ -158,7 +158,7 @@ describe("BatchMultiSigCall EIP712", () => {
       value_2: "2",
       op_2: "*",
       value_3: "3",
-      op_3: "*",
+      op_3: "/",
       value_4: "4",
       overflow_protection: true,
     });

@@ -23,6 +23,9 @@ export const getActivatorAddress = (): Variable => ({ type: "global", id: "activ
 export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
 export const getChainID = (): Variable => ({ type: "global", id: "chainId" });
 export const getFlowHash = (): Variable => ({ type: "global", id: "flowHash" });
+export const getRandomNumber = (): Variable => ({ type: "global", id: "randomNumber" });
+export const getL1BlockNumber = (): Variable => ({ type: "global", id: "l1BlockNumber" });
+export const getFctMaxGasPrice = (): Variable => ({ type: "global", id: "fctMaxGasPrice" });
 
 /**
  * Generates the output variable based on the provided call index and inner index.

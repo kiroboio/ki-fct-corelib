@@ -1,16 +1,7 @@
-export type GlobalVariable =
-  | "blockNumber"
-  | "blockTimestamp"
-  | "gasPrice"
-  | "minerAddress"
-  | "originAddress"
-  | "investorAddress"
-  | "activatorAddress"
-  | "engineAddress"
-  | "chainId"
-  | "flowHash";
+export type GlobalVariable = keyof typeof globalVariables;
 
 const BLOCK_NUMBER = "0xFB0A000000000000000000000000000000000000";
+const L1_BLOCK_NUMBER = "0xFBAA000000000000000000000000000000000000";
 const BLOCK_TIMESTAMP = "0xFB0B000000000000000000000000000000000000";
 const GAS_PRICE = "0xFB0C000000000000000000000000000000000000";
 
@@ -21,6 +12,8 @@ const ACTIVATOR_ADDRESS = "0xFA0D000000000000000000000000000000000000";
 const ENGINE_ADDRESS = "0xFA0E000000000000000000000000000000000000";
 const CHAIN_ID = "0xFB0E000000000000000000000000000000000000";
 const FLOW_HASH = "0xFB0D000000000000000000000000000000000000";
+const RANDOM_NUMBER = "0xFB08000000000000000000000000000000000000";
+const FCT_MAX_GAS_PRICE = "0xFB09000000000000000000000000000000000000";
 
 // const BLOCK_HASH = "0xFF00000000000000000000000000000000000000";
 
@@ -35,7 +28,10 @@ export const globalVariables = {
   activatorAddress: ACTIVATOR_ADDRESS,
   engineAddress: ENGINE_ADDRESS,
   flowHash: FLOW_HASH,
-};
+  randomNumber: RANDOM_NUMBER,
+  fctMaxGasPrice: FCT_MAX_GAS_PRICE,
+  l1BlockNumber: L1_BLOCK_NUMBER,
+} as const;
 
 export const globalVariablesBytes = {
   blockNumber: BLOCK_NUMBER.padEnd(66, "0"),
@@ -43,15 +39,7 @@ export const globalVariablesBytes = {
   chainId: CHAIN_ID.padEnd(66, "0"),
   gasPrice: GAS_PRICE.padEnd(66, "0"),
   flowHash: FLOW_HASH.padEnd(66, "0"),
+  randomNumber: RANDOM_NUMBER.padEnd(66, "0"),
+  fctMaxGasPrice: FCT_MAX_GAS_PRICE.padEnd(66, "0"),
+  l1BlockNumber: L1_BLOCK_NUMBER.padEnd(66, "0"),
 };
-
-// export const getBlockNumber = (): Variable => ({ type: "global", id: "blockNumber" });
-// export const getBlockTimestamp = (): Variable => ({ type: "global", id: "blockTimestamp" });
-// export const getGasPrice = (): Variable => ({ type: "global", id: "gasPrice" });
-// export const getMinerAddress = (): Variable => ({ type: "global", id: "minerAddress" });
-// export const getOriginAddress = (): Variable => ({ type: "global", id: "originAddress" });
-// export const getInvestorAddress = (): Variable => ({ type: "global", id: "investorAddress" });
-// export const getActivatorAddress = (): Variable => ({ type: "global", id: "activatorAddress" });
-// export const getEngineAddress = (): Variable => ({ type: "global", id: "engineAddress" });
-// export const getChainID = (): Variable => ({ type: "global", id: "chainId" });
-// export const getFlowHash = (): Variable => ({ type: "global", id: "flowHash" });

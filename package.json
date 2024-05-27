@@ -80,7 +80,9 @@
     "rollup-plugin-dts": "^6.1.0",
     "semantic-release": "^22.0.5",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "setimmediate": "^1.0.5",
+    "typescript": "^5.2.2",
+    "uuid": "^9.0.1"
   },
   "dependencies": {
     "@kiroboio/fct-plugins": "latest",
