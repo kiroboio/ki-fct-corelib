@@ -1,5 +1,4 @@
 import { BatchMultiSigCall } from "..";
-import { Version_old } from "./oldVersion";
 import { Version_020201 } from "./v020201";
 import { VersionBase } from "./VersionBase";
 
@@ -19,10 +18,13 @@ export function getVersionClass(FCT: BatchMultiSigCall): VersionBase {
 
 export function getVersionFromVersion(version: string | number, FCT?: BatchMultiSigCall): VersionBase {
   const value = typeof version === "string" ? parseInt(version, 16) : version;
-  if (value >= 0x020201) {
-    return new Version_020201(FCT);
-  }
-  return new Version_old(FCT);
+
+  // Only for testing we always return the newest version
+  return new Version_020201(FCT);
+  // if (value >= 0x020201) {
+  // return new Version_020201(FCT);
+  // }
+  // return new Version_old(FCT);
 }
 
 export function parseSessionId(sessionId: string): Record<string, any> {
