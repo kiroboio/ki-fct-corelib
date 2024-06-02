@@ -1,0 +1,1 @@
+{"version":3,"file":"FCTBase.d.ts","sourceRoot":"","sources":["../../../src/batchMultiSigCall/classes/FCTBase.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,sBAAsB,CAAC;AAEzD,qBAAa,OAAO;IAClB,SAAS,CAAC,GAAG,EAAE,iBAAiB,CAAC;gBACrB,GAAG,EAAE,iBAAiB;CAGnC"}

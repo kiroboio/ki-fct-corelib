@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../../src/batchMultiSigCall/versions/oldVersion/index.ts"],"names":[],"mappings":";;;AACA,gDAA6C;AAC7C,2CAAmD;AAEnD,MAAa,WAAY,SAAQ,yBAAW;IACnC,SAAS,CAAuB;IAEvC,YAAY,GAAuB;QACjC,KAAK,CAAC,GAAG,CAAC,CAAC;QACX,IAAI,CAAC,SAAS,GAAG,IAAI,gCAAoB,CAAC,GAAG,CAAC,CAAC;IACjD,CAAC;CACF;AAPD,kCAOC"}
