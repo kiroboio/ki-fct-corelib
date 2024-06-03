@@ -1,14 +1,12 @@
 import { AllPlugins, ChainId, ERC20, Erc20Approvals, TokensMath } from "@kiroboio/fct-plugins";
-import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { ethers } from "ethers";
-import { hexlify, id } from "ethers/lib/utils";
 
 import { addresses, CALL_TYPE_MSG_REV, Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { CallOptions, FCTInputCall, IRequiredApproval, Param, Variable } from "../../types";
 import { getActivatorAddress, getGasPrice } from "../../variables";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { Call, EIP712 } from "../classes";
+import { Call } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
@@ -124,32 +122,8 @@ export function exportMap(this: BatchMultiSigCall) {
  * @throws Error if no calls are added to FCT.
  */
 export function exportFCT(this: BatchMultiSigCall): IFCT {
-  if (this.calls.length === 0) {
-    throw new Error("No calls added to FCT");
-  }
-
-  const options = this.options;
   const Version = getVersionClass(this);
-
-  const typedData = new EIP712(this).getTypedData();
-  return {
-    typedData,
-    typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
-    sessionId: Version.SessionId.asString(),
-    nameHash: id(options.name),
-    appHash: id(options.app.name),
-    appVersionHash: id(options.app.version),
-    builderHash: id(options.builder.name),
-    builderAddress: options.builder.address,
-    domainHash: id(options.domain),
-    verifierHash: id(options.verifier),
-    mcall: this.calls.map((call, index) => call.getAsMCall(typedData, index)),
-    externalSigners: options.multisig.externalSigners,
-    signatures: [this.utils.getAuthenticatorSignature()],
-    computed: this.computedAsData,
-    validations: this.validation.getForData(),
-    variables: [],
-  };
+  return Version.exportFCT();
 }
 
 export async function exportWithApprovals(this: BatchMultiSigCall) {
@@ -327,7 +301,6 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   const typedData = fct.typedData;
   const domain = typedData.domain;
   const { meta, engine } = typedData.message;
-  this.batchMultiSigSelector = engine.selector;
   this.version = engine.version;
   this.chainId = domain.chainId.toString() as ChainId;
   this.domain = domain;

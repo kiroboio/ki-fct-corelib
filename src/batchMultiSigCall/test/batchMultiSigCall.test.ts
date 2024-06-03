@@ -372,7 +372,8 @@ describe("BatchMultiSigCall", () => {
       expect(FCTNewVersion.typedData.message.limits).to.have.keys([
         "valid_from",
         "expires_at",
-        "payable_gas_limit_in_kilo",
+        "tx_data_limit",
+        "payable_gas_limit",
         "max_payable_gas_price",
         "purgeable",
         "blockable",

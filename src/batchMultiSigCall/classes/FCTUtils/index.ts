@@ -234,7 +234,8 @@ export class FCTUtils extends FCTBase {
     const gasBigInt = BigInt(gas);
 
     const limits = this.FCTData.typedData.message.limits;
-    const maxGasPrice = BigInt(limits.gas_price_limit);
+    // TODO: Support multi-versioning
+    const maxGasPrice = BigInt(limits.max_payable_gas_price);
 
     const gasPriceBigInt = BigInt(gasPrice) > maxGasPrice ? maxGasPrice : BigInt(gasPrice);
 

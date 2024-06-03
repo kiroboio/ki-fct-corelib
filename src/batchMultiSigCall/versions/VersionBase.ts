@@ -1,6 +1,8 @@
-import { MessageTypeProperty } from "@metamask/eth-sig-util";
+import { MessageTypeProperty, TypedDataUtils } from "@metamask/eth-sig-util";
+import { hexlify, id } from "ethers/lib/utils";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { EIP712 } from "../classes";
 import { SessionIdBase } from "./SessionIdBase";
 
 export const EIP712Domain: MessageTypeProperty[] = [
@@ -105,6 +107,7 @@ export abstract class VersionBase {
   public Multisig: MessageTypeProperty[] = Multisig;
   public Validation: MessageTypeProperty[] = Validation;
 
+  abstract batchMultiSigSelector: string;
   abstract SessionId: SessionIdBase;
 
   getMetaMessage(FCT: BatchMultiSigCall): Record<string, any> {
@@ -122,7 +125,7 @@ export abstract class VersionBase {
   getEngineMessage(FCT: BatchMultiSigCall): Record<string, any> {
     const FCTOptions = FCT.options;
     return {
-      selector: FCT.batchMultiSigSelector,
+      selector: this.batchMultiSigSelector,
       version: FCT.version,
       random_id: `0x${FCT.randomId}`,
       eip712: true,
@@ -140,6 +143,37 @@ export abstract class VersionBase {
       gas_price_limit: FCTOptions.maxGasPrice,
       purgeable: FCTOptions.purgeable,
       blockable: FCTOptions.blockable,
+    };
+  }
+
+  exportFCT() {
+    const FCT = this.FCT;
+    if (!FCT) {
+      throw new Error("FCT is not defined, this should not happen");
+    }
+    if (FCT.calls.length === 0) {
+      throw new Error("No calls added to FCT");
+    }
+    const options = FCT.options;
+
+    const typedData = new EIP712(FCT).getTypedData();
+    return {
+      typedData,
+      typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
+      sessionId: this.SessionId.asString(),
+      nameHash: id(options.name),
+      appHash: id(options.app.name),
+      appVersionHash: id(options.app.version),
+      builderHash: id(options.builder.name),
+      builderAddress: options.builder.address,
+      domainHash: id(options.domain),
+      verifierHash: id(options.verifier),
+      mcall: FCT.calls.map((call, index) => call.getAsMCall(typedData, index)),
+      externalSigners: options.multisig.externalSigners,
+      signatures: [FCT.utils.getAuthenticatorSignature()],
+      computed: FCT.computedAsData,
+      validations: FCT.validation.getForData(),
+      variables: [],
     };
   }
 }
