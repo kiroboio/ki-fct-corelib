@@ -139,6 +139,14 @@ export class Call extends CallBase implements ICall {
     return data;
   }
 
+  public getWithoutGasLimit(): StrictMSCallInput {
+    const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
+    const callDefaults = { ...this.FCT.callDefault };
+    const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
+
+    return data;
+  }
+
   public getDecoded(): DecodedCalls {
     const params = this.get().params;
     if (params && params.length > 0) {

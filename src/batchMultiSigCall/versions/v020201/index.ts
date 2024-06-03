@@ -1,4 +1,5 @@
 import { MessageTypeProperty, TypedDataUtils } from "@metamask/eth-sig-util";
+import { ethers } from "ethers";
 import { hexlify, id } from "ethers/lib/utils";
 
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
@@ -52,9 +53,9 @@ export class Version_020201 extends Version_old {
       throw new Error("No calls added to FCT");
     }
     const options = FCT.options;
-
     const typedData = new EIP712(FCT).getTypedData();
-    return {
+
+    const FCTData = {
       typedData,
       typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
       sessionId: this.SessionId.asString(),
@@ -74,5 +75,44 @@ export class Version_020201 extends Version_old {
       txDataLimit: "0",
       payableGasLimit: options.payableGasLimit,
     };
+
+    // We need to get how many signatures are needed. 2 places need to be checked:
+    // 1. How many different call.from addresses are there
+    // 2. How many externalSigners (if any) are expected
+
+    // Note that callers can be equal or different, need to count
+    const uniqueFromAddresses = FCT.calls.reduce((acc, cur) => {
+      const from = cur.getWithoutGasLimit().from;
+      if (typeof from === "object" && !Array.isArray(from) && from !== null) {
+        acc.add(JSON.stringify(from));
+      } else {
+        acc.add(from as string);
+      }
+      return acc;
+    }, new Set<string>());
+
+    const externalSigners = FCT.options.multisig.externalSigners;
+    const countOfSignaturesNeeded = uniqueFromAddresses.size + externalSigners.length;
+
+    // Add signatures to unsignedFCT, add just enough to reach the countOfSignaturesNeeded
+    for (let i = 0; i < countOfSignaturesNeeded; i++) {
+      FCTData.signatures.push({
+        r: ethers.constants.HashZero,
+        s: ethers.constants.HashZero,
+        v: 0,
+      });
+    }
+
+    const calldata = BatchMultiSigCall.utils.getCalldataForActuator({
+      signedFCT: FCTData,
+      purgedFCT: ethers.constants.HashZero,
+      investor: ethers.constants.AddressZero,
+      activator: ethers.constants.AddressZero,
+      version: "0x020201",
+    });
+
+    FCTData.txDataLimit = calldata.length.toString();
+
+    return FCTData;
   }
 }
