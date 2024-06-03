@@ -105,8 +105,9 @@ describe("BatchMultiSigCall EIP712", () => {
     expect(limits).to.deep.equal({
       valid_from: FCT.options.validFrom,
       expires_at: FCT.options.expiresAt,
+      tx_data_limit: "0",
       max_payable_gas_price: FCT.options.maxGasPrice,
-      payable_gas_limit_in_kilo: FCT.options.payableGasLimitInKilo,
+      payable_gas_limit: FCT.options.payableGasLimit,
       purgeable: FCT.options.purgeable,
       blockable: FCT.options.blockable,
     });

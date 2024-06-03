@@ -21,11 +21,13 @@ const valueWithPadStart = (value: string | number, padStart: number) => {
 //   - 8  : Chill time
 //   - 10 : After timestamp
 //   - 10 : Before timestamp
-//   - 6  : Payable gas limit in kilo
+//   - 6  : FREE BYTES
 //   - 10 : Gas price limit
 //   - 2  : Flags
 
 // 0xcb57b9 / 00 / 020201 / 0000 / 00000000 / 0066573973 / 00664dfef3 / 000000 / 06fc23ac00 / 1c
+// 0x24c32f / 00 / 020201 / 0000 / 00000000 / 006666a7b5 / 00665d6d35 / 000000 / 06fc23ac00 / 1c
+// 0x000000 / 00 / 020201 / 0000 / 00000000 / ffffffffff / 0000000000 / 000000 / 05D21DBA00 / 1e
 
 export class SessionId_020201 extends SessionIdBase {
   public asString(): string {
@@ -43,8 +45,8 @@ export class SessionId_020201 extends SessionIdBase {
       .padStart(8, "0");
     const beforeTimestamp = valueWithPadStart(options.expiresAt || 0, 10);
     const afterTimestamp = valueWithPadStart(options.validFrom || 0, 10);
+    const freeBytes = "000000";
     const maxGasPrice = valueWithPadStart(options.maxGasPrice || 0, 10);
-    const payableGasLimitInKilo = valueWithPadStart(options.payableGasLimitInKilo || 0, 6);
 
     let flagValue = 0;
     flagValue += sessionIdFlag.eip712; // EIP712 true by default
@@ -65,7 +67,7 @@ export class SessionId_020201 extends SessionIdBase {
       chillTime,
       beforeTimestamp,
       afterTimestamp,
-      payableGasLimitInKilo,
+      freeBytes,
       maxGasPrice,
       flags,
     ].join("");

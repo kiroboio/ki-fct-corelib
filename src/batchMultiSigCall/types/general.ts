@@ -28,24 +28,46 @@ export interface BatchMultiSigCallConstructor {
   version?: `0x${string}`;
 }
 
-export interface IFCT {
-  typedData: BatchMultiSigCallTypedData;
-  typeHash: string;
-  sessionId: string;
-  nameHash: string;
-  appHash: string;
-  appVersionHash: string;
-  builderHash: string;
-  domainHash: string;
-  verifierHash: string;
-  builderAddress: string;
-  mcall: MSCall[];
-  signatures: SignatureLike[];
-  variables: string[];
-  externalSigners: string[];
-  computed: IComputedData[];
-  validations: IValidationData[];
-}
+// TODO: Make the types cleaner
+export type IFCT =
+  | {
+      typedData: BatchMultiSigCallTypedData;
+      typeHash: string;
+      sessionId: string;
+      nameHash: string;
+      appHash: string;
+      appVersionHash: string;
+      builderHash: string;
+      domainHash: string;
+      verifierHash: string;
+      builderAddress: string;
+      mcall: MSCall[];
+      signatures: SignatureLike[];
+      variables: string[];
+      externalSigners: string[];
+      computed: IComputedData[];
+      validations: IValidationData[];
+    }
+  | {
+      typedData: BatchMultiSigCallTypedData;
+      typeHash: string;
+      sessionId: string;
+      nameHash: string;
+      appHash: string;
+      appVersionHash: string;
+      builderHash: string;
+      domainHash: string;
+      verifierHash: string;
+      builderAddress: string;
+      mcall: MSCall[];
+      signatures: SignatureLike[];
+      variables: string[];
+      externalSigners: string[];
+      computed: IComputedData[];
+      validations: IValidationData[];
+      txDataLimit: string;
+      payableGasLimit: string;
+    };
 
 export interface MSCallBase {
   nodeId?: string;
@@ -122,7 +144,7 @@ export interface IFCTOptions {
   validFrom: string;
   expiresAt: string;
   maxGasPrice: string;
-  payableGasLimitInKilo: string;
+  payableGasLimit: string;
   blockable: boolean;
   purgeable: boolean;
   authEnabled: boolean;
