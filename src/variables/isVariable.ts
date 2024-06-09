@@ -6,6 +6,7 @@ import {
 } from "../constants";
 import { InstanceOf } from "../helpers";
 import { ParamValue } from "../types";
+import { globalVariables, globalVariablesBytes } from "./globalVariables";
 
 type IsComputedVariableInput =
   | {
@@ -15,7 +16,7 @@ type IsComputedVariableInput =
       index: number;
     }
   | {
-      strict: false;
+      strict: boolean;
       value: ParamValue;
       id?: string;
       index?: number;
@@ -39,7 +40,8 @@ export function isExternalVariable(value: ParamValue) {
 
 export function isComputedVariable({ value, id, index, strict = false }: IsComputedVariableInput) {
   if (InstanceOf.Variable(value)) {
-    return value.id === id;
+    const idCheck = id ? value.id === id : true;
+    return value.type === "computed" && idCheck;
   }
 
   if (typeof value === "string" && (value.length === 42 || value.length === 66)) {
@@ -56,7 +58,15 @@ export function isComputedVariable({ value, id, index, strict = false }: IsCompu
   return false;
 }
 
-export function isOutputVariable({ value, index }: { value: ParamValue; index: number }) {
+export function isOutputVariable({
+  value,
+  index,
+  strict = false,
+}: {
+  value: ParamValue;
+  index: number;
+  strict?: boolean;
+}) {
   if (InstanceOf.Variable(value)) {
     return value.type === "output";
   }
@@ -67,8 +77,31 @@ export function isOutputVariable({ value, index }: { value: ParamValue; index: n
       value.length === 42 ? ExternalVariableBaseAddress.toLowerCase() : ExternalVariableBaseBytes32.toLowerCase();
 
     if (hexString.slice(0, -8) === base.slice(0, -8)) {
+      if (!strict) return true;
       const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
       return parsedIndex === (index + 1).toString();
+    }
+  }
+
+  return false;
+}
+
+export function isGlobalVariable(value: ParamValue) {
+  if (InstanceOf.Variable(value)) {
+    return value.type === "global";
+  }
+
+  if (typeof value === "string" && (value.length === 42 || value.length === 66)) {
+    if (value.length === 42) {
+      const setOfGlobalVars = Object.values(globalVariables);
+      const valHexString = value.toLowerCase();
+
+      return setOfGlobalVars.some((variable) => variable.toLowerCase().slice(0, -4) === valHexString.slice(0, -4));
+    } else {
+      const setOfGlobalVars = Object.values(globalVariablesBytes);
+      const valHexString = value.toLowerCase();
+
+      return setOfGlobalVars.some((variable) => variable.toLowerCase().slice(0, -4) === valHexString.slice(0, -4));
     }
   }
 

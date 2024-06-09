@@ -1,9 +1,13 @@
 import { MessageTypeProperty, TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
+import { CALL_TYPE_MSG } from "../../../constants";
+import { flows } from "../../../constants/flows";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { EIP712 } from "../../classes";
+import { Call as CallClass, EIP712 } from "../../classes";
 import { Version_old } from "../oldVersion";
+import { CallId_020201 } from "./CallId";
+import { getVariableArgsForEIP712 } from "./helpers/variableArgs";
 import { SessionId_020201 } from "./SessionId";
 // NEW VERSION - 0x020201
 
@@ -17,17 +21,41 @@ const Limits: MessageTypeProperty[] = [
   { name: "blockable", type: "bool" },
 ];
 
+export const Call: MessageTypeProperty[] = [
+  { name: "call_index", type: "uint16" },
+  { name: "payer_index", type: "uint16" },
+  { name: "call_type", type: "string" },
+  { name: "from", type: "address" },
+  { name: "to", type: "address" },
+  { name: "to_ens", type: "string" },
+  { name: "value", type: "uint256" },
+  { name: "gas_limit", type: "uint32" },
+  { name: "permissions", type: "uint16" },
+  { name: "validation", type: "uint16" },
+  { name: "flow_control", type: "string" },
+  { name: "returned_false_means_fail", type: "bool" },
+  { name: "jump_on_success", type: "uint16" },
+  { name: "jump_on_fail", type: "uint16" },
+  { name: "variable_arguments_start", type: "uint32" },
+  { name: "variable_arguments_end", type: "uint32" },
+  { name: "method_interface", type: "string" },
+];
+
 // This version introduced payable_gas_limit, max_payable_gas_price, tx_data_limit.
 // Removed gas_price_limit
 
 export class Version_020201 extends Version_old {
-  public SessionId: SessionId_020201;
+  // public SessionId: SessionId_020201;
+  // public CallId: CallId_020201;
+
   public Limits: MessageTypeProperty[] = Limits;
+  public Call: MessageTypeProperty[] = Call;
   public batchMultiSigSelector = "0xead413ea";
 
   constructor(FCT?: BatchMultiSigCall) {
     super(FCT);
     this.SessionId = new SessionId_020201(FCT);
+    this.CallId = new CallId_020201(FCT);
   }
 
   getLimitsMessage(FCT: BatchMultiSigCall): Record<string, any> {
@@ -73,6 +101,40 @@ export class Version_020201 extends Version_old {
       variables: [],
       txDataLimit: "0",
       payableGasLimit: options.payableGasLimit,
+    };
+  }
+
+  generateCallForEIP712Message(call: CallClass, index: number) {
+    const FCT = this.FCT;
+    if (!FCT) {
+      throw new Error("FCT is not defined, this should not happen");
+    }
+    const callData = call.get();
+    const options = call.options;
+    const flow = flows[options.flow].text;
+
+    const { jumpOnSuccess, jumpOnFail } = call.getJumps(index);
+
+    const variableArgs = getVariableArgsForEIP712(call);
+
+    return {
+      call_index: index + 1,
+      payer_index: typeof call.options.payerIndex === "number" ? call.options.payerIndex : index + 1,
+      call_type: CALL_TYPE_MSG[call.options.callType],
+      from: FCT.variables.getValue(callData.from, "address"),
+      to: FCT.variables.getValue(callData.to, "address"),
+      to_ens: callData.toENS || "",
+      value: FCT.variables.getValue(callData.value, "uint256", "0"),
+      gas_limit: options.gasLimit,
+      permissions: 0,
+      validation: call.options.validation ? FCT.validation.getIndex(call.options.validation) : 0,
+      flow_control: flow,
+      returned_false_means_fail: options.falseMeansFail,
+      jump_on_success: jumpOnSuccess,
+      jump_on_fail: jumpOnFail,
+      variable_arguments_start: variableArgs.variable_arguments_start,
+      variable_arguments_end: variableArgs.variable_arguments_end,
+      method_interface: call.getFunction(),
     };
   }
 }

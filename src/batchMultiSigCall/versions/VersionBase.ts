@@ -1,8 +1,12 @@
 import { MessageTypeProperty, TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
+import { BatchMultiSigCallTypedData } from "../..";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { EIP712 } from "../classes";
+import { CALL_TYPE_MSG, EMPTY_HASH } from "../../constants";
+import { flows } from "../../constants/flows";
+import { Call as CallClass, EIP712 } from "../classes";
+import { CallIdBase } from "./CallIdBase";
 import { SessionIdBase } from "./SessionIdBase";
 
 export const EIP712Domain: MessageTypeProperty[] = [
@@ -109,6 +113,7 @@ export abstract class VersionBase {
 
   abstract batchMultiSigSelector: string;
   abstract SessionId: SessionIdBase;
+  abstract CallId: CallIdBase;
 
   getMetaMessage(FCT: BatchMultiSigCall): Record<string, any> {
     const FCTOptions = FCT.options;
@@ -174,6 +179,62 @@ export abstract class VersionBase {
       computed: FCT.computedAsData,
       validations: FCT.validation.getForData(),
       variables: [],
+    };
+  }
+
+  getCallAsMcall(call: CallClass, typedData: BatchMultiSigCallTypedData, index: number) {
+    const FCT = this.FCT;
+    if (!FCT) {
+      throw new Error("FCT is not defined, this should not happen");
+    }
+    const callData = call.get();
+    return {
+      typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
+      ensHash: callData.toENS ? id(callData.toENS) : EMPTY_HASH,
+      functionSignature: call.getFunctionSignature(),
+      value: FCT.variables.getValue(callData.value, "uint256", "0"),
+      callId: this.CallId.asString({
+        calls: FCT.calls,
+        validation: FCT.validation,
+        call,
+        index,
+        payerIndex: call.options.payerIndex,
+      }),
+      from: FCT.variables.getValue(callData.from, "address"),
+      to: FCT.variables.getValue(callData.to, "address"),
+      data: call.getEncodedData(),
+      types: call.getTypesArray(),
+      typedHashes: call.getTypedHashes(index),
+    };
+  }
+
+  generateCallForEIP712Message(call: CallClass, index: number) {
+    const FCT = this.FCT;
+    if (!FCT) {
+      throw new Error("FCT is not defined, this should not happen");
+    }
+    const callData = call.get();
+    const options = call.options;
+    const flow = flows[options.flow].text;
+
+    const { jumpOnSuccess, jumpOnFail } = call.getJumps(index);
+
+    return {
+      call_index: index + 1,
+      payer_index: typeof call.options.payerIndex === "number" ? call.options.payerIndex : index + 1,
+      call_type: CALL_TYPE_MSG[call.options.callType],
+      from: FCT.variables.getValue(callData.from, "address"),
+      to: FCT.variables.getValue(callData.to, "address"),
+      to_ens: callData.toENS || "",
+      value: FCT.variables.getValue(callData.value, "uint256", "0"),
+      gas_limit: options.gasLimit,
+      permissions: 0,
+      validation: call.options.validation ? FCT.validation.getIndex(call.options.validation) : 0,
+      flow_control: flow,
+      returned_false_means_fail: options.falseMeansFail,
+      jump_on_success: jumpOnSuccess,
+      jump_on_fail: jumpOnFail,
+      method_interface: call.getFunction(),
     };
   }
 }
