@@ -93,6 +93,8 @@ describe("Call", () => {
         returned_false_means_fail: false,
         jump_on_success: 0,
         jump_on_fail: 0,
+        variable_arguments_end: "0",
+        variable_arguments_start: "0",
         method_interface: "transfer((uint256,(bool,uint64)),(bool,uint256))",
       },
       data: {

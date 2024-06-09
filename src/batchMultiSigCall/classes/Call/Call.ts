@@ -1,9 +1,7 @@
 import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
-import { hexlify, id } from "ethers/lib/utils";
+import { hexlify } from "ethers/lib/utils";
 
-import { CALL_TYPE_MSG, EMPTY_HASH } from "../../../constants";
-import { flows } from "../../../constants/flows";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import {
@@ -20,10 +18,11 @@ import {
   StrictMSCallInput,
   TypedDataMessageTransaction,
 } from "../../../types";
-import { isComputedVariable, isExternalVariable } from "../../../variables";
+import { isComputedVariable, isExternalVariable, isGlobalVariable, isOutputVariable } from "../../../variables";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { NO_JUMP } from "../../constants";
 import { IMSCallInput, MSCall_Eff } from "../../types";
+import { getVersionClass } from "../../versions/getVersion";
 import { CallID } from "../CallID";
 import { IValidation, ValidationVariable } from "../Validation/types";
 import { CallBase } from "./CallBase";
@@ -98,27 +97,10 @@ export class Call extends CallBase implements ICall {
     return deepMerge(defaults, this.call.options);
   }
 
-  public isComputedUsed(id: string, index: number) {
-    // Computed Variable can be used as value, to, from, param values.
-    // We need to check all of them
-    const call = this.get();
-    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
-
-    return checks.some((item) => {
-      return isComputedVariable({
-        strict: true,
-        value: item,
-        id,
-        index,
-      });
-    });
-  }
-
-  public isExternalVariableUsed() {
-    const call = this.get();
-    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
-
-    return checks.some(isExternalVariable);
+  public getMergedCall() {
+    const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
+    const callDefaults = { ...this.FCT.callDefault };
+    return deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
   }
 
   public get(): StrictMSCallInput {
@@ -152,25 +134,8 @@ export class Call extends CallBase implements ICall {
   }
 
   public getAsMCall(typedData: BatchMultiSigCallTypedData, index: number): MSCall {
-    const call = this.get();
-    return {
-      typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: call.toENS ? id(call.toENS) : EMPTY_HASH,
-      functionSignature: this.getFunctionSignature(),
-      value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-      callId: CallID.asString({
-        calls: this.FCT.calls,
-        validation: this.FCT.validation,
-        call,
-        index,
-        payerIndex: this.options.payerIndex,
-      }),
-      from: this.FCT.variables.getValue(call.from, "address"),
-      to: this.FCT.variables.getValue(call.to, "address"),
-      data: this.getEncodedData(),
-      types: this.getTypesArray(),
-      typedHashes: this.getTypedHashes(index),
-    };
+    const Version = getVersionClass(this.FCT);
+    return Version.getCallAsMcall(this, typedData, index);
   }
 
   public getAsEfficientMCall(index: number): MSCall_Eff {
@@ -224,30 +189,10 @@ export class Call extends CallBase implements ICall {
 
   public generateEIP712Message(index: number): TypedDataMessageTransaction {
     const paramsData = this._getParamsEIP712();
-    const call = this.get();
-    const options = call.options;
-    const flow = flows[options.flow].text;
-
-    const { jumpOnSuccess, jumpOnFail } = this._getJumps(index);
+    const Version = getVersionClass(this.FCT);
 
     return {
-      call: {
-        call_index: index + 1,
-        payer_index: typeof call.options.payerIndex === "number" ? call.options.payerIndex : index + 1,
-        call_type: CALL_TYPE_MSG[call.options.callType],
-        from: this.FCT.variables.getValue(call.from, "address"),
-        to: this.FCT.variables.getValue(call.to, "address"),
-        to_ens: call.toENS || "",
-        value: this.FCT.variables.getValue(call.value, "uint256", "0"),
-        gas_limit: options.gasLimit,
-        permissions: 0,
-        validation: call.options.validation ? this.FCT.validation.getIndex(call.options.validation) : 0,
-        flow_control: flow,
-        returned_false_means_fail: options.falseMeansFail,
-        jump_on_success: jumpOnSuccess,
-        jump_on_fail: jumpOnFail,
-        method_interface: this.getFunction(),
-      },
+      call: Version.generateCallForEIP712Message(this, index),
       ...paramsData,
     };
   }
@@ -325,6 +270,94 @@ export class Call extends CallBase implements ICall {
   }
 
   //
+  // Variable methods
+  //
+
+  public isComputedUsed(id?: string, index?: number) {
+    // Computed Variable can be used as value, to, from, param values.
+    // We need to check all of them
+    const call = this.getMergedCall();
+    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+
+    return checks.some((item) => {
+      return isComputedVariable({
+        // If id and index are provided, strict: true else strict: false
+        strict: id && index ? true : false,
+        value: item,
+        id,
+        index,
+      });
+    });
+  }
+
+  public isExternalVariableUsed() {
+    const call = this.getMergedCall();
+    const checks = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+
+    return checks.some(isExternalVariable);
+  }
+
+  public isAnyVariableUsed() {
+    const call = this.getMergedCall();
+    const valuesToCheck = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
+    return valuesToCheck.some((value) =>
+      Boolean(
+        isComputedVariable({ value, strict: false }) ||
+          isExternalVariable(value) ||
+          isOutputVariable({ value, index: 0, strict: false }) ||
+          isGlobalVariable(value),
+      ),
+    );
+  }
+
+  //
+  // Helper methods
+  //
+  public getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
+    let jumpOnSuccess = 0;
+    let jumpOnFail = 0;
+    const call = this.get();
+    const options = call.options;
+
+    if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
+      const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
+
+      if (jumpOnSuccessIndex === -1) {
+        throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
+      }
+
+      if (jumpOnSuccessIndex <= index) {
+        throw new Error(
+          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`,
+        );
+      }
+
+      jumpOnSuccess = jumpOnSuccessIndex - index - 1;
+    }
+
+    if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
+      const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
+
+      if (jumpOnFailIndex === -1) {
+        throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
+      }
+
+      if (jumpOnFailIndex <= index) {
+        throw new Error(
+          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`,
+        );
+      }
+
+      jumpOnFail = jumpOnFailIndex - index - 1;
+    }
+
+    return {
+      jumpOnSuccess,
+      jumpOnFail,
+    };
+  }
+
+  //
   // Private methods
   //
   private _getUsedStructTypes(
@@ -394,50 +427,6 @@ export class Call extends CallBase implements ICall {
           ...getParams(decoded.params),
         }
       : {};
-  }
-
-  private _getJumps(index: number): { jumpOnSuccess: number; jumpOnFail: number } {
-    let jumpOnSuccess = 0;
-    let jumpOnFail = 0;
-    const call = this.get();
-    const options = call.options;
-
-    if (options.jumpOnSuccess && options.jumpOnSuccess !== NO_JUMP) {
-      const jumpOnSuccessIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnSuccess);
-
-      if (jumpOnSuccessIndex === -1) {
-        throw new Error(`Jump on success node id ${options.jumpOnSuccess} not found`);
-      }
-
-      if (jumpOnSuccessIndex <= index) {
-        throw new Error(
-          `Jump on success node id ${options.jumpOnSuccess} is current or before current node (${call.nodeId})`,
-        );
-      }
-
-      jumpOnSuccess = jumpOnSuccessIndex - index - 1;
-    }
-
-    if (options.jumpOnFail && options.jumpOnFail !== NO_JUMP) {
-      const jumpOnFailIndex = this.FCT.calls.findIndex((c) => c.nodeId === options.jumpOnFail);
-
-      if (jumpOnFailIndex === -1) {
-        throw new Error(`Jump on fail node id ${options.jumpOnFail} not found`);
-      }
-
-      if (jumpOnFailIndex <= index) {
-        throw new Error(
-          `Jump on fail node id ${options.jumpOnFail} is current or before current node (${call.nodeId})`,
-        );
-      }
-
-      jumpOnFail = jumpOnFailIndex - index - 1;
-    }
-
-    return {
-      jumpOnSuccess,
-      jumpOnFail,
-    };
   }
 
   private _decodeParams<P extends Param>(params: P[]): ParamWithoutVariable<P>[] {
