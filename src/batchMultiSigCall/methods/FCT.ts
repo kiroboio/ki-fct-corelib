@@ -10,8 +10,17 @@ import { Call } from "../classes";
 import { getParamsFromTypedData, manageValue } from "../classes/Call/helpers";
 import { IValidationEIP712 } from "../classes/Validation/types";
 import { IComputedEIP712 } from "../classes/Variables/types";
-import { FCTCall, IFCT, IFCTOptions, IMSCallInput, MSCalls_Eff, TypedDataMessageTransaction } from "../types";
+import {
+  FCTCall,
+  IFCT,
+  IFCTOptions,
+  IMSCallInput,
+  MSCalls_Eff,
+  TypedDataMessageTransaction,
+  VersionType,
+} from "../types";
 import { getVersionClass, getVersionFromVersion } from "../versions/getVersion";
+import { GenericExportOptions } from "../versions/types";
 import { PluginParams } from "./types";
 
 // If F is Multicall, return multicall, else return Call
@@ -121,9 +130,12 @@ export function exportMap(this: BatchMultiSigCall) {
  * @returns The IFCT object representing the current state of the FCT.
  * @throws Error if no calls are added to FCT.
  */
-export function exportFCT(this: BatchMultiSigCall): IFCT {
+export function exportFCT<V extends VersionType = `0x${string}`>(
+  this: BatchMultiSigCall,
+  exportOptions?: GenericExportOptions<V>,
+): IFCT {
   const Version = getVersionClass(this);
-  return Version.exportFCT();
+  return Version.exportFCT(exportOptions);
 }
 
 export async function exportWithApprovals(this: BatchMultiSigCall) {

@@ -18,6 +18,8 @@ import { IValidation, IValidationData } from "../classes/Validation/types";
 import { IComputedData } from "../classes/Variables/types";
 import { BatchMultiSigCallTypedData } from "./typedData";
 
+export type VersionType = "0x020201" | `0x${string}`;
+
 export type FCTCallParam = string | number | boolean | FCTCallParam[] | { [key: string]: FCTCallParam };
 
 export interface BatchMultiSigCallConstructor {
