@@ -397,6 +397,35 @@ describe("BatchMultiSigCall", () => {
         "max_payable_gas_price",
       ]);
     });
+
+    it.only("Should create an FCT with Constants variable", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "transfer",
+        to: { type: "constants", id: "addressZero" },
+        params: [
+          {
+            name: "recipient",
+            type: "address",
+            value: { type: "constants", id: "addressZero" },
+          },
+          { name: "amount", type: "uint256", value: { type: "constants", id: "maxUint" } },
+        ],
+        options: {
+          usePureMethod: true,
+        },
+      });
+
+      const FCTExport = FCT.exportFCT();
+
+      const callMessage = FCTExport.typedData.message["transaction_1"];
+
+      console.log(callMessage);
+
+      expect(callMessage.recipient).to.eq(ethers.constants.AddressZero);
+      expect(callMessage.amount).to.eq(ethers.constants.MaxUint256.toHexString());
+    });
   });
 
   describe("Complex FCTs", () => {

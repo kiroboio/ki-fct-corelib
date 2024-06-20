@@ -74,3 +74,9 @@ export function isOutputVariable({ value, index }: { value: ParamValue; index: n
 
   return false;
 }
+
+export function isConstantVariable(value: ParamValue) {
+  if (InstanceOf.Variable(value)) {
+    return value.type === "constants";
+  }
+}
