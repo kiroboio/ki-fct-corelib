@@ -11,6 +11,10 @@ import { getVariableArgsForEIP712 } from "./helpers/variableArgs";
 import { SessionId_020201 } from "./SessionId";
 // NEW VERSION - 0x020201
 
+export interface V020201_ExportOptions {
+  strictGasLimits: boolean;
+}
+
 const Limits: MessageTypeProperty[] = [
   { name: "valid_from", type: "uint40" },
   { name: "expires_at", type: "uint40" },
@@ -71,8 +75,9 @@ export class Version_020201 extends Version_old {
     };
   }
 
-  exportFCT() {
+  exportFCT(exportOptions?: V020201_ExportOptions) {
     const FCT = this.FCT;
+    const strictGasLimits = Boolean(exportOptions?.strictGasLimits);
     if (!FCT) {
       throw new Error("FCT is not defined, this should not happen");
     }
@@ -80,9 +85,16 @@ export class Version_020201 extends Version_old {
       throw new Error("No calls added to FCT");
     }
     const options = FCT.options;
+    const initialGasLimits: Record<number, string> = {};
+    if (!strictGasLimits) {
+      FCT.calls.forEach((call, i) => {
+        initialGasLimits[i] = call.options.gasLimit;
+        call.setOptions({ gasLimit: "0" });
+      });
+    }
 
     const typedData = new EIP712(FCT).getTypedData();
-    return {
+    const FCTData = {
       typedData,
       typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
       sessionId: this.SessionId.asString(),
@@ -102,6 +114,13 @@ export class Version_020201 extends Version_old {
       txDataLimit: "0",
       payableGasLimit: options.payableGasLimit,
     };
+    if (!strictGasLimits) {
+      FCT.calls.forEach((call, i) => {
+        call.setOptions({ gasLimit: initialGasLimits[i] });
+      });
+    }
+
+    return FCTData;
   }
 
   generateCallForEIP712Message(call: CallClass, index: number) {

@@ -328,6 +328,7 @@ describe("BatchMultiSigCall", () => {
         `Param ${params[0].name} - Conversion from ${params[0].messageType} to ${params[0].type} is not supported`,
       );
     });
+
     it("Should export an efficient FCT", async () => {
       await FCT.add({
         nodeId: "node1",
@@ -354,6 +355,29 @@ describe("BatchMultiSigCall", () => {
       ]);
 
       expect(FCTExport.mcall[0].data.toLowerCase()).to.eq(transferCalldata.toLowerCase());
+    });
+
+    it("Should export an FCT with no strict gas limit", async () => {
+      await FCT.add({
+        nodeId: "node1",
+        from: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        method: "transfer",
+        to: "0x4f631612941F710db646B8290dB097bFB8657dC2",
+        params: [
+          { name: "recipient", type: "address", value: "0x4f631612941F710db646B8290dB097bFB8657dC2" },
+          { name: "amount", type: "uint256", value: "20" },
+        ],
+        options: {
+          gasLimit: "1234123",
+        },
+      });
+
+      const FCTExport = FCT.exportFCT({ strictGasLimits: false });
+
+      expect(FCTExport.typedData.message["transaction_1"].call.gas_limit).to.eq("0");
+
+      // Make sure that the FCT.calls[0].options.gasLimit is not changed
+      expect(FCT.calls[0].options.gasLimit).to.eq("1234123");
     });
 
     it("Should create the same FCTs but for different version", async () => {
@@ -584,8 +608,6 @@ describe("BatchMultiSigCall", () => {
       ]);
 
       const FCT = batchMultiSigCall.exportFCT();
-
-      console.log(JSON.stringify(FCT, null, 2));
 
       expect(FCT).to.be.an("object");
 

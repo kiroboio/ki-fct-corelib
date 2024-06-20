@@ -1,7 +1,6 @@
 import { BatchMultiSigCall } from "..";
 import { Version_old } from "./oldVersion";
 import { Version_020201 } from "./v020201";
-import { VersionBase } from "./VersionBase";
 
 // Session ID example - 0x44578300020101000000000000009fc545c0000000000000000006fc23ac001cn
 // This mask helps to extract the version from the session id, in the example it is 020101
@@ -13,11 +12,11 @@ const VERSION_MASK = 0x00000000ffffff0000000000000000000000000000000000000000000
 // ZZ - patch version
 // The function should return the correct Version class.
 
-export function getVersionClass(FCT: BatchMultiSigCall): VersionBase {
+export function getVersionClass(FCT: BatchMultiSigCall) {
   return getVersionFromVersion(FCT.version, FCT);
 }
 
-export function getVersionFromVersion(version: string | number, FCT?: BatchMultiSigCall): VersionBase {
+export function getVersionFromVersion(version: string | number, FCT?: BatchMultiSigCall) {
   const value = typeof version === "string" ? parseInt(version, 16) : version;
   if (value >= 0x020201) {
     return new Version_020201(FCT);
