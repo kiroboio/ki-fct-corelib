@@ -26,7 +26,7 @@ export const isAddress = (value: string, key: string) => {
 
 export const verifyParam = (param: Param) => {
   const type = param.messageType || param.type;
-  if (!param.value) {
+  if (param.value === undefined || param.value === null) {
     throw new Error(`Param ${param.name} is missing a value`);
   }
 
