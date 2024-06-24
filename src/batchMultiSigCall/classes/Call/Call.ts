@@ -299,14 +299,18 @@ export class Call extends CallBase implements ICall {
 
   public isAnyVariableUsed() {
     const call = this.getMergedCall();
+    const useMaxVarLength = this.options.useMaxVarLength;
     const valuesToCheck = [call.value, call.from, call.to, ...getAllSimpleParams(call.params || [])];
-    return valuesToCheck.some((value) =>
-      Boolean(
-        isComputedVariable({ value, strict: false }) ||
-          isExternalVariable(value) ||
-          isOutputVariable({ value, index: 0, strict: false }) ||
-          isGlobalVariable(value),
-      ),
+    return (
+      useMaxVarLength ||
+      valuesToCheck.some((value) =>
+        Boolean(
+          isComputedVariable({ value, strict: false }) ||
+            isExternalVariable(value) ||
+            isOutputVariable({ value, index: 0, strict: false }) ||
+            isGlobalVariable(value),
+        ),
+      )
     );
   }
 
