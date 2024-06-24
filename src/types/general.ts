@@ -1,12 +1,14 @@
 import { CALL_TYPE, Flow } from "../constants";
 import { GlobalVariable } from "../variables";
+import { ConstantVariable } from "../variables/constantVariables";
 
 export type Variable =
   | { type: "output"; id: { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
   | { type: "global"; id: GlobalVariable }
   | { type: "computed"; id: string }
-  | { type: "validation"; id: string };
+  | { type: "validation"; id: string }
+  | { type: "constants"; id: ConstantVariable };
 
 export type ParamValue = boolean | string | (string | Variable | undefined)[] | Param[] | Param[][] | Variable;
 

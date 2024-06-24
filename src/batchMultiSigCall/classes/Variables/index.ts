@@ -4,6 +4,7 @@ import { variables } from "../../..";
 import { InstanceOf } from "../../../helpers";
 import { Variable } from "../../../types";
 import { globalVariables, globalVariablesBytes } from "../../../variables";
+import { constantVariables } from "../../../variables/constantVariables";
 import { FCTBase } from "../FCTBase";
 import { ComputedOperators } from "./computedConstants";
 import { AddComputedResult, IComputed, IComputedData, IComputedEIP712 } from "./types";
@@ -129,6 +130,14 @@ export class Variables extends FCTBase {
       });
 
       return this.getComputedVariable(index, type);
+    }
+
+    if (variable.type === "constants") {
+      const value = constantVariables[variable.id as keyof typeof constantVariables];
+      if (!value) {
+        throw new Error("Constant variable not found");
+      }
+      return value;
     }
 
     throw new Error("Variable type not found");
