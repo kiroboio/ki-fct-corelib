@@ -121,7 +121,7 @@ const _getTypeForEncodedMethodParams = (param: Param): string => {
 };
 
 const _getValuesForEncodedMethodParams = (param: Param): GetValueType => {
-  if (!param.value) {
+  if (param.value === undefined || param.value === null) {
     throw new Error("Param value is required");
   }
   if (param.customType || param.type.includes("tuple")) {
