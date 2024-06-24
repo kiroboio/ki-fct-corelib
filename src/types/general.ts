@@ -50,6 +50,7 @@ export interface CallOptions {
   /** True if not to include types in method interface.
    * For example, "magic()" will be "magic", "transfer(address,uint256)" will be "transfer" */
   usePureMethod?: boolean;
+  useMaxVarLength?: boolean;
 }
 
 export interface IPluginCall {
