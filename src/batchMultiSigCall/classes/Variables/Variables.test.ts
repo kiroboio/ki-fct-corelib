@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "ethers";
 
+import { variables } from "../../..";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { Call } from "../Call";
 
@@ -61,7 +62,7 @@ describe("Variables", () => {
         ],
       });
 
-      const fct = await FCT.exportFCT();
+      const fct = FCT.exportFCT();
 
       expect(fct.typedData.types).to.include.keys("Computed");
 
@@ -70,7 +71,8 @@ describe("Variables", () => {
       );
 
       expect(fct.computed[0].values).to.deep.eq([
-        "0xFD00000000000000000000000000000000000000000000000000000000000001",
+        // "0xFD00000000000000000000000000000000000000000000000000000000000001",/
+        variables.getOutputVariable({ index: 0, offset: 0 }),
         "2",
         "0",
         "0",

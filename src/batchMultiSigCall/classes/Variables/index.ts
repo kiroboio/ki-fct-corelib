@@ -97,12 +97,19 @@ export class Variables extends FCTBase {
       return this.getExternalVariable(variable.id, type);
     }
     if (variable.type === "output") {
-      const id = variable.id as { nodeId: string; innerIndex: number };
+      const id = variable.id as { nodeId: string; innerIndex: number } | { nodeId: string; offset: number };
       const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
+
+      let offset: number;
+      if ("innerIndex" in id) {
+        offset = id.innerIndex * 32;
+      } else {
+        offset = id.offset;
+      }
 
       return this.getOutputVariable({
         index,
-        innerIndex: id.innerIndex,
+        offset,
         type,
       });
     }
@@ -143,16 +150,8 @@ export class Variables extends FCTBase {
     throw new Error("Variable type not found");
   }
 
-  private getOutputVariable({
-    index,
-    innerIndex,
-    type = "uint256",
-  }: {
-    index: number;
-    innerIndex: number;
-    type?: string;
-  }) {
-    return variables.getOutputVariable({ index, innerIndex, type });
+  private getOutputVariable({ index, offset, type = "uint256" }: { index: number; offset: number; type?: string }) {
+    return variables.getOutputVariable({ index, offset, type });
   }
 
   private getExternalVariable(index: number, type: string) {
