@@ -101,7 +101,7 @@ export class Variables extends FCTBase {
       const index = this.FCT.calls.findIndex((call) => call.nodeId === id.nodeId);
 
       let offset: number;
-      if ("innerIndex" in id) {
+      if (!("offset" in id) && "innerIndex" in id) {
         offset = id.innerIndex * 32;
       } else {
         offset = id.offset;
