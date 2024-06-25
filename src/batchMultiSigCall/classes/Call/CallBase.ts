@@ -28,12 +28,12 @@ export class CallBase {
     return this._call.nodeId;
   }
 
-  public getOutputVariable(innerIndex = 0): Variable & { type: "output" } {
+  public getOutputVariable(offset = 0): Variable & { type: "output" } {
     return {
       type: "output",
       id: {
         nodeId: this._call.nodeId,
-        innerIndex,
+        offset,
       },
     };
   }

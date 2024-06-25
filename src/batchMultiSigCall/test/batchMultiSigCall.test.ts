@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { ethers } from "ethers";
 import { beforeEach, describe } from "mocha";
 
+import { variables } from "../..";
 import { Flow } from "../../constants";
 import { flows } from "../../constants/flows";
 import { getDate } from "../../helpers";
@@ -422,6 +423,36 @@ describe("BatchMultiSigCall", () => {
         "max_payable_gas_price",
       ]);
     });
+
+    it("Should create an FCT and use a returned value from previous call", async () => {
+      const token = createRandomAddress();
+      const vault = createRandomAddress();
+      const receiver = createRandomAddress();
+      const call = await FCT.add({
+        nodeId: "balance",
+        from: vault,
+        method: "balanceOf",
+        to: token,
+        params: [{ name: "owner", type: "address", value: vault }],
+      });
+
+      await FCT.add({
+        nodeId: "transfer",
+        from: vault,
+        method: "transfer",
+        to: token,
+        params: [
+          { name: "recipient", type: "address", value: receiver },
+          { name: "amount", type: "uint256", value: call.getOutputVariable(0) },
+        ],
+      });
+
+      const exportedFCT = FCT.exportFCT();
+
+      expect(exportedFCT.typedData.message["transaction_2"].amount).to.eq(
+        "0xFD00000000000000000000000000000000000000000000000000000000200001",
+      );
+    });
   });
 
   describe("Complex FCTs", () => {
@@ -637,7 +668,8 @@ describe("BatchMultiSigCall", () => {
 
       expect(FCT.typedData.message["transaction_2"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
       expect(FCT.typedData.message["transaction_2"].amount).to.eq(
-        "0xFD00000000000000000000000000000000000000000000000000000000000001",
+        // "0xFD00000000000000000000000000000000000000000000000000000000000001",
+        variables.getOutputVariable({ index: 0, offset: 0 }),
       );
 
       expect(FCT.typedData.message["transaction_3"].recipient).to.eq("0x4f631612941F710db646B8290dB097bFB8657dC2");
@@ -702,7 +734,8 @@ describe("BatchMultiSigCall", () => {
         "0xFE00000000000000000000000000000000000000000000000000000000000001",
       );
 
-      expect(FCT.computed[0].values[0]).to.eq("0xFD00000000000000000000000000000000000000000000000000000000000001");
+      // expect(FCT.computed[0].values[0]).to.eq("0xFD00000000000000000000000000000000000000000000000000000000000001");
+      expect(FCT.computed[0].values[0]).to.eq(variables.getOutputVariable({ index: 0, offset: 0 }));
       expect(FCT.computed[0].operators[0]).to.eq(ethers.utils.id("-"));
     });
     //

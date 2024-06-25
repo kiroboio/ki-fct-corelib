@@ -36,27 +36,27 @@ export const getFctMaxGasPrice = (): Variable => ({ type: "global", id: "fctMaxG
  */
 export function getOutputVariable({
   index,
-  innerIndex,
+  offset,
   type = "uint256",
 }: {
   index: number;
-  innerIndex: number;
+  offset: number;
   type?: string;
 }) {
   const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
   let base: string;
-  let innerIndexHex: string;
-  innerIndex = innerIndex ?? 0;
+  let offsetHex: string;
 
-  if (innerIndex < 0) {
-    innerIndexHex = ((innerIndex + 1) * -1).toString(16).padStart(4, "0");
+  if (offset < 0) {
+    offset = offset + 32 > 0 ? 0 : offset + 32;
+    offsetHex = (offset * -1).toString(16).padStart(5, "0");
     base = type === "address" ? BackOutputVariableBaseAddress : BackOutputVariableBaseBytes32;
   } else {
-    innerIndexHex = innerIndex.toString(16).padStart(4, "0");
+    offsetHex = (offset + 32).toString(16).padStart(4, "0");
     base = type === "address" ? OutputVariableBaseAddress : OutputVariableBaseBytes32;
   }
 
-  return (innerIndexHex + outputIndexHex).padStart(base.length, base);
+  return (offsetHex + outputIndexHex).padStart(base.length, base);
 }
 
 /**

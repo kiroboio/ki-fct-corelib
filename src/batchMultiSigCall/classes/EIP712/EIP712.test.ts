@@ -1,5 +1,6 @@
 import { expect } from "chai";
 
+import { variables } from "../../..";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { EIP712 } from ".";
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -158,7 +159,8 @@ describe("BatchMultiSigCall EIP712", () => {
     });
     expect(computed_1).to.deep.equal({
       index: "1",
-      value_1: "0xFD00000000000000000000000000000000000000000000000000000000000001",
+      // value_1: "0xFD00000000000000000000000000000000000000000000000000000000200001",
+      value_1: variables.getOutputVariable({ index: 0, offset: 0 }),
       op_1: "+",
       value_2: "2",
       op_2: "*",

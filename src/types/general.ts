@@ -3,7 +3,7 @@ import { GlobalVariable } from "../variables";
 import { ConstantVariable } from "../variables/constantVariables";
 
 export type Variable =
-  | { type: "output"; id: { nodeId: string; innerIndex: number } }
+  | { type: "output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
   | { type: "global"; id: GlobalVariable }
   | { type: "computed"; id: string }
