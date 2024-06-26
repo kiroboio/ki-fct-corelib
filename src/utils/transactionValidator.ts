@@ -5,6 +5,9 @@ import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
+const ErrorFunctionSignature = "0x08c379a0"; // keccak256("Error(string)")
+const ErrorInterface = new ethers.utils.Interface(["error Error(string message)"]);
+
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, activator, rpcUrl, activateForFree } = txVal;
   let { gasPrice } = txVal;
@@ -138,6 +141,16 @@ function handleTxValidatorError({
     };
   }
 
+  let error = err.reason;
+
+  // If error.data starts with the Error(string) sig, decode it
+  if (!error && err.data.startsWith(ErrorFunctionSignature)) {
+    const decoded = ErrorInterface.decodeFunctionResult("Error", err.data);
+    error = decoded.message;
+  } else if (!error) {
+    error = err.message;
+  }
+
   return {
     isValid: false,
     txData: { gas: 0, ...gasPrice, type: 2 },
@@ -145,6 +158,6 @@ function handleTxValidatorError({
       gas: 0,
       gasPrice: (gasPrice as EIP1559GasPrice).maxFeePerGas,
     },
-    error: err.reason ? err.reason : err.message,
+    error,
   };
 }
