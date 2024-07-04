@@ -1,16 +1,31 @@
 import { ethers } from "ethers";
+import { Result } from "ethers/lib/utils";
 
-import { parseSessionId } from "../batchMultiSigCall/versions/getVersion";
+import FCT_BatchMultiSigABI020201 from "../abi/020201/FCT_BatchMultiSigCall.abi.json";
+import FCT_BatchMultiSigABI from "../abi/FCT_BatchMultiSigCall.abi.json";
+import { getVersionFromVersion } from "../batchMultiSigCall/versions/getVersion";
 import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
+const FCT020201 = new ethers.utils.Interface(FCT_BatchMultiSigABI020201);
+const FCT = new ethers.utils.Interface(FCT_BatchMultiSigABI);
+
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
-  const { callData, actuatorContractAddress, activator, rpcUrl, activateForFree } = txVal;
+  const { callData, actuatorContractAddress, activator, rpcUrl, activateForFree, version } = txVal;
   let { gasPrice } = txVal;
 
-  const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
-  const parsedSessionId = parseSessionId(decodedFCTCalldata[1].sessionId.toHexString());
+  let decodedFCTCalldata: Result;
+  if (version === "020201" || !version) {
+    decodedFCTCalldata = FCT020201.decodeFunctionData("batchMultiSigCall", callData);
+  } else {
+    decodedFCTCalldata = FCT.decodeFunctionData("batchMultiSigCall", callData);
+  }
+
+  // const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
+  const Version = getVersionFromVersion(`0x${version}`);
+  // const parsedSessionId = parseSessionId(decodedFCTCalldata[1].sessionId.toHexString());
+  const parsedSessionId = Version.SessionId.parse(decodedFCTCalldata[1].sessionId.toHexString());
   const { maxGasPrice, dryRun } = parsedSessionId;
   gasPrice = manageGasPrice({ gasPrice, maxGasPrice, dryRun });
 
@@ -85,6 +100,14 @@ async function estimateGas({
     callData,
     activator,
   ]);
+
+  console.log("uiasudgpuasgdpu", {
+    to: actuatorContractAddress,
+    data,
+    ...gasPrice,
+    from: activator,
+  });
+
   return await provider.estimateGas({
     to: actuatorContractAddress,
     data,

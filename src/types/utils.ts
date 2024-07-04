@@ -6,6 +6,7 @@ export interface ITxValidator {
   activateForFree: boolean;
   gasPrice: EIP1559GasPrice;
   errorIsValid?: boolean;
+  version?: string;
 }
 
 export interface EIP1559GasPrice {
