@@ -342,6 +342,10 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
     },
   };
 
+  if ((fct as any).payableGasLimit) {
+    options.payableGasLimit = (fct as any).payableGasLimit;
+  }
+
   this._setOptionsWithoutValidation(options);
   const { types: typesObject } = typedData;
 

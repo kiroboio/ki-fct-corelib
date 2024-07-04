@@ -12,6 +12,7 @@ export const mustBeInteger = [
   "recurrency.maxRepeats",
   "recurrency.chillTime",
   "multisig.minimumApprovals",
+  "payableGasLimit",
 ];
 export const mustBeAddress = ["builder.address"];
 export const mustBeBoolean = ["purgeable", "blockable", "authEnabled", "dryRun", "recurrency.accumetable"];

@@ -50,8 +50,8 @@ const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
     name: "FCT Controller",
     version: "1",
     chainId: 11155111,
-    verifyingContract: "0x1Bc4e8448E6B6703c7458C4Ee8361eB6c3015fD4",
-    salt: "0x01006e6774a58cfed2c900001bc4e8448e6b6703c7458c4ee8361eb6c3015fd4",
+    verifyingContract: "0xEa34C0bF3057D3d2bC97902091c71a8D4c9747DC",
+    salt: "0x01008fae4fc2403818850000ea34c0bf3057d3d2bc97902091c71a8d4c9747dc",
   },
   // Goerli (DEPRECATED)
   "5": {

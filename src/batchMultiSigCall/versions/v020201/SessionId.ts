@@ -79,8 +79,8 @@ export class SessionId_020201 extends SessionIdBase {
     const chillTime = parseInt(sessionId.slice(20, 28), 16).toString();
     const expiresAt = parseInt(sessionId.slice(28, 38), 16).toString();
     const validFrom = parseInt(sessionId.slice(38, 48), 16).toString();
-    const maxGasPrice = parseInt(sessionId.slice(48, 58), 16).toString();
-    const payableGasLimit = parseInt(sessionId.slice(58, 64), 16).toString();
+    const maxGasPrice = parseInt(sessionId.slice(54, 64), 16).toString();
+    // const payableGasLimit = parseInt(sessionId.slice(54, 64), 16).toString();
     const flagsNumber = parseInt(sessionId.slice(64, 66), 16);
 
     const flags = {
@@ -96,7 +96,6 @@ export class SessionId_020201 extends SessionIdBase {
       validFrom,
       expiresAt,
       maxGasPrice,
-      payableGasLimit,
       dryRun: flags.dryRun,
       blockable: flags.blockable,
       purgeable: flags.purgeable,
