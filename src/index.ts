@@ -12,3 +12,6 @@ export * from "./methods";
 
 // Type exports
 export * from "./types";
+
+// Get version
+export { getVersionClass, getVersionFromVersion } from "./batchMultiSigCall/versions/getVersion";
