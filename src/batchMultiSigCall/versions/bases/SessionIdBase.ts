@@ -1,4 +1,4 @@
-import { BatchMultiSigCall } from "..";
+import { BatchMultiSigCall } from "../..";
 
 export abstract class SessionIdBase {
   public FCT?: BatchMultiSigCall;

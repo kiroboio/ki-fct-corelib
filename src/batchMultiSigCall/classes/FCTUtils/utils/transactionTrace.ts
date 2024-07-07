@@ -1,10 +1,16 @@
 import { Interfaces } from "../../../../helpers/Interfaces";
+import { getVersionFromVersion } from "../../../versions/getVersion";
 import { Call } from "../../Call";
 import { IComputed } from "../../Variables/types";
 import { ITxTrace } from "../types";
 
-const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+// const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
 const controllerInterface = Interfaces.FCT_Controller;
+
+const getBatchMultiSigCallInterface = () => {
+  const Version = getVersionFromVersion(`0x020201`);
+  return Version.Utils.getBatchMultiSigCallABI();
+};
 
 export function getCallsFromTrace(trace: any) {
   return trace.filter((call) => {
@@ -87,9 +93,6 @@ export const verifyMessageHashRaw = (logs: any[], messageHashFromFCT: string) =>
     }
   })?.topics[2];
 
-  console.log("messageHash", messageHash);
-  console.log("messageHashFromFCT", messageHashFromFCT);
-
   if (messageHash.toLowerCase() !== messageHashFromFCT.toLowerCase()) {
     throw new Error("Message hash mismatch");
   }
@@ -98,7 +101,7 @@ export const verifyMessageHashRaw = (logs: any[], messageHashFromFCT: string) =>
 };
 
 export const txTraceMapLog = (log: any) => {
-  const parsedLog = batchMultiSigInterface.parseLog(log);
+  const parsedLog = getBatchMultiSigCallInterface().parseLog(log);
   return {
     id: parsedLog.args.id,
     caller: parsedLog.args.caller,
@@ -119,8 +122,8 @@ export const executedCallsFromRawLogs = (rawLogs: any[], messageHash: string) =>
     .filter((log) => {
       try {
         return (
-          batchMultiSigInterface.parseLog(log).name === "FCTE_CallSucceed" ||
-          batchMultiSigInterface.parseLog(log).name === "FCTE_CallFailed"
+          getBatchMultiSigCallInterface().parseLog(log).name === "FCTE_CallSucceed" ||
+          getBatchMultiSigCallInterface().parseLog(log).name === "FCTE_CallFailed"
         );
       } catch (e) {
         return false;

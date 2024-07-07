@@ -4,12 +4,11 @@ import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
 import { InstanceOf } from "../../../helpers";
-import { deepMerge } from "../../../helpers/deepMerge";
-import { Interfaces } from "../../../helpers/Interfaces";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { TypedDataTypes } from "../../types";
-import { getAuthenticatorSignature, getCalldataForActuator } from "../../utils";
+import { getAuthenticatorSignature } from "../../utils";
 import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
+import { getVersionClass } from "../../versions/getVersion";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
 import { secureStorageAddresses } from "./constants";
@@ -57,12 +56,14 @@ export class FCTUtils extends FCTBase {
     externalSigners?: string[];
     variables?: string[];
   }) {
-    return getCalldataForActuator({
-      signedFCT: deepMerge(this.FCTData, { signatures, externalSigners, variables }),
+    const Version = getVersionClass(this.FCT);
+    return Version.Utils.getCalldataForActuator({
+      signatures,
       purgedFCT,
       investor,
       activator,
-      version: this.FCT.version.slice(2),
+      externalSigners,
+      variables,
     });
   }
 
@@ -348,7 +349,8 @@ export class FCTUtils extends FCTBase {
       provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     }
     const txReceipt = await provider.getTransactionReceipt(txHash);
-    const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
+    const Version = getVersionClass(this.FCT);
+    const batchMultiSigInterface = Version.Utils.getBatchMultiSigCallABI();
 
     verifyMessageHash(txReceipt.logs, this.getMessageHash());
 

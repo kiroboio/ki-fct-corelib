@@ -1,4 +1,4 @@
-import { SessionIdBase } from "../SessionIdBase";
+import { SessionIdBase } from "../bases/SessionIdBase";
 
 const sessionIdFlag = {
   accumetable: 0x1,
