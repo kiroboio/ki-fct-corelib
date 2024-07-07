@@ -3,7 +3,7 @@ import { ChainId } from "@kiroboio/fct-plugins";
 import { deepMerge } from "../helpers/deepMerge";
 import { DeepPartial, FCTCall, IFCT, StrictMSCallInput } from "../types";
 import { FCT_Cache } from "./cache";
-import { EIP712, FCTUtils, Options, Validation, Variables } from "./classes";
+import { FCTUtils, Options, Validation, Variables } from "./classes";
 import { IValidation } from "./classes/Validation/types";
 import { IComputed, IComputedData } from "./classes/Variables/types";
 import { DEFAULT_CALL_OPTIONS } from "./constants";
@@ -40,7 +40,7 @@ import * as utils from "./utils";
 export class BatchMultiSigCall {
   public version = "0x020201";
   public chainId: ChainId;
-  public domain: TypedDataDomain;
+  public domain: TypedDataDomain | null = null;
   public randomId = [...Array(6)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
 
   // Utils
@@ -72,11 +72,12 @@ export class BatchMultiSigCall {
     }
     if (input.domain) {
       this.domain = input.domain;
-    } else {
-      const domain = EIP712.getTypedDataDomain(this.chainId);
-      if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
-      this.domain = domain;
     }
+    // else {
+    //   const domain = EIP712.getTypedDataDomain(this.chainId);
+    //   if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
+    //   this.domain = domain;
+    // }
 
     if (input.version) this.version = input.version;
     if (input.options) this.setOptions(input.options);
@@ -131,9 +132,9 @@ export class BatchMultiSigCall {
 
   public changeChainId = (chainId: ChainId) => {
     this.chainId = chainId;
-    const domain = EIP712.getTypedDataDomain(this.chainId);
-    if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
-    this.domain = domain;
+    // const domain = EIP712.getTypedDataDomain(this.chainId);
+    // if (!domain) throw new Error(`ChainId ${this.chainId} is not supported. Please provide a custom EIP712 domain.`);
+    // this.domain = domain;
   };
 
   // Variables

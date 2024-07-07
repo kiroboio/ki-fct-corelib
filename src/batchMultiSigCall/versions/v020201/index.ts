@@ -7,8 +7,10 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { Call as CallClass, EIP712 } from "../../classes";
 import { Version_old } from "../oldVersion";
 import { CallId_020201 } from "./CallId";
+import { EIP712_020201 } from "./EIP712";
 import { getVariableArgsForEIP712 } from "./helpers/variableArgs";
 import { SessionId_020201 } from "./SessionId";
+import { Utils_020201 } from "./Utils";
 // NEW VERSION - 0x020201
 
 export interface V020201_ExportOptions {
@@ -60,6 +62,8 @@ export class Version_020201 extends Version_old {
     super(FCT);
     this.SessionId = new SessionId_020201(FCT);
     this.CallId = new CallId_020201(FCT);
+    this.EIP712 = new EIP712_020201();
+    this.Utils = new Utils_020201(FCT);
   }
 
   getLimitsMessage(FCT: BatchMultiSigCall): Record<string, any> {

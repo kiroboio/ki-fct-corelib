@@ -1,30 +1,20 @@
 import { ethers } from "ethers";
-import { Result } from "ethers/lib/utils";
 
-import FCT_BatchMultiSigABI020201 from "../abi/020201/FCT_BatchMultiSigCall.abi.json";
-import FCT_BatchMultiSigABI from "../abi/FCT_BatchMultiSigCall.abi.json";
 import { getVersionFromVersion } from "../batchMultiSigCall/versions/getVersion";
 import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidator } from "../types";
 import { TransactionValidatorResult } from "./types";
 
-const FCT020201 = new ethers.utils.Interface(FCT_BatchMultiSigABI020201);
-const FCT = new ethers.utils.Interface(FCT_BatchMultiSigABI);
+const ErrorFunctionSignature = "0x08c379a0"; // keccak256("Error(string)")
+// const ErrorInterface = new ethers.utils.Interface(["error Error(string message)"]);
 
 export const transactionValidator = async (txVal: ITxValidator): Promise<TransactionValidatorResult> => {
   const { callData, actuatorContractAddress, activator, rpcUrl, activateForFree, version } = txVal;
   let { gasPrice } = txVal;
 
-  let decodedFCTCalldata: Result;
-  if (version === "020201" || !version) {
-    decodedFCTCalldata = FCT020201.decodeFunctionData("batchMultiSigCall", callData);
-  } else {
-    decodedFCTCalldata = FCT.decodeFunctionData("batchMultiSigCall", callData);
-  }
-
-  // const decodedFCTCalldata = Interfaces.FCT_BatchMultiSigCall.decodeFunctionData("batchMultiSigCall", callData);
   const Version = getVersionFromVersion(`0x${version}`);
-  // const parsedSessionId = parseSessionId(decodedFCTCalldata[1].sessionId.toHexString());
+  const decodedFCTCalldata = Version.Utils.getBatchMultiSigCallABI().decodeFunctionData("batchMultiSigCall", callData);
+
   const parsedSessionId = Version.SessionId.parse(decodedFCTCalldata[1].sessionId.toHexString());
   const { maxGasPrice, dryRun } = parsedSessionId;
   gasPrice = manageGasPrice({ gasPrice, maxGasPrice, dryRun });
@@ -159,6 +149,20 @@ function handleTxValidatorError({
       },
       error: null,
     };
+  }
+
+  let error = err.reason;
+
+  // If error.data starts with the Error(string) sig, decode it
+  if (!error && err.data.startsWith(ErrorFunctionSignature)) {
+    // Need to decode the error message from the data
+    // 1. Remove the Error(string) signature
+    // 2. Decode the message
+    const message = err.data.slice(10);
+    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], message);
+    error = decoded;
+  } else if (!error) {
+    error = err.message;
   }
 
   return {

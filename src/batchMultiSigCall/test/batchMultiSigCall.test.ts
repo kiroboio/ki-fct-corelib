@@ -1,4 +1,4 @@
-import { AaveV2, ChainId, ERC20, Magic, SecureStorage } from "@kiroboio/fct-plugins";
+import { AaveV2, ERC20, Magic, SecureStorage } from "@kiroboio/fct-plugins";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { beforeEach, describe } from "mocha";
@@ -55,13 +55,6 @@ describe("BatchMultiSigCall", () => {
     it("Should expect chainId to be changed", () => {
       batchMultiSigCall.changeChainId("1");
       expect(batchMultiSigCall.chainId).to.be.eq("1");
-      expect(batchMultiSigCall.domain.chainId).to.be.eq(1);
-    });
-
-    it("Should expect error if chainId is not supported", () => {
-      expect(() => batchMultiSigCall.changeChainId("100" as ChainId)).to.throw(
-        "ChainId 100 is not supported. Please provide a custom EIP712 domain.",
-      );
     });
 
     it("Should set call defaults", () => {

@@ -2,7 +2,7 @@ import { CALL_TYPE, Flow } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { Call, Validation } from "../../classes";
 import { NO_JUMP } from "../../constants";
-import { CallIdBase } from "../CallIdBase";
+import { CallIdBase } from "../bases/CallIdBase";
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
   return Number(value).toString(16).padStart(padStart, "0");

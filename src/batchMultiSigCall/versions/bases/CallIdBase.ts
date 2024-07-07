@@ -1,5 +1,5 @@
-import { BatchMultiSigCall } from "..";
-import { Call, Validation } from "../classes";
+import { BatchMultiSigCall } from "../..";
+import { Call, Validation } from "../../classes";
 
 export abstract class CallIdBase {
   public FCT?: BatchMultiSigCall;

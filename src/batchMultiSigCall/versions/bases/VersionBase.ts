@@ -1,13 +1,15 @@
 import { MessageTypeProperty, TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify, id } from "ethers/lib/utils";
 
-import { BatchMultiSigCallTypedData } from "../..";
-import { BatchMultiSigCall } from "../../batchMultiSigCall";
-import { CALL_TYPE_MSG, EMPTY_HASH } from "../../constants";
-import { flows } from "../../constants/flows";
-import { Call as CallClass, EIP712 } from "../classes";
+import { BatchMultiSigCallTypedData } from "../../..";
+import { CALL_TYPE_MSG, EMPTY_HASH } from "../../../constants";
+import { flows } from "../../../constants/flows";
+import { BatchMultiSigCall } from "../..";
+import { Call as CallClass, EIP712 } from "../../classes";
 import { CallIdBase } from "./CallIdBase";
+import { EIP712Base } from "./EIP712Base";
 import { SessionIdBase } from "./SessionIdBase";
+import { UtilsBase } from "./UtilsBase";
 
 export const EIP712Domain: MessageTypeProperty[] = [
   { name: "name", type: "string" },
@@ -114,6 +116,8 @@ export abstract class VersionBase {
   abstract batchMultiSigSelector: string;
   abstract SessionId: SessionIdBase;
   abstract CallId: CallIdBase;
+  abstract EIP712: EIP712Base;
+  abstract Utils: UtilsBase;
 
   getMetaMessage(FCT: BatchMultiSigCall): Record<string, any> {
     const FCTOptions = FCT.options;

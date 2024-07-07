@@ -2,6 +2,7 @@ import { expect } from "chai";
 
 import { variables } from "../../..";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
+import { getVersionFromVersion } from "../../versions/getVersion";
 import { EIP712 } from ".";
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
@@ -63,7 +64,10 @@ describe("BatchMultiSigCall EIP712", () => {
 
   it("should generate the correct EIP712 domain", () => {
     const domain = eip712.getTypedDataDomain();
-    expect(domain).to.deep.equal(EIP712.getTypedDataDomain("1"));
+
+    const Version = getVersionFromVersion(FCT.version);
+
+    expect(domain).to.deep.equal(Version.EIP712.getDomainData(FCT.chainId));
   });
 
   it("should generate the correct EIP712 primary type", () => {
