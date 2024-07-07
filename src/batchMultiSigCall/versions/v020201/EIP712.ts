@@ -31,8 +31,8 @@ const TYPED_DATA_DOMAIN: Record<string, TypedDataDomain> = {
     name: "FCT Controller",
     version: "1",
     chainId: 8453,
-    verifyingContract: "0xE8572102FA6AE172df00634d5262E56ee283C134",
-    salt: "0x010031f459a6ee43c8ab0000e8572102fa6ae172df00634d5262e56ee283c134",
+    verifyingContract: "0x2C6E704Af6C9afA0CCb39999e5556E6769106B80",
+    salt: "0x01004d0588d433e6b9e400002c6e704af6c9afa0ccb39999e5556e6769106b80",
   },
   //
   // Testnets
