@@ -3,6 +3,8 @@ import {
   ComputedBaseBytes32,
   ExternalVariableBaseAddress,
   ExternalVariableBaseBytes32,
+  OutputVariableBaseAddress,
+  OutputVariableBaseBytes32,
 } from "../constants";
 import { InstanceOf } from "../helpers";
 import { ParamValue } from "../types";
@@ -74,7 +76,7 @@ export function isOutputVariable({
   if (typeof value === "string" && (value.length === 42 || value.length === 66)) {
     const hexString = value.toLowerCase();
     const base =
-      value.length === 42 ? ExternalVariableBaseAddress.toLowerCase() : ExternalVariableBaseBytes32.toLowerCase();
+      value.length === 42 ? OutputVariableBaseAddress.toLowerCase() : OutputVariableBaseBytes32.toLowerCase();
 
     if (hexString.slice(0, -8) === base.slice(0, -8)) {
       if (!strict) return true;
