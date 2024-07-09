@@ -11,7 +11,7 @@ import { getAllRequiredApprovals } from "../../utils/getAllRequiredApprovals";
 import { getVersionClass } from "../../versions/getVersion";
 import { EIP712 } from "../EIP712";
 import { FCTBase } from "../FCTBase";
-import { secureStorageAddresses } from "./constants";
+import { SecureStorageAddressesSet } from "./constants";
 import { ISimpleTxTrace } from "./types";
 import { getEffectiveGasPrice, getPayerMap, preparePaymentPerPayerResult } from "./utils/getPaymentPerPayer";
 import { getPathsFromGraph, manageFCTNodesInGraph } from "./utils/paths";
@@ -120,9 +120,11 @@ export class FCTUtils extends FCTBase {
     return this.FCT.calls.reduce((acc: string[], call) => {
       const from = call.get().from;
       if (typeof from !== "string") return acc;
-      const doNotReturn = secureStorageAddresses.find(
-        (address) => address.address.toLowerCase() === from.toLowerCase() && address.chainId === this.FCT.chainId,
-      );
+      // const doNotReturn = secureStorageAddresses.find(
+      //   (address) => address.address.toLowerCase() === from.toLowerCase() && address.chainId === this.FCT.chainId,
+      // );
+
+      const doNotReturn = SecureStorageAddressesSet.has(from.toLowerCase());
 
       if (!acc.includes(from) && !doNotReturn) {
         acc.push(from);
