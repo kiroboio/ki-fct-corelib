@@ -132,7 +132,7 @@ export function exportMap(this: BatchMultiSigCall) {
  */
 export function exportFCT<V extends VersionType = `0x${string}`>(
   this: BatchMultiSigCall,
-  exportOptions?: GenericExportOptions<V>,
+  exportOptions?: Partial<GenericExportOptions<V>>,
 ): IFCT {
   const Version = getVersionClass(this);
   return Version.exportFCT(exportOptions);

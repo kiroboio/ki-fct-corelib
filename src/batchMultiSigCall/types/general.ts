@@ -153,6 +153,7 @@ export interface IFCTOptions {
   dryRun: boolean;
   verifier: string;
   domain: string;
+  forceDryRun: boolean;
   app: {
     name: string;
     version: string;

@@ -16,6 +16,7 @@ const initOptions: IFCTOptions = {
   blockable: true,
   authEnabled: true,
   dryRun: false,
+  forceDryRun: false,
   verifier: "",
   domain: "",
   builder: {

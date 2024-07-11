@@ -7,6 +7,7 @@ const sessionIdFlag = {
   eip712: 0x8,
   authEnabled: 0x10,
   dryRun: 0x20,
+  forceDryRun: 0x40,
 } as const;
 
 const valueWithPadStart = (value: string | number, padStart: number) => {
@@ -55,6 +56,7 @@ export class SessionId_020201 extends SessionIdBase {
     if (options.blockable) flagValue += sessionIdFlag.blockable;
     if (options.authEnabled) flagValue += sessionIdFlag.authEnabled;
     if (options.dryRun) flagValue += sessionIdFlag.dryRun;
+    if (options.forceDryRun) flagValue += sessionIdFlag.forceDryRun;
 
     const flags = flagValue.toString(16).padStart(2, "0");
 
@@ -89,6 +91,7 @@ export class SessionId_020201 extends SessionIdBase {
       blockable: (flagsNumber & sessionIdFlag.blockable) !== 0,
       authEnabled: (flagsNumber & sessionIdFlag.authEnabled) !== 0,
       dryRun: (flagsNumber & sessionIdFlag.dryRun) !== 0,
+      forceDryRun: (flagsNumber & sessionIdFlag.forceDryRun) !== 0,
     };
 
     return {
@@ -99,6 +102,7 @@ export class SessionId_020201 extends SessionIdBase {
       blockable: flags.blockable,
       purgeable: flags.purgeable,
       authEnabled: flags.authEnabled,
+      forceDryRun: flags.forceDryRun,
       recurrency: {
         accumetable: flags.accumetable,
         chillTime,

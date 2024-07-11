@@ -15,6 +15,7 @@ import { Utils_020201 } from "./Utils";
 
 export interface V020201_ExportOptions {
   strictGasLimits: boolean;
+  forceDryRun: boolean;
 }
 
 const Limits: MessageTypeProperty[] = [
@@ -79,9 +80,11 @@ export class Version_020201 extends Version_old {
     };
   }
 
-  exportFCT(exportOptions?: V020201_ExportOptions) {
+  exportFCT(exportOptions?: Partial<V020201_ExportOptions>) {
     const FCT = this.FCT;
     const strictGasLimits = Boolean(exportOptions?.strictGasLimits);
+    const forceDryRun = Boolean(exportOptions?.forceDryRun);
+
     if (!FCT) {
       throw new Error("FCT is not defined, this should not happen");
     }
@@ -90,11 +93,16 @@ export class Version_020201 extends Version_old {
     }
     const options = FCT.options;
     const initialGasLimits: Record<number, string> = {};
+
     if (!strictGasLimits) {
       FCT.calls.forEach((call, i) => {
         initialGasLimits[i] = call.options.gasLimit;
         call.setOptions({ gasLimit: "0" });
       });
+    }
+
+    if (forceDryRun) {
+      FCT.setOptions({ forceDryRun: true });
     }
 
     const typedData = new EIP712(FCT).getTypedData();
@@ -122,6 +130,10 @@ export class Version_020201 extends Version_old {
       FCT.calls.forEach((call, i) => {
         call.setOptions({ gasLimit: initialGasLimits[i] });
       });
+    }
+
+    if (forceDryRun) {
+      FCT.setOptions({ forceDryRun: false });
     }
 
     return FCTData;
