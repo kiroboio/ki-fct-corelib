@@ -81,9 +81,9 @@ export const transactionValidatorV2 = async (txVal: ITxValidatorV2): Promise<Tra
     txVal;
   let { gasPrice } = txVal;
 
-  const { maxGasPrice, dryRun } = FCT.options;
+  const { dryRun } = FCT.options;
   const version = FCT.version;
-  gasPrice = manageGasPrice({ gasPrice, maxGasPrice, dryRun });
+  gasPrice = manageGasPrice({ gasPrice, dryRun });
 
   const exportedFct = prepareFCT({
     FCT,
@@ -139,21 +139,13 @@ export const transactionValidatorV2 = async (txVal: ITxValidatorV2): Promise<Tra
   }
 };
 
-function manageGasPrice({
-  dryRun,
-  gasPrice,
-  maxGasPrice,
-}: {
-  gasPrice: EIP1559GasPrice;
-  maxGasPrice: string;
-  dryRun: boolean;
-}) {
+function manageGasPrice({ dryRun, gasPrice }: { gasPrice: EIP1559GasPrice; dryRun: boolean }) {
   if (dryRun) {
     return { maxFeePerGas: "0", maxPriorityFeePerGas: "0" };
   }
-  if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
-    return { maxFeePerGas: maxGasPrice.toString(), maxPriorityFeePerGas: "0" };
-  }
+  // if (BigInt(maxGasPrice) < BigInt(gasPrice.maxFeePerGas)) {
+  //   return { maxFeePerGas: maxGasPrice.toString(), maxPriorityFeePerGas: "0" };
+  // }
   return gasPrice;
 }
 
