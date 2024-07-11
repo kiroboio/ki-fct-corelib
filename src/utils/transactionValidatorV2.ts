@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Interfaces } from "../helpers/Interfaces";
 import { EIP1559GasPrice, ITxValidatorV2 } from "../types";
-import { TransactionValidatorResultV2 } from "./types";
+import { TransactionValidatorResultV2, TxValidatorExecutionData } from "./types";
 
 const ErrorFunctionSignature = "0x08c379a0"; // keccak256("Error(string)")
 const BatchMultiSigErrorSignature = "0xb2685b70";
@@ -355,8 +355,8 @@ function handleTxValidatorError_oldVersion({
       },
       error: null,
       executionData: {
-        callsReturn: [] as Record<string, string>[],
-        callsData: [] as Record<string, string>[],
+        callsReturn: [] as TxValidatorExecutionData["callsReturn"],
+        callsData: [] as TxValidatorExecutionData["callsData"],
       },
     };
   }
@@ -371,8 +371,8 @@ function handleTxValidatorError_oldVersion({
       },
       error: err.error.message || err.error,
       executionData: {
-        callsReturn: [] as Record<string, string>[],
-        callsData: [] as Record<string, string>[],
+        callsReturn: [] as TxValidatorExecutionData["callsReturn"],
+        callsData: [] as TxValidatorExecutionData["callsData"],
       },
     };
   }
@@ -387,8 +387,8 @@ function handleTxValidatorError_oldVersion({
       },
       error: null,
       executionData: {
-        callsReturn: [] as Record<string, string>[],
-        callsData: [] as Record<string, string>[],
+        callsReturn: [] as TxValidatorExecutionData["callsReturn"],
+        callsData: [] as TxValidatorExecutionData["callsData"],
       },
     };
   }
@@ -417,8 +417,8 @@ function handleTxValidatorError_oldVersion({
     },
     error: err.reason ? err.reason : err.message,
     executionData: {
-      callsReturn: [] as Record<string, string>[],
-      callsData: [] as Record<string, string>[],
+      callsReturn: [] as TxValidatorExecutionData["callsReturn"],
+      callsData: [] as TxValidatorExecutionData["callsData"],
     },
   };
 }
