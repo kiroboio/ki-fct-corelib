@@ -3,6 +3,7 @@ import { recoverTypedSignature, SignTypedDataVersion, TypedDataUtils, TypedMessa
 import { ethers, utils } from "ethers";
 import { Graph } from "graphlib";
 
+import { addresses } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { TypedDataTypes } from "../../types";
@@ -425,7 +426,10 @@ export class FCTUtils extends FCTBase {
 
         const executedCalls = executedCallsFromLogs(data.logs, this.getMessageHash());
 
+        const FCT_BatchMultiSigAddress = addresses[+this.FCT.chainId].FCT_BatchMultiSig;
+
         const traceData = getTraceData({
+          FCT_BatchMultiSigAddress,
           calls: this.FCT.calls,
           callsFromTenderlyTrace: getCallsFromTrace(data.trace),
           executedCalls,

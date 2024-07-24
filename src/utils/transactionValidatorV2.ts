@@ -133,8 +133,6 @@ export const transactionValidatorV2 = async (txVal: ITxValidatorV2): Promise<Tra
       version,
       FCT,
       txVal,
-      // signatures,
-      // calldataValues,
     });
   }
 };

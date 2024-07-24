@@ -1,11 +1,15 @@
+import { ethers } from "ethers";
+
+import SmartWalletMinABI from "../../../../abi/SmartWallet.min.abi.json";
 import { Interfaces } from "../../../../helpers/Interfaces";
 import { getVersionFromVersion } from "../../../versions/getVersion";
 import { Call } from "../../Call";
 import { IComputed } from "../../Variables/types";
 import { ITxTrace } from "../types";
-
 // const batchMultiSigInterface = Interfaces.FCT_BatchMultiSigCall;
 const controllerInterface = Interfaces.FCT_Controller;
+
+const SmartWalletMinInterface = new ethers.utils.Interface(SmartWalletMinABI);
 
 const getBatchMultiSigCallInterface = () => {
   const Version = getVersionFromVersion(`0x020201`);
@@ -14,24 +18,32 @@ const getBatchMultiSigCallInterface = () => {
 
 export function getCallsFromTrace(trace: any) {
   return trace.filter((call) => {
-    return (
+    const regularCall =
       call.traceAddress.length === 7 &&
       call.traceAddress[0] === 0 &&
       call.traceAddress[1] === 0 &&
       call.traceAddress[3] === 0 &&
       call.traceAddress[4] === 0 &&
       call.traceAddress[5] === 2 &&
-      call.traceAddress[6] === 2
-    );
+      call.traceAddress[6] === 2;
+
+    const secureStorageCall =
+      call.traceAddress.length === 3 &&
+      call.traceAddress[0] === 0 &&
+      call.traceAddress[1] === 0 &&
+      call.traceAddress[2] === 2;
+    return regularCall || secureStorageCall;
   });
 }
 
 export function getTraceData({
+  FCT_BatchMultiSigAddress,
   calls,
   callsFromTenderlyTrace,
   executedCalls,
   computedVariables,
 }: {
+  FCT_BatchMultiSigAddress: string;
   calls: Call[];
   callsFromTenderlyTrace: any[];
   executedCalls: {
@@ -42,6 +54,7 @@ export function getTraceData({
   }[];
   computedVariables: IComputed[];
 }) {
+  FCT_BatchMultiSigAddress = FCT_BatchMultiSigAddress.toLowerCase();
   return executedCalls.reduce(
     (acc, executedCall, index) => {
       const fctCall = calls[Number(executedCall.callIndex) - 1];
@@ -49,10 +62,34 @@ export function getTraceData({
       const input = callResult.input;
       const output = callResult.output;
 
-      const resData = fctCall.decodeData({
-        inputData: input,
-        outputData: output,
-      });
+      // If the from address is the FCT_BatchMultiSigAddress, then we
+      // need to do a different decoding
+      const callerIsBatchMultiSig = callResult.from.toLowerCase() === FCT_BatchMultiSigAddress;
+
+      let resData;
+      if (callerIsBatchMultiSig) {
+        // Different way decoding, because this is
+
+        // 1. Need to decode the input, because the input is fctCall function
+        const decodedInput = SmartWalletMinInterface.parseTransaction({ data: input });
+        console.log(decodedInput);
+
+        // 2. We need to take the calldata from the arguments. It is stored in args.callData.data
+        const calldata = decodedInput.args.callData.data;
+        console.log(calldata);
+
+        // 3. Decode the calldata
+        const decodedCallData = fctCall.decodeData({
+          inputData: calldata,
+        });
+
+        resData = decodedCallData;
+      } else {
+        resData = fctCall.decodeData({
+          inputData: input,
+          outputData: output,
+        });
+      }
 
       acc.calls = [
         ...acc.calls,
