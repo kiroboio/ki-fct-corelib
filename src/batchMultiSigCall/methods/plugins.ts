@@ -26,6 +26,10 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
   if (pluginData instanceof Multicall) {
     PluginClass = pluginData as unknown as PluginInstance;
   } else {
+    if (!pluginData.plugin) {
+      throw new Error("Plugin not found");
+    }
+    // @ts-ignore
     PluginClass = new pluginData.plugin({
       chainId: chainId.toString() as ChainId,
     }) as unknown as PluginInstance;
