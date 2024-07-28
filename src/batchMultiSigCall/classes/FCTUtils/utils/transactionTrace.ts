@@ -72,11 +72,9 @@ export function getTraceData({
 
         // 1. Need to decode the input, because the input is fctCall function
         const decodedInput = SmartWalletMinInterface.parseTransaction({ data: input });
-        console.log(decodedInput);
 
         // 2. We need to take the calldata from the arguments. It is stored in args.callData.data
         const calldata = decodedInput.args.callData.data;
-        console.log(calldata);
 
         // 3. Decode the calldata
         const decodedCallData = fctCall.decodeData({
