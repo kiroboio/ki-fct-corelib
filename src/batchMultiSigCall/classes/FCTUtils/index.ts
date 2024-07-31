@@ -100,7 +100,7 @@ export class FCTUtils extends FCTBase {
     const currentDate = new Date().getTime() / 1000;
     const validFrom = parseInt(options.validFrom);
     const expiresAt = parseInt(options.expiresAt);
-    const gasPriceLimit = options.maxGasPrice;
+    // const gasPriceLimit = options.maxGasPrice;
 
     if (!softValidation && validFrom > currentDate) {
       return { valid: false, message: `FCT is not valid yet. FCT is valid from ${validFrom}` };
@@ -110,9 +110,9 @@ export class FCTUtils extends FCTBase {
       return { valid: false, message: `FCT has expired. FCT expired at ${expiresAt}` };
     }
 
-    if (gasPriceLimit === "0") {
-      return { valid: false, message: `FCT gas price limit cannot be 0` };
-    }
+    // if (gasPriceLimit === "0") {
+    //   return { valid: false, message: `FCT gas price limit cannot be 0` };
+    // }
 
     return { valid: true, message: null };
   }
