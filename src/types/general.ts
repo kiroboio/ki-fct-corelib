@@ -4,6 +4,7 @@ import { ConstantVariable } from "../variables/constantVariables";
 
 export type Variable =
   | { type: "output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
+  | { type: "multicall_output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
   | { type: "global"; id: GlobalVariable }
   | { type: "computed"; id: string }
@@ -41,7 +42,9 @@ export interface CallOptions {
   jumpOnFail?: string;
   /** If a call returns "false", it will be considered as failed */
   falseMeansFail?: boolean;
+  /** Call type - Action, View only, Library action, Library view only */
   callType?: CallType;
+  /** Id of the validation call */
   validation?: string;
   /** Index of the call of who is going to pay for the gas.
    * 0 - executor.

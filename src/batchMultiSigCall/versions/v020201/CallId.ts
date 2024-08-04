@@ -143,6 +143,8 @@ export class CallId_020201 extends CallIdBase {
   }
 
   public parseWithNumbers(callId: string): {
+    variableArgsEnd: string;
+    variableArgsStart: string;
     options: {
       gasLimit: string;
       flow: Flow;
@@ -155,8 +157,19 @@ export class CallId_020201 extends CallIdBase {
     payerIndex: number;
     callIndex: number;
   } {
-    const { validation, permissions, flowNumber, jumpOnFail, jumpOnSuccess, payerIndex, callIndex, gasLimit, flags } =
-      this.destructCallId(callId);
+    const {
+      variableArgsEnd,
+      variableArgsStart,
+      validation,
+      permissions,
+      flowNumber,
+      jumpOnFail,
+      jumpOnSuccess,
+      payerIndex,
+      callIndex,
+      gasLimit,
+      flags,
+    } = this.destructCallId(callId);
 
     const options = {
       gasLimit,
@@ -167,6 +180,8 @@ export class CallId_020201 extends CallIdBase {
     };
 
     return {
+      variableArgsEnd,
+      variableArgsStart,
       options,
       viewOnly: flags === 1,
       permissions,

@@ -22,6 +22,7 @@ describe("BatchMultiSigCall Options", () => {
       purgeable: true,
       authEnabled: true,
       dryRun: false,
+      forceDryRun: false,
       verifier: "",
       domain: "",
       app: {
