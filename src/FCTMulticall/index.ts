@@ -208,6 +208,10 @@ export class FCTMulticall {
 
     return NewFCT.export();
   }
+
+  static async compressFCTInMulticall({ FCT, sender }: { FCT: BatchMultiSigCall; sender: string }): Promise<IFCT> {
+    return await new FCTMulticall(FCT).compressFCTInMulticall({ sender });
+  }
 }
 
 const OutputVariableBaseAddressBN = BigInt(OutputVariableBaseAddress);
