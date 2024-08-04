@@ -1,5 +1,3 @@
-import { id } from "ethers/lib/utils";
-
 export enum Flow {
   OK_CONT_FAIL_REVERT = "OK_CONT_FAIL_REVERT",
   OK_CONT_FAIL_STOP = "OK_CONT_FAIL_STOP",
@@ -44,15 +42,4 @@ export const flows = {
     text: "stop on success, stop on fail",
     value: "7",
   },
-};
-
-export const flowsHashes = {
-  OK_CONT_FAIL_REVERT: id(flows.OK_CONT_FAIL_REVERT.text),
-  OK_CONT_FAIL_STOP: id(flows.OK_CONT_FAIL_STOP.text),
-  OK_CONT_FAIL_CONT: id(flows.OK_CONT_FAIL_CONT.text),
-  OK_REVERT_FAIL_CONT: id(flows.OK_REVERT_FAIL_CONT.text),
-  OK_REVERT_FAIL_STOP: id(flows.OK_REVERT_FAIL_STOP.text),
-  OK_STOP_FAIL_CONT: id(flows.OK_STOP_FAIL_CONT.text),
-  OK_STOP_FAIL_REVERT: id(flows.OK_STOP_FAIL_REVERT.text),
-  OK_STOP_FAIL_STOP: id(flows.OK_STOP_FAIL_STOP.text),
 };
