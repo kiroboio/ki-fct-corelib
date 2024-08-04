@@ -398,17 +398,17 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
         jumpOnSuccess:
           meta.jump_on_success === 0
             ? ""
-            : map?.calls[callIndex + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`,
+            : (map?.calls[callIndex + meta.jump_on_success] ?? `node${callIndex + 1 + meta.jump_on_success}`),
         jumpOnFail:
           meta.jump_on_fail === 0
             ? ""
-            : map?.calls[callIndex + meta.jump_on_fail] ?? `node${callIndex + 1 + meta.jump_on_fail}`,
+            : (map?.calls[callIndex + meta.jump_on_fail] ?? `node${callIndex + 1 + meta.jump_on_fail}`),
         flow: getFlow(),
         callType: CALL_TYPE_MSG_REV[meta.call_type as keyof typeof CALL_TYPE_MSG_REV],
         falseMeansFail: meta.returned_false_means_fail,
         permissions: meta.permissions.toString(),
         payerIndex: meta.payer_index,
-        validation: meta.validation === 0 ? "" : map?.validations[meta.validation - 1] ?? meta.validation.toString(),
+        validation: meta.validation === 0 ? "" : (map?.validations[meta.validation - 1] ?? meta.validation.toString()),
         usePureMethod: !meta.method_interface.includes("("),
       },
     };

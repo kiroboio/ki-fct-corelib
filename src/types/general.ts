@@ -41,7 +41,9 @@ export interface CallOptions {
   jumpOnFail?: string;
   /** If a call returns "false", it will be considered as failed */
   falseMeansFail?: boolean;
+  /** Call type - Action, View only, Library action, Library view only */
   callType?: CallType;
+  /** Id of the validation call */
   validation?: string;
   /** Index of the call of who is going to pay for the gas.
    * 0 - executor.

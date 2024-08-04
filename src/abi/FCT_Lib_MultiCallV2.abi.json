@@ -1,0 +1,284 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "enum CallStatus",
+                "name": "status",
+                "type": "uint8"
+              },
+              {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct CallReturn[]",
+            "name": "calls",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "first",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "last",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "dryrun",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "success",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct CallsReturn",
+        "name": "callsReturn",
+        "type": "tuple"
+      }
+    ],
+    "name": "ErrorCallsReturn",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "callType",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "method",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "varArgsStart",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "varArgsStop",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct Call[]",
+        "name": "calls",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "first",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "last",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "dryrun",
+        "type": "bool"
+      }
+    ],
+    "name": "multiCall",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "returnedData",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "callType",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "method",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "flow",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bool",
+            "name": "falseMeansFail",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jumpOnSuccess",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jumpOnFail",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "varArgsStart",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "varArgsStop",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct CallWithFlow[]",
+        "name": "calls",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "first",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "last",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "dryrun",
+        "type": "bool"
+      }
+    ],
+    "name": "multiCallFlowControlled",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "returnedData",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "callType",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "method",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct CallSimple[]",
+        "name": "calls",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "first",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "last",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "dryrun",
+        "type": "bool"
+      }
+    ],
+    "name": "multiCallSimple",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "returnedData",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+]
