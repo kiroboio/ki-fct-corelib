@@ -59,6 +59,12 @@ export function getOutputVariable({
   return (offsetHex + outputIndexHex).padStart(base.length, base);
 }
 
+// export function getMulticallOutputVariable({ index, type }: { index: number; type: string }) {
+//   const outputIndexHex = (index + 1).toString(16).padStart(4, "0");
+//   const base = type === "address" ? MulticallOutputVariableBaseAddress : MulticallOutputVariableBaseBytes32;
+//   return outputIndexHex.padStart(base.length, base);
+// }
+
 /**
  * Retrieves the external variable based on the provided index and type.
  * @param {number} index - The index of the external variable.

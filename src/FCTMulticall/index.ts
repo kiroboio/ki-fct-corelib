@@ -1,10 +1,20 @@
-import { ethers } from "ethers";
-
 import { IFCT, Param } from "..";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { EIP712 } from "../batchMultiSigCall/classes";
 import { CallId_020201 } from "../batchMultiSigCall/versions/v020201/CallId";
-import { flowsHashes } from "../constants/flows";
+import {
+  BackMulticallOutputVariableBaseAddress,
+  BackMulticallOutputVariableBaseBytes32,
+  MaxBackOutputVariableAddress,
+  MaxBackOutputVariableBytes32,
+  MaxOutputVariableAddress,
+  MaxOutputVariableBytes32,
+  MulticallOutputVariableBaseAddress,
+  MulticallOutputVariableBaseBytes32,
+  OutputVariableBaseAddress,
+  OutputVariableBaseBytes32,
+} from "../constants";
+import { flows } from "../constants/flows";
 
 interface CallWithFlow {
   target: string;
@@ -20,11 +30,10 @@ interface CallWithFlow {
   data: string;
 }
 
-// const IFCT_Lib_MultiCallV2 = new ethers.utils.Interface(FCT_Lib_MultiCallV2_ABI);
 const FCT_Lib_MultiCall_callTypes = {
-  ACTION: ethers.utils.id("action"),
-  VIEW_ONLY: ethers.utils.id("view only"),
-  LIBRARY_VIEW_ONLY: ethers.utils.id("view only"),
+  ACTION: "action",
+  VIEW_ONLY: "view only",
+  LIBRARY_VIEW_ONLY: "view only",
 };
 
 const FCT_Lib_MultiCallV2_addresses = {
@@ -42,44 +51,20 @@ export class FCTMulticall {
     this._FCT = FCT;
   }
 
-  public async exportFCTAsMulticallFCT({
+  /**
+   * Compress the whole FCT into one multicall
+   * @note Function will throw an error if it is not possible
+   */
+  public async compressFCTInMulticall({
     multiCallV2Address,
     sender,
   }: {
     multiCallV2Address?: string;
     sender: string;
-  }): Promise<IFCT | Error> {
-    // calls struct
-    //   struct CallWithFlow {
-    //     address target;
-    //     bytes32 callType;
-    //     uint256 value;
-    //     bytes32 method;
-    //     bytes32 flow;
-    //     bool falseMeansFail;
-    //     uint256 jumpOnSuccess;
-    //     uint256 jumpOnFail;
-    //     uint256 varArgsStart;
-    //     uint256 varArgsStop;
-    //     bytes data;
-    // }
-    //
-    // function multiCallFlowControlled(
-    //    CallWithFlow[] calldata calls,
-    //    uint256 first,
-    //    uint256 last,
-    //    bool dryrun
-    // ) external returns (bytes memory returnedData) {
-    //
-    //
-    //
-    // @todo steps
-    // 1. Take all the calls and convert them to CallWithFlow
-    // 2. Take all the computed and validations and convert them to bytes32
-    // 3. Take all the calls and convert them to bytes
-    // 4. Take all the calls and convert them to bytes
-
+  }): Promise<IFCT> {
     const typedData = new EIP712(this._FCT).getTypedData();
+
+    sender = sender.toLowerCase();
 
     const calls = this._FCT.calls;
     const preparedCalls = calls.map((call, i) => call.getAsMCall(typedData, i));
@@ -97,24 +82,28 @@ export class FCTMulticall {
       if (!callType) {
         throw new Error(`Call ${i} - delegate call type is not supported`);
       }
+      if (call.from.toLowerCase() !== sender) {
+        throw new Error(`Call ${i} - there can only be one sender per multicall`);
+      }
 
       const decodedCallId = new CallId_020201(this._FCT).parseWithNumbers(call.callId);
+      const variableArgsStart = Number("0x" + decodedCallId.variableArgsStart);
+      const variableArgsEnd = Number("0x" + decodedCallId.variableArgsEnd);
+
       return {
         target: call.to,
         callType: callType,
         value: call.value,
-        method: call.functionSignature,
-        flow: flowsHashes[Call.options.flow],
+        method: Call.getFunction(),
+        flow: flows[Call.options.flow].text,
         falseMeansFail: Call.options.falseMeansFail,
         jumpOnSuccess: decodedCallId.options.jumpOnSuccess.toString(),
         jumpOnFail: decodedCallId.options.jumpOnFail.toString(),
-        varArgsStart: decodedCallId.variableArgsStart.toString(),
-        varArgsStop: decodedCallId.variableArgsEnd.toString(),
+        varArgsStart: variableArgsStart.toString(),
+        varArgsStop: variableArgsEnd.toString(),
         data: call.data,
       };
     });
-
-    console.log("callsWithFlow", JSON.stringify(callsWithFlow, null, 2));
 
     const NewFCT = new BatchMultiSigCall({
       chainId: this._FCT.chainId,
@@ -145,6 +134,7 @@ export class FCTMulticall {
                 name: "callType",
                 type: "bytes32",
                 value: call.callType,
+                messageType: "string",
               },
               {
                 name: "value",
@@ -155,11 +145,13 @@ export class FCTMulticall {
                 name: "method",
                 type: "bytes32",
                 value: call.method,
+                messageType: "string",
               },
               {
                 name: "flow",
                 type: "bytes32",
                 value: call.flow,
+                messageType: "string",
               },
               {
                 name: "falseMeansFail",
@@ -189,7 +181,7 @@ export class FCTMulticall {
               {
                 name: "data",
                 type: "bytes",
-                value: call.data,
+                value: processCallData(call.data),
               },
             ] as Param[];
           }),
@@ -212,10 +204,57 @@ export class FCTMulticall {
       ],
     };
 
-    console.log("FCTCallData", JSON.stringify(FCTCallData, null, 2));
-
     await NewFCT.add(FCTCallData as any);
 
     return NewFCT.export();
   }
+}
+
+const OutputVariableBaseAddressBN = BigInt(OutputVariableBaseAddress);
+const MaxOutputVariableAddressBN = BigInt(MaxOutputVariableAddress);
+const OutputVariableBaseBytes32BN = BigInt(OutputVariableBaseBytes32);
+const MaxOutputVariableBytes32BN = BigInt(MaxOutputVariableBytes32);
+
+const BackOutputVariableBaseAddressBN = BigInt(BackMulticallOutputVariableBaseAddress);
+const MaxBackOutputVariableAddressBN = BigInt(MaxBackOutputVariableAddress);
+const BackOutputVariableBaseBytes32BN = BigInt(BackMulticallOutputVariableBaseBytes32);
+const MaxBackOutputVariableBytes32BN = BigInt(MaxBackOutputVariableBytes32);
+
+function processCallData(data: string): string {
+  let processedData = "0x";
+  for (let i = 2; i < data.length; i += 64) {
+    const chunk = data.slice(i, i + 64);
+    const chunkBN = BigInt("0x" + chunk);
+    const addressBN = BigInt("0x" + chunk.slice(24));
+
+    const inAddressSlot = addressBN >= OutputVariableBaseAddressBN && addressBN <= MaxOutputVariableAddressBN;
+    const inBytes32Slot = chunkBN >= OutputVariableBaseBytes32BN && chunkBN <= MaxOutputVariableBytes32BN;
+
+    const inAddressSlotBack =
+      addressBN >= BackOutputVariableBaseAddressBN && addressBN <= MaxBackOutputVariableAddressBN;
+    const inBytes32SlotBack = chunkBN >= BackOutputVariableBaseBytes32BN && chunkBN <= MaxBackOutputVariableBytes32BN;
+
+    if (inAddressSlot || inBytes32Slot) {
+      if (inAddressSlot) {
+        // 0x000000000000000000000000FD00000000000000000000000000000000000000
+        const address = chunk.slice(24);
+        processedData += (MulticallOutputVariableBaseAddress.slice(2, 4) + address.slice(2)).padStart(64, "0");
+      } else {
+        // 0xFD00000000000000000000000000000000000000000000000000010000000000
+        processedData += MulticallOutputVariableBaseBytes32.slice(2, 4) + chunk.slice(2);
+      }
+    } else if (inAddressSlotBack || inBytes32SlotBack) {
+      if (inAddressSlotBack) {
+        // 0x000000000000000000000000FDB0000000000000000000000000000000000000
+        const address = chunk.slice(24);
+        processedData += (BackMulticallOutputVariableBaseAddress.slice(2, 4) + address.slice(2)).padStart(64, "0");
+      } else {
+        // 0xFDB0000000000000000000000000000000000000000000000000010000000000
+        processedData += BackMulticallOutputVariableBaseBytes32.slice(2, 4) + chunk.slice(2);
+      }
+    } else {
+      processedData += chunk;
+    }
+  }
+  return processedData;
 }
