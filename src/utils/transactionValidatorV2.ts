@@ -241,8 +241,8 @@ async function handleTxValidatorErrorV2({
       })),
     };
   } else if (message.startsWith(ErrorFunctionSignature)) {
-    const message = err.data.slice(10);
-    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], message);
+    const innerMessage = message.slice(10);
+    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], innerMessage);
 
     errorMessage = decoded[0];
     executionData = {
