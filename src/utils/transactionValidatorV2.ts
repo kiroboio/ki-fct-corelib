@@ -391,7 +391,7 @@ function handleTxValidatorError_oldVersion({
     // 1. Remove the Error(string) signature
     // 2. Decode the message
     const message = err.data.slice(10);
-    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], message);
+    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], "0x" + message);
     error = decoded;
   } else if (!error) {
     error = err.message;
