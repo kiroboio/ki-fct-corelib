@@ -242,7 +242,7 @@ async function handleTxValidatorErrorV2({
     };
   } else if (message.startsWith(ErrorFunctionSignature)) {
     const innerMessage = message.slice(10);
-    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], innerMessage);
+    const decoded = ethers.utils.defaultAbiCoder.decode(["string"], "0x" + innerMessage);
 
     errorMessage = decoded[0];
     executionData = {
