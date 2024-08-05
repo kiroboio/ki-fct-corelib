@@ -113,7 +113,7 @@ export class FCTMulticall {
     const FCTCallData = {
       from: sender,
       to: multiCallV2Address ?? FCT_Lib_MultiCallV2_addresses[+this._FCT.chainId],
-      toENS: "@lib:multicallv2",
+      toENS: "@lib:multicall_v2",
       method: "multiCallFlowControlled",
       options: {
         callType: "LIBRARY",
@@ -209,6 +209,10 @@ export class FCTMulticall {
     return NewFCT.export();
   }
 
+  /**
+   * Compress the whole FCT into one multicall
+   * @note Function will throw an error if it is not possible
+   */
   static async compressFCTInMulticall({ FCT, sender }: { FCT: BatchMultiSigCall; sender: string }): Promise<IFCT> {
     return await new FCTMulticall(FCT).compressFCTInMulticall({ sender });
   }
