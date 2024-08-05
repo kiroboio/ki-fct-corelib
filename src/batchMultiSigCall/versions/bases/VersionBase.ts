@@ -191,21 +191,22 @@ export abstract class VersionBase {
     if (!FCT) {
       throw new Error("FCT is not defined, this should not happen");
     }
-    const callData = call.get();
+    const callFull = call.get();
     return {
       typeHash: hexlify(TypedDataUtils.hashType(`transaction${index + 1}`, typedData.types)),
-      ensHash: callData.toENS ? id(callData.toENS) : EMPTY_HASH,
+      ensHash: callFull.toENS ? id(callFull.toENS) : EMPTY_HASH,
       functionSignature: call.getFunctionSignature(),
-      value: FCT.variables.getValue(callData.value, "uint256", "0"),
+      value: FCT.variables.getValue(callFull.value, "uint256", "0"),
       callId: this.CallId.asString({
         calls: FCT.calls,
         validation: FCT.validation,
         call,
+        callFull,
         index,
         payerIndex: call.options.payerIndex,
       }),
-      from: FCT.variables.getValue(callData.from, "address"),
-      to: FCT.variables.getValue(callData.to, "address"),
+      from: FCT.variables.getValue(callFull.from, "address"),
+      to: FCT.variables.getValue(callFull.to, "address"),
       data: call.getEncodedData(),
       types: call.getTypesArray(),
       typedHashes: call.getTypedHashes(index),

@@ -1,5 +1,6 @@
 import { BatchMultiSigCall } from "../..";
 import { Call, Validation } from "../../classes";
+import { StrictMSCallInput } from "../../types";
 
 export abstract class CallIdBase {
   public FCT?: BatchMultiSigCall;
@@ -10,12 +11,14 @@ export abstract class CallIdBase {
     calls,
     validation,
     call,
+    callFull,
     index,
     payerIndex,
   }: {
     calls: Call[];
     validation: Validation;
     call: Call;
+    callFull: StrictMSCallInput;
     index: number;
     payerIndex: number;
   }): string;

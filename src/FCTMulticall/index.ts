@@ -1,6 +1,6 @@
 import { IFCT, Param } from "..";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
-import { EIP712 } from "../batchMultiSigCall/classes";
+import { Call, EIP712 } from "../batchMultiSigCall/classes";
 import { CallId_020201 } from "../batchMultiSigCall/versions/v020201/CallId";
 import {
   BackMulticallOutputVariableBaseAddress,
@@ -44,6 +44,15 @@ const FCT_Lib_MultiCallV2_addresses = {
   11155111: "0xdDFE0b8dF3cA09bABBa20e2D7D1Cdf43eFDf605f",
 };
 
+// Overhead for a call without variables: 631 gas before +:
+// - if continue on success: 1500 gas
+// - if continue on fail: 2500 gas
+// - if stop on success: 3500 gas
+// - if stop on fail: 4500 gas
+// - if revert on success: 3200 gas
+// - if revert on fail: 1500 gas
+// Check per one slot in calldata: ~ 1100 gas (actual change seems cost around 500 gas)
+
 export class FCTMulticall {
   private readonly _FCT: BatchMultiSigCall;
 
@@ -69,6 +78,8 @@ export class FCTMulticall {
     const calls = this._FCT.calls;
     const preparedCalls = calls.map((call, i) => call.getAsMCall(typedData, i));
 
+    let totalGasLimit = 0n;
+
     const callsWithFlow: CallWithFlow[] = preparedCalls.map((call, i) => {
       const Call = calls[i];
 
@@ -90,6 +101,16 @@ export class FCTMulticall {
       const variableArgsStart = Number("0x" + decodedCallId.variableArgsStart);
       const variableArgsEnd = Number("0x" + decodedCallId.variableArgsEnd);
 
+      const { data, slotsChanged, totalSlots } = processCallData(call.data);
+
+      totalGasLimit += this.calculateGasPerCall({
+        call: Call,
+        slotsChanged,
+        totalSlots,
+        varArgsStart: variableArgsStart,
+        varArgsEnd: variableArgsEnd,
+      });
+
       return {
         target: call.to,
         callType: callType,
@@ -101,7 +122,7 @@ export class FCTMulticall {
         jumpOnFail: decodedCallId.options.jumpOnFail.toString(),
         varArgsStart: variableArgsStart.toString(),
         varArgsStop: variableArgsEnd.toString(),
-        data: call.data,
+        data,
       };
     });
 
@@ -117,6 +138,7 @@ export class FCTMulticall {
       method: "multiCallFlowControlled",
       options: {
         callType: "LIBRARY",
+        gasLimit: totalGasLimit.toString(),
       },
       params: [
         {
@@ -181,7 +203,7 @@ export class FCTMulticall {
               {
                 name: "data",
                 type: "bytes",
-                value: processCallData(call.data),
+                value: call.data,
               },
             ] as Param[];
           }),
@@ -206,7 +228,50 @@ export class FCTMulticall {
 
     await NewFCT.add(FCTCallData as any);
 
-    return NewFCT.export();
+    return NewFCT.export({ strictGasLimits: true });
+  }
+
+  calculateGasPerCall({
+    call,
+    slotsChanged,
+    totalSlots,
+    varArgsStart,
+    varArgsEnd,
+  }: {
+    call: Call;
+    slotsChanged: number;
+    totalSlots: number;
+    varArgsStart: number;
+    varArgsEnd: number;
+  }): bigint {
+    const overheadCost = 70n + 2500n;
+    const costPerSlotCheck = 1300n;
+    const costPerSlotChange = 650n;
+    // Overhead for a call without variables: 631 gas before +:
+    // - if continue on success: 1500 gas
+    // - if continue on fail: 2500 gas
+    // - if stop on success: 3500 gas
+    // - if stop on fail: 4500 gas
+    // - if revert on success: 3200 gas
+    // - if revert on fail: 1500 gas
+    // Check per one slot in calldata: ~ 1100 gas (actual change seems cost around 500 gas)
+
+    // We start with regular overhead cost
+    let totalGasLimit = overheadCost;
+
+    // Add gas limit for the call
+    totalGasLimit += BigInt(call.options.gasLimit === "0" ? "50000" : call.options.gasLimit);
+
+    const varArgsEndInSlots = Math.floor(varArgsEnd / 64);
+    const slotsChecked = Math.min(varArgsEndInSlots, totalSlots) - varArgsStart;
+    if (slotsChecked > 0) {
+      totalGasLimit += BigInt(slotsChecked) * costPerSlotCheck;
+    }
+    if (slotsChanged > 0) {
+      totalGasLimit += BigInt(slotsChanged) * costPerSlotChange;
+    }
+
+    return totalGasLimit;
   }
 
   /**
@@ -228,8 +293,10 @@ const MaxBackOutputVariableAddressBN = BigInt(MaxBackOutputVariableAddress);
 const BackOutputVariableBaseBytes32BN = BigInt(BackMulticallOutputVariableBaseBytes32);
 const MaxBackOutputVariableBytes32BN = BigInt(MaxBackOutputVariableBytes32);
 
-function processCallData(data: string): string {
+function processCallData(data: string): { data: string; slotsChanged: number; totalSlots: number } {
   let processedData = "0x";
+  let slotsChanged = 0;
+  let totalSlots = 0;
   for (let i = 2; i < data.length; i += 64) {
     const chunk = data.slice(i, i + 64);
     const chunkBN = BigInt("0x" + chunk);
@@ -251,6 +318,7 @@ function processCallData(data: string): string {
         // 0xFD00000000000000000000000000000000000000000000000000010000000000
         processedData += MulticallOutputVariableBaseBytes32.slice(2, 4) + chunk.slice(2);
       }
+      slotsChanged++;
     } else if (inAddressSlotBack || inBytes32SlotBack) {
       if (inAddressSlotBack) {
         // 0x000000000000000000000000FDB0000000000000000000000000000000000000
@@ -260,9 +328,16 @@ function processCallData(data: string): string {
         // 0xFDB0000000000000000000000000000000000000000000000000010000000000
         processedData += BackMulticallOutputVariableBaseBytes32.slice(2, 4) + chunk.slice(2);
       }
+      slotsChanged++;
     } else {
       processedData += chunk;
     }
+    totalSlots++;
   }
-  return processedData;
+
+  return {
+    data: processedData,
+    slotsChanged,
+    totalSlots,
+  };
 }
