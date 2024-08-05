@@ -2,6 +2,7 @@ import { CALL_TYPE, Flow } from "../../../constants";
 import { flows } from "../../../constants/flows";
 import { Call, Validation } from "../../classes";
 import { NO_JUMP } from "../../constants";
+import { StrictMSCallInput } from "../../types";
 import { CallIdBase } from "../bases/CallIdBase";
 import { getVariableArgsForCallId } from "./helpers/variableArgs";
 
@@ -29,12 +30,14 @@ export class CallId_020201 extends CallIdBase {
     calls,
     validation,
     call,
+    callFull,
     index,
     payerIndex,
   }: {
     calls: Call[];
     validation: Validation;
     call: Call;
+    callFull: StrictMSCallInput;
     index: number;
     payerIndex?: number;
   }): string {
@@ -48,7 +51,7 @@ export class CallId_020201 extends CallIdBase {
     const flow = valueWithPadStart(flows[call.options.flow].value, 2);
     const payerIndexHex = valueWithPadStart(typeof payerIndex === "number" ? payerIndex : index + 1, 4);
     const callIndex = valueWithPadStart(index + 1, 4);
-    const gasLimit = valueWithPadStart(call.options.gasLimit, 8);
+    const gasLimit = valueWithPadStart(callFull.options.gasLimit, 8);
 
     const flags = () => {
       const callType = CALL_TYPE[call.options.callType];

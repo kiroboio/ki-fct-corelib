@@ -160,7 +160,7 @@ export class Version_020201 extends Version_old {
       to: FCT.variables.getValue(callData.to, "address"),
       to_ens: callData.toENS || "",
       value: FCT.variables.getValue(callData.value, "uint256", "0"),
-      gas_limit: options.gasLimit,
+      gas_limit: callData.options.gasLimit,
       permissions: 0,
       validation: call.options.validation ? FCT.validation.getIndex(call.options.validation) : 0,
       flow_control: flow,
