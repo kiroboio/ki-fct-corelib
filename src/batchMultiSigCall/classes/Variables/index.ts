@@ -115,14 +115,7 @@ export class Variables extends FCTBase {
     }
     if (variable.type === "global") {
       const id = variable.id;
-      if (type.includes("bytes")) {
-        // Check if id is in globalVariablesBytes
-        if (!(id in globalVariablesBytes)) {
-          throw new Error("Global variable not found");
-        }
-        return globalVariablesBytes[id as keyof typeof globalVariablesBytes];
-      }
-      const globalVariable = globalVariables[id];
+      const globalVariable = type === "address" ? globalVariables[id] : globalVariablesBytes[id];
 
       if (!globalVariable) {
         throw new Error("Global variable not found");
