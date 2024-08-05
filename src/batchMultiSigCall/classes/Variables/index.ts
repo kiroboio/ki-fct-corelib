@@ -129,6 +129,10 @@ export class Variables extends FCTBase {
         return computedVariable.id === variable.id;
       });
 
+      if (index === -1) {
+        throw new Error(`Computed variable with id ${variable.id} not found`);
+      }
+
       return this.getComputedVariable(index, type);
     }
 
