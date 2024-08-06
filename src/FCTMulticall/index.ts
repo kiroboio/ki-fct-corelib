@@ -68,10 +68,12 @@ export class FCTMulticall {
     multiCallV2Address,
     multiCallV2ENS = "@lib:multicall_v2",
     sender,
+    strictGasLimits = false,
   }: {
     multiCallV2Address?: string;
     multiCallV2ENS?: string;
     sender: string;
+    strictGasLimits?: boolean;
   }): Promise<IFCT> {
     const typedData = new EIP712(this._FCT).getTypedData();
 
@@ -237,7 +239,7 @@ export class FCTMulticall {
 
     await NewFCT.add(FCTCallData as any);
 
-    return NewFCT.export({ strictGasLimits: true });
+    return NewFCT.export({ strictGasLimits });
   }
 
   calculateGasPerCall({
