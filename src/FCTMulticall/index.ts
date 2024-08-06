@@ -37,11 +37,11 @@ const FCT_Lib_MultiCall_callTypes = {
 };
 
 const FCT_Lib_MultiCallV2_addresses = {
-  1: "0xE6CbF811b2D5673Af0A4D8531BF8E21e32D87675",
-  42161: "0xeE8c78e0c33D0A0860cCbb4e188AFa8312d49e5b",
-  10: "0x6370AFC753a41cD50e83f3A940521A57D4002b09",
-  8453: "0x4fF4C72506f7E3630b81c619435250bD8aB6c03c",
-  11155111: "0xdDFE0b8dF3cA09bABBa20e2D7D1Cdf43eFDf605f",
+  1: "0x37b43a3236ee500718728d4caB3457E9b05bcCC3",
+  42161: "0xB14471893a9692658c24AA754f710CC430438683",
+  10: "0x64754348Aa0fb27Cce9c40214e240755bBBcb265",
+  8453: "0x85ac36C32014A000c6301BF69e1c56cd58db2310",
+  11155111: "0x1cE596386A12098EE687954b7BFe43898C2821F6",
 };
 
 // Overhead for a call without variables: 631 gas before +:
@@ -289,8 +289,25 @@ export class FCTMulticall {
    * Compress the whole FCT into one multicall
    * @note Function will throw an error if it is not possible
    */
-  static async compressFCTInMulticall({ FCT, sender }: { FCT: BatchMultiSigCall; sender: string }): Promise<IFCT> {
-    return await new FCTMulticall(FCT).compressFCTInMulticall({ sender });
+  static async compressFCTInMulticall({
+    FCT,
+    sender,
+    multiCallV2Address,
+    multiCallV2ENS,
+    strictGasLimits = false,
+  }: {
+    FCT: BatchMultiSigCall;
+    sender: string;
+    multiCallV2Address?: string;
+    multiCallV2ENS?: string;
+    strictGasLimits?: boolean;
+  }): Promise<IFCT> {
+    return await new FCTMulticall(FCT).compressFCTInMulticall({
+      sender,
+      multiCallV2Address,
+      multiCallV2ENS,
+      strictGasLimits,
+    });
   }
 }
 
