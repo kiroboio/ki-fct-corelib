@@ -66,9 +66,11 @@ export class FCTMulticall {
    */
   public async compressFCTInMulticall({
     multiCallV2Address,
+    multiCallV2ENS = "@lib:multicall_v2",
     sender,
   }: {
     multiCallV2Address?: string;
+    multiCallV2ENS?: string;
     sender: string;
   }): Promise<IFCT> {
     const typedData = new EIP712(this._FCT).getTypedData();
@@ -126,15 +128,22 @@ export class FCTMulticall {
       };
     });
 
-    const NewFCT = new BatchMultiSigCall({
+    const FCTConstructor: any = {
       chainId: this._FCT.chainId,
       options: this._FCT.options,
-    });
+      domain: this._FCT.domain,
+    };
+
+    if (FCTConstructor.domain === null) {
+      delete FCTConstructor.domain;
+    }
+
+    const NewFCT = new BatchMultiSigCall(FCTConstructor);
 
     const FCTCallData = {
       from: sender,
       to: multiCallV2Address ?? FCT_Lib_MultiCallV2_addresses[+this._FCT.chainId],
-      toENS: "@lib:multicall_v2",
+      toENS: multiCallV2ENS,
       method: "multiCallFlowControlled",
       options: {
         callType: "LIBRARY",
