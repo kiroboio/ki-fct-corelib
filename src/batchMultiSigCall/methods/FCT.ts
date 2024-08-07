@@ -318,6 +318,8 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
   this.domain = domain;
   this.randomId = engine.random_id.slice(2);
 
+  this._isImported = true;
+
   const Version = getVersionFromVersion(this.version);
   const sessionIDOptions = Version.SessionId.parse(fct.sessionId) as any;
 

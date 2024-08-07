@@ -55,6 +55,8 @@ export class BatchMultiSigCall {
     options: DEFAULT_CALL_OPTIONS,
   };
 
+  protected _isImported = false;
+
   constructor(input: BatchMultiSigCallConstructor = {}) {
     this.utils = new FCTUtils(this);
     this.variables = new Variables(this);
@@ -115,6 +117,10 @@ export class BatchMultiSigCall {
 
   get validations() {
     return this.validation.get();
+  }
+
+  get isImported() {
+    return this._isImported;
   }
 
   // Setters

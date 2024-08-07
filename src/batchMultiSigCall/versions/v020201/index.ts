@@ -82,7 +82,8 @@ export class Version_020201 extends Version_old {
 
   exportFCT(exportOptions?: Partial<V020201_ExportOptions>) {
     const FCT = this.FCT;
-    const strictGasLimits = Boolean(exportOptions?.strictGasLimits);
+    const strictGasLimits =
+      typeof exportOptions?.strictGasLimits === "boolean" ? exportOptions.strictGasLimits : undefined;
     const forceDryRun = Boolean(exportOptions?.forceDryRun);
 
     if (!FCT) {
@@ -94,7 +95,7 @@ export class Version_020201 extends Version_old {
     const options = FCT.options;
     const initialGasLimits: Record<number, string> = {};
 
-    if (!strictGasLimits) {
+    if ((FCT.isImported && strictGasLimits === false) || (!FCT.isImported && !strictGasLimits)) {
       FCT.calls.forEach((call, i) => {
         initialGasLimits[i] = call.options.gasLimit;
         call.setOptions({ gasLimit: "0" });
