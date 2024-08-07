@@ -68,7 +68,7 @@ export class FCTMulticall {
     multiCallV2Address,
     multiCallV2ENS = "@lib:multicall_v2",
     sender,
-    strictGasLimits = false,
+    strictGasLimits,
   }: {
     multiCallV2Address?: string;
     multiCallV2ENS?: string;
@@ -294,7 +294,7 @@ export class FCTMulticall {
     sender,
     multiCallV2Address,
     multiCallV2ENS,
-    strictGasLimits = false,
+    strictGasLimits,
   }: {
     FCT: BatchMultiSigCall;
     sender: string;
