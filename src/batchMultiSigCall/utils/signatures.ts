@@ -15,6 +15,6 @@ export const getAuthenticatorSignature = (typedData: BatchMultiSigCallTypedData)
 
     return ethers.utils.splitSignature(signature);
   } catch (e) {
-    throw new Error("Error signing typed data");
+    throw new Error(`Error signing typed data: ${e}`);
   }
 };
