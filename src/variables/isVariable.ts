@@ -1,4 +1,6 @@
 import {
+  BackOutputVariableBaseAddress,
+  BackOutputVariableBaseBytes32,
   ComputedBaseAddress,
   ComputedBaseBytes32,
   ExternalVariableBaseAddress,
@@ -77,8 +79,17 @@ export function isOutputVariable({
     const hexString = value.toLowerCase();
     const base =
       value.length === 42 ? OutputVariableBaseAddress.toLowerCase() : OutputVariableBaseBytes32.toLowerCase();
+    const backBase =
+      value.length === 42 ? BackOutputVariableBaseAddress.toLowerCase() : BackOutputVariableBaseBytes32.toLowerCase();
 
     if (hexString.slice(0, -8) === base.slice(0, -8)) {
+      if (!strict) return true;
+      const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
+      return parsedIndex === (index + 1).toString();
+    }
+
+    if (hexString.slice(0, -8) === backBase.slice(0, -8)) {
+      console.log("here", hexString, backBase);
       if (!strict) return true;
       const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
       return parsedIndex === (index + 1).toString();
