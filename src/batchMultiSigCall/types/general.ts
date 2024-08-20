@@ -143,10 +143,10 @@ export interface MSCalls_Eff {
 export interface IFCTOptions {
   id: string;
   name: string;
-  validFrom: string;
-  expiresAt: string;
-  maxGasPrice: string;
-  payableGasLimit: string;
+  validFrom: string | number;
+  expiresAt: string | number;
+  maxGasPrice: string | number;
+  payableGasLimit: string | number;
   blockable: boolean;
   purgeable: boolean;
   authEnabled: boolean;
@@ -163,13 +163,13 @@ export interface IFCTOptions {
     address: string;
   };
   recurrency: {
-    maxRepeats: string;
-    chillTime: string;
+    maxRepeats: string | number;
+    chillTime: string | number;
     accumetable: boolean;
   };
   multisig: {
     externalSigners?: string[];
-    minimumApprovals?: string;
+    minimumApprovals?: string | number;
   };
 }
 

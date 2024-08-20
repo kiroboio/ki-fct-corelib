@@ -15,7 +15,8 @@ describe("BatchMultiSigCall Options", () => {
       name: "Test",
       id: "120",
       validFrom: "0",
-      expiresAt: "2680505796", // Far away in the future
+      // expiresAt: "2680505796", // Far away in the future
+      expiresAt: 2680505796, // Far away in the future
       maxGasPrice: "100" + "0".repeat(9), // 100 Gwei
       payableGasLimit: "0",
       blockable: false,

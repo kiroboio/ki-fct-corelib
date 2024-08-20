@@ -98,9 +98,8 @@ export class FCTUtils extends FCTBase {
     const options = this.FCT.options;
 
     const currentDate = new Date().getTime() / 1000;
-    const validFrom = parseInt(options.validFrom);
-    const expiresAt = parseInt(options.expiresAt);
-    // const gasPriceLimit = options.maxGasPrice;
+    const validFrom = typeof options.validFrom === "number" ? options.validFrom : parseInt(options.validFrom);
+    const expiresAt = typeof options.expiresAt === "number" ? options.expiresAt : parseInt(options.expiresAt);
 
     if (!softValidation && validFrom > currentDate) {
       return { valid: false, message: `FCT is not valid yet. FCT is valid from ${validFrom}` };

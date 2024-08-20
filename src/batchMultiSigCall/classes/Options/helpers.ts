@@ -123,7 +123,7 @@ class OptionsValidator {
   }
 
   private _checkInteger(): void | Error {
-    const value = this._checkString();
+    const value = this._checkString({ canBeNumber: true });
 
     if (value.includes(".")) {
       throw new Error(`Options: ${this.keyId} cannot be a decimal`);
@@ -158,11 +158,15 @@ class OptionsValidator {
     }
   }
 
-  private _checkString(): string {
+  private _checkString({ canBeNumber = false }: { canBeNumber?: boolean } = {}): string {
     const realVal = _.get(this.initOptions, this.keyId);
     const value = this.value[this.key];
     if (typeof value !== typeof realVal) {
-      throw new Error(`Options: ${this.keyId} must be a ${typeof realVal}`);
+      if (canBeNumber && typeof value === "number") {
+        return value.toString();
+      }
+      const mustBeString = canBeNumber ? `number or ${typeof realVal}` : typeof realVal;
+      throw new Error(`Options: ${this.keyId} must be a ${mustBeString}`);
     }
     return value;
   }
