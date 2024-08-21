@@ -89,7 +89,6 @@ export function isOutputVariable({
     }
 
     if (hexString.slice(0, -8) === backBase.slice(0, -8)) {
-      console.log("here", hexString, backBase);
       if (!strict) return true;
       const parsedIndex = parseInt(hexString.slice(-4), 16).toString();
       return parsedIndex === (index + 1).toString();

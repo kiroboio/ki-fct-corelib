@@ -226,6 +226,7 @@ export function getPayerMap({
   maxGasPrice,
   baseFeeBPS,
   bonusFeeBPS,
+  payableGasLimit,
   penalty,
 }: {
   chainId: ChainId;
@@ -236,6 +237,7 @@ export function getPayerMap({
   maxGasPrice: bigint;
   baseFeeBPS: bigint;
   bonusFeeBPS: bigint;
+  payableGasLimit: bigint | undefined;
   penalty?: number | string;
 }) {
   const { txGasPrice, effectiveGasPrice } = getGasPrices({
@@ -254,14 +256,21 @@ export function getPayerMap({
 
     return payers.reduce(
       (acc, payer) => {
-        const base = payer.gas * txGasPrice;
-        const fee = payer.gas * (effectiveGasPrice - txGasPrice);
+        let gas: bigint;
+        if (payableGasLimit) {
+          gas = payer.gas > payableGasLimit ? payableGasLimit : payer.gas;
+        } else {
+          gas = payer.gas;
+        }
+        const base = gas * txGasPrice;
+        const fee = gas * (effectiveGasPrice - txGasPrice);
         const ethCost = base + fee;
 
         return {
           ...acc,
           [payer.payer]: {
             ...payer,
+            gas: gas,
             pureEthCost: ethCost,
             ethCost: (ethCost * BigInt(penalty || 10_000)) / 10_000n,
           },
