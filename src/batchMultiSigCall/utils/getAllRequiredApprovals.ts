@@ -49,6 +49,9 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
           address: call.to,
           chainId,
         });
+        console.log(pluginData);
+        // { plugin: [Function: MulticallPlugin], name: 'MulticallPlugin' }
+        // getMulticallPluginByName
         if (pluginData) {
           approvals = getApprovalsFromPlugin({ pluginData, call, chainId });
         }
@@ -109,20 +112,38 @@ function getApprovalsFromPlugin({
     vaultAddress: typeof call.from === "string" ? call.from : "",
   });
 
-  const methodParams = call.params
-    ? call.params.reduce(
-        (acc, param) => {
-          acc[param.name] = param.value;
-          return acc;
-        },
-        {} as { [key: string]: Param["value"] },
-      )
-    : {};
+  if (pluginData.name === "MulticallPlugin") {
+    function getMethodParamsForMulticallPlugins(params: Param[]) {
+      return params.map((param) => {
+        if (param.type === "tuple[]") {
+          return (param.value as any).map((p) => getMethodParamsForMulticallPlugins(p));
+        }
+        if (param.type === "tuple") {
+          return getMethodParamsForMulticallPlugins(param.value as any);
+        }
+        return param.value;
+      });
+    }
 
-  initPlugin.input.set({
-    to: call.to,
-    methodParams,
-  });
+    const _methodParams = getMethodParamsForMulticallPlugins(call.params as any);
+
+    initPlugin.setMethodParams(_methodParams);
+  } else {
+    const methodParams = call.params
+      ? call.params.reduce(
+          (acc, param) => {
+            acc[param.name] = param.value;
+            return acc;
+          },
+          {} as { [key: string]: Param["value"] },
+        )
+      : {};
+
+    initPlugin.input.set({
+      to: call.to,
+      methodParams,
+    });
+  }
 
   return initPlugin.getRequiredApprovals();
 }
