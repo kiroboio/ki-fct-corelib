@@ -49,9 +49,6 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
           address: call.to,
           chainId,
         });
-        console.log(pluginData);
-        // { plugin: [Function: MulticallPlugin], name: 'MulticallPlugin' }
-        // getMulticallPluginByName
         if (pluginData) {
           approvals = getApprovalsFromPlugin({ pluginData, call, chainId });
         }
