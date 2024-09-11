@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { EIP1559GasPrice } from "../types";
 
 const percentilesForNetworks = {
-  1: [5, 8, 15, 25],
+  1: [0, 2, 5, 20],
   42161: [2, 5, 15, 25],
   10: [2, 5, 15, 25],
   8453: [2, 5, 15, 25],
@@ -12,17 +12,27 @@ const percentilesForNetworks = {
   421613: [2, 6, 15, 30],
 };
 
+interface GetGasPricesRes {
+  baseFee: string;
+  slow: EIP1559GasPrice;
+  average: EIP1559GasPrice;
+  fast: EIP1559GasPrice;
+  fastest: EIP1559GasPrice;
+}
+
 export const getGasPrices = async ({
   rpcUrl,
   chainId,
   historicalBlocks = 10,
   tries = 40,
+  futureBlocks = 0,
 }: {
   rpcUrl: string;
   chainId: number;
   historicalBlocks?: number;
   tries?: number;
-}): Promise<Record<"slow" | "average" | "fast" | "fastest", EIP1559GasPrice>> => {
+  futureBlocks?: number;
+}): Promise<GetGasPricesRes> => {
   do {
     try {
       const { result, baseFee } = await getFeeHistory({ rpcUrl, chainId, historicalBlocks });
@@ -37,7 +47,7 @@ export const getGasPrices = async ({
         oldestBlock: parseInt(result.oldestBlock, 16),
       });
 
-      return getGasPriceResult({ baseFee, chainId, averages: getAverages(blocks) });
+      return getGasPriceResult({ baseFee, chainId, averages: getAverages(blocks), futureBlocks });
     } catch (err) {
       if (tries > 0) {
         // Wait 3 seconds before retrying
@@ -158,17 +168,20 @@ function getGasPriceResult({
   baseFee,
   chainId,
   averages,
+  futureBlocks,
 }: {
   baseFee: string;
   chainId: number;
   averages: ReturnType<typeof getAverages>;
+  futureBlocks: number;
 }) {
   const { slow, average, fast, fastest } = averages;
 
   // On Arbitrum use the baseFee as is, otherwise calculate the baseFee for 2 blocks in the future
-  const baseFeePerGas = chainId === 42161 ? BigInt(baseFee) : getMaxBaseFeeInFutureBlock(BigInt(baseFee), 2);
+  const baseFeePerGas = chainId === 42161 ? BigInt(baseFee) : getMaxBaseFeeInFutureBlock(BigInt(baseFee), futureBlocks);
 
   return {
+    baseFee: baseFee,
     slow: gasPriceCalculation({ priorityFee: slow, baseFee: baseFeePerGas }),
     average: gasPriceCalculation({ priorityFee: average, baseFee: baseFeePerGas }),
     fast: gasPriceCalculation({ priorityFee: fast, baseFee: baseFeePerGas }),
