@@ -114,6 +114,18 @@ export type IMSCallWithEncodedData = {
 export type FCTCall = Call;
 export type FCTInputCall = IMSCallInput | IWithPlugin | FCTCall;
 
+export interface FCTInputMulticall {
+  nodeId?: string; // This nodeId can be used in calls after it to get output values etc. Actually dont know if even needed and nodeIds from calls are enough
+  options?: CallOptions; // Regular call options
+  dryRun?: boolean; // Default false
+  calls: FCTInputCall[]; // Regular calls, like we have it now
+  // ...
+  // Maybe somethinge else will be required, maybe outputs? But that probably can be taken from plugins in calls
+  // I am thinking that I will create a new class (Multicall), that works like a regular Call, but
+  // it would handle outputs somehow so that I can access them in other calls correctly.
+  //
+  // It probably also means that output variable will need like "multicallNodeId" or something, or maybe not even needed
+}
 export interface MSCall {
   typeHash: string;
   ensHash: string;
