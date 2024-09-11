@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { EIP1559GasPrice } from "../types";
 
 const percentilesForNetworks = {
-  1: [0, 2, 5, 20],
+  1: [2, 6, 12, 25],
   42161: [2, 5, 15, 25],
   10: [2, 5, 15, 25],
   8453: [2, 5, 15, 25],
