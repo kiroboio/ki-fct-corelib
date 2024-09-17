@@ -18,22 +18,34 @@ import { flows } from "../constants/flows";
 
 interface CallWithFlow {
   target: string;
-  callType: string;
+  callType: number;
   value: string;
   method: string;
-  flow: string;
+  flow: number;
   falseMeansFail: boolean;
-  jumpOnSuccess: string;
-  jumpOnFail: string;
-  varArgsStart: string;
-  varArgsStop: string;
+  jumpOnSuccess: number;
+  jumpOnFail: number;
+  varArgsStart: number;
+  varArgsStop: number;
   data: string;
 }
 
+// struct CallWithFlowOptimized {
+//     address target;
+//     uint256 meta;
+//     bytes data;
+// }
+//
+// function multiCallFlowControlledOptimized(
+//     CallWithFlowOptimized[] calldata calls,
+//     uint256 first,
+//     uint256 last,
+//     bool dryrun
+// ) external returns (bytes memory returnedData) {
+
 const FCT_Lib_MultiCall_callTypes = {
-  ACTION: "action",
-  VIEW_ONLY: "view only",
-  LIBRARY_VIEW_ONLY: "view only",
+  ACTION: 0,
+  VIEW_ONLY: 1,
 };
 
 const FCT_Lib_MultiCallV2_addresses = {
@@ -88,13 +100,13 @@ export class FCTMulticall {
       const Call = calls[i];
 
       const options = Call.options;
-      const callType = FCT_Lib_MultiCall_callTypes[options.callType];
+      const callType = FCT_Lib_MultiCall_callTypes[options.callType] as number | undefined;
 
       // Check if it is even possible to create a valid multicall
       if (options.usePureMethod === true) {
         throw new Error(`Call ${i} - pure methods are not allowed ("magic" value)`);
       }
-      if (!callType) {
+      if (callType === undefined) {
         throw new Error(`Call ${i} - delegate call type is not supported`);
       }
       if (call.from.toLowerCase() !== sender) {
@@ -119,13 +131,13 @@ export class FCTMulticall {
         target: call.to,
         callType: callType,
         value: call.value,
-        method: Call.getFunction(),
-        flow: flows[Call.options.flow].text,
+        method: Call.getFunctionSignature(),
+        flow: +flows[Call.options.flow].value,
         falseMeansFail: Call.options.falseMeansFail,
-        jumpOnSuccess: decodedCallId.options.jumpOnSuccess.toString(),
-        jumpOnFail: decodedCallId.options.jumpOnFail.toString(),
-        varArgsStart: variableArgsStart.toString(),
-        varArgsStop: variableArgsEnd.toString(),
+        jumpOnSuccess: decodedCallId.options.jumpOnSuccess,
+        jumpOnFail: decodedCallId.options.jumpOnFail,
+        varArgsStart: variableArgsStart,
+        varArgsStop: variableArgsEnd,
         data,
       };
     });
@@ -146,7 +158,7 @@ export class FCTMulticall {
       from: sender,
       to: multiCallV2Address ?? FCT_Lib_MultiCallV2_addresses[+this._FCT.chainId],
       toENS: multiCallV2ENS,
-      method: "multiCallFlowControlled",
+      method: "multiCallFlowControlledOptimized",
       options: {
         callType: "LIBRARY",
         gasLimit: totalGasLimit.toString(),
@@ -164,52 +176,9 @@ export class FCTMulticall {
                 value: call.target,
               },
               {
-                name: "callType",
-                type: "bytes32",
-                value: call.callType,
-                messageType: "string",
-              },
-              {
-                name: "value",
+                name: "meta",
                 type: "uint256",
-                value: call.value,
-              },
-              {
-                name: "method",
-                type: "bytes32",
-                value: call.method,
-                messageType: "string",
-              },
-              {
-                name: "flow",
-                type: "bytes32",
-                value: call.flow,
-                messageType: "string",
-              },
-              {
-                name: "falseMeansFail",
-                type: "bool",
-                value: call.falseMeansFail,
-              },
-              {
-                name: "jumpOnSuccess",
-                type: "uint256",
-                value: call.jumpOnSuccess,
-              },
-              {
-                name: "jumpOnFail",
-                type: "uint256",
-                value: call.jumpOnFail,
-              },
-              {
-                name: "varArgsStart",
-                type: "uint256",
-                value: call.varArgsStart,
-              },
-              {
-                name: "varArgsStop",
-                type: "uint256",
-                value: call.varArgsStop,
+                value: buildMeta(call),
               },
               {
                 name: "data",
@@ -368,4 +337,58 @@ function processCallData(data: string): { data: string; slotsChanged: number; to
     slotsChanged,
     totalSlots,
   };
+}
+
+function buildMeta(call: CallWithFlow): string {
+  // /** @dev we used a parameter called callId to hold the following info: */
+  // uint256 constant CALL_TYPE_BIT = 0; // 0-8  8bit call type
+  // uint256 constant VALUE_BIT = 8; // 8-104  96bit gas limit
+  // uint256 constant OK_JUMP_BIT = 104; // 104-120  16bit jump on success
+  // uint256 constant FAIL_JUMP_BIT = 120; // 120-136  16bit jump on fail
+  // uint256 constant FLOW_BIT = 136; // 136-144  8bit flow
+  // uint256 constant VAR_ARGS_START_BIT = 144; // 144-176  32bit permissions
+  // uint256 constant VAR_ARGS_END_BIT = 176; // 176-208  32bit permissions
+  // uint256 constant FALSE_MEANS_FAIL_BIT = 208; // 208-216  8bit false means fail
+  // uint256 constant METHOD_SIG_BIT = 224; // 224-256  32bit method signature
+  // Value max = 79228162514.26434
+
+  // Call type        - 2
+  // Value            - 24
+  // Ok Jump          - 4
+  // Fail Jump        - 4
+  // Flow             - 2
+  // Var args start   - 8
+  // Var args end     - 8
+  // False means fail - 2
+  // Method signature - 8
+
+  // Method     / EMPTY / False = fail / Var args end / Var args start / Flow / Fail Jump / Success Jump / Value                    / Call Type
+  // 0x00000000 / 00    / 00           / 00000000     / 00000000       / 00   / 0000      / 0000         / 000000000000000000000000 / 00
+  // 0x70a08231 / 00    / 00           / 00000000     / 00000000       / 00   / 0000      / 0000         / 000000000000000000000000 / 01
+
+  const start = "0x";
+  const method = call.method.slice(2, 10);
+  const EMPTY = "00";
+  const falseMeansFail = call.falseMeansFail ? "01" : "00";
+  const varArgsEnd = call.varArgsStop.toString(16).padStart(8, "0");
+  const varArgsStart = call.varArgsStart.toString(16).padStart(8, "0");
+  const flow = call.flow.toString(16).padStart(2, "0");
+  const failJump = call.jumpOnFail.toString(16).padStart(4, "0");
+  const successJump = call.jumpOnSuccess.toString(16).padStart(4, "0");
+  const value = BigInt(call.value).toString(16).padStart(24, "0");
+  const callType = call.callType.toString(16).padStart(2, "0");
+
+  return [
+    start,
+    method,
+    EMPTY,
+    falseMeansFail,
+    varArgsEnd,
+    varArgsStart,
+    flow,
+    failJump,
+    successJump,
+    value,
+    callType,
+  ].join("");
 }
