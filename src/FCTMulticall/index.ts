@@ -1,4 +1,4 @@
-import { IFCT, Param } from "..";
+import { ethers, IFCT } from "..";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 import { Call, EIP712 } from "../batchMultiSigCall/classes";
 import { CallId_020201 } from "../batchMultiSigCall/versions/v020201/CallId";
@@ -30,6 +30,13 @@ interface CallWithFlow {
   data: string;
 }
 
+// function multiCallFlowControlledOptimized(
+//     CallWithFlowOptimized[] calldata calls,
+//     uint256 first,
+//     uint256 last,
+//     bool dryrun
+// ) external returns (bytes memory returnedData) {
+
 // struct CallWithFlowOptimized {
 //     address target;
 //     uint256 meta;
@@ -42,6 +49,10 @@ interface CallWithFlow {
 //     uint256 last,
 //     bool dryrun
 // ) external returns (bytes memory returnedData) {
+
+const IMulticallV2 = new ethers.utils.Interface([
+  "function multiCallFlowControlledOptimized(tuple(address target,uint256 meta,bytes data)[] calls,uint256 first,uint256 last,bool dryrun) external returns (bytes memory returnedData)",
+]);
 
 const FCT_Lib_MultiCall_callTypes = {
   ACTION: 0,
@@ -158,51 +169,56 @@ export class FCTMulticall {
       from: sender,
       to: multiCallV2Address ?? FCT_Lib_MultiCallV2_addresses[+this._FCT.chainId],
       toENS: multiCallV2ENS,
-      method: "multiCallFlowControlledOptimized",
+      method: "multiCallFlowControlledOptimizedExec",
       options: {
         callType: "LIBRARY",
         gasLimit: totalGasLimit.toString(),
       },
       params: [
         {
-          name: "calls",
-          type: "tuple[]",
-          customType: true,
-          value: callsWithFlow.map((call) => {
-            return [
-              {
-                name: "target",
-                type: "address",
-                value: call.target,
-              },
-              {
-                name: "meta",
-                type: "uint256",
-                value: buildMeta(call),
-              },
-              {
-                name: "data",
-                type: "bytes",
-                value: call.data,
-              },
-            ] as Param[];
-          }),
+          name: "data",
+          type: "bytes",
+          value: buildFCTCallData(callsWithFlow, "1", calls.length.toString(), false),
         },
-        {
-          name: "first",
-          type: "uint256",
-          value: "1",
-        },
-        {
-          name: "last",
-          type: "uint256",
-          value: calls.length.toString(),
-        },
-        {
-          name: "dryrun",
-          type: "bool",
-          value: false,
-        },
+        // {
+        //   name: "calls",
+        //   type: "tuple[]",
+        //   customType: true,
+        //   value: callsWithFlow.map((call) => {
+        //     return [
+        //       {
+        //         name: "target",
+        //         type: "address",
+        //         value: call.target,
+        //       },
+        //       {
+        //         name: "meta",
+        //         type: "uint256",
+        //         value: buildMeta(call),
+        //       },
+        //       {
+        //         name: "data",
+        //         type: "bytes",
+        //         value: call.data,
+        //       },
+        //     ] as Param[];
+        //   }),
+        // },
+        // {
+        //   name: "first",
+        //   type: "uint256",
+        //   value: "1",
+        // },
+        // {
+        //   name: "last",
+        //   type: "uint256",
+        //   value: calls.length.toString(),
+        // },
+        // {
+        //   name: "dryrun",
+        //   type: "bool",
+        //   value: false,
+        // },
       ],
     };
 
@@ -278,6 +294,16 @@ export class FCTMulticall {
       strictGasLimits,
     });
   }
+}
+
+function buildFCTCallData(calls: CallWithFlow[], first: string, last: string, dryrun: boolean): string {
+  const calldata = IMulticallV2.encodeFunctionData("multiCallFlowControlledOptimized", [
+    calls.map((call) => [call.target, buildMeta(call), call.data]),
+    first,
+    last,
+    dryrun,
+  ]);
+  return calldata;
 }
 
 const OutputVariableBaseAddressBN = BigInt(OutputVariableBaseAddress);
