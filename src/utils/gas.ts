@@ -2,14 +2,23 @@ import { ethers } from "ethers";
 
 import { EIP1559GasPrice } from "../types";
 
+enum Network {
+  MAINNET = 1,
+  ARBITRUM = 42161,
+  BASE = 8453,
+  OPTIMISM = 10,
+  SEPOLIA = 11155111,
+  ARB_GOERLI = 421613,
+}
+
 const percentilesForNetworks = {
-  1: [2, 6, 12, 25],
-  42161: [2, 5, 15, 25],
-  10: [2, 5, 15, 25],
-  8453: [2, 5, 15, 25],
+  [Network.MAINNET]: [1, 15, 35, 51],
+  [Network.ARBITRUM]: [2, 5, 15, 25],
+  [Network.OPTIMISM]: [2, 5, 15, 25],
+  [Network.BASE]: [2, 5, 15, 25],
   // Testnets
-  11155111: [2, 10, 50, 80],
-  421613: [2, 6, 15, 30],
+  [Network.SEPOLIA]: [2, 10, 50, 80],
+  [Network.ARB_GOERLI]: [2, 6, 15, 30],
 };
 
 interface GetGasPricesRes {
