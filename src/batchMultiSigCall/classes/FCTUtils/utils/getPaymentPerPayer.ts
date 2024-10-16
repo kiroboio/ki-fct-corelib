@@ -4,6 +4,7 @@ import { FCTUtils } from "../..";
 import { Call } from "../../Call";
 import { PayerPayment } from "../types";
 import { BatchMultiSigCall } from "../../../batchMultiSigCall";
+import { PluginInstance } from "@kiroboio/fct-plugins";
 
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
@@ -135,12 +136,13 @@ export function getPayersForRoute({
 
       if (options.gasLimit === "0") {
         // TODO: Maybe we will need to add caching for this, not sure yet
-        const tryGetPlugin = FCT.getPlugin(i);
-        if (tryGetPlugin && tryGetPlugin.gasLimit) {
-          gas = BigInt(tryGetPlugin.gasLimit);
-        } else {
-          gas = getFee("defaultGasLimit", chainId);
+        let tryGetPlugin: PluginInstance | null
+        try {
+          tryGetPlugin = FCT.getPlugin(i)
+        } catch (e) {
+          tryGetPlugin = null
         }
+        gas = tryGetPlugin && tryGetPlugin.gasLimit ? BigInt(tryGetPlugin.gasLimit) : getFee("defaultGasLimit", chainId)
       } else {
         gas = BigInt(options.gasLimit);
       }
