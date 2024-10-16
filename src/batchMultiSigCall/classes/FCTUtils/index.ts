@@ -301,7 +301,8 @@ export class FCTUtils extends FCTBase {
     });
 
     const payerMap = getPayerMap({
-      chainId: this.FCT.chainId,
+      FCT: this.FCT,
+      // chainId: this.FCT.chainId,
       paths: allPaths,
       calldata,
       calls,

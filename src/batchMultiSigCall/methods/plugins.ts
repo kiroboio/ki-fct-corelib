@@ -3,7 +3,7 @@ import { ChainId, getPlugin as getPluginProvider, Multicall, PluginInstance } fr
 import { InstanceOf } from "../../helpers";
 import { BatchMultiSigCall } from "../batchMultiSigCall";
 
-export async function getPlugin(this: BatchMultiSigCall, index: number): Promise<PluginInstance> {
+export function getPlugin(this: BatchMultiSigCall, index: number): PluginInstance {
   const chainId = this.chainId;
   const call = this.getCall(index);
 
@@ -40,8 +40,8 @@ export async function getPlugin(this: BatchMultiSigCall, index: number): Promise
     value: callData.value as any, // TODO: Temporary fix, need to fix the type in plugins
     methodParams: callData.params
       ? callData.params.reduce((acc, param) => {
-          return { ...acc, [param.name]: param.value };
-        }, {})
+        return { ...acc, [param.name]: param.value };
+      }, {})
       : {},
   });
 
@@ -79,8 +79,8 @@ export async function getPluginData(this: BatchMultiSigCall, index: number) {
     value: callData.value,
     methodParams: callData.params
       ? callData.params.reduce((acc, param) => {
-          return { ...acc, [param.name]: param.value };
-        }, {})
+        return { ...acc, [param.name]: param.value };
+      }, {})
       : {},
   };
 
