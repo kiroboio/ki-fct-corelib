@@ -49,7 +49,7 @@ export function getAllRequiredApprovals(FCT: BatchMultiSigCall): IRequiredApprov
           address: call.to,
           chainId,
         });
-        if (pluginData) {
+        if (pluginData && !Array.isArray(pluginData)) {
           approvals = getApprovalsFromPlugin({ pluginData, call, chainId });
         }
       } catch (error) {
@@ -128,12 +128,12 @@ function getApprovalsFromPlugin({
   } else {
     const methodParams = call.params
       ? call.params.reduce(
-          (acc, param) => {
-            acc[param.name] = param.value;
-            return acc;
-          },
-          {} as { [key: string]: Param["value"] },
-        )
+        (acc, param) => {
+          acc[param.name] = param.value;
+          return acc;
+        },
+        {} as { [key: string]: Param["value"] },
+      )
       : {};
 
     initPlugin.input.set({

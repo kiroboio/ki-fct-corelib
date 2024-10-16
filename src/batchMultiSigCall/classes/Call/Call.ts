@@ -225,7 +225,9 @@ export class Call extends CallBase implements ICall {
         address: typeof to === "string" ? to : "",
         chainId: this.FCT.chainId,
       });
-      if (!pluginData) return null;
+      // TODO: Technically if it is an array, we can go over every plugin, set data
+      // and check if parameters fit in the plugin
+      if (!pluginData || Array.isArray(pluginData)) return null;
       let plugin: any;
       if (pluginData instanceof Multicall) {
         plugin = pluginData;
@@ -257,7 +259,7 @@ export class Call extends CallBase implements ICall {
       address: typeof to === "string" ? to : "",
       chainId: this.FCT.chainId,
     });
-    if (!pluginData) return null;
+    if (!pluginData || Array.isArray(pluginData)) return null;
 
     return decodeOutputData(
       // @ts-ignore
@@ -306,9 +308,9 @@ export class Call extends CallBase implements ICall {
       valuesToCheck.some((value) =>
         Boolean(
           isComputedVariable({ value, strict: false }) ||
-            isExternalVariable(value) ||
-            isOutputVariable({ value, index: 0, strict: false }) ||
-            isGlobalVariable(value),
+          isExternalVariable(value) ||
+          isOutputVariable({ value, index: 0, strict: false }) ||
+          isGlobalVariable(value),
         ),
       )
     );
@@ -428,8 +430,8 @@ export class Call extends CallBase implements ICall {
     const decoded = this.getDecoded();
     return decoded.params
       ? {
-          ...getParams(decoded.params),
-        }
+        ...getParams(decoded.params),
+      }
       : {};
   }
 
