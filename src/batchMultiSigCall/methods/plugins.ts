@@ -26,7 +26,7 @@ export function getPlugin(this: BatchMultiSigCall, index: number): PluginInstanc
   if (pluginData instanceof Multicall) {
     PluginClass = pluginData as unknown as PluginInstance;
   } else {
-    if (!pluginData.plugin) {
+    if (Array.isArray(pluginData) || !pluginData.plugin) {
       throw new Error("Plugin not found");
     }
     // @ts-ignore
