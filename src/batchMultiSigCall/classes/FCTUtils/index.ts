@@ -304,7 +304,6 @@ export class FCTUtils extends FCTBase {
       this._cache.set(fctID + "calldata", calldata);
     }
 
-    console.time("payerMap");
     const payerMap = getPayerMap({
       FCT: this.FCT,
       fctID,
@@ -319,19 +318,14 @@ export class FCTUtils extends FCTBase {
       bonusFeeBPS: fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n,
       penalty,
     });
-    console.timeEnd("payerMap");
 
-    console.time("senders");
     const senders = [...new Set(calls.map((call) => call.get().from).filter((i) => typeof i === "string"))] as string[];
-    console.timeEnd("senders");
 
-    console.time("preparePaymentPerPayerResult");
     const result = preparePaymentPerPayerResult({
       payerMap,
       senders,
       ethPriceInKIRO,
     });
-    console.timeEnd("preparePaymentPerPayerResult");
 
     return result;
   };

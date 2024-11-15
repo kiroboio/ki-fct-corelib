@@ -256,7 +256,6 @@ export function getPayerMap({
   payableGasLimit: bigint | undefined;
   penalty?: number | string;
 }) {
-  console.log("all paths", paths);
   const chainId = FCT.chainId;
   const { txGasPrice, effectiveGasPrice } = getGasPrices({
     maxGasPrice,
@@ -265,7 +264,6 @@ export function getPayerMap({
     bonusFeeBPS,
   });
   return paths.map((path) => {
-    console.time("getPayersForRoute");
     const payers = getPayersForRoute({
       chainId,
       calldata,
@@ -275,7 +273,7 @@ export function getPayerMap({
       fctID,
     });
 
-    const res = payers.reduce(
+    return payers.reduce(
       (acc, payer) => {
         let gas: bigint;
         if (payableGasLimit) {
@@ -299,8 +297,6 @@ export function getPayerMap({
       },
       {} as Record<string, PayerPayment>,
     );
-    console.timeEnd("getPayersForRoute");
-    return res;
   });
 }
 
