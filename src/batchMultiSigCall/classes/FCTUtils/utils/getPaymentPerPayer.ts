@@ -9,6 +9,8 @@ import { PluginInstance } from "@kiroboio/fct-plugins";
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
 
+const pluginCache = new Map<string, PluginInstance | null>();
+
 // TODO: This needs to be heavily optimized.
 
 const WHOLE_IN_BPS = 10000n as const;
@@ -93,12 +95,14 @@ export function getPayersForRoute({
   calls,
   pathIndexes,
   calldata,
+  fctID,
 }: {
-  FCT: BatchMultiSigCall,
+  FCT: BatchMultiSigCall;
   chainId: string;
   calls: Call[];
   pathIndexes: string[];
   calldata: string;
+  fctID: string;
 }) {
   const payers = getPayers(calls, pathIndexes);
   const allSigners = getAllSigners(calls);
@@ -135,18 +139,11 @@ export function getPayersForRoute({
       let gas: bigint;
 
       if (options.gasLimit === "0") {
-        // TODO: Maybe we will need to add caching for this, not sure yet
-        let tryGetPlugin: PluginInstance | null
-        try {
-          tryGetPlugin = FCT.getPlugin(i)
-        } catch (e) {
-          tryGetPlugin = null
-        }
-        gas = tryGetPlugin && tryGetPlugin.gasLimit ? BigInt(tryGetPlugin.gasLimit) : getFee("defaultGasLimit", chainId)
+        const plugin = getPlugin({ FCT, fctID, index: i });
+        gas = plugin && plugin.gasLimit ? BigInt(plugin.gasLimit) : getFee("defaultGasLimit", chainId);
       } else {
         gas = BigInt(options.gasLimit);
       }
-
 
       const amount = gas + commonGasPerCall;
       if (acc[payer]) {
@@ -236,6 +233,7 @@ export function getGasPrices({
 
 export function getPayerMap({
   FCT,
+  fctID,
   paths,
   calldata,
   calls,
@@ -247,6 +245,7 @@ export function getPayerMap({
   penalty,
 }: {
   FCT: BatchMultiSigCall;
+  fctID: string;
   paths: ReturnType<FCTUtils["getAllPaths"]>;
   calldata: string;
   calls: Call[];
@@ -257,6 +256,7 @@ export function getPayerMap({
   payableGasLimit: bigint | undefined;
   penalty?: number | string;
 }) {
+  console.log("all paths", paths);
   const chainId = FCT.chainId;
   const { txGasPrice, effectiveGasPrice } = getGasPrices({
     maxGasPrice,
@@ -265,15 +265,17 @@ export function getPayerMap({
     bonusFeeBPS,
   });
   return paths.map((path) => {
+    console.time("getPayersForRoute");
     const payers = getPayersForRoute({
       chainId,
       calldata,
       calls,
       pathIndexes: path,
       FCT,
+      fctID,
     });
 
-    return payers.reduce(
+    const res = payers.reduce(
       (acc, payer) => {
         let gas: bigint;
         if (payableGasLimit) {
@@ -297,6 +299,8 @@ export function getPayerMap({
       },
       {} as Record<string, PayerPayment>,
     );
+    console.timeEnd("getPayersForRoute");
+    return res;
   });
 }
 
@@ -365,4 +369,18 @@ export function preparePaymentPerPayerResult({
       },
     };
   });
+}
+
+function getPlugin({ FCT, fctID, index }: { FCT: BatchMultiSigCall; fctID: string; index: number }) {
+  const plugin = pluginCache.get(fctID + index);
+  if (plugin || plugin === null) return plugin;
+
+  try {
+    const plugin = FCT.getPlugin(index);
+    pluginCache.set(fctID + index, plugin);
+    return plugin;
+  } catch (e) {
+    pluginCache.set(fctID + index, null);
+    return null;
+  }
 }

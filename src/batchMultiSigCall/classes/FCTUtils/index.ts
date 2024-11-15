@@ -285,23 +285,29 @@ export class FCTUtils extends FCTBase {
     const options = this.FCT.options;
     signatures = signatures || [];
 
-    const allPathsKey = JSON.stringify(options) + JSON.stringify(this.FCT.callsAsObjects);
-    let allPaths = this._cache.get(allPathsKey) as ReturnType<this["getAllPaths"]>;
+    const fctID = JSON.stringify(options) + JSON.stringify(this.FCT.callsAsObjects);
+    let allPaths = this._cache.get(fctID + "allPaths") as ReturnType<this["getAllPaths"]>;
+    let calldata = this._cache.get(fctID + "calldata") as string;
 
     if (!allPaths) {
       allPaths = this.getAllPaths() as ReturnType<this["getAllPaths"]>;
-      this._cache.set(allPathsKey, allPaths);
+      this._cache.set(fctID + "allPaths", allPaths);
     }
 
-    const calldata = this.getCalldataForActuator({
-      activator: "0x0000000000000000000000000000000000000000",
-      investor: "0x0000000000000000000000000000000000000000",
-      purgedFCT: "0x".padEnd(66, "0"),
-      signatures,
-    });
+    if (!calldata) {
+      calldata = this.getCalldataForActuator({
+        activator: "0x0000000000000000000000000000000000000000",
+        investor: "0x0000000000000000000000000000000000000000",
+        purgedFCT: "0x".padEnd(66, "0"),
+        signatures,
+      });
+      this._cache.set(fctID + "calldata", calldata);
+    }
 
+    console.time("payerMap");
     const payerMap = getPayerMap({
       FCT: this.FCT,
+      fctID,
       // chainId: this.FCT.chainId,
       paths: allPaths,
       calldata,
@@ -313,14 +319,21 @@ export class FCTUtils extends FCTBase {
       bonusFeeBPS: fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n,
       penalty,
     });
+    console.timeEnd("payerMap");
 
+    console.time("senders");
     const senders = [...new Set(calls.map((call) => call.get().from).filter((i) => typeof i === "string"))] as string[];
+    console.timeEnd("senders");
 
-    return preparePaymentPerPayerResult({
+    console.time("preparePaymentPerPayerResult");
+    const result = preparePaymentPerPayerResult({
       payerMap,
       senders,
       ethPriceInKIRO,
     });
+    console.timeEnd("preparePaymentPerPayerResult");
+
+    return result;
   };
 
   public getPaymentPerSender = this.getPaymentPerPayer;
