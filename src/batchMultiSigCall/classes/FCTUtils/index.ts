@@ -270,12 +270,14 @@ export class FCTUtils extends FCTBase {
     ethPriceInKIRO,
     penalty,
     fees,
+    ignoreCalldata = false,
   }: {
     signatures?: SignatureLike[];
     gasPrice?: number | string | bigint;
     maxGasPrice?: number | string | bigint;
     ethPriceInKIRO: string | bigint;
     penalty?: number | string;
+    ignoreCalldata?: boolean;
     fees?: {
       baseFeeBPS?: number | string;
       bonusFeeBPS?: number | string;
@@ -294,11 +296,13 @@ export class FCTUtils extends FCTBase {
       this._cache.set(fctID + "allPaths", allPaths);
     }
 
-    if (!calldata) {
+    if (ignoreCalldata) {
+      calldata = "";
+    } else if (!calldata) {
       calldata = this.getCalldataForActuator({
-        activator: "0x0000000000000000000000000000000000000000",
-        investor: "0x0000000000000000000000000000000000000000",
-        purgedFCT: "0x".padEnd(66, "0"),
+        activator: ethers.constants.AddressZero,
+        investor: ethers.constants.AddressZero,
+        purgedFCT: ethers.constants.HashZero,
         signatures,
       });
       this._cache.set(fctID + "calldata", calldata);
@@ -334,6 +338,18 @@ export class FCTUtils extends FCTBase {
 
   public getMaxGas = () => {
     const allPayers = this.getPaymentPerSender({ ethPriceInKIRO: "0" });
+
+    return allPayers.reduce((acc, payer) => {
+      const largestGas = payer.largestPayment.gas;
+      if (BigInt(largestGas) > BigInt(acc)) {
+        return largestGas;
+      }
+      return acc;
+    }, "0" as string);
+  };
+
+  public getMaxGasIgnoreCalldata = () => {
+    const allPayers = this.getPaymentPerSender({ ethPriceInKIRO: "0", ignoreCalldata: true });
 
     return allPayers.reduce((acc, payer) => {
       const largestGas = payer.largestPayment.gas;

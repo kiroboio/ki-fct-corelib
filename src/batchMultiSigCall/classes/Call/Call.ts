@@ -106,7 +106,12 @@ export class Call extends CallBase implements ICall {
   public get(): StrictMSCallInput {
     const payerIndex = this.FCT.getIndexByNodeId(this.call.nodeId);
     const callDefaults = { ...this.FCT.callDefault };
-    const data = deepMerge(callDefaults, { options: { payerIndex: payerIndex + 1 } }, this.call) as StrictMSCallInput;
+    // const data = deepClone<StrictMSCallInput>(deepMerge(callDefaults, this.call));
+    const data = structuredClone(deepMerge(callDefaults, this.call));
+
+    if (data.options.payerIndex === undefined) {
+      data.options.payerIndex = payerIndex + 1;
+    }
 
     if (!this.isImport && data.options.gasLimit && data.options.gasLimit !== "0") {
       data.options.gasLimit = getCallGasLimit({
@@ -308,9 +313,9 @@ export class Call extends CallBase implements ICall {
       valuesToCheck.some((value) =>
         Boolean(
           isComputedVariable({ value, strict: false }) ||
-          isExternalVariable(value) ||
-          isOutputVariable({ value, index: 0, strict: false }) ||
-          isGlobalVariable(value),
+            isExternalVariable(value) ||
+            isOutputVariable({ value, index: 0, strict: false }) ||
+            isGlobalVariable(value),
         ),
       )
     );
@@ -430,8 +435,8 @@ export class Call extends CallBase implements ICall {
     const decoded = this.getDecoded();
     return decoded.params
       ? {
-        ...getParams(decoded.params),
-      }
+          ...getParams(decoded.params),
+        }
       : {};
   }
 

@@ -93,7 +93,7 @@ export class Version_020201 extends Version_old {
       throw new Error("No calls added to FCT");
     }
     const options = FCT.options;
-    //const maxGas = FCT.utils.getMaxGas()
+    const maxGas = FCT.utils.getMaxGasIgnoreCalldata();
     const initialGasLimits: Record<number, string> = {};
 
     if ((FCT.isImported && strictGasLimits === false) || (!FCT.isImported && !strictGasLimits)) {
@@ -126,8 +126,8 @@ export class Version_020201 extends Version_old {
       validations: FCT.validation.getForData(),
       variables: [],
       txDataLimit: "0",
-      payableGasLimit: options.payableGasLimit,
-      //payableGasLimit: !options.payableGasLimit || options.payableGasLimit === "0" ? maxGas : options.payableGasLimit
+      // payableGasLimit: "0",
+      payableGasLimit: !options.payableGasLimit || options.payableGasLimit === "0" ? maxGas : options.payableGasLimit,
     };
     if (!strictGasLimits) {
       FCT.calls.forEach((call, i) => {

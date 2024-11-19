@@ -27,6 +27,9 @@
     "lib.esm",
     "lib.cjs"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "commit": "cz",
     "test": "TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha -r ts-node/register \"src/**/*.test.ts\"",

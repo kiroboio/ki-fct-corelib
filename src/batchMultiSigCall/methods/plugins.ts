@@ -7,6 +7,10 @@ export function getPlugin(this: BatchMultiSigCall, index: number): PluginInstanc
   const chainId = this.chainId;
   const call = this.getCall(index);
 
+  if (call.plugin) {
+    return call.plugin;
+  }
+
   const callData = call.get();
 
   if (InstanceOf.Variable(callData.to)) {
@@ -40,8 +44,8 @@ export function getPlugin(this: BatchMultiSigCall, index: number): PluginInstanc
     value: callData.value as any, // TODO: Temporary fix, need to fix the type in plugins
     methodParams: callData.params
       ? callData.params.reduce((acc, param) => {
-        return { ...acc, [param.name]: param.value };
-      }, {})
+          return { ...acc, [param.name]: param.value };
+        }, {})
       : {},
   });
 
@@ -79,8 +83,8 @@ export async function getPluginData(this: BatchMultiSigCall, index: number) {
     value: callData.value,
     methodParams: callData.params
       ? callData.params.reduce((acc, param) => {
-        return { ...acc, [param.name]: param.value };
-      }, {})
+          return { ...acc, [param.name]: param.value };
+        }, {})
       : {},
   };
 

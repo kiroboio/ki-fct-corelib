@@ -12,7 +12,6 @@ import { PluginInstance } from "@kiroboio/fct-plugins";
 const pluginCache = new Map<string, PluginInstance | null>();
 
 // TODO: This needs to be heavily optimized.
-
 const WHOLE_IN_BPS = 10000n as const;
 
 const fees = {
@@ -67,10 +66,18 @@ const getExtraCommonGas = (payersCount: number, msgDataLength: number) => {
 
 const getPayers = (calls: Call[], pathIndexes: string[]) => {
   return pathIndexes.reduce((acc, pathIndex) => {
-    const call = calls[Number(pathIndex)];
+    const call = calls[Number(pathIndex)].get();
     const payerIndex = call.options.payerIndex;
 
     if (payerIndex === 0) return acc;
+    if (payerIndex === +pathIndex + 1) {
+      const payer = call.from;
+      if (payer && payer !== acc[acc.length - 1] && typeof payer === "string") {
+        acc.push(payer);
+      }
+      return acc;
+    }
+    // Else we dont know the from
     const payer = calls[payerIndex - 1].get().from;
     if (payer && payer !== acc[acc.length - 1] && typeof payer === "string") {
       acc.push(payer);
