@@ -124,6 +124,9 @@ class OptionsValidator {
 
   private _checkInteger(): void | Error {
     const value = this._checkString({ canBeNumber: true });
+    if (value === undefined) {
+      return;
+    }
 
     if (value.includes(".")) {
       throw new Error(`Options: ${this.keyId} cannot be a decimal`);
@@ -153,17 +156,23 @@ class OptionsValidator {
 
   private _checkAddress(): void | Error {
     const value = this._checkString();
+    if (!value) {
+      throw new Error(`Options: ${this.keyId} is required, it's undefined`);
+    }
     if (!isAddress(value)) {
       throw new Error(`Options: ${this.keyId} is not a valid address`);
     }
   }
 
-  private _checkString({ canBeNumber = false }: { canBeNumber?: boolean } = {}): string {
+  private _checkString({ canBeNumber = false }: { canBeNumber?: boolean } = {}): string | undefined {
     const realVal = _.get(this.initOptions, this.keyId);
     const value = this.value[this.key];
     if (typeof value !== typeof realVal) {
       if (canBeNumber && typeof value === "number") {
         return value.toString();
+      }
+      if (typeof realVal === "undefined") {
+        return value;
       }
       const mustBeString = canBeNumber ? `number or ${typeof realVal}` : typeof realVal;
       throw new Error(`Options: ${this.keyId} must be a ${mustBeString}`);
