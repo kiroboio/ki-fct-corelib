@@ -146,6 +146,10 @@ export interface IFCTOptions {
   validFrom: string | number;
   expiresAt: string | number;
   maxGasPrice: string | number;
+  /**
+   * The maximum gas limit that can be used by payable calls.
+   * If undefined, the value will be calculated during FCT export based on the gas limits of all calls.
+   */
   payableGasLimit: string | number | undefined;
   blockable: boolean;
   purgeable: boolean;
