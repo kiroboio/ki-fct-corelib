@@ -146,7 +146,7 @@ export interface IFCTOptions {
   validFrom: string | number;
   expiresAt: string | number;
   maxGasPrice: string | number;
-  payableGasLimit: string | number;
+  payableGasLimit: string | number | undefined;
   blockable: boolean;
   purgeable: boolean;
   authEnabled: boolean;

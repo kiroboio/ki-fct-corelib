@@ -330,6 +330,7 @@ export function impFCT(this: BatchMultiSigCall, fct: IFCT, map?: ReturnType<Batc
     domain: meta.domain,
     name: meta.name,
     verifier: engine.verifier,
+    payableGasLimit: undefined,
     builder: {
       address: fct.builderAddress,
       name: meta.builder,

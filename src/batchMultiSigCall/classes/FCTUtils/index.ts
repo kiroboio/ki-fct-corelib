@@ -315,7 +315,7 @@ export class FCTUtils extends FCTBase {
       paths: allPaths,
       calldata,
       calls,
-      payableGasLimit: Number(options.payableGasLimit) === 0 ? undefined : BigInt(options.payableGasLimit),
+      payableGasLimit: options.payableGasLimit === undefined ? undefined : BigInt(options.payableGasLimit),
       maxGasPrice: maxGasPrice ? BigInt(maxGasPrice) : BigInt(options.maxGasPrice),
       gasPrice: gasPrice ? BigInt(gasPrice) : BigInt("0"),
       baseFeeBPS: fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n,

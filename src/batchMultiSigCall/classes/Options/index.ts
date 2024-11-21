@@ -70,7 +70,7 @@ export class Options {
     return {
       ...this.get(),
       payableGasLimit:
-        !this._options.payableGasLimit || this._options.payableGasLimit === "0"
+        this._options.payableGasLimit === undefined
           ? FCT.utils.getMaxGasIgnoreCalldata()
           : this._options.payableGasLimit,
     };

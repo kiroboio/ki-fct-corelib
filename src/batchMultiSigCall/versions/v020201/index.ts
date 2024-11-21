@@ -127,7 +127,7 @@ export class Version_020201 extends Version_old {
       variables: [],
       txDataLimit: "0",
       // payableGasLimit: "0",
-      payableGasLimit: !options.payableGasLimit || options.payableGasLimit === "0" ? maxGas : options.payableGasLimit,
+      payableGasLimit: options.payableGasLimit === undefined ? maxGas : options.payableGasLimit,
     };
     if (!strictGasLimits) {
       FCT.calls.forEach((call, i) => {
