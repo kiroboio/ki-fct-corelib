@@ -68,12 +68,13 @@ export class Version_020201 extends Version_old {
   }
 
   getLimitsMessage(FCT: BatchMultiSigCall): Record<string, any> {
-    const FCTOptions = FCT.generatedOptions;
+    const FCTOptions = FCT.options;
     return {
       valid_from: FCTOptions.validFrom,
       expires_at: FCTOptions.expiresAt,
       tx_data_limit: "0",
-      payable_gas_limit: FCTOptions.payableGasLimit,
+      payable_gas_limit:
+        FCTOptions.payableGasLimit === undefined ? FCT.utils.getMaxGasIgnoreCalldata() : FCTOptions.payableGasLimit,
       max_payable_gas_price: FCTOptions.maxGasPrice,
       purgeable: FCTOptions.purgeable,
       blockable: FCTOptions.blockable,
@@ -93,7 +94,6 @@ export class Version_020201 extends Version_old {
       throw new Error("No calls added to FCT");
     }
     const options = FCT.options;
-    const maxGas = FCT.utils.getMaxGasIgnoreCalldata();
     const initialGasLimits: Record<number, string> = {};
 
     if ((FCT.isImported && strictGasLimits === false) || (!FCT.isImported && !strictGasLimits)) {
@@ -108,6 +108,8 @@ export class Version_020201 extends Version_old {
     }
 
     const typedData = new EIP712(FCT).getTypedData();
+    const payableGasLimit = typedData.message.limits.payable_gas_limit;
+
     const FCTData = {
       typedData,
       typeHash: hexlify(TypedDataUtils.hashType(typedData.primaryType as string, typedData.types)),
@@ -127,7 +129,7 @@ export class Version_020201 extends Version_old {
       variables: [],
       txDataLimit: "0",
       // payableGasLimit: "0",
-      payableGasLimit: options.payableGasLimit === undefined ? maxGas : options.payableGasLimit,
+      payableGasLimit,
     };
     if (!strictGasLimits) {
       FCT.calls.forEach((call, i) => {
