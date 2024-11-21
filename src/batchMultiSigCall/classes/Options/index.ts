@@ -4,6 +4,7 @@ import { getDate } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 import * as helpers from "./helpers";
+import { BatchMultiSigCall } from "../..";
 
 const initOptions: IFCTOptions = {
   id: "",
@@ -62,6 +63,16 @@ export class Options {
         externalSigners: this._options.multisig?.externalSigners || [],
         minimumApprovals: this._options.multisig?.minimumApprovals || "0",
       },
+    };
+  }
+
+  public getGenerated(FCT: BatchMultiSigCall): RequiredFCTOptions {
+    return {
+      ...this.get(),
+      payableGasLimit:
+        !this._options.payableGasLimit || this._options.payableGasLimit === "0"
+          ? FCT.utils.getMaxGasIgnoreCalldata()
+          : this._options.payableGasLimit,
     };
   }
 

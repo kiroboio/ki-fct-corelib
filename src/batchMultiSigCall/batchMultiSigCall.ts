@@ -91,6 +91,10 @@ export class BatchMultiSigCall {
     return this._options.get();
   }
 
+  get generatedOptions(): RequiredFCTOptions {
+    return this._options.getGenerated(this);
+  }
+
   get calls(): FCTCall[] {
     return this._calls;
   }

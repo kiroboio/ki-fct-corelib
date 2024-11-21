@@ -107,14 +107,15 @@ describe("BatchMultiSigCall EIP712", () => {
     //   eip712: true,
     //   auth_enabled: true,
     // });
+    const generatedOptions = FCT.generatedOptions;
     expect(limits).to.deep.equal({
-      valid_from: FCT.options.validFrom,
-      expires_at: FCT.options.expiresAt,
+      valid_from: generatedOptions.validFrom,
+      expires_at: generatedOptions.expiresAt,
       tx_data_limit: "0",
-      max_payable_gas_price: FCT.options.maxGasPrice,
-      payable_gas_limit: FCT.options.payableGasLimit,
-      purgeable: FCT.options.purgeable,
-      blockable: FCT.options.blockable,
+      max_payable_gas_price: generatedOptions.maxGasPrice,
+      payable_gas_limit: generatedOptions.payableGasLimit,
+      purgeable: generatedOptions.purgeable,
+      blockable: generatedOptions.blockable,
     });
     expect(transaction_1).to.deep.equal({
       call: {

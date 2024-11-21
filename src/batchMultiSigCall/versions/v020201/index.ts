@@ -68,7 +68,7 @@ export class Version_020201 extends Version_old {
   }
 
   getLimitsMessage(FCT: BatchMultiSigCall): Record<string, any> {
-    const FCTOptions = FCT.options;
+    const FCTOptions = FCT.generatedOptions;
     return {
       valid_from: FCTOptions.validFrom,
       expires_at: FCTOptions.expiresAt,
