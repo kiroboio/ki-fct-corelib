@@ -250,14 +250,14 @@ async function handleTxValidatorErrorV2({
       callsData: [],
     };
   } else {
-    errorMessage = err?.error?.reason
+    errorMessage = err?.error?.reason;
     // If error doesnt have reason, try to take
-    // error.body, parse it and take message. 
+    // error.body, parse it and take message.
     // Else just use error message worst case scenario.
-    // 
+    //
     // error decoding done in order of accuracy and precision.
     if (!errorMessage) {
-      const parsedErrorMessage = JSON.parse(err?.error?.error?.body)?.error?.message;
+      const parsedErrorMessage = err?.error?.error?.body ? JSON.parse(err.error.error.body)?.error?.message : null;
       errorMessage = parsedErrorMessage ?? err.error.message;
     }
 

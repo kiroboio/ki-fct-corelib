@@ -848,6 +848,14 @@ describe("BatchMultiSigCall", () => {
             customType: true,
             value: [tupleArrayValue],
           },
+          {
+            name: "path",
+            type: "address[]",
+            value: [
+              { type: "external", id: 0 },
+              { type: "external", id: 1 },
+            ],
+          },
         ],
       });
 
