@@ -1,9 +1,14 @@
 import { ValidationVariable } from "../batchMultiSigCall/classes/Validation/types";
 import { IWithPlugin, Param, Variable } from "../types";
 
+type PluginVariable = { name: "path"; type: "address[]"; value: any[] };
 export class InstanceOf {
   static Variable = (object: any): object is Variable => {
     return typeof object === "object" && "type" in object && "id" in object;
+  };
+
+  static PluginVariable = (object: any): object is PluginVariable => {
+    return typeof object === "object" && "type" in object && object.type === "address[]";
   };
 
   static TupleArray = (value: Param["value"], param: Param): value is Param[][] => {

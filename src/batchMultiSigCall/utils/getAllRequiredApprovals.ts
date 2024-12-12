@@ -128,12 +128,12 @@ function getApprovalsFromPlugin({
   } else {
     const methodParams = call.params
       ? call.params.reduce(
-        (acc, param) => {
-          acc[param.name] = param.value;
-          return acc;
-        },
-        {} as { [key: string]: Param["value"] },
-      )
+          (acc, param) => {
+            acc[param.name] = param.value;
+            return acc;
+          },
+          {} as { [key: string]: Param["value"] },
+        )
       : {};
 
     initPlugin.input.set({
@@ -210,9 +210,9 @@ const manageValue = (value: string | Variable | undefined) => {
 function handleApproval(approval: RequiredApprovalInterface, call: StrictMSCallInput) {
   if (approval.method === "approve") {
     const data = {
-      token: manageValue(approval.to),
+      token: manageValue(approval.to as unknown as string | Variable | undefined),
       method: approval.method,
-      from: manageValue(approval.from || call.from),
+      from: manageValue((approval.from || call.from) as unknown as string | Variable | undefined),
     };
     if (approval.protocol === "ERC20") {
       return {
@@ -237,27 +237,27 @@ function handleApproval(approval: RequiredApprovalInterface, call: StrictMSCallI
   if (approval.method === "setApprovalForAll" && (approval.protocol === "ERC721" || approval.protocol === "ERC1155")) {
     return {
       protocol: approval.protocol,
-      token: manageValue(approval.to),
+      token: manageValue(approval.to as unknown as string | Variable | undefined),
       method: approval.method,
       params: {
         spender: manageValue(approval.params[0] as string), // Who is going to spend
         approved: approval.params[1] === "true",
         ids: approval.params[2] as string[],
       },
-      from: manageValue(approval.from || call.from), // Who needs to approve
+      from: manageValue((approval.from || call.from) as unknown as string | Variable | undefined), // Who needs to approve
     };
   }
 
   if (approval.protocol === "AAVE" && approval.method === "approveDelegation") {
     return {
       protocol: approval.protocol,
-      token: manageValue(approval.to),
+      token: manageValue(approval.to as unknown as string | Variable | undefined),
       method: approval.method,
       params: {
         delegatee: manageValue(approval.params[0] as string), // Who is going to spend
         amount: approval.params[1] as string,
       },
-      from: manageValue(approval.from || call.from), // Who needs to approve
+      from: manageValue((approval.from || call.from) as unknown as string | Variable | undefined), // Who needs to approve
     };
   }
 

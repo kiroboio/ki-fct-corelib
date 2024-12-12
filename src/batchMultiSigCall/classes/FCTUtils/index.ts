@@ -183,7 +183,9 @@ export class FCTUtils extends FCTBase {
                 if (tokenIndex !== -1) {
                   data.toReceive[tokenIndex].amount = (
                     BigInt(data.toReceive[tokenIndex].amount) +
-                    BigInt(InstanceOf.Variable(token.amount) ? 0 : token.amount)
+                    BigInt(
+                      InstanceOf.Variable(token.amount) || InstanceOf.PluginVariable(token.amount) ? 0 : token.amount,
+                    )
                   ).toString();
                 } else {
                   data.toReceive.push(token);
@@ -195,7 +197,9 @@ export class FCTUtils extends FCTBase {
                 if (tokenIndex !== -1) {
                   data.toSpend[tokenIndex].amount = (
                     BigInt(data.toSpend[tokenIndex].amount) +
-                    BigInt(InstanceOf.Variable(token.amount) ? 0 : token.amount)
+                    BigInt(
+                      InstanceOf.Variable(token.amount) || InstanceOf.PluginVariable(token.amount) ? 0 : token.amount,
+                    )
                   ).toString();
                 } else {
                   data.toSpend.push(token);

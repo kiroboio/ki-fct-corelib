@@ -211,7 +211,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
     await FCT.addAtIndex(
       {
         from: signer,
-        plugin: ERC20Approvals,
+        plugin: ERC20Approvals as any,
       },
       0,
     );
@@ -220,7 +220,7 @@ export async function exportWithApprovals(this: BatchMultiSigCall) {
     await FCT.addAtIndex(
       {
         from: signer,
-        plugin: ResetERC20Approvals,
+        plugin: ResetERC20Approvals as any,
       },
       FCT.calls.length,
     );
@@ -249,7 +249,7 @@ export async function exportWithPayment(this: BatchMultiSigCall, payer: string) 
   });
 
   const call = await FCT.add({
-    plugin: Multiply,
+    plugin: Multiply as any,
     from: payer,
   });
 
@@ -265,7 +265,7 @@ export async function exportWithPayment(this: BatchMultiSigCall, payer: string) 
   });
 
   await FCT.add({
-    plugin: WETH,
+    plugin: WETH as any,
     from: payer,
   });
 
