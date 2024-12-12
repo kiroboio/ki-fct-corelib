@@ -2,6 +2,8 @@ import { CALL_TYPE, Flow } from "../constants";
 import { GlobalVariable } from "../variables";
 import { ConstantVariable } from "../variables/constantVariables";
 
+///
+
 export type Variable =
   | { type: "output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
   | { type: "multicall_output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
