@@ -2,9 +2,8 @@ import { CALL_TYPE, Flow } from "../constants";
 import { GlobalVariable } from "../variables";
 import { ConstantVariable } from "../variables/constantVariables";
 
-///
-
-export type Variable =
+export type PluginVariable = { name: "path"; type: "address[]"; value: (Variable & { type: "external" })[] };
+export type CoreVariable =
   | { type: "output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
   | { type: "multicall_output"; id: { nodeId: string; offset: number } | { nodeId: string; innerIndex: number } }
   | { type: "external"; id: number }
@@ -12,6 +11,8 @@ export type Variable =
   | { type: "computed"; id: string }
   | { type: "validation"; id: string }
   | { type: "constants"; id: ConstantVariable };
+
+export type Variable = PluginVariable | CoreVariable;
 
 export type ParamValue = boolean | string | (string | Variable | undefined)[] | Param[] | Param[][] | Variable;
 

@@ -43,7 +43,7 @@ export function isExternalVariable(value: ParamValue) {
 }
 
 export function isComputedVariable({ value, id, index, strict = false }: IsComputedVariableInput) {
-  if (InstanceOf.Variable(value)) {
+  if (InstanceOf.CoreVariable(value)) {
     const idCheck = id ? value.id === id : true;
     return value.type === "computed" && idCheck;
   }

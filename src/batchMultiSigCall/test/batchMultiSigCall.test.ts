@@ -862,7 +862,7 @@ describe("BatchMultiSigCall", () => {
       const fctData = FCT.exportFCT();
 
       expect(fctData.typedData.message["transaction_1"].call.method_interface).to.eq(
-        "multicall((address,uint256,bool)[])",
+        "multicall((address,uint256,bool)[],address[])",
       );
 
       expect(fctData.typedData.message["transaction_1"].data).to.deep.eq([
@@ -874,7 +874,7 @@ describe("BatchMultiSigCall", () => {
         }, {}),
       ]);
 
-      expect(fctData.mcall[0].types).to.deep.eq([4000, 3, 1000, 1000, 1000]);
+      expect(fctData.mcall[0].types).to.deep.eq([4000, 3, 1000, 1000, 1000, 4000, 1000]);
     });
     it("Should create FCT where one of params are an empty array", async () => {
       const FCT = new BatchMultiSigCall({

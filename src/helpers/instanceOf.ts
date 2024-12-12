@@ -1,9 +1,12 @@
 import { ValidationVariable } from "../batchMultiSigCall/classes/Validation/types";
-import { IWithPlugin, Param, Variable } from "../types";
+import { CoreVariable, IWithPlugin, Param, PluginVariable, Variable } from "../types";
 
-type PluginVariable = { name: "path"; type: "address[]"; value: any[] };
 export class InstanceOf {
   static Variable = (object: any): object is Variable => {
+    return InstanceOf.CoreVariable(object) || InstanceOf.PluginVariable(object);
+  };
+
+  static CoreVariable = (object: any): object is CoreVariable => {
     return typeof object === "object" && "type" in object && "id" in object;
   };
 
