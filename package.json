@@ -94,6 +94,9 @@
     "ethers": "^5.7.2",
     "graphlib": "^2.1.8"
   },
+  "resolutions": {
+    "@uniswap/sdk-core": "6.0.0"
+  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"

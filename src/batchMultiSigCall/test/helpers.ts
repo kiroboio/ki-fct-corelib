@@ -71,15 +71,15 @@ export const freshTestFCT = ({ chainId }: { chainId: ChainId }) => {
 
   FCT.createMultiple([
     {
-      plugin: balanceOf,
+      plugin: balanceOf as any,
       nodeId: "usdc_balanceOf",
     },
     {
-      plugin: halfOfBalance,
+      plugin: halfOfBalance as any,
       nodeId: "usdc_halfOfBalance",
     },
     {
-      plugin: transfer,
+      plugin: transfer as any,
       nodeId: "usdc_transfer",
     },
   ]);
