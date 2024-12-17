@@ -2,6 +2,7 @@ import { AllPlugins, getPlugin, Multicall } from "@kiroboio/fct-plugins";
 import { TypedDataUtils } from "@metamask/eth-sig-util";
 import { hexlify } from "ethers/lib/utils";
 
+import { isVariable } from "../../../constants";
 import { InstanceOf } from "../../../helpers";
 import { deepMerge } from "../../../helpers/deepMerge";
 import {
@@ -31,7 +32,6 @@ import { getCallGasLimit } from "./helpers/callGas";
 import { decodeFromData, decodeOutputData, getEncodedMethodParams } from "./helpers/callParams";
 import { verifyCall } from "./helpers/verifyCall";
 import { ICall } from "./types";
-import { isVariable } from "../../../constants";
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;

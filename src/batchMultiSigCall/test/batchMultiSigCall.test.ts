@@ -447,7 +447,7 @@ describe("BatchMultiSigCall", () => {
       );
     });
 
-    it.only("Should create an FCT and use variable for int24 value", async () => {
+    it("Should create an FCT and use variable for int24 value", async () => {
       const token = createRandomAddress();
       const vault = createRandomAddress();
 
@@ -472,6 +472,12 @@ describe("BatchMultiSigCall", () => {
       expect(exportedFCT.typedData.message["transaction_2"].value).to.eq(
         "0xFD00000000000000000000000000000000000000000000000000000000200001",
       );
+
+      const FCT2 = BatchMultiSigCall.from(exportedFCT);
+      const payment = FCT2.utils.getPaymentPerPayer({
+        ethPriceInKIRO: "1",
+      });
+      console.log(payment);
     });
   });
 
