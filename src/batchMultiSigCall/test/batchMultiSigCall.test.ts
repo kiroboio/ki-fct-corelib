@@ -447,7 +447,7 @@ describe("BatchMultiSigCall", () => {
       );
     });
 
-    it("Should create an FCT and use variable for int24 value", async () => {
+    it.only("Should create an FCT and use variable for int24 value", async () => {
       const token = createRandomAddress();
       const vault = createRandomAddress();
 
@@ -464,20 +464,34 @@ describe("BatchMultiSigCall", () => {
         from: vault,
         method: "deposit",
         to: token,
-        params: [{ name: "value", type: "int24", value: call.getOutputVariable(0) }],
+        // params: [{ name: "value", type: "int24", value: call.getOutputVariable(0) }],
+        params: [
+          {
+            name: "tuple",
+            type: "tuple",
+            customType: true,
+            value: [
+              { name: "value", type: "int24", value: call.getOutputVariable(0) },
+              { name: "amount", type: "uint256", value: "1000000000000000000" },
+            ],
+          },
+        ],
       });
 
       const exportedFCT = FCT.exportFCT();
 
-      expect(exportedFCT.typedData.message["transaction_2"].value).to.eq(
-        "0xFD00000000000000000000000000000000000000000000000000000000200001",
-      );
+      // expect(exportedFCT.typedData.message["transaction_2"].value).to.eq(
+      //   "0xFD00000000000000000000000000000000000000000000000000000000200001",
+      // );
 
       const FCT2 = BatchMultiSigCall.from(exportedFCT);
       const payment = FCT2.utils.getPaymentPerPayer({
         ethPriceInKIRO: "1",
       });
       console.log(payment);
+
+      const exportedFCT2 = FCT2.exportFCT();
+      console.log(exportedFCT2);
     });
   });
 

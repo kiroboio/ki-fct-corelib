@@ -423,6 +423,12 @@ export class Call extends CallBase implements ICall {
           type: typeName,
         };
       }
+      if (item.value && (isVariable(item.value) || InstanceOf.Variable(item.value))) {
+        return {
+          name: item.name,
+          type: "uint256",
+        };
+      }
       return {
         name: item.name,
         type: item.messageType || item.type,
