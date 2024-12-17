@@ -47,6 +47,16 @@ export const ComputedBaseBytes32 = "0xFE0000000000000000000000000000000000000000
 
 export const ValidationBase = "0xE900000000000000000000000000000000000000000000000000000000000000";
 
+const allVariables = [
+  ExternalVariableBaseBytes32,
+  OutputVariableBaseBytes32,
+  BackOutputVariableBaseBytes32,
+  MulticallOutputVariableBaseBytes32,
+  BackMulticallOutputVariableBaseBytes32,
+  ComputedBaseBytes32,
+  ValidationBase,
+].map((variable) => variable.toLowerCase());
+
 export const ValidationOperator = {
   equal: keccak256(toUtf8Bytes("equal")),
   "not equal": keccak256(toUtf8Bytes("not equal")),
@@ -81,3 +91,10 @@ export const CALL_TYPE_MSG_REV = {
 } as const;
 
 export const FCT_VAULT_ADDRESS = "FCT_VAULT_ADDRESS" as const;
+
+export function isVariable(value: any) {
+  if (typeof value !== "string") return false;
+
+  const hexString = value.toLowerCase().slice(0, 15);
+  return allVariables.some((variable) => variable.startsWith(hexString));
+}

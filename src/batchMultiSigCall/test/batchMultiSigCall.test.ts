@@ -446,6 +446,33 @@ describe("BatchMultiSigCall", () => {
         "0xFD00000000000000000000000000000000000000000000000000000000200001",
       );
     });
+
+    it.only("Should create an FCT and use variable for int24 value", async () => {
+      const token = createRandomAddress();
+      const vault = createRandomAddress();
+
+      const call = await FCT.add({
+        nodeId: "balance",
+        from: vault,
+        method: "balanceOf",
+        to: token,
+        params: [{ name: "owner", type: "address", value: vault }],
+      });
+
+      await FCT.add({
+        nodeId: "deposit",
+        from: vault,
+        method: "deposit",
+        to: token,
+        params: [{ name: "value", type: "int24", value: call.getOutputVariable(0) }],
+      });
+
+      const exportedFCT = FCT.exportFCT();
+
+      expect(exportedFCT.typedData.message["transaction_2"].value).to.eq(
+        "0xFD00000000000000000000000000000000000000000000000000000000200001",
+      );
+    });
   });
 
   describe("Complex FCTs", () => {

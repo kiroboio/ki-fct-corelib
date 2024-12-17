@@ -31,6 +31,7 @@ import { getCallGasLimit } from "./helpers/callGas";
 import { decodeFromData, decodeOutputData, getEncodedMethodParams } from "./helpers/callParams";
 import { verifyCall } from "./helpers/verifyCall";
 import { ICall } from "./types";
+import { isVariable } from "../../../constants";
 
 export class Call extends CallBase implements ICall {
   protected FCT: BatchMultiSigCall;
@@ -394,6 +395,9 @@ export class Call extends CallBase implements ICall {
     structTypes?: Record<string, { name: string; type: string }[]>;
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
+      if (param.value && (isVariable(param.value) || InstanceOf.Variable(param.value))) {
+        return "uint256";
+      }
       return param.messageType || param.type;
     }
 

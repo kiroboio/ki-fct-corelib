@@ -2,6 +2,7 @@ import { Multicall } from "@kiroboio/fct-plugins";
 import { utils } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils";
 
+import { isVariable } from "../../../../constants";
 import { InstanceOf } from "../../../../helpers";
 import { MethodParamsInterface, Param } from "../../../../types";
 import { GetValueType } from "../types";
@@ -117,6 +118,12 @@ const _getTypeForEncodedMethodParams = (param: Param): string => {
     }
     return `(${value.map(_getTypeForEncodedMethodParams).join(",")})${isArray ? "[]" : ""}`;
   }
+
+  // If param.value is a Variable, the type needs to be uint256
+  if (param.value && isVariable(param.value)) {
+    return "uint256";
+  }
+
   return param.type;
 };
 
