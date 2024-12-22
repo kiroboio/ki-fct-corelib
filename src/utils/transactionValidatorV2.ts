@@ -115,7 +115,7 @@ export const transactionValidatorV2 = async (txVal: ITxValidatorV2): Promise<Tra
     }
 
     // Add 20% to gasUsed value, calculate with BigInt
-    const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.2);
+    const gasUsed = Math.round(gas.toNumber() + gas.toNumber() * 0.75);
 
     return {
       isValid: true,
