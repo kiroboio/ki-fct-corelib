@@ -46,7 +46,7 @@ describe("Variables", () => {
       await FCT.add({
         nodeId: "transfer",
         from: createRandomAddress(),
-        to: Call.get().to,
+        to: Call.getOutputVariable(),
         method: "transfer",
         params: [
           {

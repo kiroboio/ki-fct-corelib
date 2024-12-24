@@ -1,3 +1,4 @@
+import { utils } from "ethers";
 import {
   BackOutputVariableBaseAddress,
   BackOutputVariableBaseBytes32,
@@ -56,7 +57,12 @@ export function getOutputVariable({
     base = type === "address" ? OutputVariableBaseAddress : OutputVariableBaseBytes32;
   }
 
-  return (offsetHex + outputIndexHex).padStart(base.length, base);
+  const value = (offsetHex + outputIndexHex).padStart(base.length, base);
+  if (type !== "address") return value;
+  
+  const address = utils.getAddress(value.toLowerCase());
+  return address;
+
 }
 
 /**
