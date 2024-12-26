@@ -1,4 +1,5 @@
 import { utils } from "ethers";
+
 import {
   BackOutputVariableBaseAddress,
   BackOutputVariableBaseBytes32,
@@ -59,10 +60,9 @@ export function getOutputVariable({
 
   const value = (offsetHex + outputIndexHex).padStart(base.length, base);
   if (type !== "address") return value;
-  
+
   const address = utils.getAddress(value.toLowerCase());
   return address;
-
 }
 
 /**
