@@ -1,10 +1,10 @@
+import { PluginInstance } from "@kiroboio/fct-plugins";
 import { utils } from "ethers";
 
+import { BatchMultiSigCall } from "../../../batchMultiSigCall";
 import { FCTUtils } from "../..";
 import { Call } from "../../Call";
 import { PayerPayment } from "../types";
-import { BatchMultiSigCall } from "../../../batchMultiSigCall";
-import { PluginInstance } from "@kiroboio/fct-plugins";
 
 // fctCall overhead (1st call) - 40k
 // fctCall overhead (other calls) - 11k
@@ -223,6 +223,11 @@ export function getGasPrices({
   baseFeeBPS: bigint;
   bonusFeeBPS: bigint;
 }) {
+  // NOTE: Calculation for base
+  // uint256 l1GasUsed = (dataLength * 84500) / WHOLE_IN_BPS;
+  // uint256 effectiveGasPrice = (OPGasOracle.baseFeeScalar() * 16 * OPGasOracle.l1BaseFee()) +
+  //    (OPGasOracle.blobBaseFeeScalar() * OPGasOracle.blobBaseFee());
+  // uint256 fee = l1GasUsed * effectiveGasPrice;
   const txGasPrice = gasPrice ? BigInt(gasPrice) : maxGasPrice;
   const effectiveGasPrice = BigInt(
     getEffectiveGasPrice({
@@ -250,6 +255,7 @@ export function getPayerMap({
   bonusFeeBPS,
   payableGasLimit,
   penalty,
+  opStackGasFees,
 }: {
   FCT: BatchMultiSigCall;
   fctID: string;
@@ -262,6 +268,12 @@ export function getPayerMap({
   bonusFeeBPS: bigint;
   payableGasLimit: bigint | undefined;
   penalty?: number | string;
+  opStackGasFees?: {
+    baseFeeScalar: number | string | bigint;
+    l1BaseFee: number | string | bigint;
+    blobBaseFeeScalar: number | string | bigint;
+    blobBaseFee: number | string | bigint;
+  };
 }) {
   const chainId = FCT.chainId;
   const { txGasPrice, effectiveGasPrice } = getGasPrices({
@@ -270,6 +282,38 @@ export function getPayerMap({
     baseFeeBPS,
     bonusFeeBPS,
   });
+
+  let additionalGas: bigint = 0n;
+  // If the chain is OP Stack chain
+  if (chainId === "10" || chainId === "8453") {
+    if (!opStackGasFees) {
+      console.warn(
+        "For OP Stack chains (Base, Optimism) opStackGasFees should be provided to estimate gas more precisely.",
+      );
+    } else {
+      // From Arch.sol:
+      // uint256 l1GasUsed = (dataLength * 84500) / WHOLE_IN_BPS;
+      // uint256 effectiveGasPrice = (OPGasOracle.baseFeeScalar() * 16 * OPGasOracle.l1BaseFee()) +
+      //    (OPGasOracle.blobBaseFeeScalar() * OPGasOracle.blobBaseFee());
+      // uint256 fee = l1GasUsed * effectiveGasPrice;
+      // additionalGas = fee / (16 * 10 ** 6 * tx.gasprice);
+
+      const dataLength = BigInt(calldata.length / 2 - 1);
+      const l1GasUsed = (dataLength * 84500n) / 10000n;
+
+      const baseFeeScalar = BigInt(opStackGasFees.baseFeeScalar);
+      const l1BaseFee = BigInt(opStackGasFees.l1BaseFee);
+      const blobBaseFeeScalar = BigInt(opStackGasFees.blobBaseFeeScalar);
+      const blobBaseFee = BigInt(opStackGasFees.blobBaseFee);
+
+      const opStackEffectiveGasPrice = baseFeeScalar * 16n * l1BaseFee + blobBaseFeeScalar * blobBaseFee;
+
+      const fee = l1GasUsed * opStackEffectiveGasPrice;
+
+      additionalGas = fee / (16n * 10n ** 6n * txGasPrice);
+    }
+  }
+
   return paths.map((path) => {
     const payers = getPayersForRoute({
       chainId,
@@ -282,12 +326,11 @@ export function getPayerMap({
 
     return payers.reduce(
       (acc, payer) => {
-        let gas: bigint;
+        let gas: bigint = payer.gas + additionalGas;
         if (payableGasLimit) {
-          gas = payer.gas > payableGasLimit ? payableGasLimit : payer.gas;
-        } else {
-          gas = payer.gas;
+          gas = gas > payableGasLimit ? payableGasLimit : gas;
         }
+
         const base = gas * txGasPrice;
         const fee = gas * (effectiveGasPrice - txGasPrice);
         const ethCost = base + fee;

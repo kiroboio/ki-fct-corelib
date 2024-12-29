@@ -275,6 +275,7 @@ export class FCTUtils extends FCTBase {
     penalty,
     fees,
     ignoreCalldata = false,
+    opStackGasFees,
   }: {
     signatures?: SignatureLike[];
     gasPrice?: number | string | bigint;
@@ -285,6 +286,12 @@ export class FCTUtils extends FCTBase {
     fees?: {
       baseFeeBPS?: number | string;
       bonusFeeBPS?: number | string;
+    };
+    opStackGasFees?: {
+      baseFeeScalar: number | string | bigint;
+      l1BaseFee: number | string | bigint;
+      blobBaseFeeScalar: number | string | bigint;
+      blobBaseFee: number | string | bigint;
     };
   }) => {
     const calls = this.FCT.calls;
@@ -315,7 +322,6 @@ export class FCTUtils extends FCTBase {
     const payerMap = getPayerMap({
       FCT: this.FCT,
       fctID,
-      // chainId: this.FCT.chainId,
       paths: allPaths,
       calldata,
       calls,
@@ -325,9 +331,17 @@ export class FCTUtils extends FCTBase {
       baseFeeBPS: fees?.baseFeeBPS ? BigInt(fees.baseFeeBPS) : 1000n,
       bonusFeeBPS: fees?.bonusFeeBPS ? BigInt(fees.bonusFeeBPS) : 5000n,
       penalty,
+      opStackGasFees,
     });
 
-    const senders = [...new Set(calls.map((call) => call.get().from).filter((i) => typeof i === "string"))] as string[];
+    const sendersSet = new Set();
+    for (const call of calls) {
+      const sender = call.call.from;
+      if (typeof sender === "string") {
+        sendersSet.add(sender);
+      }
+    }
+    const senders = [...sendersSet] as string[];
 
     const result = preparePaymentPerPayerResult({
       payerMap,
@@ -353,6 +367,12 @@ export class FCTUtils extends FCTBase {
   };
 
   public getMaxGasIgnoreCalldata = () => {
+    // If OP Stack, 0
+    // TODO: Think of a solution for this
+    if (this.FCT.chainId === "10" || this.FCT.chainId === "8453") {
+      return "0";
+    }
+
     const allPayers = this.getPaymentPerSender({ ethPriceInKIRO: "0", ignoreCalldata: true });
 
     return allPayers.reduce((acc, payer) => {
