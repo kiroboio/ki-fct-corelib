@@ -163,7 +163,7 @@ export class Call extends CallBase implements ICall {
   //
   // EIP 712 methods
   //
-  public generateEIP712Type(index: number) {
+  public generateEIP712Type(index: number, withLists?: boolean) {
     const call = this.get();
 
     if (!call.params || (call.params && call.params.length === 0)) {
@@ -180,6 +180,7 @@ export class Call extends CallBase implements ICall {
         param,
         nodeId: index.toString(),
         structTypes,
+        withLists
       });
 
       return {
@@ -204,7 +205,7 @@ export class Call extends CallBase implements ICall {
   }
 
   public getTypedHashes(index: number): string[] {
-    const { structTypes } = this.generateEIP712Type(index);
+    const { structTypes } = this.generateEIP712Type(index, true);
 
     const usedTypes = this._getUsedStructTypes(structTypes)
     return usedTypes.map((type) => {
@@ -394,17 +395,19 @@ export class Call extends CallBase implements ICall {
     param,
     nodeId,
     structTypes = {},
+    withLists
   }: {
     param: Param;
     nodeId: string;
     structTypes?: Record<string, { name: string; type: string }[] | string>;
+    withLists?: boolean
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
       if (param.value && (isVariable(param.value) || InstanceOf.Variable(param.value))) {
         return "uint256";
       }
 
-      if(param.type.endsWith("[]") && !param.type.includes("tuple")) {
+      if(withLists && param.type.endsWith("[]") && !param.type.includes("tuple")) {
         const typeName = `List_${nodeId}_${Object.keys(structTypes).length}`;
         structTypes[typeName] = '0x0000000000000000000000000000000000000000000000000000000000000000';
       }
