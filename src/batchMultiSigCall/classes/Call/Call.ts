@@ -204,9 +204,13 @@ export class Call extends CallBase implements ICall {
   }
 
   public getTypedHashes(index: number): string[] {
-    const { structTypes, callType } = this.generateEIP712Type(index);
+    const { structTypes } = this.generateEIP712Type(index);
 
-    return this._getUsedStructTypes(structTypes, callType.slice(1)).map((type) => {
+    const usedTypes = this._getUsedStructTypes(structTypes)
+    return usedTypes.map((type) => {
+      if(type.startsWith('List_')) {
+        return '0x0000000000000000000000000000000000000000000000000000000000000000';
+      }
       return hexlify(TypedDataUtils.hashType(type, structTypes));
     });
   }
@@ -374,15 +378,16 @@ export class Call extends CallBase implements ICall {
   //
   private _getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
-    mainType: { name: string; type: string }[],
   ): string[] {
-    return mainType.reduce((acc, item) => {
-      if (item.type.includes("Struct_")) {
-        const type = item.type.replace("[]", "");
-        return [...acc, type, ...this._getUsedStructTypes(typedData, typedData[type])];
-      }
-      return acc;
-    }, [] as string[]);
+    return Object.keys(typedData)
+    // return mainType.reduce((acc, item) => {
+    //   if (item.type.includes("Struct_")) { 
+    //     const type = item.type.replace("[]", "");
+    //     const typeData = typedData[type]
+    //     return [...acc, type, ...this._getUsedStructTypes(typedData, typeData)];
+    //   }
+    //   return acc;
+    // }, [] as string[]);
   }
 
   private _getStructType({
@@ -392,11 +397,16 @@ export class Call extends CallBase implements ICall {
   }: {
     param: Param;
     nodeId: string;
-    structTypes?: Record<string, { name: string; type: string }[]>;
+    structTypes?: Record<string, { name: string; type: string }[] | string>;
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
       if (param.value && (isVariable(param.value) || InstanceOf.Variable(param.value))) {
         return "uint256";
+      }
+
+      if(param.type.endsWith("[]") && !param.type.includes("tuple")) {
+        const typeName = `List_${nodeId}_${Object.keys(structTypes).length}`;
+        structTypes[typeName] = '0x0000000000000000000000000000000000000000000000000000000000000000';
       }
       return param.messageType || param.type;
     }

@@ -25,6 +25,12 @@ describe("Call", () => {
       method: "transfer",
       params: [
         {
+          name: "list",
+          type: "uint256[]",
+          // @ts-expect-error: valid primitive list
+          value: [1, 2, 3],
+        },
+        {
           name: "data",
           type: "tuple",
           customType: true,
@@ -77,6 +83,9 @@ describe("Call", () => {
 
     const txMessage = fct.typedData.message.transaction_1;
 
+    expect(fct.mcall[0].typedHashes).length(4);
+    expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
+
     expect(txMessage).to.eql({
       call: {
         call_index: 1,
@@ -95,7 +104,7 @@ describe("Call", () => {
         jump_on_fail: 0,
         variable_arguments_end: "0",
         variable_arguments_start: "0",
-        method_interface: "transfer((uint256,(bool,uint64)),(bool,uint256))",
+        method_interface: "transfer(uint256[],(uint256,(bool,uint64)),(bool,uint256))",
       },
       data: {
         value: "10",
@@ -104,6 +113,7 @@ describe("Call", () => {
           timestamp: "123456789",
         },
       },
+      list: [1, 2, 3],
       object: {
         isTrue: true,
         int: "20",
