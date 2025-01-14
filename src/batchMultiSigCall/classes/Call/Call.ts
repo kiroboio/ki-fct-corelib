@@ -203,14 +203,10 @@ export class Call extends CallBase implements ICall {
   }
 
   public getTypedHashes(index: number): string[] {
-    const listAndStructTypes: { [key: string]: { name: string; type: string }[] } = {};
-    const { structTypes, callType } = this.generateEIP712Type(index, listAndStructTypes);
+    const { structTypes, callType } = this.generateEIP712Type(index);
 
-    const usedTypes = this._getUsedStructTypes(listAndStructTypes, callType)
+    const usedTypes = this._getUsedStructTypes(structTypes, callType)
     return usedTypes.map((type) => {
-      if(type.startsWith('List_')) {
-        return '0x0000000000000000000000000000000000000000000000000000000000000000';
-      }
       return hexlify(TypedDataUtils.hashType(type, structTypes));
     });
   }
@@ -380,15 +376,15 @@ export class Call extends CallBase implements ICall {
     typedData: Record<string, { name: string; type: string }[]>,
     mainType: any
   ): string[] {
-    return Object.keys(typedData)
-    // return mainType.reduce((acc, item) => {
-    //   if (item.type.includes("Struct_")) { 
-    //     const type = item.type.replace("[]", "");
-    //     const typeData = typedData[type]
-    //     return [...acc, type, ...this._getUsedStructTypes(typedData, typeData)];
-    //   }
-    //   return acc;
-    // }, [] as string[]);
+    // return Object.keys(typedData)
+    return mainType.reduce((acc, item) => {
+      if (item.type.includes("Struct_")) { 
+        const type = item.type.replace("[]", "");
+        const typeData = typedData[type]
+        return [...acc, type, ...this._getUsedStructTypes(typedData, typeData)];
+      }
+      return acc;
+    }, [] as string[]);
   }
 
   private _getStructType({
