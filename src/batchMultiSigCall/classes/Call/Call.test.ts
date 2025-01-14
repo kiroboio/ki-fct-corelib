@@ -173,8 +173,6 @@ describe("Call", () => {
     });
 
     const fct = FCT.exportFCT();
-
-    console.log({ typehashes: fct.mcall[0].typedHashes });
     expect(fct.mcall[0].typedHashes).length(1);
     // expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
     expect(fct.mcall[0].typedHashes[0]).equal(`0xc24b3972dc4eb8d981bc4fb54c376281c0465c2d26864f1e1d78c7dff43ee053`);
