@@ -83,6 +83,7 @@ describe("Call", () => {
 
     const txMessage = fct.typedData.message.transaction_1;
 
+    console.log({ typehashes: fct.mcall[0].typedHashes });
     expect(fct.mcall[0].typedHashes).length(4);
     expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
 
@@ -121,6 +122,63 @@ describe("Call", () => {
     });
   });
 
+  it("Should produce typedHashes from lists and structs", async () => {
+    const from = createRandomAddress();
+    const to = createRandomAddress();
+    await FCT.add({
+      nodeId: "transfer",
+      from,
+      to,
+      method: "transfer",
+      params: [
+        {
+          name: "list",
+          type: "uint256[]",
+          // @ts-expect-error: valid primitive list
+          value: [1, 2, 3],
+        },
+        {
+          name: "test",
+          type: "tuple",
+          customType: true,
+          value: [
+            {
+              name: "validatorCount",
+              type: "uint32",
+              value: "1",
+            },
+            {
+              name: "networkFeeIndex",
+              type: "uint64",
+              value: "2",
+            },
+            {
+              name: "index",
+              type: "uint64",
+              value: "3",
+            },
+            {
+              name: "active",
+              type: "bool",
+              value: true,
+            },
+            {
+              name: "balance",
+              type: "uint256",
+              value: "4",
+            },
+          ],
+        },
+      ],
+    });
+
+    const fct = FCT.exportFCT();
+
+    console.log({ typehashes: fct.mcall[0].typedHashes });
+    expect(fct.mcall[0].typedHashes).length(2);
+    expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
+    expect(fct.mcall[0].typedHashes[1]).equal(`0xc24b3972dc4eb8d981bc4fb54c376281c0465c2d26864f1e1d78c7dff43ee053`);
+  });
   it("Should add 2 calls", async () => {
     await FCT.create({
       nodeId: "node1",

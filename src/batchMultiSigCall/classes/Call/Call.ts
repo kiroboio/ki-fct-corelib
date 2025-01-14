@@ -159,11 +159,10 @@ export class Call extends CallBase implements ICall {
       }),
     };
   }
-
   //
   // EIP 712 methods
   //
-  public generateEIP712Type(index: number, withLists?: boolean) {
+  public generateEIP712Type(index: number, listAndStructTypes?: { [key: string]: { name: string; type: string }[] }) {
     const call = this.get();
 
     if (!call.params || (call.params && call.params.length === 0)) {
@@ -174,13 +173,12 @@ export class Call extends CallBase implements ICall {
     }
 
     const structTypes: { [key: string]: { name: string; type: string }[] } = {};
-
     const callParameters = call.params.map((param: Param) => {
       const typeName = this._getStructType({
         param,
         nodeId: index.toString(),
         structTypes,
-        withLists
+        listAndStructTypes,
       });
 
       return {
@@ -205,9 +203,10 @@ export class Call extends CallBase implements ICall {
   }
 
   public getTypedHashes(index: number): string[] {
-    const { structTypes } = this.generateEIP712Type(index, true);
+    const listAndStructTypes: { [key: string]: { name: string; type: string }[] } = {};
+    const { structTypes, callType } = this.generateEIP712Type(index, listAndStructTypes);
 
-    const usedTypes = this._getUsedStructTypes(structTypes)
+    const usedTypes = this._getUsedStructTypes(listAndStructTypes, callType)
     return usedTypes.map((type) => {
       if(type.startsWith('List_')) {
         return '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -379,6 +378,7 @@ export class Call extends CallBase implements ICall {
   //
   private _getUsedStructTypes(
     typedData: Record<string, { name: string; type: string }[]>,
+    mainType: any
   ): string[] {
     return Object.keys(typedData)
     // return mainType.reduce((acc, item) => {
@@ -395,21 +395,21 @@ export class Call extends CallBase implements ICall {
     param,
     nodeId,
     structTypes = {},
-    withLists
+    listAndStructTypes,
   }: {
     param: Param;
     nodeId: string;
     structTypes?: Record<string, { name: string; type: string }[] | string>;
-    withLists?: boolean
+    listAndStructTypes?: Record<string, { name: string; type: string }[] | string>;
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
       if (param.value && (isVariable(param.value) || InstanceOf.Variable(param.value))) {
         return "uint256";
       }
 
-      if(withLists && param.type.endsWith("[]") && !param.type.includes("tuple")) {
-        const typeName = `List_${nodeId}_${Object.keys(structTypes).length}`;
-        structTypes[typeName] = '0x0000000000000000000000000000000000000000000000000000000000000000';
+      if(listAndStructTypes && param.type.endsWith("[]") && !param.type.includes("tuple")) {
+        const typeName = `List_${nodeId}_${Object.keys(listAndStructTypes).length}`;
+        listAndStructTypes[typeName] = '0x0000000000000000000000000000000000000000000000000000000000000000';
       }
       return param.messageType || param.type;
     }
@@ -430,6 +430,7 @@ export class Call extends CallBase implements ICall {
           param: item,
           nodeId,
           structTypes,
+          listAndStructTypes,
         });
         return {
           name: item.name,
@@ -451,6 +452,7 @@ export class Call extends CallBase implements ICall {
     // If param type is array, we need to add [] to the end of the type
     const typeName = `Struct_${nodeId}_${Object.keys(structTypes).length}`;
     structTypes[typeName] = generalType;
+    if(listAndStructTypes) listAndStructTypes[typeName] = generalType;
     return typeName + (param.type.includes("[]") ? "[]" : "");
   }
 
