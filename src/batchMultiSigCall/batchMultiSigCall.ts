@@ -131,8 +131,8 @@ export class BatchMultiSigCall {
   /**
    * Set the options for the FCT.
    */
-  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O) {
-    return this._options.set(options) as RequiredFCTOptions & O;
+  public setOptions<O extends DeepPartial<IFCTOptions>>(options: O, validate?: boolean) {
+    return this._options.set(options, validate) as RequiredFCTOptions & O;
   }
 
   public setCallDefaults<C extends DeepPartial<ICallDefaults>>(callDefault: C) {
