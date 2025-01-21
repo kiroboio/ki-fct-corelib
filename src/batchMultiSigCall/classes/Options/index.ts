@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
 
 import { getDate } from "../../../helpers";
-import { deepMerge } from "../../../helpers/deepMerge";
 import { DeepPartial, IFCTOptions, RequiredFCTOptions } from "../../../types";
 import * as helpers from "./helpers";
 import { BatchMultiSigCall } from "../..";
+import { merge } from "lodash";
 
 const initOptions: IFCTOptions = {
   id: "",
@@ -44,7 +44,7 @@ export class Options {
   private _options: IFCTOptions = initOptions;
 
   public set<O extends DeepPartial<IFCTOptions>>(options: O, verify = true): IFCTOptions & O {
-    const mergedOptions = deepMerge(this._options, options);
+    const mergedOptions = merge(this._options, options);
     if (verify) Options.verify(mergedOptions);
     this._options = mergedOptions;
     return this._options as IFCTOptions & O;
