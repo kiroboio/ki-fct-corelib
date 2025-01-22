@@ -5,7 +5,7 @@ import { BatchMultiSigCall } from "../../batchMultiSigCall";
 import { Call } from "./Call";
 
 const createRandomAddress = () => ethers.Wallet.createRandom().address;
-
+const gasLimit = "123321"
 describe("Call", () => {
   let FCT: BatchMultiSigCall;
 
@@ -77,6 +77,9 @@ describe("Call", () => {
           ],
         },
       ],
+      options: {
+        gasLimit
+      }
     });
 
     const fct = FCT.exportFCT();
@@ -96,7 +99,7 @@ describe("Call", () => {
         to,
         to_ens: "",
         value: "0",
-        gas_limit: "0",
+        gas_limit: "158321",
         permissions: 0,
         validation: 0,
         flow_control: "continue on success, revert on fail",

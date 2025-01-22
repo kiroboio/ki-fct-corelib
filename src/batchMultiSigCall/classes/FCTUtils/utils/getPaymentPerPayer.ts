@@ -133,6 +133,7 @@ export function getPayersForRoute({
 
   const gasForFCTCall = pathIndexes.reduce(
     (acc, path, i) => {
+
       const call = calls[Number(path)];
       const _call = call.get();
       const options = _call.options;
