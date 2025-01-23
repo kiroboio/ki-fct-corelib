@@ -144,7 +144,6 @@ export function getPayersForRoute({
       if (typeof payer !== "string") return acc;
 
       let gas: bigint;
-      console.log({ options });
       if (options.gasLimit === "0") {
         gas = getFee("defaultGasLimit", chainId);
       } else {
