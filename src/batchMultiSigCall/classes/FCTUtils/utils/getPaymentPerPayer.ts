@@ -144,13 +144,9 @@ export function getPayersForRoute({
       if (typeof payer !== "string") return acc;
 
       let gas: bigint;
-
       console.log({ options });
-      if (options.gasLimit === "0" && options.pluginGasLimit === "0") {
-        // const plugin = getPlugin({ FCT, fctID, index: i });
-        gas = getFee("defaultGasLimit", chainId); //plugin && plugin.gasLimit ? BigInt(plugin.gasLimit) : getFee("defaultGasLimit", chainId);
-      } else if (options.pluginGasLimit !== "0") {
-        gas = BigInt(options.pluginGasLimit);
+      if (options.gasLimit === "0") {
+        gas = getFee("defaultGasLimit", chainId);
       } else {
         gas = BigInt(options.gasLimit);
       }
