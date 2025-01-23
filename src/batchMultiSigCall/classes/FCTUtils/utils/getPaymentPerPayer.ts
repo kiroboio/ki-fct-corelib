@@ -132,8 +132,7 @@ export function getPayersForRoute({
   const commonGasPerCall = commonGas / BigInt(pathIndexes.length);
 
   const gasForFCTCall = pathIndexes.reduce(
-    (acc, path, i) => {
-
+    (acc, path) => {
       const call = calls[Number(path)];
       const _call = call.get();
       const options = _call.options;
@@ -146,14 +145,15 @@ export function getPayersForRoute({
 
       let gas: bigint;
 
-      console.log({ options })
-      if (options.gasLimit === "0") {
+      console.log({ options });
+      if (options.gasLimit === "0" && options.pluginGasLimit === "0") {
         // const plugin = getPlugin({ FCT, fctID, index: i });
         gas = getFee("defaultGasLimit", chainId); //plugin && plugin.gasLimit ? BigInt(plugin.gasLimit) : getFee("defaultGasLimit", chainId);
+      } else if (options.pluginGasLimit !== "0") {
+        gas = BigInt(options.pluginGasLimit);
       } else {
         gas = BigInt(options.gasLimit);
       }
-
       const amount = gas + commonGasPerCall;
       if (acc[payer]) {
         acc[payer] += amount;
@@ -419,16 +419,16 @@ export function preparePaymentPerPayerResult({
   });
 }
 
-function getPlugin({ FCT, fctID, index }: { FCT: BatchMultiSigCall; fctID: string; index: number }) {
-  const plugin = pluginCache.get(fctID + index);
-  if (plugin || plugin === null) return plugin;
+// function getPlugin({ FCT, fctID, index }: { FCT: BatchMultiSigCall; fctID: string; index: number }) {
+//   const plugin = pluginCache.get(fctID + index);
+//   if (plugin || plugin === null) return plugin;
 
-  try {
-    const plugin = FCT.getPlugin(index);
-    pluginCache.set(fctID + index, plugin);
-    return plugin;
-  } catch (e) {
-    pluginCache.set(fctID + index, null);
-    return null;
-  }
-}
+//   try {
+//     const plugin = FCT.getPlugin(index);
+//     pluginCache.set(fctID + index, plugin);
+//     return plugin;
+//   } catch (e) {
+//     pluginCache.set(fctID + index, null);
+//     return null;
+//   }
+// }

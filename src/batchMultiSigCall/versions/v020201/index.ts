@@ -94,13 +94,17 @@ export class Version_020201 extends Version_old {
       throw new Error("No calls added to FCT");
     }
     const options = FCT.options;
-    // const initialGasLimits: Record<number, string> = {};
-    // if ((FCT.isImported && strictGasLimits === false) || (!FCT.isImported && !strictGasLimits)) {
-    //   FCT.calls.forEach((call, i) => {
-    //     initialGasLimits[i] = call.options.gasLimit;
-    //     // call.setOptions({ gasLimit: "0" });
-    //   });
-    // }
+    const initialGasLimits: Record<number, string> = {};
+
+    FCT.calls.forEach((call, i) => {
+      if (call.options.gasLimit && call.options.gasLimit !== "0") {
+        call.setOptions({ pluginGasLimit: call.options.gasLimit });
+      }
+      if ((FCT.isImported && strictGasLimits === false) || (!FCT.isImported && !strictGasLimits)) {
+        initialGasLimits[i] = call.options.gasLimit;
+        call.setOptions({ gasLimit: "0" });
+      }
+    });
 
     if (forceDryRun) {
       FCT.setOptions({ forceDryRun: true });
@@ -131,11 +135,11 @@ export class Version_020201 extends Version_old {
       payableGasLimit,
     };
 
-    // if (!strictGasLimits) {
-    //   FCT.calls.forEach((call, i) => {
-    //     call.setOptions({ gasLimit: initialGasLimits[i] });
-    //   });
-    // }
+    if (!strictGasLimits) {
+      FCT.calls.forEach((call, i) => {
+        call.setOptions({ gasLimit: initialGasLimits[i] });
+      });
+    }
 
     if (forceDryRun) {
       FCT.setOptions({ forceDryRun: false });
