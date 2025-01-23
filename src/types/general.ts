@@ -37,8 +37,6 @@ export interface CallOptions {
   permissions?: string;
   /** Gas limit of the call */
   gasLimit?: string;
-  /** Plugin data of gas limit of the call */
-  pluginGasLimit?: string;
   /** Behaviour of the call */
   flow?: Flow;
   /** nodeId of the call to jump to on successful call. If undefined - go to next call */
