@@ -99,7 +99,7 @@ describe("Call", () => {
         to,
         to_ens: "",
         value: "0",
-        gas_limit: "158321",
+        gas_limit: "0",
         permissions: 0,
         validation: 0,
         flow_control: "continue on success, revert on fail",

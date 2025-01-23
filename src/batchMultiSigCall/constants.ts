@@ -5,6 +5,7 @@ export const NO_JUMP = "NO_JUMP";
 export const DEFAULT_CALL_OPTIONS: DeepRequired<Omit<CallOptions, "payerIndex">> = {
   permissions: "0000",
   gasLimit: "0",
+  pluginGasLimit: "0",
   flow: Flow.OK_CONT_FAIL_REVERT,
   jumpOnSuccess: NO_JUMP,
   jumpOnFail: NO_JUMP,
