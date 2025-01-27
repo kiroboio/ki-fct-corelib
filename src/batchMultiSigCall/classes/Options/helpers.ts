@@ -128,6 +128,7 @@ class OptionsValidator {
       return;
     }
 
+    if (typeof value !== "string") return;
     if (value.includes(".")) {
       throw new Error(`Options: ${this.keyId} cannot be a decimal`);
     }
