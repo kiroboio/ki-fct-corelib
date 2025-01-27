@@ -124,7 +124,7 @@ class OptionsValidator {
 
   private _checkInteger(): void | Error {
     const value = this._checkString({ canBeNumber: true });
-    if (value === undefined) {
+    if (!value) {
       return;
     }
 
