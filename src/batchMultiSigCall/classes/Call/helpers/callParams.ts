@@ -92,11 +92,13 @@ export const decodeOutputData = (plugin: any | undefined, data: string): Array<a
 
 function _handleTypeConversion(param: Param & { messageType: string }) {
   // If messageType is the same as type, no need for conversion
+  console.log({ param })
   if (param.messageType === param.type || isVariable(param.value) || InstanceOf.Variable(param.value))
     return param.value;
 
   const conversion = typeConversions[`${param.messageType}_${param.type}`];
   if (conversion) return conversion(param.value as string);
+  console.error(`wrong param`, { param })
   throw new Error(`Param ${param.name} - Conversion from ${param.messageType} to ${param.type} is not supported`);
 }
 
