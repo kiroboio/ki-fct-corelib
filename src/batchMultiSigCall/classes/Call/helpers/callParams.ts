@@ -99,7 +99,7 @@ function _handleTypeConversion(param: Param & { messageType: string }) {
   const conversion = typeConversions[`${param.messageType}_${param.type}`];
   if (conversion) return conversion(param.value as string);
   console.error(`wrong param`, { param })
-  throw new Error(`Param ${param.name} - Conversion from ${param.messageType} to ${param.type} is not supported`);
+  throw new Error(`Param ${ JSON.stringify(param) }, value ${param.value}, ${param.name} - Conversion from ${param.messageType} to ${param.type} is not supported`);
 }
 
 // This function is used to convert the value to the correct type
