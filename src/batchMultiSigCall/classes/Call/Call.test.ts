@@ -41,6 +41,11 @@ describe("Call", () => {
               value: "10",
             },
             {
+              name: 'variable',
+              type: 'address',
+              value: {type: 'global', id: 'originAddress'},
+            },
+            {
               name: "deepData",
               type: "tuple",
               customType: true,
@@ -86,7 +91,8 @@ describe("Call", () => {
 
     const txMessage = fct.typedData.message.transaction_1;
 
-    console.log({ typehashes: fct.mcall[0].typedHashes });
+    fct.typedData
+    console.log({ fct: JSON.stringify(fct) });
     expect(fct.mcall[0].typedHashes).length(3);
     // expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
 
@@ -106,12 +112,13 @@ describe("Call", () => {
         returned_false_means_fail: false,
         jump_on_success: 0,
         jump_on_fail: 0,
-        variable_arguments_end: "0",
+        variable_arguments_end: "1000000000",
         variable_arguments_start: "0",
-        method_interface: "transfer(uint256[],(uint256,(bool,uint64)),(bool,uint256))",
+        method_interface: "transfer(uint256[],(uint256,address,(bool,uint64)),(bool,uint256))",
       },
       data: {
         value: "10",
+        variable: "0xFA0B000000000000000000000000000000000000",
         deepData: {
           doDeposit: true,
           timestamp: "123456789",
