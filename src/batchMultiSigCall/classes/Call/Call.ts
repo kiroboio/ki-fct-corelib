@@ -400,7 +400,7 @@ export class Call extends CallBase implements ICall {
   }): string {
     if (!param.customType && !param.type.includes("tuple")) {
       if (param.value && (isVariable(param.value) || InstanceOf.Variable(param.value))) {
-        return "uint256";
+        return param.messageType || param.type || "uint256";
       }
 
       if(listAndStructTypes && param.type.endsWith("[]") && !param.type.includes("tuple")) {
