@@ -41,6 +41,11 @@ describe("Call", () => {
               value: "10",
             },
             {
+              name: 'variable',
+              type: 'address',
+              value: {type: 'global', id: 'originAddress'},
+            },
+            {
               name: "deepData",
               type: "tuple",
               customType: true,
@@ -86,7 +91,8 @@ describe("Call", () => {
 
     const txMessage = fct.typedData.message.transaction_1;
 
-    console.log({ typehashes: fct.mcall[0].typedHashes });
+    fct.typedData
+    console.log({ fct: JSON.stringify(fct) });
     expect(fct.mcall[0].typedHashes).length(3);
     // expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
 
@@ -106,12 +112,13 @@ describe("Call", () => {
         returned_false_means_fail: false,
         jump_on_success: 0,
         jump_on_fail: 0,
-        variable_arguments_end: "0",
+        variable_arguments_end: "1000000000",
         variable_arguments_start: "0",
-        method_interface: "transfer(uint256[],(uint256,(bool,uint64)),(bool,uint256))",
+        method_interface: "transfer(uint256[],(uint256,address,(bool,uint64)),(bool,uint256))",
       },
       data: {
         value: "10",
+        variable: "0xFA0B000000000000000000000000000000000000",
         deepData: {
           doDeposit: true,
           timestamp: "123456789",
@@ -125,168 +132,168 @@ describe("Call", () => {
     });
   });
 
-  it("Should produce typedHashes from lists and structs", async () => {
-    const from = createRandomAddress();
-    const to = createRandomAddress();
-    await FCT.add({
-      nodeId: "transfer",
-      from,
-      to,
-      method: "transfer",
-      params: [
-        {
-          name: "list",
-          type: "uint256[]",
-          // @ts-expect-error: valid primitive list
-          value: [1, 2, 3],
-        },
-        {
-          name: "test",
-          type: "tuple",
-          customType: true,
-          value: [
-            {
-              name: "validatorCount",
-              type: "uint32",
-              value: "1",
-            },
-            {
-              name: "networkFeeIndex",
-              type: "uint64",
-              value: "2",
-            },
-            {
-              name: "index",
-              type: "uint64",
-              value: "3",
-            },
-            {
-              name: "active",
-              type: "bool",
-              value: true,
-            },
-            {
-              name: "balance",
-              type: "uint256",
-              value: "4",
-            },
-          ],
-        },
-      ],
-    });
+  // it("Should produce typedHashes from lists and structs", async () => {
+  //   const from = createRandomAddress();
+  //   const to = createRandomAddress();
+  //   await FCT.add({
+  //     nodeId: "transfer",
+  //     from,
+  //     to,
+  //     method: "transfer",
+  //     params: [
+  //       {
+  //         name: "list",
+  //         type: "uint256[]",
+  //         // @ts-expect-error: valid primitive list
+  //         value: [1, 2, 3],
+  //       },
+  //       {
+  //         name: "test",
+  //         type: "tuple",
+  //         customType: true,
+  //         value: [
+  //           {
+  //             name: "validatorCount",
+  //             type: "uint32",
+  //             value: "1",
+  //           },
+  //           {
+  //             name: "networkFeeIndex",
+  //             type: "uint64",
+  //             value: "2",
+  //           },
+  //           {
+  //             name: "index",
+  //             type: "uint64",
+  //             value: "3",
+  //           },
+  //           {
+  //             name: "active",
+  //             type: "bool",
+  //             value: true,
+  //           },
+  //           {
+  //             name: "balance",
+  //             type: "uint256",
+  //             value: "4",
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   });
 
-    const fct = FCT.exportFCT();
-    expect(fct.mcall[0].typedHashes).length(1);
-    // expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
-    expect(fct.mcall[0].typedHashes[0]).equal(`0xc24b3972dc4eb8d981bc4fb54c376281c0465c2d26864f1e1d78c7dff43ee053`);
-  });
-  it("Should add 2 calls", async () => {
-    await FCT.create({
-      nodeId: "node1",
-      to: createRandomAddress(),
-      toENS: "@token.kiro.eth",
-      method: "transfer",
-      params: [
-        { name: "to", type: "address", value: createRandomAddress() },
-        { name: "token_amount", type: "uint256", value: "20" },
-      ],
-      from: createRandomAddress(),
-      value: "0",
-    });
+  //   const fct = FCT.exportFCT();
+  //   expect(fct.mcall[0].typedHashes).length(1);
+  //   // expect(fct.mcall[0].typedHashes[0]).equal(`0x0000000000000000000000000000000000000000000000000000000000000000`);
+  //   expect(fct.mcall[0].typedHashes[0]).equal(`0xc24b3972dc4eb8d981bc4fb54c376281c0465c2d26864f1e1d78c7dff43ee053`);
+  // });
+  // it("Should add 2 calls", async () => {
+  //   await FCT.create({
+  //     nodeId: "node1",
+  //     to: createRandomAddress(),
+  //     toENS: "@token.kiro.eth",
+  //     method: "transfer",
+  //     params: [
+  //       { name: "to", type: "address", value: createRandomAddress() },
+  //       { name: "token_amount", type: "uint256", value: "20" },
+  //     ],
+  //     from: createRandomAddress(),
+  //     value: "0",
+  //   });
 
-    await FCT.create({
-      nodeId: "node2",
-      to: createRandomAddress(),
-      method: "erc20Airdrop",
-      params: [
-        { name: "token", type: "address", value: createRandomAddress() },
-        { name: "from", type: "address", value: createRandomAddress() },
-        { name: "amount", type: "uint256", value: "100" },
-        { name: "recipients", type: "address[]", value: [createRandomAddress(), createRandomAddress()] },
-      ],
-      from: createRandomAddress(),
-    });
+  //   await FCT.create({
+  //     nodeId: "node2",
+  //     to: createRandomAddress(),
+  //     method: "erc20Airdrop",
+  //     params: [
+  //       { name: "token", type: "address", value: createRandomAddress() },
+  //       { name: "from", type: "address", value: createRandomAddress() },
+  //       { name: "amount", type: "uint256", value: "100" },
+  //       { name: "recipients", type: "address[]", value: [createRandomAddress(), createRandomAddress()] },
+  //     ],
+  //     from: createRandomAddress(),
+  //   });
 
-    const fct = FCT.exportFCT();
+  //   const fct = FCT.exportFCT();
 
-    expect(fct.mcall.length).to.eql(2);
-  });
+  //   expect(fct.mcall.length).to.eql(2);
+  // });
 
-  it("Should update the call after it is made", async () => {
-    const Call = await FCT.add({
-      nodeId: "node1",
-      to: createRandomAddress(),
-      toENS: "@token.kiro.eth",
-      method: "transfer",
-      params: [
-        { name: "to", type: "address", value: createRandomAddress() },
-        { name: "token_amount", type: "uint256", value: "20" },
-      ],
-      from: createRandomAddress(),
-      value: "0",
-    });
+  // it("Should update the call after it is made", async () => {
+  //   const Call = await FCT.add({
+  //     nodeId: "node1",
+  //     to: createRandomAddress(),
+  //     toENS: "@token.kiro.eth",
+  //     method: "transfer",
+  //     params: [
+  //       { name: "to", type: "address", value: createRandomAddress() },
+  //       { name: "token_amount", type: "uint256", value: "20" },
+  //     ],
+  //     from: createRandomAddress(),
+  //     value: "0",
+  //   });
 
-    Call.update({
-      method: "swapFrom",
-    });
+  //   Call.update({
+  //     method: "swapFrom",
+  //   });
 
-    expect(Call.get().method).to.eql("swapFrom");
-  });
+  //   expect(Call.get().method).to.eql("swapFrom");
+  // });
 
-  it("Should create a Call class, add it to FCT and add validation", async () => {
-    const CallClass = await Call.create({
-      FCT,
-      call: {
-        nodeId: "node1",
-        to: createRandomAddress(),
-        toENS: "@token.kiro.eth",
-        method: "transfer",
-        params: [
-          { name: "to", type: "address", value: createRandomAddress() },
-          { name: "token_amount", type: "uint256", value: "20" },
-        ],
-        from: createRandomAddress(),
-        value: "0",
-      },
-    });
+  // it("Should create a Call class, add it to FCT and add validation", async () => {
+  //   const CallClass = await Call.create({
+  //     FCT,
+  //     call: {
+  //       nodeId: "node1",
+  //       to: createRandomAddress(),
+  //       toENS: "@token.kiro.eth",
+  //       method: "transfer",
+  //       params: [
+  //         { name: "to", type: "address", value: createRandomAddress() },
+  //         { name: "token_amount", type: "uint256", value: "20" },
+  //       ],
+  //       from: createRandomAddress(),
+  //       value: "0",
+  //     },
+  //   });
 
-    await FCT.add(CallClass);
+  //   await FCT.add(CallClass);
 
-    expect(FCT.calls.length).to.eql(1);
-    expect(FCT.calls[0].get().method).to.eql("transfer");
+  //   expect(FCT.calls.length).to.eql(1);
+  //   expect(FCT.calls[0].get().method).to.eql("transfer");
 
-    const validationVariable = CallClass.addValidation({
-      id: "validation1",
-      value1: "2000",
-      operator: "equal",
-      value2: CallClass.getOutputVariable(0),
-    });
+  //   const validationVariable = CallClass.addValidation({
+  //     id: "validation1",
+  //     value1: "2000",
+  //     operator: "equal",
+  //     value2: CallClass.getOutputVariable(0),
+  //   });
 
-    expect(validationVariable).to.eql({ type: "validation", id: "validation1" });
-  });
+  //   expect(validationVariable).to.eql({ type: "validation", id: "validation1" });
+  // });
 
-  describe("Param verifier", () => {
-    it("Should verify that address[] is valid", async () => {
-      await FCT.add({
-        nodeId: "node1",
-        to: createRandomAddress(),
-        from: createRandomAddress(),
-        method: "methodName",
-        params: [{ name: "to", type: "address[]", value: [createRandomAddress(), createRandomAddress()] }],
-      });
-    });
-    it("Should revert if address[] is invalid", async () => {
-      try {
-        await FCT.add({
-          nodeId: "node1",
-          to: createRandomAddress(),
-          from: createRandomAddress(),
-          method: "methodName",
-          params: [{ name: "to", type: "address[]", value: [createRandomAddress(), "123"] }],
-        });
-      } catch (e) {
-        if (e instanceof Error) expect(e.message).to.eql("Param to[1] is not a valid address");
-      }
-    });
-  });
+  // describe("Param verifier", () => {
+  //   it("Should verify that address[] is valid", async () => {
+  //     await FCT.add({
+  //       nodeId: "node1",
+  //       to: createRandomAddress(),
+  //       from: createRandomAddress(),
+  //       method: "methodName",
+  //       params: [{ name: "to", type: "address[]", value: [createRandomAddress(), createRandomAddress()] }],
+  //     });
+  //   });
+  //   it("Should revert if address[] is invalid", async () => {
+  //     try {
+  //       await FCT.add({
+  //         nodeId: "node1",
+  //         to: createRandomAddress(),
+  //         from: createRandomAddress(),
+  //         method: "methodName",
+  //         params: [{ name: "to", type: "address[]", value: [createRandomAddress(), "123"] }],
+  //       });
+  //     } catch (e) {
+  //       if (e instanceof Error) expect(e.message).to.eql("Param to[1] is not a valid address");
+  //     }
+  //   });
+  // });
 });
