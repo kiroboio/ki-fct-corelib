@@ -47,7 +47,10 @@ export const ComputedBaseBytes32 = "0xFE0000000000000000000000000000000000000000
 
 export const ValidationBase = "0xE900000000000000000000000000000000000000000000000000000000000000";
 export const SolverAddress = "0xFA0B000000000000000000000000000000000000"
-export const MinerAddress = "0xFA0B000000000000000000000000000000000000"
+export const MinerAddress = "0xFA0A000000000000000000000000000000000000"
+export const InvestorAddress = "0xFA0C000000000000000000000000000000000000"
+export const ActivatorAddress = "0xFA0D000000000000000000000000000000000000";
+
 const allVariables = [
   ExternalVariableBaseBytes32,
   OutputVariableBaseBytes32,
@@ -58,6 +61,8 @@ const allVariables = [
   ValidationBase,
   SolverAddress,
   MinerAddress,
+  InvestorAddress,
+  ActivatorAddress,
 ].map((variable) => variable.toLowerCase());
 
 export const ValidationOperator = {
