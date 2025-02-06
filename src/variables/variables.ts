@@ -107,5 +107,10 @@ export function getGlobalVariable({ id, type }: { id: keyof typeof globalVariabl
   if (!globalVariable) {
     throw new Error("Global variable not found");
   }
-  return globalVariable;
+
+  console.log({ globalvartype: type })
+  if (type !== "address") return globalVariable;
+  
+  const address = utils.getAddress(globalVariable.toLowerCase());
+  return address;
 }
